@@ -21,6 +21,7 @@ StateMarker.cpp
 EngineAnimation.cpp
 HUD.cpp
 DebugDataWidget.cpp
+utf8.cpp
 )
 
 add_library (Core ${CORE_SRC_FILES})

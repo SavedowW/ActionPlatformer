@@ -19,10 +19,6 @@ private:
     TextManager &m_textManager;
     int m_lvlId;
     Vector2<float> m_lvlSize;
-
-    SDL_Texture *tex;
-    int w, h;
-    
 };
 
 #endif

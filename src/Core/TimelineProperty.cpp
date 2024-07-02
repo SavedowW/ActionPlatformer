@@ -177,6 +177,7 @@ template class TimelineProperty<float>;
 template class TimelineProperty<int>;
 template class TimelineProperty<Vector2<float>>;
 template class TimelineProperty<Vector2<int>>;
+template class TimelineProperty<uint32_t>;
 
 template class TimelinePropertyEditable<bool>;
 template class TimelinePropertyEditable<float>;
