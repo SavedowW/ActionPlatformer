@@ -3,6 +3,12 @@
 
 #include "Object.h"
 
+enum class CharacterState
+{
+    IDLE,
+    FLOAT,
+};
+
 class PlayableCharacter : public Object, public InputReactor
 {
 public:
@@ -11,6 +17,7 @@ public:
     virtual void update() override;
     virtual void draw(Camera &cam_) override;
     void receiveInput(EVENTS event, const float scale_) final;
+    Collider getPushbox() const override;
 
     virtual ~PlayableCharacter() = default;
 
@@ -22,9 +29,6 @@ protected:
     std::map<int, std::unique_ptr<Animation>> m_animations;
     Animation *m_currentAnimation;
     ORIENTATION m_ownOrientation = ORIENTATION::RIGHT;
-
-    Vector2<float> m_pos;
-
 };
 
 #endif

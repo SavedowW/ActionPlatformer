@@ -10,6 +10,7 @@ namespace gamedata
     namespace global
     {
         inline constexpr float framerate = 60.0f;
+        inline constexpr Vector2<float> tileSize = {16.0f, 16.0f};
         inline constexpr int numberOfLevels = 2;
         inline constexpr int initialLevelId = 1;
         inline constexpr Vector2<float> baseResolution = {1280.0f, 720.0f};

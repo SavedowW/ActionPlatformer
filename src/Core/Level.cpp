@@ -45,10 +45,10 @@ LevelResult Level::proceed()
 		}
 		//destroyRequested();
 
-		auto passed = m_frameTimer.getPassedMS();
-		if (passed < m_timeForFrame + compensate)
+		m_lastFrameTimeMS = m_frameTimer.getPassedMS();
+		if (m_lastFrameTimeMS < m_timeForFrame + compensate)
 		{
-			float fTimeToSleep = m_timeForFrame - passed + compensate;
+			float fTimeToSleep = m_timeForFrame - m_lastFrameTimeMS + compensate;
 			int iTimeToSleep = fTimeToSleep;
 			compensate = fTimeToSleep - iTimeToSleep;
 			SDL_Delay(iTimeToSleep);

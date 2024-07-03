@@ -9,7 +9,7 @@
 class DebugDataWidget : public Widget
 {
 public:
-    DebugDataWidget(Application &application_, Camera &camera_, int lvlId_, Vector2<float> lvlSize_);
+    DebugDataWidget(Application &application_, Camera &camera_, int lvlId_, Vector2<float> lvlSize_, Uint32 &frameTime_);
     virtual void update() final;
     virtual void draw(Renderer &renderer_, Camera &camera_) final;
     virtual ~DebugDataWidget() = default;
@@ -19,6 +19,7 @@ private:
     TextManager &m_textManager;
     int m_lvlId;
     Vector2<float> m_lvlSize;
+    Uint32 &m_frameTime;
 };
 
 #endif

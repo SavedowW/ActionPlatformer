@@ -128,18 +128,6 @@ std::ostream& operator<< (std::ostream& out, const Vector2<T>& vec)
     return out;
 }
 
-struct HorizontalOverlapResult
-{
-	bool selfIsOnLeft = false;
-	bool selfIsInside = false;
-	bool otherIsInside = false;
-	float overlapWidth = 0;
-	inline bool doesOverlap() const
-	{
-		return selfIsOnLeft || selfIsInside || otherIsInside  || overlapWidth;
-	}
-};
-
 //Only rectangle hitbox
 struct Collider
 {
@@ -151,11 +139,20 @@ struct Collider
 		w = nw;
 		h = nh;
 	}
+	template<typename T1, typename T2>
+	constexpr inline Collider(const Vector2<T1> &pos_, const Vector2<T2> &size_)
+	{
+		x = pos_.x;
+		y = pos_.y;
+		w = size_.x;
+		h = size_.y;
+	}
 	constexpr inline Collider operator+(const Vector2<float>& rhs) const
 	{
 		return { x + rhs.x, y + rhs.y, w, h };
 	}
-	constexpr inline int isCollideWith_x(const Collider& hbox) const
+
+	constexpr inline int checkOverlapWith_x(const Collider& hbox) const
 	{
 		if (x <= hbox.x && x + w > hbox.x)
 			return 1;
@@ -166,7 +163,7 @@ struct Collider
 		else
 			return 0;
 	}
-	constexpr inline int isCollideWith_y(const Collider& hbox) const
+	constexpr inline int checkOverlapWith_y(const Collider& hbox) const
 	{
 		if (y <= hbox.y && y + h > hbox.y)
 			return 1;
@@ -177,9 +174,36 @@ struct Collider
 		else
 			return 0;
 	}
-	constexpr inline bool isCollideWith(const Collider& hbox) const
+	constexpr inline bool checkOverlapWith(const Collider& hbox) const
 	{
-		return isCollideWith_x(hbox) && isCollideWith_y(hbox);
+		return checkOverlapWith_x(hbox) && checkOverlapWith_y(hbox);
+	}
+
+	constexpr inline int checkCollisionWith_x(const Collider& hbox) const
+	{
+		if (x <= hbox.x && x + w >= hbox.x)
+			return 1;
+		if (x + w >= hbox.x + hbox.w && x <= hbox.x + hbox.w)
+			return 2;
+		if (x >= hbox.x && x + w <= hbox.x + hbox.w)
+			return 4;
+		else
+			return 0;
+	}
+	constexpr inline int checkCollisionWith_y(const Collider& hbox) const
+	{
+		if (y <= hbox.y && y + h >= hbox.y)
+			return 1;
+		if (y + h >= hbox.y + hbox.h && y <= hbox.y + hbox.h)
+			return 2;
+		if (y >= hbox.y && y + h <= hbox.y + hbox.h)
+			return 4;
+		else
+			return 0;
+	}
+	constexpr inline bool checkCollisionWith(const Collider& hbox) const
+	{
+		return checkOverlapWith_x(hbox) && checkOverlapWith_y(hbox);
 	}
 
 	//-1 if beyond left bound
@@ -215,59 +239,6 @@ struct Collider
 			return true;
 
 		return false;
-	}
-
-	constexpr inline HorizontalOverlapResult getHorizontalOverlap(const Collider &rhs) const
-	{
-		HorizontalOverlapResult res;
-
-		if (x > rhs.x && x + w < rhs.x + rhs.w)
-		{
-			res.selfIsInside = true;
-		}
-		else if (rhs.x > x && rhs.x + rhs.w < x + w)
-		{
-			res.otherIsInside = true;
-		}
-		else if (x <= rhs.x && x + w > rhs.x && x + w <= rhs.x + rhs.w)
-		{
-			res.selfIsOnLeft = true;
-			res.overlapWidth = x + w - rhs.x;
-		}
-		else if (x > rhs.x && x + w > rhs.x + rhs.w && x < rhs.x + rhs.w)
-		{
-			res.overlapWidth = rhs.x + rhs.w - x;
-		}
-
-		return res;
-	}
-
-	constexpr inline Collider getOverlapArea(const Collider &rhs) const
-	{
-		Collider res;
-
-		res.x = std::max(x, rhs.x);
-		res.y = std::max(y, rhs.y);
-		res.w = std::min(x + w, rhs.x + rhs.w) - res.x;
-		res.h = std::min(y + h, rhs.y + rhs.h) - res.y;
-
-		return res;
-	}
-
-	constexpr inline Collider getHitboxAtOffset(const Vector2<float> &offset_, ORIENTATION side_)
-	{
-		Collider hbox = *this;
-		if (side_ == ORIENTATION::RIGHT)
-        {
-            hbox.x += offset_.x;
-            hbox.y += offset_.y;
-        }
-        else
-        {
-            hbox.x = offset_.x - hbox.x - hbox.w;
-            hbox.y += offset_.y;
-        }
-		return hbox;
 	}
 
 

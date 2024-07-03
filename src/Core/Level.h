@@ -43,6 +43,7 @@ protected:
     float m_timeForFrame;
 
     bool m_globalPause = false;
+    Uint32 m_lastFrameTimeMS = 0;
 };
 
 #endif

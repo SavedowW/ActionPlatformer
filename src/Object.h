@@ -10,8 +10,12 @@ public:
 
     virtual void setOnLevel(Application &application_);
 
-    virtual void update() = 0;
+    virtual void update();
     virtual void draw(Camera &cam_) = 0;
+    Vector2<float> &accessVelocity();
+    Vector2<float> &accessPos();
+
+    virtual Collider getPushbox() const = 0;
 
     virtual ~Object() = default;
 
@@ -22,6 +26,8 @@ protected:
     std::map<int, std::unique_ptr<Animation>> m_animations;
 
     Vector2<float> m_pos;
+    Vector2<float> m_velocity;
+    Vector2<float> m_gravity;
 
 };
 

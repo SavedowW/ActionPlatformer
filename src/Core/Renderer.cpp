@@ -184,6 +184,17 @@ void Renderer::drawGeometry(SDL_Texture *texture, const SDL_Vertex *vertices, in
 	}
 }
 
+void Renderer::drawCollider(const Collider &cld_, const SDL_Color &col_, uint8_t borderAlpha_, const Camera &cam_)
+{
+	auto rectTL = ((cld_.getPos() - cam_.getTopLeft()) / cam_.getScale());
+	auto rectSize = cld_.getSize() / cam_.getScale();
+	SDL_FRect rect = { rectTL.x, rectTL.y, rectSize.x, rectSize.y };
+	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
+	SDL_RenderFillRectF(m_renderer, &rect);
+	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, borderAlpha_);
+	SDL_RenderDrawRectF(m_renderer, &rect);
+}
+
 void Renderer::fillRenderer(const SDL_Color& col_)
 {
 	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
