@@ -1,12 +1,21 @@
 #ifndef PLAYABLE_CHARACTER_H_
 #define PLAYABLE_CHARACTER_H_
 
-#include "Object.h"
+#include "Action.hpp"
+#include <map>
 
 enum class CharacterState
 {
-    IDLE,
+    IDLE = 0,
     FLOAT,
+    RUN,
+    NONE
+};
+
+const inline std::map<CharacterState, const char *> CharacterStateNames{
+    {CharacterState::IDLE, "IDLE"},
+    {CharacterState::FLOAT, "FLOAT"},
+    {CharacterState::RUN, "RUN"}
 };
 
 class PlayableCharacter : public Object, public InputReactor
@@ -28,7 +37,9 @@ protected:
 
     std::map<int, std::unique_ptr<Animation>> m_animations;
     Animation *m_currentAnimation;
-    ORIENTATION m_ownOrientation = ORIENTATION::RIGHT;
+    InputResolver m_inputResolver;
+
+    std::vector<std::unique_ptr<GenericAction>> m_actions;
 };
 
 #endif

@@ -20,6 +20,7 @@ private:
     int m_lvlId;
     Vector2<float> m_lvlSize;
     Uint32 &m_frameTime;
+    
 };
 
 #endif

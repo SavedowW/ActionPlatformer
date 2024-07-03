@@ -11,6 +11,7 @@
 #include <ranges>
 #include <set>
 #include "DebugDataWidget.h"
+#include "DebugPlayerWidget.h"
 #include "PlayableCharacter.h"
 
 inline Collider getColliderForTileRange(Vector2<int> pos_, Vector2<int> size_)
@@ -44,6 +45,7 @@ public:
         static_assert(std::is_base_of_v<Background, BackType>, "BackType of BattleLevel should be derived from Background class");
 
         m_hud.addWidget(std::make_unique<DebugDataWidget>(*m_application, m_camera, lvlId_, size_, m_lastFrameTimeMS));
+        m_hud.addWidget(std::make_unique<DebugPlayerWidget>(*m_application, m_camera, &m_pc));
     }
 
     void receiveInput(EVENTS event, const float scale_) override

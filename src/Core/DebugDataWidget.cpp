@@ -20,5 +20,5 @@ void DebugDataWidget::draw(Renderer &renderer_, Camera &camera_)
     m_textManager.renderText("Camera size: " + utils::toString(camera_.getSize()), 0, {1, 1 + 22 * 2});
     m_textManager.renderText("Camera scale: " + std::to_string(camera_.getScale()), 0, {1, 1 + 22 * 3});
     m_textManager.renderText("Real frame time (MS): " + std::to_string(m_frameTime), 0, {1, 1 + 22 * 4});
-    m_textManager.renderText("Теперь поддерживается кириллица хд", 0, {1, 1 + 22 * 5});
+    m_textManager.renderText("Кириллица работает", 0, {1, 1 + 22 * 5});
 }

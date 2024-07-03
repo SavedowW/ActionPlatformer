@@ -5,7 +5,7 @@
 #include "Utils.h"
 #include <type_traits>
 
-enum class ORIENTATION {RIGHT, LEFT};
+enum class ORIENTATION {RIGHT = 0, LEFT = 1, UNSPECIFIED = 2};
 
 template <typename T>
 struct Vector2
@@ -38,6 +38,22 @@ struct Vector2
 	constexpr inline bool operator==(const Vector2<TR> &rhs) const
 	{
 		return (x == rhs.x && y == rhs.y);
+	}
+
+	constexpr inline bool operator==(const ORIENTATION &rhs_) const
+	{
+		return (x > 0 && rhs_ == ORIENTATION::RIGHT) || (x < 0 && rhs_ == ORIENTATION::LEFT) || (x == 0 && rhs_ == ORIENTATION::UNSPECIFIED);
+	}
+
+	template<ORIENTATION DEFAULT = ORIENTATION::UNSPECIFIED>
+	constexpr inline bool getOrientation() const
+	{
+		if (x > 0)
+			return ORIENTATION::RIGHT;
+		else if (x < 0)
+			return ORIENTATION::LEFT;
+		else
+			return DEFAULT;
 	}
 
 	template<typename TR>
@@ -120,7 +136,20 @@ struct Vector2
 	{
 		return { x * rhs.x, y * rhs.y };
 	}
+
+	template<bool ON_ZEROES = true, typename T2>
+	constexpr inline bool areAlignedOnX(const Vector2<T2> &rhs_) const
+	{
+		return utils::sameSign<ON_ZEROES, T, T2>(x, rhs_.x);
+	}
+
+	template<bool ON_ZEROES = true, typename T2>
+	constexpr inline bool areAlignedOnY(const Vector2<T2> &rhs_) const
+	{
+		return utils::sameSign<ON_ZEROES, T, T2>(y, rhs_.y);
+	}
 };
+
 template <typename T>
 std::ostream& operator<< (std::ostream& out, const Vector2<T>& vec)
 {

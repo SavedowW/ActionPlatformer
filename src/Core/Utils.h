@@ -46,10 +46,10 @@ namespace utils
     	return val;
     }
 
-    template <typename T>
-    inline bool sameSign(const T &v1, const T &v2)
+    template <bool ON_NULLS = true, typename T1, typename T2>
+    inline bool sameSign(const T1 &v1, const T2 &v2)
     {
-    	return (v1 > 0 && v2 > 0 || v1 < 0 && v2 < 0);
+    	return (v1 > 0 && v2 > 0 || v1 < 0 && v2 < 0 || v1 == v2 && ON_NULLS);
     }
 
     template <typename T>
@@ -75,6 +75,8 @@ namespace utils
 
         return rawName;
 	}
+
+
 
 }
 

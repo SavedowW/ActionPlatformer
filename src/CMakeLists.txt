@@ -12,14 +12,12 @@ find_package(lz4 REQUIRED)
 
 set(SRC_FILES 
 main.cpp
-InputComparators.cpp
 BattleLevel.cpp
 Stage1.cpp
 Background.cpp
-FixedQueue.cpp
-InputState.cpp
 Object.cpp
 PlayableCharacter.cpp
+DebugPlayerWidget.cpp
 )
 
 set(INCLUDE_DIRS

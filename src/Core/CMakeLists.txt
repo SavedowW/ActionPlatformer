@@ -22,6 +22,9 @@ EngineAnimation.cpp
 HUD.cpp
 DebugDataWidget.cpp
 utf8.cpp
+InputState.cpp
+InputComparators.cpp
+InputResolver.cpp
 )
 
 add_library (Core ${CORE_SRC_FILES})

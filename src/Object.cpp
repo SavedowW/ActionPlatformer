@@ -4,7 +4,7 @@ Object::Object(Application &application_, Vector2<float> pos_) :
     m_pos(pos_),
     m_renderer(*application_.getRenderer())
 {
-    m_gravity = {0, 0.005f};
+    m_gravity = {0, 0.01f};
 }
 
 void Object::setOnLevel(Application &application_)
@@ -25,4 +25,9 @@ Vector2<float> &Object::accessVelocity()
 Vector2<float> &Object::accessPos()
 {
     return m_pos;
+}
+
+ORIENTATION Object::getOwnOrientation() const
+{
+    return m_ownOrientation;
 }

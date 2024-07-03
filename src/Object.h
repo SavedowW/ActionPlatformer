@@ -2,6 +2,7 @@
 #define OBJECT_H_
 
 #include "Application.h"
+#include "StateMarker.h"
 
 class Object
 {
@@ -14,6 +15,8 @@ public:
     virtual void draw(Camera &cam_) = 0;
     Vector2<float> &accessVelocity();
     Vector2<float> &accessPos();
+
+    ORIENTATION getOwnOrientation() const;
 
     virtual Collider getPushbox() const = 0;
 
@@ -28,6 +31,8 @@ protected:
     Vector2<float> m_pos;
     Vector2<float> m_velocity;
     Vector2<float> m_gravity;
+
+    ORIENTATION m_ownOrientation = ORIENTATION::RIGHT;
 
 };
 

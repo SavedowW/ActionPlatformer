@@ -2,7 +2,8 @@
 
 bool InputState::isInputActive(const INPUT_BUTTON &btn_) const
 {
-    return (m_inputs.at(btn_) == INPUT_BUTTON_STATE::PRESSED || m_inputs.at(btn_) == INPUT_BUTTON_STATE::HOLD);
+    auto inp = m_inputs.at(btn_);
+    return (inp == INPUT_BUTTON_STATE::PRESSED || inp == INPUT_BUTTON_STATE::HOLD);
 }
 
 void InputState::setDirFromButtons()

@@ -3,19 +3,41 @@
 PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> pos_) :
     Object(application_, pos_),
     m_renderer(*application_.getRenderer()),
-    InputReactor(application_.getInputSystem())
+    InputReactor(application_.getInputSystem()),
+    m_inputResolver(application_.getInputSystem())
 {
     subscribe(EVENTS::RIGHT);
     subscribe(EVENTS::LEFT);
     setInputEnabled(true);
+
+    AnimationManager animmgmgt = *application_.getAnimationManager();
+
+    m_actions.push_back(
+        std::unique_ptr<GenericAction>(
+            new Action<CharacterState, false, true, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
+                CharacterState::RUN, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/run"), StateMarker{CharacterState::NONE, {CharacterState::IDLE}}, *this, m_inputResolver
+            ))
+    );
+
+    m_actions.push_back(
+        std::unique_ptr<GenericAction>(
+            new Action<CharacterState, false, false, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
+                CharacterState::IDLE, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/idle"), StateMarker{CharacterState::NONE, {CharacterState::RUN}}, *this, m_inputResolver
+            ))
+    );
+
+    m_actions.push_back(
+        std::unique_ptr<GenericAction>(
+            new Action<CharacterState, false, true, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
+                CharacterState::FLOAT, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/idle"), StateMarker{CharacterState::NONE, {CharacterState::IDLE}}, *this, m_inputResolver
+            ))
+    );
 }
 
 void PlayableCharacter::update()
 {
     m_currentAnimation->update();
     m_velocity += m_gravity;
-
-    std::cout << m_pos << std::endl;
 }
 
 void PlayableCharacter::draw(Camera &cam_)
