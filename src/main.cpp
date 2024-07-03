@@ -5,6 +5,11 @@
 #include "Application.h"
 #include "TimelineProperty.h"
 
+void f(float v)
+{
+    std::cout << v << std::endl;
+}
+
 int main(int argc, char* args[])
 {    
     Application app;

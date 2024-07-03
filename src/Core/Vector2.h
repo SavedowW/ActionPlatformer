@@ -4,8 +4,14 @@
 #include <iostream>
 #include "Utils.h"
 #include <type_traits>
+#include <map>
 
 enum class ORIENTATION {RIGHT = 0, LEFT = 1, UNSPECIFIED = 2};
+inline const std::map<ORIENTATION, const char *> OrientationNames {
+	{ORIENTATION::RIGHT, "RIGHT"},
+	{ORIENTATION::LEFT, "LEFT"},
+	{ORIENTATION::UNSPECIFIED, "UNSPECIFIED"},
+};
 
 template <typename T>
 struct Vector2

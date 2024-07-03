@@ -26,10 +26,16 @@ bool InputComparatorIdle::operator()(const InputQueue &inputQueue_, int extendBu
 
 bool InputComparatorHoldRight::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
 {
+    if (inputQueue_.getFilled() == 0)
+        return false;
+
     return inputQueue_[0].m_dir.x > 0;
 }
 
 bool InputComparatorHoldLeft::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
 {
+    if (inputQueue_.getFilled() == 0)
+        return false;
+
     return inputQueue_[0].m_dir.x < 0;
 }

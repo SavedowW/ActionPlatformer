@@ -23,6 +23,16 @@ public:
     void toggleMark(int id_);
     bool getMark(int id_) const;
 
+    template<typename T>
+    inline bool operator[](const T &id_) const
+    {
+        auto converted = static_cast<int>(id_);
+
+        auto arrid = converted / STATE_HOLDER_SIZE;
+        auto bitid = converted % STATE_HOLDER_SIZE;
+        return ((m_stateMarks[arrid] >> bitid) & (StateHolder_t)1);
+    }
+
     template<typename ENUM_NAME>
     inline StateMarker(ENUM_NAME lastElemP1_, const std::vector<ENUM_NAME> &trueFields_)  :
         m_stateMarks(static_cast<int>(lastElemP1_) / STATE_HOLDER_SIZE + 1 , 0)

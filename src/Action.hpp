@@ -13,9 +13,6 @@
     currentOrientation_ is expected to be LEFT or RIGHT, not UNSPECIFIED
     Return value is valid direction of input, or UNSPECIFIED if none is valid
 */
-
-
-
 template<bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN>
 inline ORIENTATION attemptInput(const InputComparator &cmpL_, const InputComparator &cmpR_, ORIENTATION currentOrientation_, const InputQueue &iq_, int val_)
 {
@@ -47,40 +44,72 @@ inline ORIENTATION attemptInput(const InputComparator &cmpL_, const InputCompara
     return ORIENTATION::UNSPECIFIED;
 }
 
+template<typename CHAR_STATES_T, typename OWNER_T>
 class GenericAction
 {
 public:
+    GenericAction(CHAR_STATES_T ownState_, OWNER_T &owner_) :
+        m_ownState(ownState_),
+        m_owner(owner_)
+    {
+
+    }
+
+
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &setTransitionOnTouchedGround(CHAR_STATES_T state_)
+    {
+        m_transitionOnLand = state_;
+        return *this;
+    }
+
+    inline virtual void onTouchedGround()
+    {
+        if (m_transitionOnLand.isSet())
+        {
+            m_owner.switchTo(m_transitionOnLand);
+        }
+        std::cout << "Touched ground\n";
+    }
+
+
     inline virtual ORIENTATION isPossibleInDirection(int extendBuffer_) const = 0;
+
+
+    const CHAR_STATES_T m_ownState;
+
+protected:
+    OWNER_T &m_owner;
+    utils::OptionalProperty<CHAR_STATES_T> m_transitionOnLand;
 };
 
-template<typename CHAR_STATES, bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN, typename CMP_LEFT, typename CMP_RIGHT, typename OWNER>
-class Action : public GenericAction
+template<typename CHAR_STATES_T, bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN, typename CMP_LEFT, typename CMP_RIGHT, typename OWNER_T>
+class Action : public GenericAction<CHAR_STATES_T, OWNER_T>
 {
 public:
-    Action(CHAR_STATES actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER &owner_, const InputResolver &inputResolver_) :
-        m_ownState(actionState_),
+    Action(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_) :
+        GenericAction<CHAR_STATES_T, OWNER_T>(actionState_, owner_),
         m_hurtbox(hurtbox_),
         m_anim(anim_),
         m_transitionableFrom(std::move(transitionableFrom_)),
-        m_owner(owner_),
         m_inputResolver(inputResolver_)
     {
-
     }
 
     inline virtual ORIENTATION isPossibleInDirection(int extendBuffer_) const override
     {
-        return attemptInput<REQUIRE_ALIGNMENT, FORCE_REALIGN>(m_cmpLeft, m_cmpRight, m_owner.getOwnOrientation(), m_inputResolver.getInputQueue(), extendBuffer_);
+        if (m_transitionableFrom[ParentClass::m_owner.getCurrentActionState()])
+            return attemptInput<REQUIRE_ALIGNMENT, FORCE_REALIGN>(m_cmpLeft, m_cmpRight, ParentClass::m_owner.getOwnOrientation(), m_inputResolver.getInputQueue(), extendBuffer_);
+
+        return ORIENTATION::UNSPECIFIED;
     }
 
-private:
-    CHAR_STATES m_ownState;
+protected:
+    using ParentClass = GenericAction<CHAR_STATES_T, OWNER_T>;
     const Collider m_hurtbox;
     int m_anim;
     StateMarker m_transitionableFrom;
     CMP_LEFT m_cmpLeft;
     CMP_RIGHT m_cmpRight;
-    OWNER &m_owner;
     const InputResolver &m_inputResolver;
 };
 

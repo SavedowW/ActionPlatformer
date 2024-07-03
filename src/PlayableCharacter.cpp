@@ -13,29 +13,35 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
     AnimationManager animmgmgt = *application_.getAnimationManager();
 
     m_actions.push_back(
-        std::unique_ptr<GenericAction>(
-            new Action<CharacterState, false, true, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
+        std::unique_ptr<CharacterGenericAction>(
+            new Action<CharacterState, false, true, InputComparatorHoldLeft, InputComparatorHoldRight, decltype(*this)> (
                 CharacterState::RUN, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/run"), StateMarker{CharacterState::NONE, {CharacterState::IDLE}}, *this, m_inputResolver
             ))
     );
 
     m_actions.push_back(
-        std::unique_ptr<GenericAction>(
+        std::unique_ptr<CharacterGenericAction>(
             new Action<CharacterState, false, false, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
                 CharacterState::IDLE, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/idle"), StateMarker{CharacterState::NONE, {CharacterState::RUN}}, *this, m_inputResolver
             ))
     );
 
     m_actions.push_back(
-        std::unique_ptr<GenericAction>(
-            new Action<CharacterState, false, true, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
+        std::unique_ptr<CharacterGenericAction>(
+            &(new Action<CharacterState, false, true, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
                 CharacterState::FLOAT, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/idle"), StateMarker{CharacterState::NONE, {CharacterState::IDLE}}, *this, m_inputResolver
             ))
+            ->setTransitionOnTouchedGround(CharacterState::IDLE)
+        )
     );
+
+    m_currentAction = getAction(CharacterState::FLOAT);
 }
 
 void PlayableCharacter::update()
 {
+    transitionState();
+
     m_currentAnimation->update();
     m_velocity += m_gravity;
 }
@@ -102,6 +108,15 @@ void PlayableCharacter::receiveInput(EVENTS event, const float scale_)
     }
 }
 
+PlayableCharacter::CharacterGenericAction *PlayableCharacter::getAction(CharacterState charState_)
+{
+    for (auto &el : m_actions)
+        if (el->m_ownState == charState_)
+            return el.get();
+
+    return nullptr;
+}
+
 void PlayableCharacter::loadAnimations(Application &application_)
 {
     AnimationManager animmgmgt = *application_.getAnimationManager();
@@ -114,8 +129,42 @@ void PlayableCharacter::loadAnimations(Application &application_)
     m_currentAnimation->reset();
 }
 
+void PlayableCharacter::transitionState()
+{
+    for (auto &el : m_actions)
+    {
+        auto res = el->isPossibleInDirection(0);
+        if (res != ORIENTATION::UNSPECIFIED)
+        {
+            m_ownOrientation = res;
+            m_currentAction = el.get();
+            break;
+        }
+    }
+}
+
 Collider PlayableCharacter::getPushbox() const
 {
     Collider cld = {-10, -60, 20, 60};
     return cld + m_pos;
+}
+
+CharacterState PlayableCharacter::getCurrentActionState() const
+{
+    return m_currentAction->m_ownState;
+}
+
+const char *PlayableCharacter::getCurrentActionName() const
+{
+    return CharacterStateNames.at(m_currentAction->m_ownState);
+}
+
+void PlayableCharacter::switchTo(CharacterState state_)
+{
+    m_currentAction = getAction(state_);
+}
+
+void PlayableCharacter::onTouchedGround()
+{
+    m_currentAction->onTouchedGround();
 }

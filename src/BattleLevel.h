@@ -78,6 +78,8 @@ protected:
         auto &vel = m_pc.accessVelocity();
         auto &pos = m_pc.accessPos();
 
+        bool groundOverlap = false;
+
         {
             pos.y += vel.y;
             if (vel.y > 0)
@@ -89,6 +91,7 @@ protected:
                     {
                         pos.y = m_staticCollisionMap[*first].y;
                         vel.y = 0;
+                        groundOverlap = true;
                     }
     
                     first++;
@@ -131,6 +134,9 @@ protected:
                 }
             }
         }
+
+        if (groundOverlap)
+            m_pc.onTouchedGround();
 
         m_camera.update();
 
