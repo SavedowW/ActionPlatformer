@@ -12,16 +12,35 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
 
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
-            new Action<CharacterState, false, true, InputComparatorHoldLeft, InputComparatorHoldRight, true, InputComparatorHoldLeft, InputComparatorHoldRight, decltype(*this)> (
+            &(new Action<CharacterState, false, true, InputComparatorHoldLeft, InputComparatorHoldRight, true, InputComparatorHoldLeft, InputComparatorHoldRight, decltype(*this)> (
                 CharacterState::RUN, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/run"), StateMarker{CharacterState::NONE, {CharacterState::IDLE}}, *this, m_inputResolver
             ))
+            ->setGravity({{0.0f, 0.0f}})
+            .setUpdateMovementData(
+                TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
+                TimelineProperty<Vector2<float>>( // Dir vel mul
+                    {
+                        {0, {0.3f, 0.0f}},
+                        {5, {0.6f, 0.0f}},
+                    }),  
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Raw vel
+                TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
+            .setUpdateSpeedLimitData(
+                TimelineProperty<float>(3.75f),
+                TimelineProperty<float>())
+        )
     );
 
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
-            new Action<CharacterState, false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
+            &(new Action<CharacterState, false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
                 CharacterState::IDLE, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/idle"), StateMarker{CharacterState::NONE, {CharacterState::RUN}}, *this, m_inputResolver
             ))
+            ->setGravity({{0.0f, 0.0f}})
+            .setConvertVelocityOnSwitch(true)
+        )
     );
 
     m_actions.push_back(
@@ -30,6 +49,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
                 CharacterState::FLOAT, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/idle"), StateMarker{CharacterState::NONE, {}}, *this, m_inputResolver
             ))
             ->setTransitionOnTouchedGround(CharacterState::IDLE)
+            .setGravity({{0.0f, 0.3f}})
         )
     );
 
@@ -38,12 +58,12 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
 
 void PlayableCharacter::update()
 {
-    m_inputResolver.update();;
-
+    m_inputResolver.update();
+    m_currentAction->onUpdate();
     transitionState();
-
     m_currentAnimation->update();
-    m_velocity += m_gravity;
+
+    Object::update();
 
     m_preEditVelocity = m_velocity;
 }
@@ -98,8 +118,15 @@ void PlayableCharacter::loadAnimations(Application &application_)
     m_currentAnimation->reset();
 }
 
+Vector2<float> PlayableCharacter::getCurrentGravity() const
+{
+    return m_currentAction->getGravity(m_framesInState);
+}
+
 void PlayableCharacter::transitionState()
 {
+    m_framesInState++;
+    
     for (auto &el : m_actions)
     {
         bool proceed = false;
@@ -147,7 +174,17 @@ void PlayableCharacter::switchTo(CharacterGenericAction *charAction_)
 
 void PlayableCharacter::onTouchedGround()
 {
-    m_currentAction->onTouchedGround();
+    if (!isGrounded)
+    {
+        isGrounded = true;
+        m_currentAction->onTouchedGround();
+
+        if (m_inertia.y > 0)
+            m_inertia.y = 0;
+
+        if (m_velocity.y > 0)
+            m_velocity.y = 0;
+    }
 }
 
 Vector2<float> &PlayableCharacter::accessPreEditVelocity()

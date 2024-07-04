@@ -31,7 +31,7 @@ public:
     BattleLevel(Application *application_, const Vector2<float>& size_, int lvlId_) :
     	Level(application_, size_, lvlId_),
     	m_camera({0.0f, 0.0f}, gamedata::global::baseResolution, m_size),
-        m_pc(*application_, getTileCenter({4, 10})),
+        m_pc(*application_, getTileCenter({4, 12})),
         m_staticCollisionMapTop([&m_staticCollisionMap = this->m_staticCollisionMap](int lhs_, int rhs_) {
             return m_staticCollisionMap[lhs_].y < m_staticCollisionMap[rhs_].y;
         }),
@@ -75,23 +75,22 @@ protected:
     {
         m_pc.update();
 
-        auto &vel = m_pc.accessVelocity();
+        const auto offset = m_pc.getPosOffest();
         auto &pos = m_pc.accessPos();
 
-        bool groundOverlap = false;
+        bool groundCollision = false;
 
         {
-            pos.y += vel.y;
-            if (vel.y > 0)
+            pos.y += offset.y;
+            if (offset.y > 0)
             {
                 auto first = std::find_if(m_staticCollisionMapTop.begin(), m_staticCollisionMapTop.end(), [&pos, &m_staticCollisionMap = this->m_staticCollisionMap](int val_){return pos.y >= m_staticCollisionMap[val_].y;});
                 while (first != m_staticCollisionMapTop.end())
                 {
-                    if (m_pc.getPushbox().checkOverlapWith(m_staticCollisionMap[*first]))
+                    if (m_pc.getPushbox().checkCollisionWith(m_staticCollisionMap[*first]))
                     {
                         pos.y = m_staticCollisionMap[*first].y;
-                        vel.y = 0;
-                        groundOverlap = true;
+                        groundCollision = true;
                     }
     
                     first++;
@@ -100,34 +99,34 @@ protected:
         }
 
         {
-            pos.x += vel.x;
-            if (vel.x > 0)
+            pos.x += offset.x;
+            if (offset.x > 0)
             {
                 auto pb = m_pc.getPushbox();
                 auto first = std::find_if(m_staticCollisionMapLeft.begin(), m_staticCollisionMapLeft.end(), [&pb, &m_staticCollisionMap = this->m_staticCollisionMap](int val_){return pb.x + pb.w >= m_staticCollisionMap[val_].x;});
                 while (first != m_staticCollisionMapLeft.end())
                 {
-                    if (pb.checkOverlapWith(m_staticCollisionMap[*first]))
+                    if (pb.checkCollisionWith(m_staticCollisionMap[*first]))
                     {
                         pos.x = m_staticCollisionMap[*first].x - pb.w / 2.0;
                         pb = m_pc.getPushbox();
-                        vel.x = 0;
+                        //vel.x = 0;
                     }
 
                     first++;
                 }
             }
-            else if (vel.x < 0)
+            else if (offset.x < 0)
             {
                 auto pb = m_pc.getPushbox();
                 auto first = std::find_if(m_staticCollisionMapRight.begin(), m_staticCollisionMapRight.end(), [&pb, &m_staticCollisionMap = this->m_staticCollisionMap](int val_){return pb.x <= m_staticCollisionMap[val_].x + m_staticCollisionMap[val_].w;});
                 while (first != m_staticCollisionMapRight.end())
                 {
-                    if (pb.checkOverlapWith(m_staticCollisionMap[*first]))
+                    if (pb.checkCollisionWith(m_staticCollisionMap[*first]))
                     {
                         pos.x = m_staticCollisionMap[*first].x + m_staticCollisionMap[*first].w + pb.w / 2.0;
                         pb = m_pc.getPushbox();
-                        vel.x = 0;
+                        //vel.x = 0;
                     }
 
                     first++;
@@ -135,7 +134,7 @@ protected:
             }
         }
 
-        if (groundOverlap)
+        if (groundCollision)
             m_pc.onTouchedGround();
 
         m_camera.update();
@@ -169,6 +168,8 @@ protected:
     {
         m_staticCollisionMap.push_back(cld_);
         m_staticCollisionMapTop.insert(m_staticCollisionMap.size() - 1);
+        m_staticCollisionMapLeft.insert(m_staticCollisionMap.size() - 1);
+        m_staticCollisionMapRight.insert(m_staticCollisionMap.size() - 1);
     }
 
     HUD m_hud;

@@ -46,6 +46,7 @@ protected:
 
     CharacterGenericAction *getAction(CharacterState charState_);
     virtual void loadAnimations(Application &application_) override;
+    virtual Vector2<float> getCurrentGravity() const override;
 
     void transitionState();
 
@@ -60,6 +61,9 @@ protected:
     CharacterGenericAction *m_currentAction;
 
     Vector2<float> m_preEditVelocity;
+
+    uint32_t m_framesInState = 0;
+    bool isGrounded = false;
 };
 
 #endif

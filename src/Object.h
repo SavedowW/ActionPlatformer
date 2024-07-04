@@ -15,6 +15,10 @@ public:
     virtual void draw(Camera &cam_) = 0;
     Vector2<float> &accessVelocity();
     Vector2<float> &accessPos();
+    Vector2<float> getOwnHorDir() const;
+    void velocityToInertia();
+    float getInertiaDrag() const;
+    Vector2<float> getPosOffest() const;
 
     ORIENTATION getOwnOrientation() const;
 
@@ -24,13 +28,14 @@ public:
 
 protected:
     virtual void loadAnimations(Application &application_) = 0;
+    virtual Vector2<float> getCurrentGravity() const = 0;
 
     Renderer &m_renderer;
     std::map<int, std::unique_ptr<Animation>> m_animations;
 
     Vector2<float> m_pos;
     Vector2<float> m_velocity;
-    Vector2<float> m_gravity;
+    Vector2<float> m_inertia;
 
     ORIENTATION m_ownOrientation = ORIENTATION::RIGHT;
 

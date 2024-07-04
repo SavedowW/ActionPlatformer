@@ -55,10 +55,46 @@ public:
     {
     }
 
-
     inline GenericAction<CHAR_STATES_T, OWNER_T> &setTransitionOnTouchedGround(CHAR_STATES_T state_)
     {
         m_transitionOnLand = state_;
+        return *this;
+    }
+    
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &setGravity(TimelineProperty<Vector2<float>> &&gravity_)
+    {
+        m_gravity = std::move(gravity_);
+        return *this;
+    }
+
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &setConvertVelocityOnSwitch(bool convertVelocity_)
+    {
+        m_convertVelocityOnSwitch = convertVelocity_;
+        return *this;
+    }
+
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &setUpdateMovementData(
+        TimelineProperty<Vector2<float>> &&mulOwnVelUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirVelUpd_, TimelineProperty<Vector2<float>> &&rawAddVelUpd_,
+        TimelineProperty<Vector2<float>> &&mulOwnInrUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirInrUpd_, TimelineProperty<Vector2<float>> &&rawAddInrUpd_)
+    {
+        m_mulOwnVelUpd = std::move(mulOwnVelUpd_);
+        m_mulOwnDirVelUpd = std::move(mulOwnDirVelUpd_);
+        m_rawAddVelUpd = std::move(rawAddVelUpd_);
+        m_mulOwnInrUpd = std::move(mulOwnInrUpd_);
+        m_mulOwnDirInrUpd = std::move(mulOwnDirInrUpd_);
+        m_rawAddInrUpd = std::move(rawAddInrUpd_);
+
+        m_usingUpdateMovement = !m_mulOwnVelUpd.isEmpty() || !m_mulOwnDirVelUpd.isEmpty() || !m_rawAddVelUpd.isEmpty()
+                            || !m_mulOwnInrUpd.isEmpty() || !m_mulOwnDirInrUpd.isEmpty() || !m_rawAddInrUpd.isEmpty();
+
+        return *this;
+    }
+
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &setUpdateSpeedLimitData(TimelineProperty<float> &&ownVelLimitUpd_, TimelineProperty<float> &&ownInrLimitUpd_)
+    {
+        m_ownVelLimitUpd = std::move(ownVelLimitUpd_);
+        m_ownInrLimitUpd = std::move(ownInrLimitUpd_);
+
         return *this;
     }
 
@@ -67,6 +103,25 @@ public:
         m_owner.m_currentAnimation = m_owner.m_animations[m_anim].get();
         m_owner.m_currentAnimation->reset();
         m_owner.m_currentAction = this;
+        m_owner.m_framesInState = 0;
+
+        if (m_convertVelocityOnSwitch)
+            m_owner.velocityToInertia();
+    }
+
+    inline void onUpdate()
+    {
+        if (m_usingUpdateMovement)
+        {
+            m_owner.m_velocity = m_owner.m_velocity.mulComponents(m_mulOwnVelUpd[m_owner.m_framesInState]) + m_owner.getOwnHorDir().mulComponents(m_mulOwnDirVelUpd[m_owner.m_framesInState]) + m_rawAddVelUpd[m_owner.m_framesInState];
+            m_owner.m_inertia = m_owner.m_inertia.mulComponents(m_mulOwnInrUpd[m_owner.m_framesInState]) + m_owner.getOwnHorDir().mulComponents(m_mulOwnDirInrUpd[m_owner.m_framesInState]) + m_rawAddInrUpd[m_owner.m_framesInState];
+        }
+
+        if (!m_ownVelLimitUpd.isEmpty())
+            m_owner.m_velocity = utils::limitVectorLength(m_owner.m_velocity, m_ownVelLimitUpd[m_owner.m_framesInState]);
+
+        if (!m_ownInrLimitUpd.isEmpty())
+            m_owner.m_inertia = utils::limitVectorLength(m_owner.m_inertia, m_ownInrLimitUpd[m_owner.m_framesInState]);
     }
 
     inline virtual void onTouchedGround()
@@ -75,12 +130,14 @@ public:
         {
             m_owner.switchTo(m_transitionOnLand);
         }
-        std::cout << "Touched ground\n";
     }
 
+    virtual Vector2<float> getGravity(uint32_t currentFrame_) const
+    {
+        return m_gravity[currentFrame_];
+    }
 
     inline virtual ORIENTATION isPossibleInDirection(int extendBuffer_, bool &isProceed_) const = 0;
-
 
     const CHAR_STATES_T m_ownState;
 
@@ -88,6 +145,21 @@ protected:
     OWNER_T &m_owner;
     int m_anim;
     utils::OptionalProperty<CHAR_STATES_T> m_transitionOnLand;
+    TimelineProperty<Vector2<float>> m_gravity;
+
+    bool m_usingUpdateMovement = false;
+    TimelineProperty<Vector2<float>> m_mulOwnVelUpd;
+    TimelineProperty<Vector2<float>> m_mulOwnDirVelUpd;
+    TimelineProperty<Vector2<float>> m_rawAddVelUpd;
+    TimelineProperty<Vector2<float>> m_mulOwnInrUpd;
+    TimelineProperty<Vector2<float>> m_mulOwnDirInrUpd;
+    TimelineProperty<Vector2<float>> m_rawAddInrUpd;
+
+    bool m_convertVelocityOnSwitch = false;
+
+    TimelineProperty<float> m_ownVelLimitUpd;
+    TimelineProperty<float> m_ownInrLimitUpd;
+
 };
 
 template<typename CHAR_STATES_T, bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN,
