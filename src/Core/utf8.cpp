@@ -13,6 +13,20 @@ uint8_t utf8::readCharSize(const char *ch_)
         return 1;
 }
 
+uint8_t utf8::readCharSize(uint32_t ch_)
+{
+    const auto *tmp = reinterpret_cast<const char *>(&ch_);
+    uint8_t arr[] = {tmp[3], tmp[2], tmp[1], tmp[0]};
+    if (arr[0])
+        return 4;
+    else if (arr[1])
+        return 3;
+    else if (arr[2])
+        return 2;
+    else
+        return 1;
+}
+
 uint32_t utf8::readChar(const char *ch_)
 {
     return readChar(ch_, readCharSize(ch_));

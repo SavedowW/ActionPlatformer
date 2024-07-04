@@ -3,33 +3,31 @@
 PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> pos_) :
     Object(application_, pos_),
     m_renderer(*application_.getRenderer()),
-    InputReactor(application_.getInputSystem()),
     m_inputResolver(application_.getInputSystem())
 {
-    subscribe(EVENTS::RIGHT);
-    subscribe(EVENTS::LEFT);
-    setInputEnabled(true);
+    m_inputResolver.subscribePlayer();
+    m_inputResolver.setInputEnabled(true);
 
     AnimationManager animmgmgt = *application_.getAnimationManager();
 
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
-            new Action<CharacterState, false, true, InputComparatorHoldLeft, InputComparatorHoldRight, decltype(*this)> (
+            new Action<CharacterState, false, true, InputComparatorHoldLeft, InputComparatorHoldRight, true, InputComparatorHoldLeft, InputComparatorHoldRight, decltype(*this)> (
                 CharacterState::RUN, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/run"), StateMarker{CharacterState::NONE, {CharacterState::IDLE}}, *this, m_inputResolver
             ))
     );
 
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
-            new Action<CharacterState, false, false, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
+            new Action<CharacterState, false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
                 CharacterState::IDLE, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/idle"), StateMarker{CharacterState::NONE, {CharacterState::RUN}}, *this, m_inputResolver
             ))
     );
 
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
-            &(new Action<CharacterState, false, true, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
-                CharacterState::FLOAT, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/idle"), StateMarker{CharacterState::NONE, {CharacterState::IDLE}}, *this, m_inputResolver
+            &(new Action<CharacterState, false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
+                CharacterState::FLOAT, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/idle"), StateMarker{CharacterState::NONE, {}}, *this, m_inputResolver
             ))
             ->setTransitionOnTouchedGround(CharacterState::IDLE)
         )
@@ -40,10 +38,14 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
 
 void PlayableCharacter::update()
 {
+    m_inputResolver.update();;
+
     transitionState();
 
     m_currentAnimation->update();
     m_velocity += m_gravity;
+
+    m_preEditVelocity = m_velocity;
 }
 
 void PlayableCharacter::draw(Camera &cam_)
@@ -75,39 +77,6 @@ void PlayableCharacter::draw(Camera &cam_)
     }
 }
 
-void PlayableCharacter::receiveInput(EVENTS event, const float scale_)
-{
-    switch (event)
-    {
-    case EVENTS::RIGHT:
-        if (scale_ > 0)
-        {
-            m_ownOrientation = ORIENTATION::RIGHT;
-            m_currentAnimation = m_animations[2].get();
-            m_velocity.x = 0.07;
-        }
-        else
-        {
-            m_currentAnimation = m_animations[0].get();
-            m_velocity.x = 0;
-        }
-        break;
-    case EVENTS::LEFT:
-        if (scale_ > 0)
-        {
-            m_ownOrientation = ORIENTATION::LEFT;
-            m_currentAnimation = m_animations[2].get();
-            m_velocity.x = -0.07;
-        }
-        else
-        {
-            m_currentAnimation = m_animations[0].get();
-            m_velocity.x = 0;
-        }
-        break;
-    }
-}
-
 PlayableCharacter::CharacterGenericAction *PlayableCharacter::getAction(CharacterState charState_)
 {
     for (auto &el : m_actions)
@@ -133,11 +102,17 @@ void PlayableCharacter::transitionState()
 {
     for (auto &el : m_actions)
     {
-        auto res = el->isPossibleInDirection(0);
+        bool proceed = false;
+        auto res = el->isPossibleInDirection(0, proceed);
+        if (proceed)
+        {
+            m_ownOrientation = res;
+            break;
+        }
         if (res != ORIENTATION::UNSPECIFIED)
         {
             m_ownOrientation = res;
-            m_currentAction = el.get();
+            switchTo(el.get());
             break;
         }
     }
@@ -161,10 +136,21 @@ const char *PlayableCharacter::getCurrentActionName() const
 
 void PlayableCharacter::switchTo(CharacterState state_)
 {
-    m_currentAction = getAction(state_);
+    switchTo(getAction(state_));
+}
+
+void PlayableCharacter::switchTo(CharacterGenericAction *charAction_)
+{
+    m_currentAction = charAction_;
+    m_currentAction->onSwitchTo();
 }
 
 void PlayableCharacter::onTouchedGround()
 {
     m_currentAction->onTouchedGround();
+}
+
+Vector2<float> &PlayableCharacter::accessPreEditVelocity()
+{
+    return m_preEditVelocity;
 }

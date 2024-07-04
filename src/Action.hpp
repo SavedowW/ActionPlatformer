@@ -48,11 +48,11 @@ template<typename CHAR_STATES_T, typename OWNER_T>
 class GenericAction
 {
 public:
-    GenericAction(CHAR_STATES_T ownState_, OWNER_T &owner_) :
+    GenericAction(CHAR_STATES_T ownState_, OWNER_T &owner_, int anim_) :
         m_ownState(ownState_),
-        m_owner(owner_)
+        m_owner(owner_),
+        m_anim(anim_)
     {
-
     }
 
 
@@ -60,6 +60,13 @@ public:
     {
         m_transitionOnLand = state_;
         return *this;
+    }
+
+    inline virtual void onSwitchTo()
+    {
+        m_owner.m_currentAnimation = m_owner.m_animations[m_anim].get();
+        m_owner.m_currentAnimation->reset();
+        m_owner.m_currentAction = this;
     }
 
     inline virtual void onTouchedGround()
@@ -72,33 +79,51 @@ public:
     }
 
 
-    inline virtual ORIENTATION isPossibleInDirection(int extendBuffer_) const = 0;
+    inline virtual ORIENTATION isPossibleInDirection(int extendBuffer_, bool &isProceed_) const = 0;
 
 
     const CHAR_STATES_T m_ownState;
 
 protected:
     OWNER_T &m_owner;
+    int m_anim;
     utils::OptionalProperty<CHAR_STATES_T> m_transitionOnLand;
 };
 
-template<typename CHAR_STATES_T, bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN, typename CMP_LEFT, typename CMP_RIGHT, typename OWNER_T>
+template<typename CHAR_STATES_T, bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN,
+    typename CMP_LEFT, typename CMP_RIGHT,
+    bool ATTEMPT_PROCEED, typename CMP_PROCEED_LEFT, typename CMP_PROCEED_RIGHT,
+    typename OWNER_T>
 class Action : public GenericAction<CHAR_STATES_T, OWNER_T>
 {
 public:
     Action(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_) :
-        GenericAction<CHAR_STATES_T, OWNER_T>(actionState_, owner_),
+        GenericAction<CHAR_STATES_T, OWNER_T>(actionState_, owner_, anim_),
         m_hurtbox(hurtbox_),
-        m_anim(anim_),
         m_transitionableFrom(std::move(transitionableFrom_)),
         m_inputResolver(inputResolver_)
     {
     }
 
-    inline virtual ORIENTATION isPossibleInDirection(int extendBuffer_) const override
+    inline virtual ORIENTATION isPossibleInDirection(int extendBuffer_, bool &isProceed_) const override
     {
-        if (m_transitionableFrom[ParentClass::m_owner.getCurrentActionState()])
-            return attemptInput<REQUIRE_ALIGNMENT, FORCE_REALIGN>(m_cmpLeft, m_cmpRight, ParentClass::m_owner.getOwnOrientation(), m_inputResolver.getInputQueue(), extendBuffer_);
+        isProceed_ = false;
+        auto orientation = ParentClass::m_owner.getOwnOrientation();
+        const auto &inq = m_inputResolver.getInputQueue();
+        auto currentState = ParentClass::m_owner.getCurrentActionState();
+
+        if (ParentClass::m_ownState == currentState && ATTEMPT_PROCEED)
+        {
+            auto res = attemptInput<true, false>(m_cmpProcLeft, m_cmpProcRight, orientation, inq, extendBuffer_);
+            if (res != ORIENTATION::UNSPECIFIED)
+            {
+                isProceed_ = true;
+                return res;
+            }
+        }
+
+        if (m_transitionableFrom[currentState])
+            return attemptInput<REQUIRE_ALIGNMENT, FORCE_REALIGN>(m_cmpLeft, m_cmpRight, orientation, inq, extendBuffer_);
 
         return ORIENTATION::UNSPECIFIED;
     }
@@ -106,10 +131,11 @@ public:
 protected:
     using ParentClass = GenericAction<CHAR_STATES_T, OWNER_T>;
     const Collider m_hurtbox;
-    int m_anim;
     StateMarker m_transitionableFrom;
     CMP_LEFT m_cmpLeft;
     CMP_RIGHT m_cmpRight;
+    CMP_PROCEED_LEFT m_cmpProcLeft;
+    CMP_PROCEED_RIGHT m_cmpProcRight;
     const InputResolver &m_inputResolver;
 };
 

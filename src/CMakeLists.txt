@@ -28,12 +28,11 @@ ${lz4_INCLUDE_DIRS}
 )
 
 set(LINK_LIBRARIES
-${sdl_LIBRARIES_DEBUG}
-SDL2::SDL2
+${SDL2_LIBRARIES}
 SDL2_image::SDL2_image
 sdl_ttf::sdl_ttf
 ${SDL2_mixer_LIBRARIES}
-LZ4::lz4_static
+${lz4_LIBRARIES}
 )
 
 message(${LINK_LIBRARIES})

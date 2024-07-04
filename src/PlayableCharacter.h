@@ -18,26 +18,32 @@ const inline std::map<CharacterState, const char *> CharacterStateNames{
     {CharacterState::RUN, "RUN"}
 };
 
-class PlayableCharacter : public Object, public InputReactor
+class PlayableCharacter : public Object
 {
+protected:
+    using CharacterGenericAction = GenericAction<CharacterState, PlayableCharacter&>;
+
 public:
     PlayableCharacter(Application &application_, Vector2<float> pos_);
 
     virtual void update() override;
     virtual void draw(Camera &cam_) override;
-    void receiveInput(EVENTS event, const float scale_) final;
     Collider getPushbox() const override;
 
     CharacterState getCurrentActionState() const;
     const char *getCurrentActionName() const;
     void switchTo(CharacterState state_);
-
+    void switchTo(CharacterGenericAction *charAction_);
+    
     void onTouchedGround();
+
+    Vector2<float> &accessPreEditVelocity();
 
     virtual ~PlayableCharacter() = default;
 
 protected:
-    using CharacterGenericAction = GenericAction<CharacterState, PlayableCharacter&>;
+    friend CharacterGenericAction;
+
     CharacterGenericAction *getAction(CharacterState charState_);
     virtual void loadAnimations(Application &application_) override;
 
@@ -52,6 +58,8 @@ protected:
     std::vector<std::unique_ptr<CharacterGenericAction>> m_actions;
 
     CharacterGenericAction *m_currentAction;
+
+    Vector2<float> m_preEditVelocity;
 };
 
 #endif

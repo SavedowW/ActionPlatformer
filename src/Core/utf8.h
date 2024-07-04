@@ -35,6 +35,7 @@ namespace utf8
      Does not check whether or not it points at size, returns 1 if its not size at all
     */
     uint8_t readCharSize(const char *ch_);
+    uint8_t readCharSize(uint32_t ch_);
 
     /*
      Read up to 4 UTF-8 encoded character from string
