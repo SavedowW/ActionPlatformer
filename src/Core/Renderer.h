@@ -3,6 +3,7 @@
 
 #include "Window.h"
 #include "Camera.h"
+#include "Texture.h"
 
 class Renderer
 {
@@ -41,6 +42,7 @@ public:
 	void drawCollider(const Collider &cld_, const SDL_Color &col_, uint8_t borderAlpha_, const Camera &cam_);
 
 	//Global render
+	void prepareRenderer(const SDL_Color &col_);
 	void fillRenderer(const SDL_Color &col_);
 	void updateScreen();
 
@@ -51,6 +53,7 @@ public:
 
 //private:
     SDL_Renderer* m_renderer = nullptr;
+	Texture m_backbuff;
 
 
 };

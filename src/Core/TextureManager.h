@@ -10,39 +10,6 @@ enum class TEXTURES
 	NONE
 };
 
-struct Texture
-{
-	//Makes sure texture actually exist
-	Texture(SDL_Texture* tex_)
-	{
-		if (tex_ == NULL)
-			throw "Texture does not exist!\n";
-
-		m_tex = tex_;
-
-		SDL_QueryTexture(m_tex, NULL, NULL, &m_w, &m_h);
-	}
-
-	//The texture and required info
-	SDL_Texture* getSprite()
-    {
-	    return m_tex;
-    }
-	int m_w, m_h;
-
-	//Properly removes texture
-	virtual ~Texture()
-	{
-		//Logger::print("Release single texture\n");
-		SDL_DestroyTexture(m_tex);
-	}
-
-private:
-	SDL_Texture* m_tex;
-};
-
-using Texture_t = std::shared_ptr<Texture>;
-
 class TextureManager
 {
 public:

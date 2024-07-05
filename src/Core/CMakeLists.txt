@@ -6,6 +6,7 @@ set(CORE_SRC_FILES
 Timer.cpp
 InputSystem.cpp
 TextureManager.cpp
+Texture.cpp
 Camera.cpp
 Renderer.cpp
 Window.cpp

@@ -147,7 +147,7 @@ protected:
     void draw() override
     {
     	auto &renderer = *m_application->getRenderer();
-    	renderer.fillRenderer(SDL_Color{ 60, 197, 255, 255 });
+    	renderer.prepareRenderer(SDL_Color{ 60, 197, 255, 255 });
 
     	if (m_background.get())
     		m_background->draw(renderer, m_camera);

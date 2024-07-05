@@ -18,6 +18,8 @@ Renderer::Renderer(Window &window_)
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
 
 	SDL_RenderSetLogicalSize(m_renderer, gamedata::global::baseResolution.x, gamedata::global::baseResolution.y);
+
+	m_backbuff.setTexture(createTexture(gamedata::global::baseResolution));
 }
 
 Renderer::~Renderer()
@@ -195,7 +197,14 @@ void Renderer::drawCollider(const Collider &cld_, const SDL_Color &col_, uint8_t
 	SDL_RenderDrawRectF(m_renderer, &rect);
 }
 
-void Renderer::fillRenderer(const SDL_Color& col_)
+void Renderer::prepareRenderer(const SDL_Color &col_)
+{
+	SDL_SetRenderTarget(m_renderer, m_backbuff.getSprite());
+	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
+	SDL_RenderClear(m_renderer);
+}
+
+void Renderer::fillRenderer(const SDL_Color &col_)
 {
 	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
 	SDL_RenderClear(m_renderer);
@@ -203,6 +212,8 @@ void Renderer::fillRenderer(const SDL_Color& col_)
 
 void Renderer::updateScreen()
 {
+	SDL_SetRenderTarget(m_renderer, nullptr);
+	SDL_RenderCopy(m_renderer, m_backbuff.getSprite(), nullptr, nullptr);
 	SDL_RenderPresent(m_renderer);
 }
 

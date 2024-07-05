@@ -1,5 +1,6 @@
 #include "Window.h"
 #include <stdexcept>
+#include "GameData.h"
 
 Window::Window(Vector2<int> resolution_, const std::string &winName_) :
     m_currentResolution(resolution_),
@@ -11,6 +12,8 @@ Window::Window(Vector2<int> resolution_, const std::string &winName_) :
 		std::cout << "Window creation error: " << SDL_GetError() << std::endl;
         throw std::runtime_error("Cannot initialize window");
 	}
+
+    SDL_SetWindowSize(m_window, gamedata::global::defaultWindowResolution.x, gamedata::global::defaultWindowResolution.y);
 }
 
 Window::~Window()
