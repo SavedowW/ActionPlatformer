@@ -60,6 +60,12 @@ public:
         m_transitionOnLand = state_;
         return *this;
     }
+
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &setTransitionOnLostGround(CHAR_STATES_T state_)
+    {
+        m_transitionOnLostGround = state_;
+        return *this;
+    }
     
     inline GenericAction<CHAR_STATES_T, OWNER_T> &setGravity(TimelineProperty<Vector2<float>> &&gravity_)
     {
@@ -132,6 +138,14 @@ public:
         }
     }
 
+    inline virtual void onLostGround()
+    {
+        if (m_transitionOnLostGround.isSet())
+        {
+            m_owner.switchTo(m_transitionOnLostGround);
+        }
+    }
+
     virtual Vector2<float> getGravity(uint32_t currentFrame_) const
     {
         return m_gravity[currentFrame_];
@@ -145,6 +159,7 @@ protected:
     OWNER_T &m_owner;
     int m_anim;
     utils::OptionalProperty<CHAR_STATES_T> m_transitionOnLand;
+    utils::OptionalProperty<CHAR_STATES_T> m_transitionOnLostGround;
     TimelineProperty<Vector2<float>> m_gravity;
 
     bool m_usingUpdateMovement = false;

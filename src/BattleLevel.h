@@ -31,7 +31,7 @@ public:
     BattleLevel(Application *application_, const Vector2<float>& size_, int lvlId_) :
     	Level(application_, size_, lvlId_),
     	m_camera({0.0f, 0.0f}, gamedata::global::baseResolution, m_size),
-        m_pc(*application_, getTileCenter({4, 12})),
+        m_pc(*application_, getTileCenter({10, 9})),
         m_staticCollisionMapTop([&m_staticCollisionMap = this->m_staticCollisionMap](int lhs_, int rhs_) {
             return m_staticCollisionMap[lhs_].y < m_staticCollisionMap[rhs_].y;
         }),
@@ -64,6 +64,7 @@ public:
         addStaticCollider(getColliderForTileRange({2, 12}, {8, 2}));
         addStaticCollider(getColliderForTileRange({0, 8}, {2, 2}));
         addStaticCollider(getColliderForTileRange({10, 9}, {2, 1}));
+        addStaticCollider({200, 150, 10, 10});
     }
 
     virtual ~BattleLevel()
@@ -82,19 +83,16 @@ protected:
 
         {
             pos.y += offset.y;
-            if (offset.y > 0)
+            auto first = std::find_if(m_staticCollisionMapTop.begin(), m_staticCollisionMapTop.end(), [&pos, &m_staticCollisionMap = this->m_staticCollisionMap](int val_){return pos.y >= m_staticCollisionMap[val_].y;});
+            while (first != m_staticCollisionMapTop.end())
             {
-                auto first = std::find_if(m_staticCollisionMapTop.begin(), m_staticCollisionMapTop.end(), [&pos, &m_staticCollisionMap = this->m_staticCollisionMap](int val_){return pos.y >= m_staticCollisionMap[val_].y;});
-                while (first != m_staticCollisionMapTop.end())
+                if (m_pc.getPushbox().checkCollisionWith<true, false>(m_staticCollisionMap[*first]))
                 {
-                    if (m_pc.getPushbox().checkCollisionWith(m_staticCollisionMap[*first]))
-                    {
-                        pos.y = m_staticCollisionMap[*first].y;
-                        groundCollision = true;
-                    }
-    
-                    first++;
+                    pos.y = m_staticCollisionMap[*first].y;
+                    groundCollision = true;
                 }
+
+                first++;
             }
         }
 
@@ -106,7 +104,7 @@ protected:
                 auto first = std::find_if(m_staticCollisionMapLeft.begin(), m_staticCollisionMapLeft.end(), [&pb, &m_staticCollisionMap = this->m_staticCollisionMap](int val_){return pb.x + pb.w >= m_staticCollisionMap[val_].x;});
                 while (first != m_staticCollisionMapLeft.end())
                 {
-                    if (pb.checkCollisionWith(m_staticCollisionMap[*first]))
+                    if (pb.checkCollisionWith<false, true>(m_staticCollisionMap[*first]))
                     {
                         pos.x = m_staticCollisionMap[*first].x - pb.w / 2.0;
                         pb = m_pc.getPushbox();
@@ -122,7 +120,7 @@ protected:
                 auto first = std::find_if(m_staticCollisionMapRight.begin(), m_staticCollisionMapRight.end(), [&pb, &m_staticCollisionMap = this->m_staticCollisionMap](int val_){return pb.x <= m_staticCollisionMap[val_].x + m_staticCollisionMap[val_].w;});
                 while (first != m_staticCollisionMapRight.end())
                 {
-                    if (pb.checkCollisionWith(m_staticCollisionMap[*first]))
+                    if (pb.checkCollisionWith<false, true>(m_staticCollisionMap[*first]))
                     {
                         pos.x = m_staticCollisionMap[*first].x + m_staticCollisionMap[*first].w + pb.w / 2.0;
                         pb = m_pc.getPushbox();
@@ -136,6 +134,8 @@ protected:
 
         if (groundCollision)
             m_pc.onTouchedGround();
+        else
+            m_pc.onLostGround();
 
         m_camera.update();
 

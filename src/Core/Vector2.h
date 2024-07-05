@@ -209,10 +209,6 @@ struct Collider
 		else
 			return 0;
 	}
-	constexpr inline bool checkOverlapWith(const Collider& hbox) const
-	{
-		return checkOverlapWith_x(hbox) && checkOverlapWith_y(hbox);
-	}
 
 	constexpr inline int checkCollisionWith_x(const Collider& hbox) const
 	{
@@ -236,9 +232,12 @@ struct Collider
 		else
 			return 0;
 	}
+
+	template<bool H_OVERLAP_ONLY, bool V_OVERLAP_ONLY>
 	constexpr inline bool checkCollisionWith(const Collider& hbox) const
 	{
-		return checkOverlapWith_x(hbox) && checkOverlapWith_y(hbox);
+		return (H_OVERLAP_ONLY ? checkOverlapWith_x(hbox) : checkCollisionWith_x(hbox)) &&
+			   (V_OVERLAP_ONLY ? checkOverlapWith_y(hbox) : checkCollisionWith_y(hbox));
 	}
 
 	//-1 if beyond left bound

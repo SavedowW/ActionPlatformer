@@ -30,6 +30,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             .setUpdateSpeedLimitData(
                 TimelineProperty<float>(3.75f),
                 TimelineProperty<float>())
+            .setTransitionOnLostGround(CharacterState::FLOAT)
         )
     );
 
@@ -40,6 +41,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             ))
             ->setGravity({{0.0f, 0.0f}})
             .setConvertVelocityOnSwitch(true)
+            .setTransitionOnLostGround(CharacterState::FLOAT)
         )
     );
 
@@ -58,6 +60,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
 
 void PlayableCharacter::update()
 {
+    std::cout << isGrounded << std::endl;
     m_inputResolver.update();
     m_currentAction->onUpdate();
     transitionState();
@@ -184,6 +187,15 @@ void PlayableCharacter::onTouchedGround()
 
         if (m_velocity.y > 0)
             m_velocity.y = 0;
+    }
+}
+
+void PlayableCharacter::onLostGround()
+{
+    if (isGrounded)
+    {
+        isGrounded = false;
+        m_currentAction->onLostGround();
     }
 }
 

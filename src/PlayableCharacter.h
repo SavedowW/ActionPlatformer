@@ -36,6 +36,7 @@ public:
     void switchTo(CharacterGenericAction *charAction_);
     
     void onTouchedGround();
+    void onLostGround();
 
     Vector2<float> &accessPreEditVelocity();
 
