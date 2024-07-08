@@ -34,9 +34,13 @@ public:
     const char *getCurrentActionName() const;
     void switchTo(CharacterState state_);
     void switchTo(CharacterGenericAction *charAction_);
+
+    void resetOldColliders();
+    void setOldColliders(std::vector<std::reference_wrapper<SlopeCollider>> &&oldColliders_);
     
     void onTouchedGround();
     void onLostGround();
+    bool resetGround();
 
     Vector2<float> &accessPreEditVelocity();
 
@@ -65,6 +69,9 @@ protected:
 
     uint32_t m_framesInState = 0;
     bool isGrounded = false;
+
+
+    std::vector<std::reference_wrapper<SlopeCollider>> m_oldColliders;
 };
 
 #endif

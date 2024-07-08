@@ -100,6 +100,39 @@ void PlayableCharacter::draw(Camera &cam_)
     }
 }
 
+bool PlayableCharacter::resetGround()
+{
+    auto pb = getPushbox();
+    bool couldSet = false;
+    float topHeight = m_pos.y + 200;
+    std::vector<std::reference_wrapper<SlopeCollider>> newOldColliders;
+    for (auto &el : m_oldColliders)
+    {
+        auto horOverlap = el.get().getHorizontalOverlap(pb);
+        if (horOverlap)
+        {
+            float newTopHeight = el.get().getTopHeight(pb, horOverlap);
+            if (newTopHeight < topHeight)
+            {
+                newOldColliders.clear();
+                newOldColliders.emplace_back(el);
+                topHeight = newTopHeight;
+                couldSet = true;
+                m_pos.y = topHeight;
+            }
+            else if (newTopHeight == topHeight)
+            {
+                newOldColliders.emplace_back(el);
+            }
+        }
+    }
+
+    if (couldSet)
+        std::cout << "MAGNETED\n";
+    m_oldColliders = std::move(newOldColliders);
+    return couldSet;
+}
+
 PlayableCharacter::CharacterGenericAction *PlayableCharacter::getAction(CharacterState charState_)
 {
     for (auto &el : m_actions)
@@ -173,6 +206,16 @@ void PlayableCharacter::switchTo(CharacterGenericAction *charAction_)
 {
     m_currentAction = charAction_;
     m_currentAction->onSwitchTo();
+}
+
+void PlayableCharacter::resetOldColliders()
+{
+    m_oldColliders.clear();;
+}
+
+void PlayableCharacter::setOldColliders(std::vector<std::reference_wrapper<SlopeCollider>> &&oldColliders_)
+{
+    m_oldColliders = std::move(oldColliders_);
 }
 
 void PlayableCharacter::onTouchedGround()

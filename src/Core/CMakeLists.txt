@@ -26,6 +26,7 @@ utf8.cpp
 InputState.cpp
 InputComparators.cpp
 InputResolver.cpp
+Collider.cpp
 )
 
 add_library (Core ${CORE_SRC_FILES})
