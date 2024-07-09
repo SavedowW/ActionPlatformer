@@ -142,7 +142,7 @@ public:
             m_owner.velocityToInertia();
     }
 
-    inline void onUpdate()
+    inline virtual void onUpdate()
     {
         if (m_usingUpdateMovement)
         {
@@ -280,6 +280,52 @@ protected:
     CMP_PROCEED_LEFT m_cmpProcLeft;
     CMP_PROCEED_RIGHT m_cmpProcRight;
     const InputResolver &m_inputResolver;
+};
+
+template<typename CHAR_STATES_T, typename OWNER_T>
+class ActionFloat: public Action<CHAR_STATES_T, false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, OWNER_T>
+{
+public:
+    ActionFloat(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_) :
+        ParentAction(actionState_, hurtbox_, anim_, transitionableFrom_, owner_, inputResolver_)
+    {
+    }
+
+    inline virtual void onUpdate() override
+    {
+        ParentAction::onUpdate();
+
+        const auto &inq = ParentAction::m_inputResolver.getInputQueue();
+        auto &vel = ParentAction::m_owner.accessVelocity();
+
+        if (m_driftLeftInput(inq, 0))
+        {
+            std::cout << "LEFT\n";
+            if (vel.x > -4.0f)
+                vel.x -= 0.15f;
+        }
+
+        if (m_driftRightInput(inq, 0))
+        {
+            std::cout << "RIGHT\n";
+            if (vel.x < 4.0f)
+                vel.x += 0.15f;
+        }
+
+        if (ParentAction::m_owner.accessVelocity().y < 0 && m_driftUpInput(inq, 0))
+        {
+            std::cout << "UP\n";
+            if (ParentAction::m_owner.m_framesInState < 10.0f)
+                vel.y -= 0.4f;
+        }
+    }
+
+protected:
+    using ParentAction = Action<CHAR_STATES_T, false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, OWNER_T>;
+    InputComparatorHoldLeft m_driftLeftInput;
+    InputComparatorHoldRight m_driftRightInput;
+    InputComparatorHoldUp m_driftUpInput;
+
 };
 
 #endif

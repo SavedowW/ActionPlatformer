@@ -76,6 +76,9 @@ protected:
         float highest = m_size.y;
         std::vector<std::reference_wrapper<SlopeCollider>> groundCollided;
 
+        auto &vel = m_pc.accessVelocity();
+        auto &inr = m_pc.accessInertia();
+
         {
             pos.y += offset.y;
             for (auto &cld : m_collisionArea.m_staticCollisionMap)
@@ -110,7 +113,8 @@ protected:
                     {
                         pos.x = cld.m_tlPos.x - pb.w / 2.0f;
                         pb = m_pc.getPushbox();
-                        //vel.x = 0;
+                        vel.x = 0;
+                        inr.x = 0;
                     }
                 }
             }
@@ -132,7 +136,8 @@ protected:
                     {
                         pos.x = cld.m_tlPos.x + cld.m_size.x + pb.w / 2.0f;
                         pb = m_pc.getPushbox();
-                        //vel.x = 0;
+                        vel.x = 0;
+                        inr.x = 0;
                     }
                 }
             }

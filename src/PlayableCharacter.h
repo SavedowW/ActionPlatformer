@@ -29,6 +29,7 @@ class PlayableCharacter : public Object
 {
 protected:
     using CharacterGenericAction = GenericAction<CharacterState, PlayableCharacter&>;
+    using CharacterFloatAction = ActionFloat<CharacterState, PlayableCharacter&>;
 
 public:
     PlayableCharacter(Application &application_, Vector2<float> pos_, const CollisionArea &cldArea_);
@@ -54,6 +55,7 @@ public:
 
 protected:
     friend CharacterGenericAction;
+    friend CharacterFloatAction;
     friend DebugPlayerWidget;
 
     CharacterGenericAction *getAction(CharacterState charState_);

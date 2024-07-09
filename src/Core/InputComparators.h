@@ -28,6 +28,12 @@ public:
     bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;
 };
 
+class InputComparatorHoldUp : public InputComparator
+{
+public:
+    bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;
+};
+
 class InputComparatorTapUp : public InputComparator
 {
 public:

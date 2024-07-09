@@ -88,3 +88,11 @@ bool InputComparatorTapUpLeft::operator()(const InputQueue &inputQueue_, int ext
 
     return false;
 }
+
+bool InputComparatorHoldUp::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+{
+    if (inputQueue_.getFilled() == 0)
+        return false;
+
+    return inputQueue_[0].m_dir.y < 0;
+}

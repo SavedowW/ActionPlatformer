@@ -13,6 +13,7 @@ public:
 
     virtual void update();
     virtual void draw(Camera &cam_) = 0;
+    Vector2<float> &accessInertia();
     Vector2<float> &accessVelocity();
     Vector2<float> &accessPos();
     Vector2<float> getOwnHorDir() const;

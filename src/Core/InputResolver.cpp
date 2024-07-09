@@ -25,7 +25,6 @@ void InputResolver::receiveInput(EVENTS event_, const float scale_)
     {
         case (EVENTS::UP):
             m_currentInput.m_inputs[INPUT_BUTTON::UP] = (scale_ == 1.0f ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::RELEASED);
-            std::cout << "UP RECEIVED!" << std::endl;
             break;
 
         case (EVENTS::DOWN):

@@ -24,6 +24,11 @@ void Object::update()
     }
 }
 
+Vector2<float> &Object::accessInertia()
+{
+    return m_inertia;
+}
+
 Vector2<float> &Object::accessVelocity()
 {
     return m_velocity;

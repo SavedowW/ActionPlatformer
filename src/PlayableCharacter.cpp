@@ -25,12 +25,12 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
                 TimelineProperty<Vector2<float>>(
                     {
                         {0, {0.0f, 0.0f}},
-                        {3, {2.0f, 0.0f}},
+                        {3, {3.5f, 0.0f}},
                     }), // Dir vel mul
                 TimelineProperty<Vector2<float>>(
                     {
                         {0, {0.0f, 0.0f}},
-                        {3, {0.0f, -5.5f}},
+                        {3, {0.0f, -5.0f}},
                     }), // Raw vel
                 TimelineProperty<Vector2<float>>(
                     {
@@ -114,11 +114,11 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
 
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
-            &(new Action<CharacterState, false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
+            &(new ActionFloat<CharacterState, decltype(*this)> (
                 CharacterState::FLOAT, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/float"), StateMarker{CharacterState::NONE, {}}, *this, m_inputResolver
             ))
             ->setTransitionOnTouchedGround(CharacterState::IDLE)
-            .setGravity({{0.0f, 0.3f}})
+            .setGravity({{0.0f, 0.5f}})
             .setDrag(TimelineProperty<float>(0.0f))
         )
     );
