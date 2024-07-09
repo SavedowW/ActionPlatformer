@@ -1,6 +1,7 @@
 #include "Renderer.h"
 #include <stdexcept>
 #include "GameData.h"
+#include "TextureManager.h"
 
 Renderer::Renderer(Window &window_)
 {
@@ -17,9 +18,16 @@ Renderer::Renderer(Window &window_)
     SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
 
-    SDL_RenderSetLogicalSize(m_renderer, gamedata::global::baseResolution.x, gamedata::global::baseResolution.y);
+	SDL_RenderSetLogicalSize(m_renderer, gamedata::global::maxCameraSize.x, gamedata::global::maxCameraSize.y);
 
-    m_backbuff.setTexture(createTexture(gamedata::global::baseResolution));
+	auto *tex = createTexture(gamedata::global::maxCameraSize);
+	SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+	m_backbuffGameplay.setTexture(tex);
+
+	tex = createTexture(gamedata::global::defaultWindowResolution);
+	SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+	m_backbuffHUD.setTexture(tex);
+
 }
 
 Renderer::~Renderer()
@@ -45,12 +53,16 @@ Renderer::Renderer(Renderer &&rhs)
 
 SDL_Texture* Renderer::createTexture(int w_, int h_)
 {
-    return SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, w_, h_);
+	auto *tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, w_, h_);
+	SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+	return tex;
 }
 
 SDL_Texture* Renderer::createTexture(const Vector2<int>& size_)
 {
-    return SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, size_.x, size_.y);
+	auto *tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, size_.x, size_.y);
+	SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+	return tex;
 }
 
 SDL_Texture* Renderer::loadTexture(const char* file_)
@@ -105,17 +117,15 @@ void Renderer::renderTexture(SDL_Texture* tex_, const SDL_FRect *src_, const SDL
 
 void Renderer::renderTexture(SDL_Texture* tex_, float x_, float y_, float w_, float h_, const Camera &cam_, float angle_, SDL_RendererFlip flip_)
 {
-    auto camSize = cam_.getSize();
+	auto camTL = cam_.getPos() - gamedata::global::maxCameraSize / 2;
 
-    auto texTL = ((Vector2{x_, y_} - cam_.getTopLeft()) / cam_.getScale());
-    auto texBR = ((Vector2{x_ + w_, y_ + h_} - cam_.getTopLeft()) / cam_.getScale());
-    auto size = texBR - texTL;
+	auto texTL = Vector2{x_, y_} - camTL;
 
-    SDL_FPoint center;
-    center.x = size.x / 2;
-    center.y = size.y / 2;
-    
-    renderTexture(tex_, texTL.x, texTL.y, size.x, size.y, angle_, &center, flip_);
+	SDL_FPoint center;
+	center.x = w_ / 2;
+	center.y = h_ / 2;
+	
+	renderTexture(tex_, texTL.x, texTL.y, w_, h_, angle_, &center, flip_);
 }
 
 /*void Renderer::renderTexture(SDL_Texture* tex_, float x_, float y_, float angle_, SDL_FPoint* center_, SDL_RendererFlip flip_)
@@ -147,11 +157,12 @@ void Renderer::renderTexture(SDL_Texture* tex_, float x_, float y_, float w_, fl
 
 void Renderer::drawRectangle(const Vector2<float> &pos_, const Vector2<float> &size_, const SDL_Color& col_, const Camera &cam_)
 {
-    auto rectTL = ((pos_ - cam_.getTopLeft()) / cam_.getScale());
-    auto rectSize = size_ / cam_.getScale();
-    SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
-    SDL_FRect rect = { rectTL.x, rectTL.y, rectSize.x, rectSize.y };
-    SDL_RenderDrawRectF(m_renderer, &rect);
+	auto camTL = cam_.getPos() - gamedata::global::maxCameraSize / 2;
+	auto rectTL = pos_ - camTL;
+
+	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
+	SDL_FRect rect = { rectTL.x, rectTL.y, size_.x, size_.y };
+	SDL_RenderDrawRectF(m_renderer, &rect);
 }
 
 void Renderer::drawRectangle(const Vector2<float> &pos_, const Vector2<float> &size_, const SDL_Color& col_)
@@ -163,11 +174,12 @@ void Renderer::drawRectangle(const Vector2<float> &pos_, const Vector2<float> &s
 
 void Renderer::fillRectangle(const Vector2<float> &pos_, const Vector2<float> &size_, const SDL_Color& col_, const Camera &cam_)
 {
-    auto rectTL = ((pos_ - cam_.getTopLeft()) / cam_.getScale());
-    auto rectSize = size_ / cam_.getScale();
-    SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
-    SDL_FRect rect = { rectTL.x, rectTL.y, rectSize.x, rectSize.y };
-    SDL_RenderFillRectF(m_renderer, &rect);
+	Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
+	Vector2<int> rectTL = pos_ - camTL;
+
+	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
+	SDL_FRect rect = { rectTL.x, rectTL.y, size_.x, size_.y };
+	SDL_RenderFillRectF(m_renderer, &rect);
 }
 
 void Renderer::fillRectangle(const Vector2<float> &pos_, const Vector2<float> &size_, const SDL_Color& col_)
@@ -188,13 +200,14 @@ void Renderer::drawGeometry(SDL_Texture *texture, const SDL_Vertex *vertices, in
 
 void Renderer::drawCollider(const Collider &cld_, const SDL_Color &col_, uint8_t borderAlpha_, const Camera &cam_)
 {
-    auto rectTL = ((cld_.getPos() - cam_.getTopLeft()) / cam_.getScale());
-    auto rectSize = cld_.getSize() / cam_.getScale();
-    SDL_FRect rect = { rectTL.x, rectTL.y, rectSize.x, rectSize.y };
-    SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
-    SDL_RenderFillRectF(m_renderer, &rect);
-    SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, borderAlpha_);
-    SDL_RenderDrawRectF(m_renderer, &rect);
+	auto camTL = cam_.getPos() - gamedata::global::maxCameraSize / 2;
+	auto rectTL = Vector2{cld_.x, cld_.y} - camTL;
+
+	SDL_FRect rect = { rectTL.x, rectTL.y, cld_.w, cld_.h };
+	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
+	SDL_RenderFillRectF(m_renderer, &rect);
+	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, borderAlpha_);
+	SDL_RenderDrawRectF(m_renderer, &rect);
 }
 
 void Renderer::drawCollider(const SlopeCollider &cld_, const SDL_Color &col_, uint8_t borderAlpha_, const Camera &cam_)
@@ -204,12 +217,11 @@ void Renderer::drawCollider(const SlopeCollider &cld_, const SDL_Color &col_, ui
     SDL_Vertex vxes[4];
     int idces[6] = {0, 1, 2, 2, 3, 0};
 
-    auto camTL = cam_.getTopLeft();
-    auto camScale = cam_.getScale();
+    Vector2<int> camTL = cam_.getPos() - gamedata::global::maxCameraSize / 2;
 
     for (int i = 0; i < 4; ++i)
     {
-        auto pos = (cld_.m_points[i] - camTL) / camScale;
+        Vector2<int> pos = cld_.m_points[i] - camTL;
         vxes[i].position.x = pos.x;
         vxes[i].position.y = pos.y;
         vxes[i].color = col_;
@@ -222,40 +234,65 @@ void Renderer::drawCollider(const SlopeCollider &cld_, const SDL_Color &col_, ui
 
     SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b,  borderAlpha_);
 
-    SDL_RenderDrawLineF(m_renderer, vxes[0].position.x, vxes[0].position.y, vxes[1].position.x, vxes[1].position.y);
-    SDL_RenderDrawLineF(m_renderer, vxes[1].position.x, vxes[1].position.y, vxes[2].position.x, vxes[2].position.y);
-    SDL_RenderDrawLineF(m_renderer, vxes[2].position.x, vxes[2].position.y, vxes[3].position.x, vxes[3].position.y);
-    SDL_RenderDrawLineF(m_renderer, vxes[3].position.x, vxes[3].position.y, vxes[0].position.x, vxes[0].position.y);
+    SDL_RenderDrawLine(m_renderer, vxes[0].position.x, vxes[0].position.y, vxes[1].position.x, vxes[1].position.y);
+    SDL_RenderDrawLine(m_renderer, vxes[1].position.x, vxes[1].position.y, vxes[2].position.x, vxes[2].position.y);
+    SDL_RenderDrawLine(m_renderer, vxes[2].position.x, vxes[2].position.y, vxes[3].position.x, vxes[3].position.y);
+    SDL_RenderDrawLine(m_renderer, vxes[3].position.x, vxes[3].position.y, vxes[0].position.x, vxes[0].position.y);
 }
 
-void Renderer::prepareRenderer(const SDL_Color &col_)
+void Renderer::prepareRenderer(const SDL_Color& col_)
 {
-    SDL_SetRenderTarget(m_renderer, m_backbuff.getSprite());
-    SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
-    SDL_RenderClear(m_renderer);
+	SDL_RenderSetLogicalSize(m_renderer, m_backbuffGameplay.m_w, m_backbuffGameplay.m_h);
+	SDL_SetRenderTarget(m_renderer, m_backbuffGameplay.getSprite());
+	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
+	SDL_RenderClear(m_renderer);
 }
 
-void Renderer::fillRenderer(const SDL_Color &col_)
+void Renderer::switchToHUD(const SDL_Color &col_)
 {
-    SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
-    SDL_RenderClear(m_renderer);
+	SDL_RenderSetLogicalSize(m_renderer, m_backbuffHUD.m_w, m_backbuffHUD.m_h);
+	SDL_SetRenderTarget(m_renderer, m_backbuffHUD.getSprite());
+	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
+	SDL_RenderClear(m_renderer);
 }
 
-void Renderer::updateScreen()
+void Renderer::fillRenderer(const SDL_Color& col_)
 {
-    SDL_SetRenderTarget(m_renderer, nullptr);
-    SDL_RenderCopy(m_renderer, m_backbuff.getSprite(), nullptr, nullptr);
-    SDL_RenderPresent(m_renderer);
+	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
+	SDL_RenderClear(m_renderer);
+}
+
+void Renderer::updateScreen(const Camera &cam_)
+{
+	// Render gameplay
+	float realScaling = cam_.getScale() / gamedata::global::maxCameraScale;
+	auto targetScale = gamedata::global::defaultWindowResolution / realScaling;
+	auto delta = targetScale - gamedata::global::defaultWindowResolution;
+	auto TL = delta / (-2.0f);
+	SDL_FRect dst;
+	dst.x = TL.x;
+	dst.y = TL.y;
+	dst.w = targetScale.x;
+	dst.h = targetScale.y;
+
+	SDL_SetRenderTarget(m_renderer, nullptr);
+	SDL_RenderSetLogicalSize(m_renderer, gamedata::global::defaultWindowResolution.x, gamedata::global::defaultWindowResolution.y);
+	SDL_RenderCopyF(m_renderer, m_backbuffGameplay.getSprite(), nullptr, &dst);
+
+	// Render HUD
+	SDL_RenderCopyF(m_renderer, m_backbuffHUD.getSprite(), nullptr, nullptr);
+
+	SDL_RenderPresent(m_renderer);
 }
 
 void Renderer::setRenderTarget(SDL_Texture* tex_)
 {
-    int i = SDL_SetRenderTarget(m_renderer, tex_);
-    if (i != 0)
-        std::cout << i << ": " << SDL_GetError() << std::endl;
+	int i = SDL_SetRenderTarget(m_renderer, tex_);
+	if (i != 0)
+		std::cout << i << ": " << SDL_GetError() << std::endl;
 }
 
 SDL_Renderer *Renderer::getRenderer()
 {
-    return m_renderer;
+	return m_renderer;
 }

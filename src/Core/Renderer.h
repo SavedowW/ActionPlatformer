@@ -45,19 +45,19 @@ public:
 
     //Global render
     void prepareRenderer(const SDL_Color &col_);
+    void switchToHUD(const SDL_Color &col_);
     void fillRenderer(const SDL_Color &col_);
-    void updateScreen();
+    void updateScreen(const Camera &cam_);
 
     //Render target settings
     void setRenderTarget(SDL_Texture* tex_ = NULL);
 
-    SDL_Renderer *getRenderer();
+	SDL_Renderer *getRenderer();
 
 //private:
     SDL_Renderer* m_renderer = nullptr;
-    Texture m_backbuff;
-
-
+    Texture m_backbuffGameplay;
+	Texture m_backbuffHUD;
 };
 
 #endif

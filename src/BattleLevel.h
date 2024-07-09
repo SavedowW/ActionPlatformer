@@ -160,22 +160,22 @@ protected:
     void draw() override
     {
     	auto &renderer = *m_application->getRenderer();
-    	renderer.prepareRenderer(SDL_Color{ 60, 197, 255, 255 });
+    	renderer.prepareRenderer(SDL_Color{ 31, 24, 51, 255 });
 
     	if (m_background.get())
     		m_background->draw(renderer, m_camera);
 
         for (const auto &cld : m_collisionArea.m_staticCollisionMap)
         {
-            renderer.drawCollider(cld, {255, 0, 0, 100}, 100, m_camera);
+            renderer.drawCollider(cld, {255, 0, 0, 100}, 255, m_camera);
         }
 
         m_pc.draw(m_camera);
 
-
+        renderer.switchToHUD({0, 0, 0, 0});
         m_hud.draw(renderer, m_camera);
 
-    	renderer.updateScreen();
+    	renderer.updateScreen(m_camera);
     }
 
     HUD m_hud;

@@ -19,7 +19,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             ->setGravity({{0.0f, 0.0f}})
             .setConvertVelocityOnSwitch(true)
             .setTransitionOnLostGround(CharacterState::FLOAT)
-            .setMagnetLimit(TimelineProperty<float>(5.0f))
+            .setMagnetLimit(TimelineProperty<float>(8.0f))
             .setUpdateMovementData(
                 TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
                 TimelineProperty<Vector2<float>>(
@@ -53,7 +53,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             ->setGravity({{0.0f, 0.0f}})
             .setConvertVelocityOnSwitch(true)
             .setTransitionOnLostGround(CharacterState::FLOAT)
-            .setMagnetLimit(TimelineProperty<float>(5.0f))
+            .setMagnetLimit(TimelineProperty<float>(8.0f))
             .setUpdateMovementData(
                 TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
                 TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir vel mul
@@ -108,7 +108,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             ->setGravity({{0.0f, 0.0f}})
             .setConvertVelocityOnSwitch(true)
             .setTransitionOnLostGround(CharacterState::FLOAT)
-            .setMagnetLimit(TimelineProperty<float>(5.0f))
+            .setMagnetLimit(TimelineProperty<float>(8.0f))
         )
     );
 
