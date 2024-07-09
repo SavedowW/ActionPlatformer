@@ -51,7 +51,9 @@ public:
     GenericAction(CHAR_STATES_T ownState_, OWNER_T &owner_, int anim_) :
         m_ownState(ownState_),
         m_owner(owner_),
-        m_anim(anim_)
+        m_anim(anim_),
+        m_drag(1),
+        m_appliedInertiaMultiplier({1.0f, 1.0f})
     {
     }
 
@@ -73,9 +75,28 @@ public:
         return *this;
     }
 
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &setDrag(TimelineProperty<float> &&drag_)
+    {
+        m_drag = std::move(drag_);
+        return *this;
+    }
+
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>> &&inerMul_)
+    {
+        m_appliedInertiaMultiplier = std::move(inerMul_);
+        return *this;
+    }
+
     inline GenericAction<CHAR_STATES_T, OWNER_T> &setConvertVelocityOnSwitch(bool convertVelocity_)
     {
         m_convertVelocityOnSwitch = convertVelocity_;
+        return *this;
+    }
+
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &setOutdatedTransition(CHAR_STATES_T state_, uint32_t duration_)
+    {
+        m_transitionOnOutdated = state_;
+        m_duration = duration_;
         return *this;
     }
 
@@ -93,6 +114,12 @@ public:
         m_usingUpdateMovement = !m_mulOwnVelUpd.isEmpty() || !m_mulOwnDirVelUpd.isEmpty() || !m_rawAddVelUpd.isEmpty()
                             || !m_mulOwnInrUpd.isEmpty() || !m_mulOwnDirInrUpd.isEmpty() || !m_rawAddInrUpd.isEmpty();
 
+        return *this;
+    }
+
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &setMagnetLimit(TimelineProperty<float> &&magnetLimit_)
+    {
+        m_magnetLimit = std::move(magnetLimit_);
         return *this;
     }
 
@@ -128,6 +155,12 @@ public:
 
         if (!m_ownInrLimitUpd.isEmpty())
             m_owner.m_inertia = utils::limitVectorLength(m_owner.m_inertia, m_ownInrLimitUpd[m_owner.m_framesInState]);
+
+        if (m_transitionOnOutdated.isSet())
+        {
+            if (m_owner.m_framesInState >= m_duration)
+                m_owner.switchTo(m_transitionOnOutdated);
+        }
     }
 
     inline virtual void onTouchedGround()
@@ -151,6 +184,21 @@ public:
         return m_gravity[currentFrame_];
     }
 
+    virtual float getMagnetLimit(uint32_t currentFrame_) const
+    {
+        return m_magnetLimit[currentFrame_];
+    }
+
+    virtual float getDrag(uint32_t currentFrame_) const
+    {
+        return m_drag[currentFrame_];
+    }
+
+    virtual Vector2<float> getAppliedInertiaMultiplier(uint32_t currentFrame_) const
+    {
+        return m_appliedInertiaMultiplier[currentFrame_];
+    }
+
     inline virtual ORIENTATION isPossibleInDirection(int extendBuffer_, bool &isProceed_) const = 0;
 
     const CHAR_STATES_T m_ownState;
@@ -170,11 +218,19 @@ protected:
     TimelineProperty<Vector2<float>> m_mulOwnDirInrUpd;
     TimelineProperty<Vector2<float>> m_rawAddInrUpd;
 
+    TimelineProperty<Vector2<float>> m_appliedInertiaMultiplier;
+
+    TimelineProperty<float> m_drag;
+
     bool m_convertVelocityOnSwitch = false;
 
     TimelineProperty<float> m_ownVelLimitUpd;
     TimelineProperty<float> m_ownInrLimitUpd;
 
+    TimelineProperty<float> m_magnetLimit;
+
+    utils::OptionalProperty<CHAR_STATES_T> m_transitionOnOutdated;
+    utils::OptionalProperty<uint32_t> m_duration;
 };
 
 template<typename CHAR_STATES_T, bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN,

@@ -16,6 +16,11 @@ SlopeCollider::SlopeCollider(const Vector2<float> (&vertices_)[4])
     m_tlPos = m_points[0];
     m_size = m_points[2] - m_points[0];
     m_topAngleCoef = (m_points[1].y - m_points[0].y) / m_size.x;
+
+    m_highestSlopePoint = std::min(m_points[0].y, m_points[1].y);
+    m_lowestSlopePoint = std::max(m_points[0].y, m_points[1].y);
+    m_hasSlope = m_points[1].y - m_points[0].y;
+    m_hasBox = m_lowestSlopePoint - m_points[2].y;
 }
 
 void SlopeCollider::generatePoints()
@@ -24,6 +29,11 @@ void SlopeCollider::generatePoints()
     m_points[1] = m_tlPos + Vector2{m_size.x, m_size.x * m_topAngleCoef};
     m_points[2] = m_tlPos + m_size;
     m_points[3] = m_tlPos + Vector2{0.0f, m_size.y};
+
+    m_highestSlopePoint = std::min(m_points[0].y, m_points[1].y);
+    m_lowestSlopePoint = std::max(m_points[0].y, m_points[1].y);
+    m_hasSlope = m_points[1].y - m_points[0].y;
+    m_hasBox = m_lowestSlopePoint - m_points[2].y;
 }
 
 float SlopeCollider::getTopCoord() const
@@ -45,7 +55,7 @@ float SlopeCollider::getTopHeight(const Collider &cld_, int horOverlapType_) con
 {
     if (horOverlapType_ == 3) // Second collider's boundaries are outside of this collider's boundaries
     {
-        return std::min(m_tlPos.y, m_tlPos.y + m_topAngleCoef * m_size.x);
+        return m_highestSlopePoint;
     }
     else if (horOverlapType_ == 4) // Second collider is inside this collider
     {

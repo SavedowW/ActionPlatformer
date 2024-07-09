@@ -2,20 +2,27 @@
 #define PLAYABLE_CHARACTER_H_
 
 #include "Action.hpp"
+#include "CollisionArea.h"
 #include <map>
+
+class DebugPlayerWidget;
 
 enum class CharacterState
 {
     IDLE = 0,
     FLOAT,
     RUN,
+    PREJUMP,
+    PREJUMP_FORWARD,
     NONE
 };
 
 const inline std::map<CharacterState, const char *> CharacterStateNames{
     {CharacterState::IDLE, "IDLE"},
     {CharacterState::FLOAT, "FLOAT"},
-    {CharacterState::RUN, "RUN"}
+    {CharacterState::RUN, "RUN"},
+    {CharacterState::PREJUMP, "PREJUMP"},
+    {CharacterState::PREJUMP_FORWARD, "PREJUMP_FORWARD"},
 };
 
 class PlayableCharacter : public Object
@@ -24,7 +31,7 @@ protected:
     using CharacterGenericAction = GenericAction<CharacterState, PlayableCharacter&>;
 
 public:
-    PlayableCharacter(Application &application_, Vector2<float> pos_);
+    PlayableCharacter(Application &application_, Vector2<float> pos_, const CollisionArea &cldArea_);
 
     virtual void update() override;
     virtual void draw(Camera &cam_) override;
@@ -34,26 +41,27 @@ public:
     const char *getCurrentActionName() const;
     void switchTo(CharacterState state_);
     void switchTo(CharacterGenericAction *charAction_);
-
-    void resetOldColliders();
-    void setOldColliders(std::vector<std::reference_wrapper<SlopeCollider>> &&oldColliders_);
     
     void onTouchedGround();
     void onLostGround();
-    bool resetGround();
+    bool attemptResetGround();
 
     Vector2<float> &accessPreEditVelocity();
+    virtual float getInertiaDrag() const override;
+    virtual Vector2<float> getInertiaMultiplier() const override;
 
     virtual ~PlayableCharacter() = default;
 
 protected:
     friend CharacterGenericAction;
+    friend DebugPlayerWidget;
 
     CharacterGenericAction *getAction(CharacterState charState_);
     virtual void loadAnimations(Application &application_) override;
     virtual Vector2<float> getCurrentGravity() const override;
 
-    void transitionState();
+    // true if no transition happend
+    bool transitionState();
 
     Renderer &m_renderer;
 
@@ -70,8 +78,7 @@ protected:
     uint32_t m_framesInState = 0;
     bool isGrounded = false;
 
-
-    std::vector<std::reference_wrapper<SlopeCollider>> m_oldColliders;
+    const CollisionArea &m_collisionArea;
 };
 
 #endif

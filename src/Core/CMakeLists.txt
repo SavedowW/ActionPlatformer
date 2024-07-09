@@ -27,6 +27,7 @@ InputState.cpp
 InputComparators.cpp
 InputResolver.cpp
 Collider.cpp
+CollisionArea.cpp
 )
 
 add_library (Core ${CORE_SRC_FILES})

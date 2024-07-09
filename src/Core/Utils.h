@@ -28,6 +28,11 @@ namespace utils
             return sum / cnt;
         }
 
+        inline bool isSet() const
+        {
+            return cnt > 0;
+        }
+
     private:
         T sum;
         int cnt = 0;

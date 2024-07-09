@@ -28,6 +28,25 @@ public:
     bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;
 };
 
+class InputComparatorTapUp : public InputComparator
+{
+public:
+    bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;
+};
+
+class InputComparatorTapUpRight : public InputComparator
+{
+public:
+    bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;
+};
+
+class InputComparatorTapUpLeft : public InputComparator
+{
+public:
+    bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;
+};
+
+
 using InputComparator_ptr = std::unique_ptr<InputComparator>;
 
 #endif

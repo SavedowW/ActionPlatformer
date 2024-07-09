@@ -1,14 +1,79 @@
 #include "PlayableCharacter.h"
 
-PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> pos_) :
+PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> pos_, const CollisionArea &cldArea_) :
     Object(application_, pos_),
     m_renderer(*application_.getRenderer()),
-    m_inputResolver(application_.getInputSystem())
+    m_inputResolver(application_.getInputSystem()),
+    m_collisionArea(cldArea_)
 {
     m_inputResolver.subscribePlayer();
     m_inputResolver.setInputEnabled(true);
 
     AnimationManager animmgmgt = *application_.getAnimationManager();
+
+    m_actions.push_back(
+        std::unique_ptr<CharacterGenericAction>(
+            &(new Action<CharacterState, false, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, decltype(*this)> (
+                CharacterState::PREJUMP_FORWARD, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/prejump"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver
+            ))
+            ->setGravity({{0.0f, 0.0f}})
+            .setConvertVelocityOnSwitch(true)
+            .setTransitionOnLostGround(CharacterState::FLOAT)
+            .setMagnetLimit(TimelineProperty<float>(5.0f))
+            .setUpdateMovementData(
+                TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
+                TimelineProperty<Vector2<float>>(
+                    {
+                        {0, {0.0f, 0.0f}},
+                        {3, {2.0f, 0.0f}},
+                    }), // Dir vel mul
+                TimelineProperty<Vector2<float>>(
+                    {
+                        {0, {0.0f, 0.0f}},
+                        {3, {0.0f, -5.5f}},
+                    }), // Raw vel
+                TimelineProperty<Vector2<float>>(
+                    {
+                        {0, {1.0f, 1.0f}},
+                        {3, {0.5f, 1.0f}}
+                    }), // Inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
+            .setOutdatedTransition(CharacterState::FLOAT, 3)
+            .setDrag(TimelineProperty<float>(0.0f))
+            .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+        )
+    );
+
+    m_actions.push_back(
+        std::unique_ptr<CharacterGenericAction>(
+            &(new Action<CharacterState, false, false, InputComparatorTapUp, InputComparatorTapUp, true, InputComparatorTapUp, InputComparatorTapUp, decltype(*this)> (
+                CharacterState::PREJUMP, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/prejump"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver
+            ))
+            ->setGravity({{0.0f, 0.0f}})
+            .setConvertVelocityOnSwitch(true)
+            .setTransitionOnLostGround(CharacterState::FLOAT)
+            .setMagnetLimit(TimelineProperty<float>(5.0f))
+            .setUpdateMovementData(
+                TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir vel mul
+                TimelineProperty<Vector2<float>>(
+                    {
+                        {0, {0.0f, 0.0f}},
+                        {3, {0.0f, -6.0f}},
+                    }), // Raw vel
+                TimelineProperty<Vector2<float>>(
+                    {
+                        {0, {1.0f, 1.0f}},
+                        {3, {0.5f, 1.0f}}
+                    }), // Inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
+            .setOutdatedTransition(CharacterState::FLOAT, 3)
+            .setDrag(TimelineProperty<float>(0.0f))
+            .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+        )
+    );
 
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
@@ -31,6 +96,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
                 TimelineProperty<float>(3.75f),
                 TimelineProperty<float>())
             .setTransitionOnLostGround(CharacterState::FLOAT)
+            .setMagnetLimit(TimelineProperty<float>(10.0f))
         )
     );
 
@@ -42,16 +108,18 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             ->setGravity({{0.0f, 0.0f}})
             .setConvertVelocityOnSwitch(true)
             .setTransitionOnLostGround(CharacterState::FLOAT)
+            .setMagnetLimit(TimelineProperty<float>(5.0f))
         )
     );
 
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new Action<CharacterState, false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
-                CharacterState::FLOAT, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/idle"), StateMarker{CharacterState::NONE, {}}, *this, m_inputResolver
+                CharacterState::FLOAT, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/float"), StateMarker{CharacterState::NONE, {}}, *this, m_inputResolver
             ))
             ->setTransitionOnTouchedGround(CharacterState::IDLE)
             .setGravity({{0.0f, 0.3f}})
+            .setDrag(TimelineProperty<float>(0.0f))
         )
     );
 
@@ -60,11 +128,12 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
 
 void PlayableCharacter::update()
 {
-    std::cout << isGrounded << std::endl;
     m_inputResolver.update();
-    m_currentAction->onUpdate();
-    transitionState();
-    m_currentAnimation->update();
+    if (transitionState())
+    {
+        m_currentAction->onUpdate();
+        m_currentAnimation->update();
+    }
 
     Object::update();
 
@@ -100,37 +169,26 @@ void PlayableCharacter::draw(Camera &cam_)
     }
 }
 
-bool PlayableCharacter::resetGround()
+bool PlayableCharacter::attemptResetGround()
 {
     auto pb = getPushbox();
-    bool couldSet = false;
-    float topHeight = m_pos.y + 200;
-    std::vector<std::reference_wrapper<SlopeCollider>> newOldColliders;
-    for (auto &el : m_oldColliders)
+    float lim = m_currentAction->getMagnetLimit(m_framesInState);
+    if (lim <= 0.0f)
+        return false;
+
+    float height = m_pos.y;
+    if (m_collisionArea.getHighestVerticalMagnetCoord(pb, height))
     {
-        auto horOverlap = el.get().getHorizontalOverlap(pb);
-        if (horOverlap)
+        float magnetRange = height - m_pos.y;
+        if (magnetRange <= lim)
         {
-            float newTopHeight = el.get().getTopHeight(pb, horOverlap);
-            if (newTopHeight < topHeight)
-            {
-                newOldColliders.clear();
-                newOldColliders.emplace_back(el);
-                topHeight = newTopHeight;
-                couldSet = true;
-                m_pos.y = topHeight;
-            }
-            else if (newTopHeight == topHeight)
-            {
-                newOldColliders.emplace_back(el);
-            }
+            std::cout << "MAGNET: " << magnetRange << std::endl;
+            m_pos.y = height;
+            return true;
         }
     }
 
-    if (couldSet)
-        std::cout << "MAGNETED\n";
-    m_oldColliders = std::move(newOldColliders);
-    return couldSet;
+    return false;
 }
 
 PlayableCharacter::CharacterGenericAction *PlayableCharacter::getAction(CharacterState charState_)
@@ -149,6 +207,7 @@ void PlayableCharacter::loadAnimations(Application &application_)
     m_animations[animmgmgt.getAnimID("Char1/idle")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/idle"), LOOPMETHOD::NOLOOP);
     m_animations[animmgmgt.getAnimID("Char1/run")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/run"), LOOPMETHOD::JUMP_LOOP);
     m_animations[animmgmgt.getAnimID("Char1/prejump")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/prejump"), LOOPMETHOD::JUMP_LOOP);
+    m_animations[animmgmgt.getAnimID("Char1/float")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/float"), LOOPMETHOD::NOLOOP);
 
     m_currentAnimation = m_animations[animmgmgt.getAnimID("Char1/idle")].get();
     m_currentAnimation->reset();
@@ -159,7 +218,7 @@ Vector2<float> PlayableCharacter::getCurrentGravity() const
     return m_currentAction->getGravity(m_framesInState);
 }
 
-void PlayableCharacter::transitionState()
+bool PlayableCharacter::transitionState()
 {
     m_framesInState++;
     
@@ -170,15 +229,17 @@ void PlayableCharacter::transitionState()
         if (proceed)
         {
             m_ownOrientation = res;
-            break;
+            return true;
         }
         if (res != ORIENTATION::UNSPECIFIED)
         {
             m_ownOrientation = res;
             switchTo(el.get());
-            break;
+            return false;
         }
     }
+
+    return true;
 }
 
 Collider PlayableCharacter::getPushbox() const
@@ -208,16 +269,6 @@ void PlayableCharacter::switchTo(CharacterGenericAction *charAction_)
     m_currentAction->onSwitchTo();
 }
 
-void PlayableCharacter::resetOldColliders()
-{
-    m_oldColliders.clear();;
-}
-
-void PlayableCharacter::setOldColliders(std::vector<std::reference_wrapper<SlopeCollider>> &&oldColliders_)
-{
-    m_oldColliders = std::move(oldColliders_);
-}
-
 void PlayableCharacter::onTouchedGround()
 {
     if (!isGrounded)
@@ -245,4 +296,14 @@ void PlayableCharacter::onLostGround()
 Vector2<float> &PlayableCharacter::accessPreEditVelocity()
 {
     return m_preEditVelocity;
+}
+
+float PlayableCharacter::getInertiaDrag() const
+{
+    return m_currentAction->getDrag(m_framesInState);
+}
+
+Vector2<float> PlayableCharacter::getInertiaMultiplier() const
+{
+    return m_currentAction->getAppliedInertiaMultiplier(m_framesInState);
 }

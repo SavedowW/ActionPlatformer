@@ -30,10 +30,15 @@ ${lz4_INCLUDE_DIRS}
 set(LINK_LIBRARIES
 ${SDL2_LIBRARIES}
 SDL2_image::SDL2_image
-sdl_ttf::sdl_ttf
 SDL2_mixer::SDL2_mixer
 ${lz4_LIBRARIES}
 )
+
+if (TARGET sdl_ttf::sdl_ttf)
+    list(APPEND LINK_LIBRARIES sdl_ttf::sdl_ttf)
+else ()
+    list(APPEND LINK_LIBRARIES SDL2_ttf::SDL2_ttf)
+endif ()
 
 message(${LINK_LIBRARIES})
 

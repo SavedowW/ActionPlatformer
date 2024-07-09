@@ -60,9 +60,14 @@ float Object::getInertiaDrag() const
     return 1.0f;
 }
 
+Vector2<float> Object::getInertiaMultiplier() const
+{
+    return {1.0f, 1.0f};
+}
+
 Vector2<float> Object::getPosOffest() const
 {
-    return m_velocity + m_inertia;
+    return m_velocity + m_inertia.mulComponents(getInertiaMultiplier());
 }
 
 ORIENTATION Object::getOwnOrientation() const

@@ -27,6 +27,10 @@ struct SlopeCollider
     Vector2<float> m_tlPos;
     Vector2<float> m_size;
     float m_topAngleCoef = 0.0f;
+    float m_highestSlopePoint = 0.0f;
+    float m_lowestSlopePoint = 0.0f;
+    bool m_hasSlope = false;
+    bool m_hasBox = false;
 
     Vector2<float> m_points[4];
     void generatePoints();
@@ -43,10 +47,6 @@ struct SlopeCollider
         auto horRes = (H_OVERLAP_ONLY ? getHorizontalOverlap(cld_) : getHorizontalCollision(cld_));
 
         float highest = 0;
-        float slopeLowest = std::max(m_points[0].y, m_points[1].y);
-
-        bool hasSlope = m_points[1].y - m_points[0].y;
-        bool hasBox = slopeLowest - m_points[2].y;
 
         if (!horRes)
             return 0;
@@ -60,19 +60,19 @@ struct SlopeCollider
         else if (horRes == 4)
             highest = std::min(m_tlPos.y + m_topAngleCoef * (cld_.x - m_tlPos.x), m_tlPos.y + m_topAngleCoef * (cld_.x + cld_.w - m_tlPos.x));
 
-        if (hasSlope && (V_OVERLAP_ONLY ? 
-                getVerticalOverlap(highest, slopeLowest, cld_.y, cld_.y + cld_.h) : 
-                getVerticalCollision(highest, slopeLowest, cld_.y, cld_.y + cld_.h)))
+        if (m_hasSlope && (V_OVERLAP_ONLY ? 
+                getVerticalOverlap(highest, m_lowestSlopePoint, cld_.y, cld_.y + cld_.h) : 
+                getVerticalCollision(highest, m_lowestSlopePoint, cld_.y, cld_.y + cld_.h)))
                 {
                     highestPoint_ = highest;
                     return 1;
                 }
 
-        if (hasBox && (V_OVERLAP_ONLY ? 
-                getVerticalOverlap(slopeLowest, m_points[3].y, cld_.y, cld_.y + cld_.h) : 
-                getVerticalCollision(slopeLowest, m_points[3].y, cld_.y, cld_.y + cld_.h)))
+        if (m_hasBox && (V_OVERLAP_ONLY ? 
+                getVerticalOverlap(m_lowestSlopePoint, m_points[3].y, cld_.y, cld_.y + cld_.h) : 
+                getVerticalCollision(m_lowestSlopePoint, m_points[3].y, cld_.y, cld_.y + cld_.h)))
                 {
-                    highestPoint_ = slopeLowest;
+                    highestPoint_ = m_lowestSlopePoint;
                     return 2;
                 }
 
