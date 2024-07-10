@@ -23,7 +23,7 @@ public:
     BattleLevel(Application *application_, const Vector2<float>& size_, int lvlId_) :
     	Level(application_, size_, lvlId_),
     	m_camera({0.0f, 0.0f}, gamedata::global::baseResolution, m_size),
-        m_pc(*application_, getTileCenter(Vector2{7, 50}), m_collisionArea)
+        m_pc(*application_, getTileCenter(Vector2{13, 54}), m_collisionArea)
     {
         static_assert(std::is_base_of_v<Background, BackType>, "BackType of BattleLevel should be derived from Background class");
 
@@ -44,24 +44,32 @@ public:
         m_camera.setScale(gamedata::global::minCameraScale);
         m_camera.setPos(m_pc.accessPos());
 
-        m_collisionArea.addStaticCollider(getColliderForTileRange<int, int, true>(Vector2{0, 60}, Vector2{8, 1}, 0));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{8, 60}, Vector2{1, 1}, -1));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{9, 59}, Vector2{1, 1}, -1));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{10, 58}, Vector2{1, 1}, -1));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{11, 57}, Vector2{1, 1}, -1));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{12, 56}, Vector2{1, 1}, -1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{0, 60}, Vector2{8, 1}, 0));
+        m_collisionArea.addStaticCollider(getColliderForTileRange<int, int, true>(Vector2{8, 60}, Vector2{1, 1}, -1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange<int, int, true>(Vector2{9, 59}, Vector2{1, 1}, -1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange<int, int, true>(Vector2{10, 58}, Vector2{1, 1}, -1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange<int, int, true>(Vector2{11, 57}, Vector2{1, 1}, -1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange<int, int, true>(Vector2{12, 56}, Vector2{1, 1}, -1));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{13, 55}, Vector2{4, 1}, 0));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{17, 55}, Vector2{1, 1}, -0.5));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{18.0f, 54.5f}, Vector2{16, 1}, 0));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{34.0f, 54.5f}, Vector2{1, 1}, 0.5));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{35, 55}, Vector2{3, 1}, 0));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{38, 55}, Vector2{1, 1}, 1));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{39, 56}, Vector2{1, 1}, 1));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{40, 57}, Vector2{1, 1}, 1));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{41, 58}, Vector2{1, 1}, 1));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{42, 59}, Vector2{1, 1}, 1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange<int, int, true>(Vector2{38, 55}, Vector2{1, 1}, 1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange<int, int, true>(Vector2{39, 56}, Vector2{1, 1}, 1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange<int, int, true>(Vector2{40, 57}, Vector2{1, 1}, 1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange<int, int, true>(Vector2{41, 58}, Vector2{1, 1}, 1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange<int, int, true>(Vector2{42, 59}, Vector2{1, 1}, 1));
 
-        m_collisionArea.addStaticCollider(getColliderForTileRange<float, int, true>(Vector2{0, 66}, Vector2{8, 1}, 0));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{8, 60}, Vector2{1, 1}, 1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{9, 61}, Vector2{1, 1}, 1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{10, 62}, Vector2{1, 1}, 1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{11, 63}, Vector2{1, 1}, 1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{12, 64}, Vector2{1, 1}, 1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{13, 65}, Vector2{2, 1}, 0.5));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{15, 66}, Vector2{16, 1}, 0));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{31, 66}, Vector2{12, 1}, -0.5));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{43, 60}, Vector2{8, 1}, 0));
 
         m_camFocusAreas.emplace_back(getTileCenter(Vector2{26.5f, 50.0f}), gamedata::global::minCameraSize.y, *m_application->getRenderer());
 
@@ -90,31 +98,50 @@ protected:
         auto oldRightEdge = pb.x + pb.w;
         auto oldLeftEdge = pb.x;
 
+        bool isPcFallingThrough = m_pc.isFallingThrough();
+        if (isPcFallingThrough)
+            if (!m_collisionArea.checkPlayerTouchingObstacles(pb))
+            {
+                m_pc.disableFallingThrough();
+                isPcFallingThrough = false;
+            }
+
         bool groundCollision = false;
         float highest = m_size.y;
 
         auto &vel = m_pc.accessVelocity();
         auto &inr = m_pc.accessInertia();
 
-        m_collisionArea.recoverColliders(pb);
 
         {
             pos.y += offset.y;
             pb = m_pc.getPushbox();
-            for (auto &cld : m_collisionArea.m_staticCollisionMap)
+            if (offset.y < 0)
             {
-                //if (m_pc.getPushbox().checkCollisionWith<true, false>(m_staticCollisionMap[*first]))
-                if (cld.getFullCollisionWith<true, false>(m_pc.getPushbox(), highest))
+                for (auto &cld : m_collisionArea.m_staticCollisionMap)
                 {
-                    if ((!cld.m_isObstacle || highest >= oldHeight) && !(m_pc.isFallingThrough() && m_collisionArea.disableStaticCollider(cld)))
+                    //if (m_pc.getPushbox().checkCollisionWith<true, false>(m_staticCollisionMap[*first]))
+                    if (!cld.m_isObstacle && cld.getFullCollisionWith<true, false>(m_pc.getPushbox(), highest))
                     {
-                        //std::cout << cld.m_isObstacle << " || " << highest << " <= "
+                        pos.y = cld.m_points[2].y+ pb.h;
+                        pb = m_pc.getPushbox();
+                    }
+                }
+            }
+            else
+            {
+                for (auto &cld : m_collisionArea.m_staticCollisionMap)
+                {
+                    //if (m_pc.getPushbox().checkCollisionWith<true, false>(m_staticCollisionMap[*first]))
+                    if (cld.getFullCollisionWith<true, false>(m_pc.getPushbox(), highest))
+                    {
+                        if (cld.m_isObstacle && (isPcFallingThrough || highest < oldHeight))
+                            continue;
+
                         pos.y = highest;
                         groundCollision = true;
                         pb = m_pc.getPushbox();
                     }
-                    if (cld.m_isDisabled)
-                        std::cout << "";
                 }
             }
         }
@@ -126,8 +153,10 @@ protected:
             {
                 for (auto &cld : m_collisionArea.m_staticCollisionMap)
                 {
+                    if (cld.m_isObstacle && isPcFallingThrough)
+                        continue;
 
-                    auto colres = cld.getFullCollisionWith<false, true, true, true>(m_pc.getPushbox(), highest);
+                    auto colres = cld.getFullCollisionWith<false, true, true>(m_pc.getPushbox(), highest);
                     bool aligned = cld.getOrientationDir() > 0;
                     if (colres == 1 && aligned) // Touched slope from right direction
                     {
@@ -137,7 +166,7 @@ protected:
                     }
                     else if (colres) // Touched inner box
                     {
-                        if (cld.m_isDisabled || cld.m_isObstacle && oldRightEdge >= cld.m_tlPos.x)
+                        if (cld.m_isObstacle)
                             continue;
 
                         pos.x = cld.m_tlPos.x - pb.w / 2.0f;
@@ -151,19 +180,22 @@ protected:
             {
                 for (auto &cld : m_collisionArea.m_staticCollisionMap)
                 {
-                    auto colres = cld.getFullCollisionWith<false, true, true, true>(m_pc.getPushbox(), highest);
+                    if (cld.m_isObstacle && isPcFallingThrough)
+                        continue;
+
+                    auto colres = cld.getFullCollisionWith<false, true, true>(m_pc.getPushbox(), highest);
                     bool aligned = cld.getOrientationDir() < 0;
                     if (colres == 1 && aligned) // Touched slope from right direction
                     {
-                        if (cld.m_isDisabled || cld.m_isObstacle && oldLeftEdge <= cld.m_tlPos.x + cld.m_size.x)
-                        continue;
-
                         pos.y = highest;
                         pb = m_pc.getPushbox();
                         groundCollision = true;
                     }
                     else if (colres) // Touched inner box
                     {
+                        if (cld.m_isObstacle)
+                            continue;
+
                         pos.x = cld.m_tlPos.x + cld.m_size.x + pb.w / 2.0f;
                         pb = m_pc.getPushbox();
                         vel.x = 0;
@@ -210,9 +242,7 @@ protected:
 
         for (const auto &cld : m_collisionArea.m_staticCollisionMap)
         {
-            if (cld.m_isDisabled)
-                renderer.drawCollider(cld, {239, 228, 176, 100}, 255, m_camera);
-            else if (cld.m_isObstacle)
+            if (cld.m_isObstacle)
                 renderer.drawCollider(cld, {50, 50, 255, 100}, 255, m_camera);
             else
                 renderer.drawCollider(cld, {255, 0, 0, 100}, 255, m_camera);

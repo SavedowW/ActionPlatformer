@@ -47,7 +47,9 @@ public:
     void onTouchedGround();
     void onLostGround();
     bool attemptResetGround();
-    bool isFallingThrough() const;
+
+    bool isFallingThrough();
+    void disableFallingThrough();
 
     Vector2<float> &accessPreEditVelocity();
     virtual float getInertiaDrag() const override;
@@ -85,6 +87,7 @@ protected:
     const CollisionArea &m_collisionArea;
 
     InputComparatorTapAnyDown m_fallthroughInput;
+    bool m_isFallingThrough = false;
 };
 
 #endif

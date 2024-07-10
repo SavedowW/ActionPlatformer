@@ -18,4 +18,5 @@ void DebugPlayerWidget::draw(Renderer &renderer_, Camera &camera_)
     m_textManager.renderText("Player inr: " + utils::toString(m_pc->m_inertia), 0, {400, 1 + 22 * 2});
     m_textManager.renderText(std::string("Player action: ") + m_pc->getCurrentActionName(), 0, {400, 1 + 22 * 3});
     m_textManager.renderText(std::string("Frames in state: ") + std::to_string(m_pc->m_framesInState), 0, {400, 1 + 22 * 4});
+    m_textManager.renderText((m_pc->m_isFallingThrough ? "Falling through" : " --- " ), 0, {400, 1 + 22 * 5});
 }

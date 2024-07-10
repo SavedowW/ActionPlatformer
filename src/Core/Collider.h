@@ -33,7 +33,6 @@ struct SlopeCollider
     bool m_hasBox = false;
 
     bool m_isObstacle = false;
-    bool m_isDisabled = false;
 
     Vector2<float> m_points[4];
     void generatePoints();
@@ -44,12 +43,9 @@ struct SlopeCollider
         1 - found overlap with slope part
         2 - found overlap with box part
     */
-    template<bool H_OVERLAP_ONLY, bool V_OVERLAP_ONLY, bool CONSIDER_DISABLED = true, bool PRIORITIZE_BOX = false>
+    template<bool H_OVERLAP_ONLY, bool V_OVERLAP_ONLY, bool PRIORITIZE_BOX = false>
     inline int getFullCollisionWith(const Collider &cld_, float &highestPoint_) const
     {
-        if (m_isDisabled && CONSIDER_DISABLED)
-            return 0;
-
         auto horRes = (H_OVERLAP_ONLY ? getHorizontalOverlap(cld_) : getHorizontalCollision(cld_));
 
         float highest = 0;
@@ -76,7 +72,7 @@ struct SlopeCollider
                         return 2;
                     }
                     
-            if (m_hasSlope && (V_OVERLAP_ONLY ? 
+            if (m_hasSlope && cld_.y + cld_.h <= m_lowestSlopePoint && (V_OVERLAP_ONLY ? 
                     getVerticalOverlap(highest, m_lowestSlopePoint, cld_.y, cld_.y + cld_.h) : 
                     getVerticalCollision(highest, m_lowestSlopePoint, cld_.y, cld_.y + cld_.h)))
                     {
@@ -86,7 +82,7 @@ struct SlopeCollider
         }
         else
         {
-            if (m_hasSlope && (V_OVERLAP_ONLY ? 
+            if (m_hasSlope && cld_.y + cld_.h <= m_lowestSlopePoint && (V_OVERLAP_ONLY ? 
                     getVerticalOverlap(highest, m_lowestSlopePoint, cld_.y, cld_.y + cld_.h) : 
                     getVerticalCollision(highest, m_lowestSlopePoint, cld_.y, cld_.y + cld_.h)))
                     {

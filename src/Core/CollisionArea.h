@@ -24,13 +24,12 @@ inline Vector2<float> getTileCenter(Vector2<T> pos_)
 struct CollisionArea
 {
     void addStaticCollider(const SlopeCollider &cld_);
-    bool getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_) const;
+    bool getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_, bool isFallingThrough_) const;
 
-    bool disableStaticCollider(SlopeCollider &cld_);
-    void recoverColliders(const Collider &playerPb_);
+    bool checkPlayerTouchingObstacles(const Collider &playerPb_) const;
 
     std::vector<SlopeCollider> m_staticCollisionMap;
-    std::vector<SlopeCollider*> m_disabledColliders;
+    std::vector<int> m_obstacles;
 };
 
 #endif

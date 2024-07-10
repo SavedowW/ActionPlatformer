@@ -60,7 +60,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
                 TimelineProperty<Vector2<float>>(
                     {
                         {0, {0.0f, 0.0f}},
-                        {3, {0.0f, -9.0f}},
+                        {3, {0.0f, -6.0f}},
                     }), // Raw vel
                 TimelineProperty<Vector2<float>>(
                     {
@@ -179,7 +179,7 @@ bool PlayableCharacter::attemptResetGround()
         return false;
 
     float height = m_pos.y;
-    if (m_collisionArea.getHighestVerticalMagnetCoord(pb, height))
+    if (m_collisionArea.getHighestVerticalMagnetCoord(pb, height, m_isFallingThrough))
     {
         float magnetRange = height - m_pos.y;
         if (magnetRange <= lim)
@@ -193,9 +193,17 @@ bool PlayableCharacter::attemptResetGround()
     return false;
 }
 
-bool PlayableCharacter::isFallingThrough() const
+bool PlayableCharacter::isFallingThrough()
 {
-    return m_fallthroughInput(m_inputResolver.getInputQueue(), 0);
+    if (!m_isFallingThrough)
+        m_isFallingThrough = m_currentAction->canFallThrough(m_framesInState) && m_fallthroughInput(m_inputResolver.getInputQueue(), 0);
+
+    return m_isFallingThrough;
+}
+
+void PlayableCharacter::disableFallingThrough()
+{
+    m_isFallingThrough = false;
 }
 
 PlayableCharacter::CharacterGenericAction *PlayableCharacter::getAction(CharacterState charState_)
