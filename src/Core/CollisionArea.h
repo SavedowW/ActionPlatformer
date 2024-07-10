@@ -9,10 +9,10 @@ inline Collider getColliderForTileRange(Vector2<T1> pos_, Vector2<T2> size_)
     return {gamedata::global::tileSize.mulComponents(pos_), gamedata::global::tileSize.mulComponents(size_)};
 }
 
-template<typename T1, typename T2>
+template<typename T1, typename T2, bool IS_OBSTACLE = false>
 inline SlopeCollider getColliderForTileRange(Vector2<T1> pos_, Vector2<T2> size_, float angle_)
 {
-    return {gamedata::global::tileSize.mulComponents(pos_), gamedata::global::tileSize.mulComponents(size_), angle_};
+    return {gamedata::global::tileSize.mulComponents(pos_), gamedata::global::tileSize.mulComponents(size_), angle_, IS_OBSTACLE};
 }
 
 template<typename T>
@@ -26,7 +26,11 @@ struct CollisionArea
     void addStaticCollider(const SlopeCollider &cld_);
     bool getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_) const;
 
+    bool disableStaticCollider(SlopeCollider &cld_);
+    void recoverColliders(const Collider &playerPb_);
+
     std::vector<SlopeCollider> m_staticCollisionMap;
+    std::vector<SlopeCollider*> m_disabledColliders;
 };
 
 #endif

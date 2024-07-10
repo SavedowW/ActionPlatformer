@@ -57,6 +57,24 @@ bool InputComparatorTapUp::operator()(const InputQueue &inputQueue_, int extendB
     return false;
 }
 
+bool InputComparatorTapAnyDown::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+{
+    if (inputQueue_.getFilled() == 0)
+        return false;
+
+    int lookAt = std::min(inputQueue_.getFilled() - 1, gamedata::global::inputBufferLength + extendBuffer_);
+    for (int i = 0; i <= lookAt; ++i)
+    {
+        auto &in = inputQueue_[i];
+        bool valid = in.m_dir.y == 1.0f && in.m_inputs.at(INPUT_BUTTON::DOWN) == INPUT_BUTTON_STATE::PRESSED;
+        if (valid)
+            return true;
+    }
+
+    return false;
+}
+
+
 bool InputComparatorTapUpRight::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
 {
     if (inputQueue_.getFilled() == 0)

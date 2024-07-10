@@ -79,3 +79,8 @@ ORIENTATION Object::getOwnOrientation() const
 {
     return m_ownOrientation;
 }
+
+void Object::setOwnOrientation(ORIENTATION or_)
+{
+    m_ownOrientation = or_;
+}

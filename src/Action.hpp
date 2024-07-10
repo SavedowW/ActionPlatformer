@@ -81,6 +81,12 @@ public:
         return *this;
     }
 
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &setCanFallThrough(TimelineProperty<bool> &&fallThrough_)
+    {
+        m_canFallThrough = std::move(fallThrough_);
+        return *this;
+    }
+
     inline GenericAction<CHAR_STATES_T, OWNER_T> &setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>> &&inerMul_)
     {
         m_appliedInertiaMultiplier = std::move(inerMul_);
@@ -194,6 +200,11 @@ public:
         return m_drag[currentFrame_];
     }
 
+    virtual bool canFallThrough(uint32_t currentFrame_) const
+    {
+        return m_canFallThrough[currentFrame_];
+    }
+
     virtual Vector2<float> getAppliedInertiaMultiplier(uint32_t currentFrame_) const
     {
         return m_appliedInertiaMultiplier[currentFrame_];
@@ -231,6 +242,8 @@ protected:
 
     utils::OptionalProperty<CHAR_STATES_T> m_transitionOnOutdated;
     utils::OptionalProperty<uint32_t> m_duration;
+
+    TimelineProperty<bool> m_canFallThrough;
 };
 
 template<typename CHAR_STATES_T, bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN,
@@ -297,27 +310,31 @@ public:
 
         const auto &inq = ParentAction::m_inputResolver.getInputQueue();
         auto &vel = ParentAction::m_owner.accessVelocity();
+        auto &inr = ParentAction::m_owner.accessInertia();
 
         if (m_driftLeftInput(inq, 0))
         {
-            std::cout << "LEFT\n";
             if (vel.x > -4.0f)
                 vel.x -= 0.15f;
         }
 
         if (m_driftRightInput(inq, 0))
         {
-            std::cout << "RIGHT\n";
             if (vel.x < 4.0f)
                 vel.x += 0.15f;
         }
 
         if (ParentAction::m_owner.accessVelocity().y < 0 && m_driftUpInput(inq, 0))
         {
-            std::cout << "UP\n";
             if (ParentAction::m_owner.m_framesInState < 10.0f)
                 vel.y -= 0.4f;
         }
+
+        auto total = vel.x + inr.x;
+        if (total > 0)
+            ParentAction::m_owner.setOwnOrientation(ORIENTATION::RIGHT);
+        else if (total < 0)
+            ParentAction::m_owner.setOwnOrientation(ORIENTATION::LEFT);
     }
 
 protected:

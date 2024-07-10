@@ -60,7 +60,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
                 TimelineProperty<Vector2<float>>(
                     {
                         {0, {0.0f, 0.0f}},
-                        {3, {0.0f, -6.0f}},
+                        {3, {0.0f, -9.0f}},
                     }), // Raw vel
                 TimelineProperty<Vector2<float>>(
                     {
@@ -97,6 +97,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
                 TimelineProperty<float>())
             .setTransitionOnLostGround(CharacterState::FLOAT)
             .setMagnetLimit(TimelineProperty<float>(10.0f))
+            .setCanFallThrough(TimelineProperty(true))
         )
     );
 
@@ -109,6 +110,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             .setConvertVelocityOnSwitch(true)
             .setTransitionOnLostGround(CharacterState::FLOAT)
             .setMagnetLimit(TimelineProperty<float>(8.0f))
+            .setCanFallThrough(TimelineProperty(true))
         )
     );
 
@@ -191,6 +193,11 @@ bool PlayableCharacter::attemptResetGround()
     return false;
 }
 
+bool PlayableCharacter::isFallingThrough() const
+{
+    return m_fallthroughInput(m_inputResolver.getInputQueue(), 0);
+}
+
 PlayableCharacter::CharacterGenericAction *PlayableCharacter::getAction(CharacterState charState_)
 {
     for (auto &el : m_actions)
@@ -246,6 +253,11 @@ Collider PlayableCharacter::getPushbox() const
 {
     Collider cld = {-10, -60, 20, 60};
     return cld + m_pos;
+}
+
+Vector2<float> PlayableCharacter::getCameraFocusPoint() const
+{
+    return m_pos - Vector2{0.0f, 60.0f};
 }
 
 CharacterState PlayableCharacter::getCurrentActionState() const

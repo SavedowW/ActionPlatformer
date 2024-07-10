@@ -37,6 +37,7 @@ public:
     virtual void update() override;
     virtual void draw(Camera &cam_) override;
     Collider getPushbox() const override;
+    Vector2<float> getCameraFocusPoint() const;
 
     CharacterState getCurrentActionState() const;
     const char *getCurrentActionName() const;
@@ -46,6 +47,7 @@ public:
     void onTouchedGround();
     void onLostGround();
     bool attemptResetGround();
+    bool isFallingThrough() const;
 
     Vector2<float> &accessPreEditVelocity();
     virtual float getInertiaDrag() const override;
@@ -81,6 +83,8 @@ protected:
     bool isGrounded = false;
 
     const CollisionArea &m_collisionArea;
+
+    InputComparatorTapAnyDown m_fallthroughInput;
 };
 
 #endif

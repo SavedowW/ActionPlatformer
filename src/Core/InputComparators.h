@@ -40,6 +40,12 @@ public:
     bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;
 };
 
+class InputComparatorTapAnyDown : public InputComparator
+{
+public:
+    bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;
+};
+
 class InputComparatorTapUpRight : public InputComparator
 {
 public:

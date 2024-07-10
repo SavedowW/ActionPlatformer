@@ -1,14 +1,16 @@
 #include "Collider.h"
 
-SlopeCollider::SlopeCollider(const Vector2<float> &tlPos_, const Vector2<float> &size_, float topAngleCoef_) :
+SlopeCollider::SlopeCollider(const Vector2<float> &tlPos_, const Vector2<float> &size_, float topAngleCoef_, bool isObstacle_) :
     m_tlPos(tlPos_),
     m_size(size_),
-    m_topAngleCoef(std::min(topAngleCoef_, 1.0f))
+    m_topAngleCoef(std::min(topAngleCoef_, 1.0f)),
+    m_isObstacle(isObstacle_)
 {
     generatePoints();
 }
 
-SlopeCollider::SlopeCollider(const Vector2<float> (&vertices_)[4])
+SlopeCollider::SlopeCollider(const Vector2<float> (&vertices_)[4], bool isObstacle_) :
+    m_isObstacle(isObstacle_)
 {
     for (int i = 0; i < 4; ++i)
         m_points[i] = vertices_[i];

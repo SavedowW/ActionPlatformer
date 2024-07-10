@@ -288,6 +288,25 @@ struct Collider
 	{
 		return {x + w / 2.0f, y + h / 2.0f};
 	}
+
+	constexpr inline float getOwnOverlapPortion(const Collider &rhs_) const
+	{
+		Vector2<float> tl {
+			std::max(x, rhs_.x),
+			std::max(y, rhs_.y),
+		};
+
+		Vector2<float> br {
+			std::min(x + w, rhs_.x + rhs_.w),
+			std::min(y + h, rhs_.y + rhs_.h),
+		};
+
+		auto size = br - tl;
+		if (size.x < 0 || size.y < 0)
+			return 0;
+
+		return (size.x * size.y) / (w * h);
+	}
 	
 };
 

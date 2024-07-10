@@ -23,6 +23,7 @@ public:
     Vector2<float> getPosOffest() const;
 
     ORIENTATION getOwnOrientation() const;
+    void setOwnOrientation(ORIENTATION or_);
 
     virtual Collider getPushbox() const = 0;
 
