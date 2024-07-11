@@ -5,28 +5,28 @@
 #include <memory>
 #include <map>
 
-enum class TEXTURES
+struct ContainedTextureData
 {
-	NONE
+	std::string m_path;
+	std::weak_ptr<Texture> m_tex;
+	std::shared_ptr<Texture> m_preloaded;
 };
 
 class TextureManager
 {
 public:
 	TextureManager(Renderer* renderer_, const std::string &rootPath_);
-	std::shared_ptr<Texture> getTexture(TEXTURES tex);
+	std::shared_ptr<Texture> getTexture(int id_);
+	void preload(const std::string &toPreload_);
+	void preload(int toPreload_);
+
+	int getTexID(const std::string &texName_) const;
 
 private:
 	std::string m_rootPath;
 	Renderer* m_renderer;
-	std::map<TEXTURES, std::weak_ptr<Texture>> m_textures;
-	const std::string m_files[(int)TEXTURES::NONE] = {
-		"Resources/Sprites/Stage1/Background_p1.png",
-		"Resources/Sprites/Stage1/Background_p2.png",
-		"Resources/Sprites/HUD/healthbar.png",
-		"Resources/Sprites/HUD/healthbarBack.png",
-		"Resources/Sprites/HUD/healthbarFront.png"
-	};
+	std::map<std::string, int> m_ids;
+	std::vector<ContainedTextureData> m_textures_;
 };
 
 #endif

@@ -48,8 +48,13 @@ public:
     void onLostGround();
     bool attemptResetGround();
 
-    bool isFallingThrough();
-    void disableFallingThrough();
+    bool isIgnoringAllObstacles();
+    void cleanIgnoredObstacles();
+    bool touchedObstacleTop(int obstacleId_);
+    bool touchedObstacleBottom(int obstacleId_);
+    bool touchedObstacleSlope(int obstacleId_);
+    bool touchedObstacleSide(int obstacleId_);
+    bool checkIgnoringObstacle(int obstacleId_) const;
 
     Vector2<float> &accessPreEditVelocity();
     virtual float getInertiaDrag() const override;
@@ -87,7 +92,8 @@ protected:
     const CollisionArea &m_collisionArea;
 
     InputComparatorTapAnyDown m_fallthroughInput;
-    bool m_isFallingThrough = false;
+    bool m_isIgnoringObstacles = false;
+    std::set<int> m_ignoredObstacles;
 };
 
 #endif

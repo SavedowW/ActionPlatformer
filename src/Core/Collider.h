@@ -22,8 +22,8 @@ size.y  |      | p1
 struct SlopeCollider
 {
     SlopeCollider() = default;
-    SlopeCollider(const Vector2<float> &tlPos_, const Vector2<float> &size_, float topAngleCoef_, bool isObstacle_ = false);
-    SlopeCollider(const Vector2<float> (&vertices_)[4], bool isObstacle_ = false);
+    SlopeCollider(const Vector2<float> &tlPos_, const Vector2<float> &size_, float topAngleCoef_, int obstacleId_ = false);
+    SlopeCollider(const Vector2<float> (&vertices_)[4], int obstacleId_ = false);
     Vector2<float> m_tlPos;
     Vector2<float> m_size;
     float m_topAngleCoef = 0.0f;
@@ -32,7 +32,7 @@ struct SlopeCollider
     bool m_hasSlope = false;
     bool m_hasBox = false;
 
-    bool m_isObstacle = false;
+    int m_obstacleId = 0;
 
     Vector2<float> m_points[4];
     void generatePoints();

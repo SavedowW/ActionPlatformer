@@ -117,9 +117,8 @@ void Renderer::renderTexture(SDL_Texture* tex_, const SDL_FRect *src_, const SDL
 
 void Renderer::renderTexture(SDL_Texture* tex_, float x_, float y_, float w_, float h_, const Camera &cam_, float angle_, SDL_RendererFlip flip_)
 {
-	auto camTL = cam_.getPos() - gamedata::global::maxCameraSize / 2;
-
-	auto texTL = Vector2{x_, y_} - camTL;
+	Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
+	Vector2<int> texTL = Vector2{x_, y_} - camTL;
 
 	SDL_FPoint center;
 	center.x = w_ / 2;
@@ -157,8 +156,8 @@ void Renderer::renderTexture(SDL_Texture* tex_, float x_, float y_, float w_, fl
 
 void Renderer::drawRectangle(const Vector2<float> &pos_, const Vector2<float> &size_, const SDL_Color& col_, const Camera &cam_)
 {
-	auto camTL = cam_.getPos() - gamedata::global::maxCameraSize / 2;
-	auto rectTL = pos_ - camTL;
+	Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
+	Vector2<int> rectTL = pos_ - camTL;
 
 	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
 	SDL_FRect rect = { rectTL.x, rectTL.y, size_.x, size_.y };
@@ -200,8 +199,8 @@ void Renderer::drawGeometry(SDL_Texture *texture, const SDL_Vertex *vertices, in
 
 void Renderer::drawCollider(const Collider &cld_, const SDL_Color &col_, uint8_t borderAlpha_, const Camera &cam_)
 {
-	auto camTL = cam_.getPos() - gamedata::global::maxCameraSize / 2;
-	auto rectTL = Vector2{cld_.x, cld_.y} - camTL;
+	Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
+	Vector2<int> rectTL = Vector2<int>(cld_.x, cld_.y) - camTL;
 
 	SDL_FRect rect = { rectTL.x, rectTL.y, cld_.w, cld_.h };
 	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
@@ -217,7 +216,7 @@ void Renderer::drawCollider(const SlopeCollider &cld_, const SDL_Color &col_, ui
     SDL_Vertex vxes[4];
     int idces[6] = {0, 1, 2, 2, 3, 0};
 
-    Vector2<int> camTL = cam_.getPos() - gamedata::global::maxCameraSize / 2;
+    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
 
     for (int i = 0; i < 4; ++i)
     {

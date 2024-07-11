@@ -18,6 +18,7 @@ Background.cpp
 Object.cpp
 PlayableCharacter.cpp
 DebugPlayerWidget.cpp
+StaticDecor.cpp
 )
 
 set(INCLUDE_DIRS

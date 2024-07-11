@@ -20,10 +20,10 @@ void CameraFocusArea::draw(const Camera &cam_)
 
 bool CameraFocusArea::checkIfEnters(const Collider &cld_, bool isOwned_) const
 {
-    if (!isOwned_)
-        return cld_.getOwnOverlapPortion(*this) > 0.3;
-    else
-        return checkCollisionWith<false, false>(cld_);
+    if (isOwned_) // Condition to remain in focus
+        return cld_.getOwnOverlapPortion(*this) > 0.3; 
+    else // Condition to enter focus
+        return cld_.getOwnOverlapPortion(*this) > 0.8; 
 }
 
 CameraFocusArea::CameraFocusArea(float x_, float y_, float w_, float scaledH_, Renderer &renderer_) :

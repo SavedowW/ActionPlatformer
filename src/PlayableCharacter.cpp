@@ -179,7 +179,7 @@ bool PlayableCharacter::attemptResetGround()
         return false;
 
     float height = m_pos.y;
-    if (m_collisionArea.getHighestVerticalMagnetCoord(pb, height, m_isFallingThrough))
+    if (m_collisionArea.getHighestVerticalMagnetCoord(pb, height, *this))
     {
         float magnetRange = height - m_pos.y;
         if (magnetRange <= lim)
@@ -193,17 +193,61 @@ bool PlayableCharacter::attemptResetGround()
     return false;
 }
 
-bool PlayableCharacter::isFallingThrough()
+bool PlayableCharacter::isIgnoringAllObstacles()
 {
-    if (!m_isFallingThrough)
-        m_isFallingThrough = m_currentAction->canFallThrough(m_framesInState) && m_fallthroughInput(m_inputResolver.getInputQueue(), 0);
-
-    return m_isFallingThrough;
+    m_isIgnoringObstacles = m_currentAction->canFallThrough(m_framesInState) && m_fallthroughInput(m_inputResolver.getInputQueue(), 0);
+    return m_isIgnoringObstacles;
 }
 
-void PlayableCharacter::disableFallingThrough()
+void PlayableCharacter::cleanIgnoredObstacles()
 {
-    m_isFallingThrough = false;
+    auto touched = m_collisionArea.getPlayerTouchingObstacles(getPushbox());
+    std::set<int> res;
+    std::set_intersection(
+        m_ignoredObstacles.begin(), m_ignoredObstacles.end(),
+        touched.begin(), touched.end(),
+        std::inserter(res, res.begin()));
+
+    m_ignoredObstacles = res;
+}
+
+// true if not ignored
+bool PlayableCharacter::touchedObstacleTop(int obstacleId_)
+{
+    if (m_isIgnoringObstacles)
+    {
+        m_ignoredObstacles.insert(obstacleId_);
+        return false;
+    }
+
+    return !m_ignoredObstacles.contains(obstacleId_);
+}
+
+bool PlayableCharacter::touchedObstacleBottom(int obstacleId_)
+{
+    m_ignoredObstacles.insert(obstacleId_);
+    return false;
+}
+
+bool PlayableCharacter::touchedObstacleSlope(int obstacleId_)
+{
+    if (m_isIgnoringObstacles)
+    {
+        m_ignoredObstacles.insert(obstacleId_);
+        return false;
+    }
+    return !m_ignoredObstacles.contains(obstacleId_);
+}
+
+bool PlayableCharacter::touchedObstacleSide(int obstacleId_)
+{
+    m_ignoredObstacles.insert(obstacleId_);
+    return false;
+}
+
+bool PlayableCharacter::checkIgnoringObstacle(int obstacleId_) const
+{
+    return m_isIgnoringObstacles || m_ignoredObstacles.contains(obstacleId_);
 }
 
 PlayableCharacter::CharacterGenericAction *PlayableCharacter::getAction(CharacterState charState_)
