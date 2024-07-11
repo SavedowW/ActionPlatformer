@@ -44,12 +44,12 @@ public:
         m_hud.addWidget(std::make_unique<DebugPlayerWidget>(*m_application, m_camera, &m_pc));
 
         int texids[] = {
-            application_->getTextureManager()->getTexID("Tiles/Tile0"),
-            application_->getTextureManager()->getTexID("Tiles/Tile1"),
-            application_->getTextureManager()->getTexID("Tiles/Tile2"),
-            application_->getTextureManager()->getTexID("Tiles/Tile3"),
-            application_->getTextureManager()->getTexID("Tiles/Tile4"),
-            application_->getTextureManager()->getTexID("Tiles/Tile5"),
+            application_->getTextureManager()->getTexID("Tiles/Tile5"), // light plain ground
+            application_->getTextureManager()->getTexID("Tiles/Tile4"), // Upper ladder part
+            application_->getTextureManager()->getTexID("Tiles/Tile6"), // Lower ladder part
+            application_->getTextureManager()->getTexID("Tiles/Tile1"), // Transition to ladder up
+            application_->getTextureManager()->getTexID("Tiles/Tile2"), // Transition to ladder down
+            application_->getTextureManager()->getTexID("Tiles/Tile3"), // Small corner tile below ladder
         };
 
         makeUniqueLinearRange(m_decor, &DecorLayers<1>::insert<0>, Vector2{1.0f, 61.0f}, Vector2{1.0f, 0.0f}, 8, application_, texids[0], SDL_FLIP_NONE);

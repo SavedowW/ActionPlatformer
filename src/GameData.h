@@ -9,8 +9,8 @@ namespace gamedata
 {
     namespace debug
     {
-        inline constexpr bool drawColliders = true;
-        inline constexpr bool drawFocusAreas = true;
+        inline constexpr bool drawColliders = false;
+        inline constexpr bool drawFocusAreas = false;
     }
 
     namespace global
