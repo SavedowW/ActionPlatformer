@@ -125,13 +125,12 @@ protected:
     {
         m_pc.update();
 
-        
-
         const auto offset = m_pc.getPosOffest();
         auto &pos = m_pc.accessPos();
         Collider pb = m_pc.getPushbox();
 
         auto oldHeight = pos.y;
+        auto oldTop = pb.y;
         auto oldRightEdge = pb.x + pb.w;
         auto oldLeftEdge = pb.x;
 
@@ -154,7 +153,7 @@ protected:
                     //if (m_pc.getPushbox().checkCollisionWith<true, false>(m_staticCollisionMap[*first]))
                     if (cld.getFullCollisionWith<true, false>(m_pc.getPushbox(), highest))
                     {
-                        if (cld.m_obstacleId && !m_pc.touchedObstacleBottom(cld.m_obstacleId))
+                        if (cld.m_obstacleId && !m_pc.touchedObstacleBottom(cld.m_obstacleId) || cld.m_highestSlopePoint > oldTop)
                             continue;
 
                         pos.y = cld.m_points[2].y+ pb.h;
