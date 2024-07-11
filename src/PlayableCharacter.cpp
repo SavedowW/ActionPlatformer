@@ -16,7 +16,8 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             &(new Action<CharacterState, false, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, decltype(*this)> (
                 CharacterState::PREJUMP_FORWARD, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/prejump"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver
             ))
-            ->setGravity({{0.0f, 0.0f}})
+            ->setGroundedOnSwitch(true)
+            .setGravity({{0.0f, 0.0f}})
             .setConvertVelocityOnSwitch(true)
             .setTransitionOnLostGround(CharacterState::FLOAT)
             .setMagnetLimit(TimelineProperty<float>(8.0f))
@@ -50,7 +51,8 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             &(new Action<CharacterState, false, false, InputComparatorTapUp, InputComparatorTapUp, true, InputComparatorTapUp, InputComparatorTapUp, decltype(*this)> (
                 CharacterState::PREJUMP, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/prejump"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver
             ))
-            ->setGravity({{0.0f, 0.0f}})
+            ->setGroundedOnSwitch(true)
+            .setGravity({{0.0f, 0.0f}})
             .setConvertVelocityOnSwitch(true)
             .setTransitionOnLostGround(CharacterState::FLOAT)
             .setMagnetLimit(TimelineProperty<float>(8.0f))
@@ -80,7 +82,8 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             &(new Action<CharacterState, false, true, InputComparatorHoldLeft, InputComparatorHoldRight, true, InputComparatorHoldLeft, InputComparatorHoldRight, decltype(*this)> (
                 CharacterState::RUN, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/run"), StateMarker{CharacterState::NONE, {CharacterState::IDLE}}, *this, m_inputResolver
             ))
-            ->setGravity({{0.0f, 0.0f}})
+            ->setGroundedOnSwitch(true)
+            .setGravity({{0.0f, 0.0f}})
             .setUpdateMovementData(
                 TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
                 TimelineProperty<Vector2<float>>( // Dir vel mul
@@ -106,7 +109,8 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             &(new Action<CharacterState, false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
                 CharacterState::IDLE, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/idle"), StateMarker{CharacterState::NONE, {CharacterState::RUN}}, *this, m_inputResolver
             ))
-            ->setGravity({{0.0f, 0.0f}})
+            ->setGroundedOnSwitch(true)
+            .setGravity({{0.0f, 0.0f}})
             .setConvertVelocityOnSwitch(true)
             .setTransitionOnLostGround(CharacterState::FLOAT)
             .setMagnetLimit(TimelineProperty<float>(8.0f))
@@ -119,7 +123,8 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             &(new ActionFloat<CharacterState, decltype(*this)> (
                 CharacterState::FLOAT, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/float"), StateMarker{CharacterState::NONE, {}}, *this, m_inputResolver
             ))
-            ->setTransitionOnTouchedGround(CharacterState::IDLE)
+            ->setGroundedOnSwitch(false)
+            .setTransitionOnTouchedGround(CharacterState::IDLE)
             .setGravity({{0.0f, 0.5f}})
             .setDrag(TimelineProperty<float>(0.0f))
         )
@@ -167,7 +172,10 @@ void PlayableCharacter::draw(Camera &cam_)
         m_renderer.renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, cam_, 0.0f, flip);
         //m_renderer.renderTexture(edge, texPos.x, texPos.y, texSize.x , texSize.y, cam_, 0.0f, flip);
 
-        m_renderer.drawCollider(getPushbox(), {238, 195, 154, 50}, 100, cam_);
+        if (gamedata::debug::drawColliders)
+        {
+            m_renderer.drawCollider(getPushbox(), {238, 195, 154, 50}, 100, cam_);
+        }
     }
 }
 

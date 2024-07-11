@@ -35,7 +35,7 @@ public:
     BattleLevel(Application *application_, const Vector2<float>& size_, int lvlId_) :
     	Level(application_, size_, lvlId_),
     	m_camera({0.0f, 0.0f}, gamedata::global::baseResolution, m_size),
-        m_pc(*application_, getTileCenter(Vector2{13, 54}), m_collisionArea),
+        m_pc(*application_, getTileCenter(Vector2{6, 59}), m_collisionArea),
         m_decor(application_)
     {
         static_assert(std::is_base_of_v<Background, BackType>, "BackType of BattleLevel should be derived from Background class");
@@ -52,9 +52,9 @@ public:
             application_->getTextureManager()->getTexID("Tiles/Tile5"),
         };
 
-        makeUniqueLinearRange(m_decor, &DecorLayers<1>::insert<0>, Vector2{1.0f, 61.0f}, Vector2{1.0f, 0.0f}, 7, application_, texids[0], SDL_FLIP_NONE);
+        makeUniqueLinearRange(m_decor, &DecorLayers<1>::insert<0>, Vector2{1.0f, 61.0f}, Vector2{1.0f, 0.0f}, 8, application_, texids[0], SDL_FLIP_NONE);
 
-        m_decor.insert<0>(std::make_unique<StaticDecor>(application_,  texids[3], SDL_FLIP_NONE, getTileCenter(Vector2{8, 61})));
+        //m_decor.insert<0>(std::make_unique<StaticDecor>(application_,  texids[3], SDL_FLIP_NONE, getTileCenter(Vector2{8, 61})));
         makeUniqueLinearRange(m_decor, &DecorLayers<1>::insert<0>, Vector2{8.0f, 60.0f}, Vector2{1.0f, -1.0f}, 5, application_, texids[1], SDL_FLIP_NONE);
         makeUniqueLinearRange(m_decor, &DecorLayers<1>::insert<0>, Vector2{9.0f, 60.0f}, Vector2{1.0f, -1.0f}, 4, application_, texids[2], SDL_FLIP_NONE);
 
@@ -199,7 +199,7 @@ protected:
                     }
                     else if (colres) // Touched inner box
                     {
-                        if (cld.m_obstacleId && !m_pc.touchedObstacleSide(cld.m_obstacleId))
+                        if (cld.m_obstacleId && !m_pc.touchedObstacleSide(cld.m_obstacleId) || cld.m_points[1].x < oldRightEdge)
                             continue;
 
                         std::cout << "Touched edge, teleporting to it, offset.x > 0\n";
@@ -228,7 +228,7 @@ protected:
                     }
                     else if (colres) // Touched inner box
                     {
-                        if (cld.m_obstacleId && !m_pc.touchedObstacleSide(cld.m_obstacleId))
+                        if (cld.m_obstacleId && !m_pc.touchedObstacleSide(cld.m_obstacleId) || cld.m_points[0].x > oldLeftEdge)
                             continue;
 
                         std::cout << "Touched edge, teleporting to it, offset.x < 0\n";
@@ -279,20 +279,26 @@ protected:
     	if (m_background.get())
     		m_background->draw(renderer, m_camera);
 
-        for (const auto &cld : m_collisionArea.m_staticCollisionMap)
-        {
-            if (cld.m_obstacleId)
-                renderer.drawCollider(cld, {50, 50, 255, 100}, 255, m_camera);
-            else
-                renderer.drawCollider(cld, {255, 0, 0, 100}, 255, m_camera);
-        }
+        m_decor.draw<0>(m_camera);
 
-        //m_decor.draw<0>(m_camera);
+        if (gamedata::debug::drawColliders)
+        {
+            for (const auto &cld : m_collisionArea.m_staticCollisionMap)
+            {
+                if (cld.m_obstacleId)
+                    renderer.drawCollider(cld, {50, 50, 255, 100}, 255, m_camera);
+                else
+                    renderer.drawCollider(cld, {255, 0, 0, 100}, 255, m_camera);
+            }
+        }
 
         m_pc.draw(m_camera);
 
-        for (auto &cfa : m_camFocusAreas)
-            cfa.draw(m_camera);
+        if (gamedata::debug::drawFocusAreas)
+        {
+            for (auto &cfa : m_camFocusAreas)
+                cfa.draw(m_camera);
+        }
 
         renderer.switchToHUD({0, 0, 0, 0});
         m_hud.draw(renderer, m_camera);

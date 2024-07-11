@@ -7,6 +7,12 @@
 
 namespace gamedata
 {
+    namespace debug
+    {
+        inline constexpr bool drawColliders = true;
+        inline constexpr bool drawFocusAreas = true;
+    }
+
     namespace global
     {
         inline constexpr float framerate = 60.0f;

@@ -137,6 +137,12 @@ public:
         return *this;
     }
 
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &setGroundedOnSwitch(bool isGrounded_)
+    {
+        m_setGroundedOnSwitch = isGrounded_;
+        return *this;
+    }
+
     inline virtual void onSwitchTo()
     {
         m_owner.m_currentAnimation = m_owner.m_animations[m_anim].get();
@@ -146,6 +152,9 @@ public:
 
         if (m_convertVelocityOnSwitch)
             m_owner.velocityToInertia();
+
+        if (m_setGroundedOnSwitch.isSet())
+            m_owner.isGrounded = m_setGroundedOnSwitch;
     }
 
     inline virtual void onUpdate()
@@ -244,6 +253,7 @@ protected:
     utils::OptionalProperty<uint32_t> m_duration;
 
     TimelineProperty<bool> m_canFallThrough;
+    utils::OptionalProperty<bool> m_setGroundedOnSwitch;
 };
 
 template<typename CHAR_STATES_T, bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN,
