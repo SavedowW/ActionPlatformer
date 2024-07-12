@@ -1,20 +1,23 @@
 #include "FrameTimer.h"
 
-FrameTimer::FrameTimer(uint32_t framesToWait_)
+template<bool RESULT_IF_INACTIVE>
+FrameTimer<RESULT_IF_INACTIVE>::FrameTimer(uint32_t framesToWait_)
 {
     begin(framesToWait_);
 }
 
-void FrameTimer::begin(uint32_t framesToWait_)
+template<bool RESULT_IF_INACTIVE>
+void FrameTimer<RESULT_IF_INACTIVE>::begin(uint32_t framesToWait_)
 {
     m_currentFrame = 0;
     m_framesToWait = framesToWait_;
 }
 
-bool FrameTimer::update()
+template<bool RESULT_IF_INACTIVE>
+bool FrameTimer<RESULT_IF_INACTIVE>::update()
 {
     if (m_framesToWait == 0)
-        return false;
+        return RESULT_IF_INACTIVE;
 
     if (m_currentFrame < m_framesToWait)
         m_currentFrame++;
@@ -22,15 +25,17 @@ bool FrameTimer::update()
     return m_currentFrame >= m_framesToWait;
 }
 
-bool FrameTimer::isOver() const
+template<bool RESULT_IF_INACTIVE>
+bool FrameTimer<RESULT_IF_INACTIVE>::isOver() const
 {
     if (m_framesToWait == 0)
-        return false;
+        return RESULT_IF_INACTIVE;
 
     return m_currentFrame >= m_framesToWait;
 }
 
-bool FrameTimer::isActive() const
+template<bool RESULT_IF_INACTIVE>
+bool FrameTimer<RESULT_IF_INACTIVE>::isActive() const
 {
     if (m_framesToWait == 0)
         return false;
@@ -38,15 +43,20 @@ bool FrameTimer::isActive() const
     return m_currentFrame < m_framesToWait;
 }
 
-uint32_t FrameTimer::getCurrentFrame() const
+template<bool RESULT_IF_INACTIVE>
+uint32_t FrameTimer<RESULT_IF_INACTIVE>::getCurrentFrame() const
 {
     return m_currentFrame;
 }
 
-float FrameTimer::getProgressNormalized() const
+template<bool RESULT_IF_INACTIVE>
+float FrameTimer<RESULT_IF_INACTIVE>::getProgressNormalized() const
 {
     if (m_framesToWait == 0)
         return 0;
 
     return (float)m_currentFrame / m_framesToWait;
 }
+
+template class FrameTimer<true>;
+template class FrameTimer<false>;

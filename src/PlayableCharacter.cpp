@@ -43,6 +43,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             .setOutdatedTransition(CharacterState::FLOAT, 3)
             .setDrag(TimelineProperty<float>(0.0f))
             .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+            .setCooldown(&m_cooldowns[0], 5)
         )
     );
 
@@ -75,8 +76,9 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             .setDrag(TimelineProperty<float>(0.0f))
             .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
             .setUpdateSpeedLimitData(
-                TimelineProperty<float>(),
-                TimelineProperty<float>(4))
+                TimelineProperty<Vector2<float>>(),
+                TimelineProperty<Vector2<float>>({9999.9f, 4.0f}))
+            .setCooldown(&m_cooldowns[0], 5)
         )
     );
 
@@ -99,8 +101,8 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
                 TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
                 TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
             .setUpdateSpeedLimitData(
-                TimelineProperty<float>(3.75f),
-                TimelineProperty<float>())
+                TimelineProperty<Vector2<float>>({3.75f, 0.0f}),
+                TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
             .setTransitionOnLostGround(CharacterState::FLOAT)
             .setMagnetLimit(TimelineProperty<float>(10.0f))
             .setCanFallThrough(TimelineProperty(true))
@@ -118,6 +120,9 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             .setTransitionOnLostGround(CharacterState::FLOAT)
             .setMagnetLimit(TimelineProperty<float>(8.0f))
             .setCanFallThrough(TimelineProperty(true))
+            .setUpdateSpeedLimitData(
+                TimelineProperty<Vector2<float>>({9999.9f, 0.0f}),
+                TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
         )
     );
 
@@ -138,6 +143,9 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
 
 void PlayableCharacter::update()
 {
+    for (auto &cd : m_cooldowns)
+        cd.update();
+
     m_inputResolver.update();
     if (transitionState())
     {

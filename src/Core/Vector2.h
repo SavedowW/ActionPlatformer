@@ -74,6 +74,11 @@ struct Vector2
 		return { x - rhs.x, y - rhs.y };
 	}
 
+	constexpr inline Vector2<T> operator-() const
+	{
+		return { -x, -y };
+	}
+
 	template<typename TR>
 	constexpr inline auto operator*(const TR& num) const -> Vector2<decltype(x*num)>
 	{

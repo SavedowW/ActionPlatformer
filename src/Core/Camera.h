@@ -37,7 +37,7 @@ private:
     Vector2<float> m_areaSize;
     float m_scale = 1.0f;
 
-    FrameTimer m_shakeTimer;
+    FrameTimer<false> m_shakeTimer;
     int m_xShakeAmp = 0;
     float m_thisFrameAmp = 0;
 

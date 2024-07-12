@@ -107,13 +107,7 @@ public:
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{43, 60}, Vector2{8, 1}, 0));
 
         m_camFocusAreas.emplace_back(getTileCenter(Vector2{26.5f, 50.0f}), gamedata::global::minCameraSize.y, *m_application->getRenderer());
-
-        /*
-          In current version, this sequence leads character into float because he only saves 0.5 slope which is not enough to magnet him closer
-        addStaticCollider(getColliderForTileRange(Vector2{17.0f, 7.5f}, Vector2{1, 1}, 0.5));
-        addStaticCollider(getColliderForTileRange(Vector2{18.0f, 8.0f}, Vector2{1, 1}, 1));
-        addStaticCollider(getColliderForTileRange(Vector2{19.0f, 9.0f}, Vector2{3, 1}, 0));
-        */
+        
     }
 
     virtual ~BattleLevel()

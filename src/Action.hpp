@@ -129,7 +129,7 @@ public:
         return *this;
     }
 
-    inline GenericAction<CHAR_STATES_T, OWNER_T> &setUpdateSpeedLimitData(TimelineProperty<float> &&ownVelLimitUpd_, TimelineProperty<float> &&ownInrLimitUpd_)
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &setUpdateSpeedLimitData(TimelineProperty<Vector2<float>> &&ownVelLimitUpd_, TimelineProperty<Vector2<float>> &&ownInrLimitUpd_)
     {
         m_ownVelLimitUpd = std::move(ownVelLimitUpd_);
         m_ownInrLimitUpd = std::move(ownInrLimitUpd_);
@@ -140,6 +140,13 @@ public:
     inline GenericAction<CHAR_STATES_T, OWNER_T> &setGroundedOnSwitch(bool isGrounded_)
     {
         m_setGroundedOnSwitch = isGrounded_;
+        return *this;
+    }
+
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &setCooldown(FrameTimer<true> *cooldown_, int cooldownTime_)
+    {
+        m_cooldown = cooldown_;
+        m_cooldownTime = cooldownTime_;
         return *this;
     }
 
@@ -155,6 +162,9 @@ public:
 
         if (m_setGroundedOnSwitch.isSet())
             m_owner.isGrounded = m_setGroundedOnSwitch;
+
+        if (m_cooldown)
+            m_cooldown->begin(m_cooldownTime);
     }
 
     inline virtual void onUpdate()
@@ -166,10 +176,10 @@ public:
         }
 
         if (!m_ownVelLimitUpd.isEmpty())
-            m_owner.m_velocity = utils::limitVectorLength(m_owner.m_velocity, m_ownVelLimitUpd[m_owner.m_framesInState]);
+            m_owner.m_velocity = utils::clamp(m_owner.m_velocity, -m_ownVelLimitUpd[m_owner.m_framesInState], m_ownVelLimitUpd[m_owner.m_framesInState]);
 
         if (!m_ownInrLimitUpd.isEmpty())
-            m_owner.m_inertia = utils::limitVectorLength(m_owner.m_inertia, m_ownInrLimitUpd[m_owner.m_framesInState]);
+            m_owner.m_inertia = utils::clamp(m_owner.m_inertia, -m_ownInrLimitUpd[m_owner.m_framesInState], m_ownInrLimitUpd[m_owner.m_framesInState]);
 
         if (m_transitionOnOutdated.isSet())
         {
@@ -244,8 +254,8 @@ protected:
 
     bool m_convertVelocityOnSwitch = false;
 
-    TimelineProperty<float> m_ownVelLimitUpd;
-    TimelineProperty<float> m_ownInrLimitUpd;
+    TimelineProperty<Vector2<float>> m_ownVelLimitUpd;
+    TimelineProperty<Vector2<float>> m_ownInrLimitUpd;
 
     TimelineProperty<float> m_magnetLimit;
 
@@ -254,6 +264,9 @@ protected:
 
     TimelineProperty<bool> m_canFallThrough;
     utils::OptionalProperty<bool> m_setGroundedOnSwitch;
+
+    FrameTimer<true> *m_cooldown = nullptr;
+    uint32_t m_cooldownTime = 0;
 };
 
 template<typename CHAR_STATES_T, bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN,
@@ -273,6 +286,9 @@ public:
 
     inline virtual ORIENTATION isPossibleInDirection(int extendBuffer_, bool &isProceed_) const override
     {
+        if (ParentClass::m_cooldown && ParentClass::m_cooldown->isActive())
+            return ORIENTATION::UNSPECIFIED;
+
         isProceed_ = false;
         auto orientation = ParentClass::m_owner.getOwnOrientation();
         const auto &inq = m_inputResolver.getInputQueue();

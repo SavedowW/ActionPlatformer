@@ -2,6 +2,7 @@
 #define FRAME_TIMER_H_
 #include <cstdint>
 
+template<bool RESULT_IF_INACTIVE = false>
 class FrameTimer
 {
 public:

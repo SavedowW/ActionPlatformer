@@ -94,6 +94,8 @@ protected:
     InputComparatorTapAnyDown m_fallthroughInput;
     bool m_isIgnoringObstacles = false;
     std::set<int> m_ignoredObstacles;
+
+    std::array<FrameTimer<true>, 1> m_cooldowns;
 };
 
 #endif
