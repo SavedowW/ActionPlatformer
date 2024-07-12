@@ -24,6 +24,12 @@ inline Vector2<float> getTileCenter(Vector2<T> pos_)
     return gamedata::global::tileSize.mulComponents(pos_) - gamedata::global::tileSize / 2;
 }
 
+template<typename T>
+inline Vector2<float> getTilePos(Vector2<T> pos_)
+{
+    return gamedata::global::tileSize.mulComponents(pos_);
+}
+
 struct CollisionArea
 {
     void addStaticCollider(const SlopeCollider &cld_);

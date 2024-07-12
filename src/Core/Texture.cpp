@@ -31,6 +31,9 @@ Texture::Texture(Texture &&tex_)
 
 Texture &Texture::operator=(Texture &&rhs_)
 {
+    if (m_tex)
+        SDL_DestroyTexture(m_tex);
+
     m_tex = rhs_.m_tex;
     m_w = rhs_.m_w;
     m_h = rhs_.m_h;

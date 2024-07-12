@@ -17,17 +17,6 @@
 #include "CollisionArea.h"
 #include "DecorLayers.hpp"
 
-template<typename T, typename F, typename... Args>
-void makeUniqueLinearRange(T& t_, F(T::* f_)(std::unique_ptr<StaticDecor>&&), Vector2<float> source_, const Vector2<float> &dir_, int iters_, Args&&... args_)
-{
-    while (iters_--)
-    {
-        (t_.*f_)(std::make_unique<StaticDecor>(std::forward<Args>(args_)..., getTileCenter(source_)));
-
-        source_ += dir_;
-    }
-}
-
 template <typename BackType>
 class BattleLevel : public Level
 {
@@ -36,23 +25,17 @@ public:
     	Level(application_, size_, lvlId_),
     	m_camera({0.0f, 0.0f}, gamedata::global::baseResolution, m_size),
         m_pc(*application_, getTileCenter(Vector2{6, 59}), m_collisionArea),
-        m_decor(application_)
+        m_decor(application_),
+        m_tlmap(application_)
     {
         static_assert(std::is_base_of_v<Background, BackType>, "BackType of BattleLevel should be derived from Background class");
 
         m_hud.addWidget(std::make_unique<DebugDataWidget>(*m_application, m_camera, lvlId_, size_, m_lastFrameTimeMS));
         m_hud.addWidget(std::make_unique<DebugPlayerWidget>(*m_application, m_camera, &m_pc));
 
-        int texids[] = {
-            application_->getTextureManager()->getTexID("Tiles/Tile5"), // light plain ground
-            application_->getTextureManager()->getTexID("Tiles/Tile4"), // Upper ladder part
-            application_->getTextureManager()->getTexID("Tiles/Tile6"), // Lower ladder part
-            application_->getTextureManager()->getTexID("Tiles/Tile1"), // Transition to ladder up
-            application_->getTextureManager()->getTexID("Tiles/Tile2"), // Transition to ladder down
-            application_->getTextureManager()->getTexID("Tiles/Tile3"), // Small corner tile below ladder
-        };
+        m_tlmap.load("Tiles/Tilemap-sheet");
 
-        makeUniqueLinearRange(m_decor, &DecorLayers<1>::insert<0>, Vector2{1.0f, 61.0f}, Vector2{1.0f, 0.0f}, 8, application_, texids[0], SDL_FLIP_NONE);
+        /*makeUniqueLinearRange(m_decor, &DecorLayers<1>::insert<0>, Vector2{1.0f, 61.0f}, Vector2{1.0f, 0.0f}, 8, application_, texids[0], SDL_FLIP_NONE);
 
         //m_decor.insert<0>(std::make_unique<StaticDecor>(application_,  texids[3], SDL_FLIP_NONE, getTileCenter(Vector2{8, 61})));
         makeUniqueLinearRange(m_decor, &DecorLayers<1>::insert<0>, Vector2{8.0f, 60.0f}, Vector2{1.0f, -1.0f}, 5, application_, texids[1], SDL_FLIP_NONE);
@@ -63,7 +46,9 @@ public:
         makeUniqueLinearRange(m_decor, &DecorLayers<1>::insert<0>, Vector2{10.0f, 62.0f}, Vector2{1.0f, 1.0f}, 4, application_, texids[2], SDL_FLIP_HORIZONTAL);
 
         m_decor.insert<0>(std::make_unique<StaticDecor>(application_,  texids[4], SDL_FLIP_NONE, getTileCenter(Vector2{13, 56})));
-        makeUniqueLinearRange(m_decor, &DecorLayers<1>::insert<0>, Vector2{14.0f, 56.0f}, Vector2{1.0f, 0.0f}, 5, application_, texids[0], SDL_FLIP_NONE);
+        makeUniqueLinearRange(m_decor, &DecorLayers<1>::insert<0>, Vector2{14.0f, 56.0f}, Vector2{1.0f, 0.0f}, 5, application_, texids[0], SDL_FLIP_NONE);*/
+
+        m_decor.insert<0>(m_tlmap.getTile(getTilePos(Vector2{7, 59}), 190));
     }
 
     void receiveInput(EVENTS event, const float scale_) override
@@ -335,6 +320,7 @@ protected:
     CameraFocusArea *m_currentCamFocusArea = nullptr;
 
     DecorLayers<1> m_decor;
+    Tileset m_tlmap;
 };
 
 #endif

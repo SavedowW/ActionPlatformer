@@ -29,6 +29,7 @@ InputResolver.cpp
 Collider.cpp
 CollisionArea.cpp
 CameraFocusArea.cpp
+Tileset.cpp
 )
 
 add_library (Core ${CORE_SRC_FILES})
