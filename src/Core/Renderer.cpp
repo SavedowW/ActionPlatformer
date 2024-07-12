@@ -101,7 +101,7 @@ void Renderer::renderTexture(SDL_Texture* tex_, const SDL_FRect *src_, const SDL
     SDL_RenderCopyExF(m_renderer, tex_, &src, dst_, angle_, center_, flip_);
 }
 
-void Renderer::renderTexture(SDL_Texture *tex_, float x_, float y_, float w_, float h_, const SDL_Rect &src, const Camera &cam_)
+void Renderer::renderTexture(SDL_Texture *tex_, float x_, float y_, float w_, float h_, const SDL_Rect &src, const Camera &cam_, SDL_RendererFlip flip_)
 {
     Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
 	Vector2<int> texTL = Vector2{x_, y_} - camTL;
@@ -112,7 +112,7 @@ void Renderer::renderTexture(SDL_Texture *tex_, float x_, float y_, float w_, fl
     dst.w = w_;
     dst.h = h_;
 
-    SDL_RenderCopy(m_renderer, tex_, &src, &dst);
+    SDL_RenderCopyEx(m_renderer, tex_, &src, &dst, 0, nullptr, flip_);
 }
 
 /*void Renderer::renderTexture(SDL_Texture* tex_, float x_, float y_, const Camera &cam_, SDL_RendererFlip flip_)

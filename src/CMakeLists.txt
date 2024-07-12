@@ -19,6 +19,8 @@ Object.cpp
 PlayableCharacter.cpp
 DebugPlayerWidget.cpp
 StaticDecor.cpp
+DecorationBuilder.cpp
+DecorLayers.cpp
 )
 
 set(INCLUDE_DIRS
@@ -33,6 +35,7 @@ ${SDL2_LIBRARIES}
 SDL2_image::SDL2_image
 SDL2_mixer::SDL2_mixer
 ${lz4_LIBRARIES}
+nlohmann_json::nlohmann_json
 )
 
 if (TARGET sdl_ttf::sdl_ttf)

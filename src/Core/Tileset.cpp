@@ -22,16 +22,26 @@ void Tileset::load(const std::string &spritesheet_)
 
 Tile Tileset::getTile(const Vector2<float> pos_, unsigned gid_)
 {
-    const unsigned FLIPPED_HORIZONTALLY_FLAG  = 0x80000000;
-    const unsigned FLIPPED_VERTICALLY_FLAG    = 0x40000000;
-    const unsigned FLIPPED_DIAGONALLY_FLAG    = 0x20000000;
-    const unsigned ROTATED_HEXAGONAL_120_FLAG = 0x10000000;
-
-    /*gid_ &= ~(FLIPPED_HORIZONTALLY_FLAG |
+    auto flags = flagsToFlip(gid_);
+    gid_ &= ~(FLIPPED_HORIZONTALLY_FLAG |
         FLIPPED_VERTICALLY_FLAG |
         FLIPPED_DIAGONALLY_FLAG |
-        ROTATED_HEXAGONAL_120_FLAG);*/
+        ROTATED_HEXAGONAL_120_FLAG);
 
-    //return {m_tiles[gid_ - 1 - m_size.x], pos_};
-    return {m_tiles[gid_], pos_};
+    return {m_tiles[gid_ - 1], pos_, flags};
+}
+
+SDL_RendererFlip Tileset::flagsToFlip(unsigned guid_) const
+{
+    if (guid_ & FLIPPED_DIAGONALLY_FLAG)
+        return SDL_RendererFlip(SDL_FLIP_VERTICAL | SDL_FLIP_HORIZONTAL);
+
+    else if (guid_ & FLIPPED_HORIZONTALLY_FLAG)
+        return SDL_FLIP_HORIZONTAL;
+
+    else if (guid_ & FLIPPED_VERTICALLY_FLAG)
+        return SDL_FLIP_HORIZONTAL;
+
+    else
+        return SDL_FLIP_NONE;
 }
