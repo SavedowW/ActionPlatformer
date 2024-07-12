@@ -62,18 +62,21 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
                 TimelineProperty<Vector2<float>>(
                     {
                         {0, {0.0f, 0.0f}},
-                        {3, {0.0f, -6.0f}},
+                        {4, {0.0f, -6.0f}},
                     }), // Raw vel
                 TimelineProperty<Vector2<float>>(
                     {
                         {0, {1.0f, 1.0f}},
-                        {3, {0.5f, 1.0f}}
+                        {4, {0.5f, 1.0f}}
                     }), // Inr mul
                 TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
                 TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
-            .setOutdatedTransition(CharacterState::FLOAT, 3)
+            .setOutdatedTransition(CharacterState::FLOAT, 4)
             .setDrag(TimelineProperty<float>(0.0f))
             .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+            .setUpdateSpeedLimitData(
+                TimelineProperty<float>(),
+                TimelineProperty<float>(4))
         )
     );
 

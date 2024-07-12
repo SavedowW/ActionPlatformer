@@ -77,18 +77,18 @@ void Camera::setScale(const float scale_)
     normalizePosition();
 }
 
-void Camera::smoothMoveTowards(const Vector2<float> &pos_, float pow_, float divider_)
+void Camera::smoothMoveTowards(const Vector2<float> &pos_, float mindir_, float pow_, float divider_)
 {
     auto realTar = getCamPositionInBoundaries(pos_);
     auto deltaVec = realTar - m_pos;
-    if (deltaVec.getLen() == 0)
+    auto dlen = deltaVec.getLen() - mindir_;
+    if (dlen <= 0)
         return;
 
     auto offset = deltaVec.normalised();
-    float offsetLen = pow(deltaVec.getLen(), pow_) / divider_;
-    //float offsetLen = deltaVec.getLen() / 2.0f;
-    if (offsetLen > deltaVec.getLen())
-        offsetLen = deltaVec.getLen();
+    float offsetLen = pow(dlen, pow_) / divider_;
+    if (offsetLen > dlen)
+        offsetLen = dlen;
 
     //std::cout << "Move by " << offsetLen << std::endl;
     

@@ -82,7 +82,7 @@ struct SlopeCollider
         }
         else
         {
-            if (m_hasSlope && cld_.y + cld_.h <= m_lowestSlopePoint && (V_OVERLAP_ONLY ? 
+            if (m_hasSlope && (V_OVERLAP_ONLY ? 
                     getVerticalOverlap(highest, m_lowestSlopePoint, cld_.y, cld_.y + cld_.h) : 
                     getVerticalCollision(highest, m_lowestSlopePoint, cld_.y, cld_.y + cld_.h)))
                     {

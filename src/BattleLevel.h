@@ -199,7 +199,7 @@ protected:
                     }
                     else if (colres) // Touched inner box
                     {
-                        if (cld.m_obstacleId && !m_pc.touchedObstacleSide(cld.m_obstacleId) || cld.m_points[1].x < oldRightEdge)
+                        if (cld.m_obstacleId && !m_pc.touchedObstacleSide(cld.m_obstacleId))
                             continue;
 
                         std::cout << "Touched edge, teleporting to it, offset.x > 0\n";
@@ -228,7 +228,7 @@ protected:
                     }
                     else if (colres) // Touched inner box
                     {
-                        if (cld.m_obstacleId && !m_pc.touchedObstacleSide(cld.m_obstacleId) || cld.m_points[0].x > oldLeftEdge)
+                        if (cld.m_obstacleId && !m_pc.touchedObstacleSide(cld.m_obstacleId))
                             continue;
 
                         std::cout << "Touched edge, teleporting to it, offset.x < 0\n";
@@ -256,12 +256,12 @@ protected:
 
         if (updateFocus())
         {
-            m_camera.smoothMoveTowards(m_currentCamFocusArea->getCenter());
+            m_camera.smoothMoveTowards(m_currentCamFocusArea->getCenter(), 0);
             m_camera.smoothScaleTowards(m_currentCamFocusArea->getScale());
         }
         else
         {
-            m_camera.smoothMoveTowards(m_pc.getCameraFocusPoint());
+            m_camera.smoothMoveTowards(m_pc.getCameraFocusPoint(), 10.0f);
             m_camera.smoothScaleTowards(gamedata::global::maxCameraScale);
         }
         m_camera.update();

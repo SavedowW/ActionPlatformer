@@ -23,8 +23,7 @@ public:
     float getScale() const;
     void setScale(const float scale_);
     
-
-    void smoothMoveTowards(const Vector2<float> &pos_, float pow_ = 0.5f, float divider_ = 1.0f);
+    void smoothMoveTowards(const Vector2<float> &pos_, float mindir_, float pow_ = 0.5f, float divider_ = 0.5f);
     void smoothScaleTowards(const float tarScale_, float pow_ = 0.5f, float divider_ = 50.0f);
 
     Vector2<float> getPositionNormalizedValues();
