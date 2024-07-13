@@ -56,6 +56,9 @@ public:
     bool touchedObstacleSide(int obstacleId_);
     bool checkIgnoringObstacle(int obstacleId_) const;
 
+    void setSlopeAngle(float angle_);
+    int getSlopeAngle() const;
+
     Vector2<float> &accessPreEditVelocity();
     virtual float getInertiaDrag() const override;
     virtual Vector2<float> getInertiaMultiplier() const override;
@@ -98,6 +101,8 @@ protected:
     std::array<FrameTimer<true>, 1> m_cooldowns;
 
     Vector2<float> m_cameraOffset;
+
+    float m_onSlopeWithAngle;
 };
 
 #endif

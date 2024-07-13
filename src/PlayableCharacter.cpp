@@ -4,7 +4,8 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
     Object(application_, pos_),
     m_renderer(*application_.getRenderer()),
     m_inputResolver(application_.getInputSystem()),
-    m_collisionArea(cldArea_)
+    m_collisionArea(cldArea_),
+    m_onSlopeWithAngle(0)
 {
     m_inputResolver.subscribePlayer();
     m_inputResolver.setInputEnabled(true);
@@ -16,7 +17,8 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             &(new Action<CharacterState, false, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, decltype(*this)> (
                 CharacterState::PREJUMP_FORWARD, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/prejump"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver
             ))
-            ->setGroundedOnSwitch(true)
+            ->setAlignedSlopeMax(0.5f)
+            .setGroundedOnSwitch(true)
             .setGravity({{0.0f, 0.0f}})
             .setConvertVelocityOnSwitch(true)
             .setTransitionOnLostGround(CharacterState::FLOAT)
@@ -284,6 +286,16 @@ bool PlayableCharacter::checkIgnoringObstacle(int obstacleId_) const
     return m_isIgnoringObstacles.isActive() || m_ignoredObstacles.contains(obstacleId_);
 }
 
+void PlayableCharacter::setSlopeAngle(float angle_)
+{
+    m_onSlopeWithAngle = angle_;
+}
+
+int PlayableCharacter::getSlopeAngle() const
+{
+    return m_onSlopeWithAngle;
+}
+
 PlayableCharacter::CharacterGenericAction *PlayableCharacter::getAction(CharacterState charState_)
 {
     for (auto &el : m_actions)
@@ -308,7 +320,10 @@ void PlayableCharacter::loadAnimations(Application &application_)
 
 Vector2<float> PlayableCharacter::getCurrentGravity() const
 {
-    return m_currentAction->getGravity(m_framesInState);
+    auto grav = m_currentAction->getGravity(m_framesInState);
+    if (m_velocity.y + m_inertia.y > 0)
+        grav *= 1.3f;
+    return grav;
 }
 
 bool PlayableCharacter::transitionState()

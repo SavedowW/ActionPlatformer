@@ -294,9 +294,23 @@ public:
         const auto &inq = m_inputResolver.getInputQueue();
         auto currentState = ParentClass::m_owner.getCurrentActionState();
 
+        ORIENTATION SlopeDir = ORIENTATION::UNSPECIFIED;
+        if (ParentClass::m_owner.getSlopeAngle() > 0)
+            SlopeDir = ORIENTATION::RIGHT;
+        else if (ParentClass::m_owner.getSlopeAngle() < 0)
+            SlopeDir = ORIENTATION::LEFT;
+
+        bool possibleToLeft = (!m_alignedSlopeMax.isSet() || ParentClass::m_owner.getSlopeAngle() <= 0 || ParentClass::m_owner.getSlopeAngle() <= m_alignedSlopeMax);
+        bool possibleToRight = (!m_alignedSlopeMax.isSet() || ParentClass::m_owner.getSlopeAngle() >= 0 || -ParentClass::m_owner.getSlopeAngle() <= m_alignedSlopeMax);
+
+        InputComparatorFail failin;
+
         if (ParentClass::m_ownState == currentState && ATTEMPT_PROCEED)
         {
-            auto res = attemptInput<true, false>(m_cmpProcLeft, m_cmpProcRight, orientation, inq, extendBuffer_);
+            auto &lInput = (possibleToLeft ? static_cast<const InputComparator&>(m_cmpProcLeft) : static_cast<const InputComparator&>(failin));
+            auto &rInput = (possibleToRight ? static_cast<const InputComparator&>(m_cmpProcRight) : static_cast<const InputComparator&>(failin));
+
+            auto res = attemptInput<true, false>(lInput, rInput, orientation, inq, extendBuffer_);
             if (res != ORIENTATION::UNSPECIFIED)
             {
                 isProceed_ = true;
@@ -304,10 +318,20 @@ public:
             }
         }
 
+        auto &lInput = (possibleToLeft ? static_cast<const InputComparator&>(m_cmpLeft) : static_cast<const InputComparator&>(failin));
+        auto &rInput = (possibleToRight ? static_cast<const InputComparator&>(m_cmpRight) : static_cast<const InputComparator&>(failin));
+
         if (m_transitionableFrom[currentState])
-            return attemptInput<REQUIRE_ALIGNMENT, FORCE_REALIGN>(m_cmpLeft, m_cmpRight, orientation, inq, extendBuffer_);
+            return attemptInput<REQUIRE_ALIGNMENT, FORCE_REALIGN>(lInput, rInput, orientation, inq, extendBuffer_);
 
         return ORIENTATION::UNSPECIFIED;
+    }
+
+    inline Action<CHAR_STATES_T, REQUIRE_ALIGNMENT, FORCE_REALIGN, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT, OWNER_T> 
+        &setAlignedSlopeMax(float alignedSlopeMax_)
+    {
+        m_alignedSlopeMax = alignedSlopeMax_;
+        return *this;
     }
 
 protected:
@@ -319,7 +343,10 @@ protected:
     CMP_PROCEED_LEFT m_cmpProcLeft;
     CMP_PROCEED_RIGHT m_cmpProcRight;
     const InputResolver &m_inputResolver;
+
+    utils::OptionalProperty<float> m_alignedSlopeMax;
 };
+
 
 template<typename CHAR_STATES_T, typename OWNER_T>
 class ActionFloat: public Action<CHAR_STATES_T, false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, OWNER_T>
@@ -333,7 +360,7 @@ public:
     inline virtual void onSwitchTo() override
     {
         ParentAction::onSwitchTo();
-        if (ParentAction::m_owner.m_isIgnoringObstacles.isActive())
+        if (ParentAction::m_owner.m_isIgnoringObstacles.isActive() && abs(ParentAction::m_owner.m_velocity.x) > 0.8f)
             ParentAction::m_owner.m_velocity.y += 5.0f;
     }
 

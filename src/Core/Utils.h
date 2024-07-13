@@ -85,7 +85,7 @@ namespace utils
             return m_val;
         }
 
-        operator T()
+        operator T() const
         {
             if (!m_isSet)
                 throw std::string("Reading unset property");

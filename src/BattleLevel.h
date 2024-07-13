@@ -84,7 +84,7 @@ public:
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{30, 22}, Vector2{1, 0}, -1));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{31, 21}, Vector2{50, 1}, 0));
 
-        m_camFocusAreas.emplace_back(getTileCenter(Vector2{19.0f, 10.0f}), gamedata::global::minCameraSize.y, *m_application->getRenderer());
+        //m_camFocusAreas.emplace_back(getTileCenter(Vector2{19.0f, 10.0f}), gamedata::global::minCameraSize.y, *m_application->getRenderer());
         
     }
 
@@ -109,6 +109,7 @@ protected:
         m_pc.isIgnoringAllObstacles();
 
         bool groundCollision = false;
+        float touchedSlope = 0.0f;
         float highest = m_size.y;
 
         auto &vel = m_pc.accessVelocity();
@@ -144,6 +145,8 @@ protected:
                             continue;
 
                         pos.y = highest;
+                        if (cld.m_topAngleCoef != 0)
+                            touchedSlope = cld.m_topAngleCoef;
                         groundCollision = true;
                         pb = m_pc.getPushbox();
 
@@ -171,6 +174,8 @@ protected:
                             continue;
 
                         pos.y = highest;
+                        if (cld.m_topAngleCoef != 0)
+                            touchedSlope = cld.m_topAngleCoef;
                         pb = m_pc.getPushbox();
                         groundCollision = true;
 
@@ -207,6 +212,8 @@ protected:
                             continue;
 
                         pos.y = highest;
+                        if (cld.m_topAngleCoef != 0)
+                            touchedSlope = cld.m_topAngleCoef;
                         pb = m_pc.getPushbox();
                         groundCollision = true;
 
@@ -234,6 +241,7 @@ protected:
         }
 
         m_pc.cleanIgnoredObstacles();
+        m_pc.setSlopeAngle(touchedSlope);
 
         if (groundCollision)
         {

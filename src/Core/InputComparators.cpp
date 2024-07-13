@@ -49,7 +49,7 @@ bool InputComparatorTapUp::operator()(const InputQueue &inputQueue_, int extendB
     for (int i = 0; i <= lookAt; ++i)
     {
         auto &in = inputQueue_[i];
-        bool valid = in.m_dir == Vector2{0.0f, -1.0f} && in.m_inputs.at(INPUT_BUTTON::UP) == INPUT_BUTTON_STATE::PRESSED;
+        bool valid = in.m_dir.y == -1.0f && in.m_inputs.at(INPUT_BUTTON::UP) == INPUT_BUTTON_STATE::PRESSED;
         if (valid)
             return true;
     }
@@ -113,4 +113,9 @@ bool InputComparatorHoldUp::operator()(const InputQueue &inputQueue_, int extend
         return false;
 
     return inputQueue_[0].m_dir.y < 0;
+}
+
+bool InputComparatorFail::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+{
+    return false;
 }

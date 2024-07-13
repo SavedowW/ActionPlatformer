@@ -28,4 +28,5 @@ void DebugPlayerWidget::draw(Renderer &renderer_, Camera &camera_)
     m_textManager.renderText(std::string("Frames in state: ") + std::to_string(m_pc->m_framesInState), 0, {400, 1 + 22 * 4});
     m_textManager.renderText(std::string("Ignored obstacles: ") + ignoredObstacles, 0, {400, 1 + 22 * 5});
     m_textManager.renderText(cooldowns, 0, {400, 1 + 22 * 6});
+    m_textManager.renderText(std::string("On slope: ") + std::to_string(m_pc->m_onSlopeWithAngle), 0, {400, 1 + 22 * 7});
 }
