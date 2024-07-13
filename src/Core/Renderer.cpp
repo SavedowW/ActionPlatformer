@@ -298,11 +298,14 @@ void Renderer::updateScreen(const Camera &cam_)
 	SDL_RenderPresent(m_renderer);
 }
 
-void Renderer::setRenderTarget(SDL_Texture* tex_)
+SDL_Texture *Renderer::setRenderTarget(SDL_Texture* tex_)
 {
+    auto tmp = SDL_GetRenderTarget(m_renderer);
 	int i = SDL_SetRenderTarget(m_renderer, tex_);
 	if (i != 0)
 		std::cout << i << ": " << SDL_GetError() << std::endl;
+
+    return tmp;
 }
 
 SDL_Renderer *Renderer::getRenderer()

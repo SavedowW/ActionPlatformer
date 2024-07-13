@@ -51,7 +51,7 @@ public:
     void updateScreen(const Camera &cam_);
 
     //Render target settings
-    void setRenderTarget(SDL_Texture* tex_ = NULL);
+    SDL_Texture *setRenderTarget(SDL_Texture* tex_ = NULL);
 
 	SDL_Renderer *getRenderer();
 

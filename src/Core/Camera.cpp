@@ -81,8 +81,8 @@ void Camera::smoothMoveTowards(const Vector2<float> &pos_, float mindir_, float 
 {
     auto realTar = getCamPositionInBoundaries(pos_);
     auto deltaVec = realTar - m_pos;
-    auto dlen = deltaVec.getLen() - mindir_;
-    if (dlen <= 0)
+    auto dlen = deltaVec.getLen();
+    if (dlen <= mindir_)
         return;
 
     auto offset = deltaVec.normalised();

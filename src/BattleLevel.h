@@ -252,7 +252,7 @@ protected:
         }
         else
         {
-            m_camera.smoothMoveTowards(m_pc.getCameraFocusPoint(), 10.0f, 1.6f, 80.0f);
+            m_camera.smoothMoveTowards(m_pc.getCameraFocusPoint(), 5.0f, 1.6f, 80.0f);
             m_camera.smoothScaleTowards(gamedata::global::maxCameraScale);
         }
         m_camera.update();

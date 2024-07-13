@@ -25,8 +25,16 @@ DecorLayers DecorationBuilder::buildDecorLayers(const std::string &mapDescr_, Ti
     {
         int height = layer["height"];
         int width = layer["width"];
+
+        SDL_Color layerCfg;
+        if (layer.contains("tintcolor"))
+            layerCfg = utils::hexToCol<true>(layer["tintcolor"]);
+
+        if (layer.contains("opacity"))
+            layerCfg.a = (double)layer["opacity"] * 255;
+
         int pos = 0;
-        auto layerid = dmap.createLayer();
+        auto layerid = dmap.createLayer(layerCfg);
         for (const auto &tile : layer["data"])
         {
             unsigned int gid = tile;
