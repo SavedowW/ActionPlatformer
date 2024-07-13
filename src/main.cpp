@@ -16,7 +16,7 @@ int main(int argc, char* args[])
     std::cout << app.getBasePath() << std::endl;
     //RecipeParser pr(app.getAnimationManager(), app.getBasePath() + "/Resources/data.json");
 
-    app.setLevel(1, new Stage1(&app, {1024, 1024}, 1));
+    app.setLevel(1, new Stage1(&app, {2048, 2048}, 1));
     app.run();
 
     return 0;

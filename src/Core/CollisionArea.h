@@ -39,6 +39,8 @@ struct CollisionArea
 
     std::vector<SlopeCollider> m_staticCollisionMap;
     std::vector<int> m_obstacles;
+
+    int m_nextSlope = 0;
 };
 
 #endif

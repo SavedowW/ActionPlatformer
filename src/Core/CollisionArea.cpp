@@ -3,10 +3,12 @@
 
 void CollisionArea::addStaticCollider(const SlopeCollider &cld_)
 {
-    if (cld_.m_obstacleId)
-        m_obstacles.push_back(m_staticCollisionMap.size());
+    int insertId = (cld_.m_hasSlope ? m_nextSlope++ : m_staticCollisionMap.size());
+    m_staticCollisionMap.insert(m_staticCollisionMap.begin() + insertId, cld_);
 
-    m_staticCollisionMap.push_back(cld_);
+    if (cld_.m_obstacleId)
+        m_obstacles.push_back(insertId);
+
 }
 
 bool CollisionArea::getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_, const PlayableCharacter &char_) const

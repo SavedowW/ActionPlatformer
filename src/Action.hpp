@@ -330,6 +330,13 @@ public:
     {
     }
 
+    inline virtual void onSwitchTo() override
+    {
+        ParentAction::onSwitchTo();
+        if (ParentAction::m_owner.m_isIgnoringObstacles.isActive())
+            ParentAction::m_owner.m_velocity.y += 5.0f;
+    }
+
     inline virtual void onUpdate() override
     {
         ParentAction::onUpdate();

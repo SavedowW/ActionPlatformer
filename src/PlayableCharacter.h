@@ -92,10 +92,12 @@ protected:
     const CollisionArea &m_collisionArea;
 
     InputComparatorTapAnyDown m_fallthroughInput;
-    bool m_isIgnoringObstacles = false;
+    FrameTimer<false> m_isIgnoringObstacles;
     std::set<int> m_ignoredObstacles;
 
     std::array<FrameTimer<true>, 1> m_cooldowns;
+
+    Vector2<float> m_cameraOffset;
 };
 
 #endif

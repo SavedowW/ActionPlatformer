@@ -146,6 +146,8 @@ void PlayableCharacter::update()
     for (auto &cd : m_cooldowns)
         cd.update();
 
+    m_isIgnoringObstacles.update();
+
     m_inputResolver.update();
     if (transitionState())
     {
@@ -156,6 +158,18 @@ void PlayableCharacter::update()
     Object::update();
 
     m_preEditVelocity = m_velocity;
+
+    if ((m_velocity + m_inertia) != Vector2{0.0f, 0.0f})
+    {
+        auto tarcamoffset = utils::limitVectorLength((m_velocity + m_inertia).mulComponents(Vector2{1.0f, 0.0f}) * 30, 100.0f);
+        auto deltaVec = tarcamoffset - m_cameraOffset;
+        auto dlen = deltaVec.getLen();
+        auto ddir = deltaVec.normalised();
+        float offsetLen = pow(dlen, 2.0f) / 400.0f;
+        offsetLen = utils::clamp(offsetLen, 0.0f, dlen);
+
+        m_cameraOffset += ddir * offsetLen;
+    }
 }
 
 void PlayableCharacter::draw(Camera &cam_)
@@ -214,8 +228,9 @@ bool PlayableCharacter::attemptResetGround()
 
 bool PlayableCharacter::isIgnoringAllObstacles()
 {
-    m_isIgnoringObstacles = m_currentAction->canFallThrough(m_framesInState) && m_fallthroughInput(m_inputResolver.getInputQueue(), 0);
-    return m_isIgnoringObstacles;
+    if (m_currentAction->canFallThrough(m_framesInState) && m_fallthroughInput(m_inputResolver.getInputQueue(), 0))
+        m_isIgnoringObstacles.begin(5);
+    return m_isIgnoringObstacles.isActive();
 }
 
 void PlayableCharacter::cleanIgnoredObstacles()
@@ -233,7 +248,7 @@ void PlayableCharacter::cleanIgnoredObstacles()
 // true if not ignored
 bool PlayableCharacter::touchedObstacleTop(int obstacleId_)
 {
-    if (m_isIgnoringObstacles)
+    if (m_isIgnoringObstacles.isActive())
     {
         m_ignoredObstacles.insert(obstacleId_);
         return false;
@@ -250,7 +265,7 @@ bool PlayableCharacter::touchedObstacleBottom(int obstacleId_)
 
 bool PlayableCharacter::touchedObstacleSlope(int obstacleId_)
 {
-    if (m_isIgnoringObstacles)
+    if (m_isIgnoringObstacles.isActive())
     {
         m_ignoredObstacles.insert(obstacleId_);
         return false;
@@ -266,7 +281,7 @@ bool PlayableCharacter::touchedObstacleSide(int obstacleId_)
 
 bool PlayableCharacter::checkIgnoringObstacle(int obstacleId_) const
 {
-    return m_isIgnoringObstacles || m_ignoredObstacles.contains(obstacleId_);
+    return m_isIgnoringObstacles.isActive() || m_ignoredObstacles.contains(obstacleId_);
 }
 
 PlayableCharacter::CharacterGenericAction *PlayableCharacter::getAction(CharacterState charState_)
@@ -328,7 +343,7 @@ Collider PlayableCharacter::getPushbox() const
 
 Vector2<float> PlayableCharacter::getCameraFocusPoint() const
 {
-    return m_pos - Vector2{0.0f, 60.0f};
+    return m_pos - Vector2{0.0f, 60.0f} + m_cameraOffset;
 }
 
 CharacterState PlayableCharacter::getCurrentActionState() const
