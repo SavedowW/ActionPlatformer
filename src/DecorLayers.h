@@ -7,9 +7,10 @@
 
 struct TextureLayer
 {
-    TextureLayer(SDL_Texture *tex_);
+    TextureLayer(SDL_Texture *tex_, const Vector2<float> &parallaxFactor_);
     std::vector<Tile> m_tiles;
     Texture m_tex;
+    Vector2<float> m_parallaxFactor;
 };
 
 class DecorLayers
@@ -22,7 +23,7 @@ public:
     void draw(size_t layerId_, const Camera &cam_);
     void draw(const Camera &cam_);
 
-    size_t createLayer(const SDL_Color &colMul_);
+    size_t createLayer(const SDL_Color &colMul_, const Vector2<float> &parallaxFactor_);
 
     DecorLayers(DecorLayers &&rhs_);
     DecorLayers &operator=(DecorLayers &&rhs_);

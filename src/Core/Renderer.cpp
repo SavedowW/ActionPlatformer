@@ -91,14 +91,9 @@ void Renderer::renderTexture(SDL_Texture* tex_, float x_, float y_, float w_, fl
     SDL_RenderCopyExF(m_renderer, tex_, NULL, &dst, angle_, center_, flip_);
 }
 
-void Renderer::renderTexture(SDL_Texture* tex_, const SDL_FRect *src_, const SDL_FRect *dst_, float angle_, SDL_FPoint* center_, SDL_RendererFlip flip_)
+void Renderer::renderTexture(SDL_Texture* tex_, const SDL_Rect *src_, const SDL_Rect *dst_, float angle_, SDL_Point* center_, SDL_RendererFlip flip_)
 {
-    SDL_Rect src;
-    src.x = src_->x;
-    src.y = src_->y;
-    src.w = src_->w;
-    src.h = src_->h;
-    SDL_RenderCopyExF(m_renderer, tex_, &src, dst_, angle_, center_, flip_);
+    SDL_RenderCopyEx(m_renderer, tex_, src_, dst_, angle_, center_, flip_);
 }
 
 void Renderer::renderTexture(SDL_Texture *tex_, float x_, float y_, float w_, float h_, const SDL_Rect &src, const Camera &cam_, SDL_RendererFlip flip_)

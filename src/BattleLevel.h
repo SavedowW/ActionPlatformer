@@ -247,12 +247,12 @@ protected:
 
         if (updateFocus())
         {
-            m_camera.smoothMoveTowards(m_currentCamFocusArea->getCenter(), 0, 1.3f, 20.0f);
+            m_camera.smoothMoveTowards(m_currentCamFocusArea->getCenter(), {1.0f, 1.0f}, 0, 1.3f, 20.0f);
             m_camera.smoothScaleTowards(m_currentCamFocusArea->getScale());
         }
         else
         {
-            m_camera.smoothMoveTowards(m_pc.getCameraFocusPoint(), 5.0f, 1.6f, 80.0f);
+            m_camera.smoothMoveTowards(m_pc.getCameraFocusPoint(), {1.0f, 0.5f}, 5.0f, 1.6f, 80.0f);
             m_camera.smoothScaleTowards(gamedata::global::maxCameraScale);
         }
         m_camera.update();

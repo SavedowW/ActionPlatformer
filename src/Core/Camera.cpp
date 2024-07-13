@@ -77,10 +77,10 @@ void Camera::setScale(const float scale_)
     normalizePosition();
 }
 
-void Camera::smoothMoveTowards(const Vector2<float> &pos_, float mindir_, float pow_, float divider_)
+void Camera::smoothMoveTowards(const Vector2<float> &pos_, const Vector2<float> &deltaMul_, float mindir_, float pow_, float divider_)
 {
     auto realTar = getCamPositionInBoundaries(pos_);
-    auto deltaVec = realTar - m_pos;
+    auto deltaVec = (realTar - m_pos).mulComponents(deltaMul_);
     auto dlen = deltaVec.getLen();
     if (dlen <= mindir_)
         return;

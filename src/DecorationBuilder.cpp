@@ -26,15 +26,22 @@ DecorLayers DecorationBuilder::buildDecorLayers(const std::string &mapDescr_, Ti
         int height = layer["height"];
         int width = layer["width"];
 
-        SDL_Color layerCfg;
+        SDL_Color layerCfg = {255, 255, 255, 255};
+        Vector2<float> parallaxFactor {1.0f, 1.0f};
         if (layer.contains("tintcolor"))
             layerCfg = utils::hexToCol<true>(layer["tintcolor"]);
 
         if (layer.contains("opacity"))
             layerCfg.a = (double)layer["opacity"] * 255;
 
+        if (layer.contains("parallaxx"))
+            parallaxFactor.x = layer["parallaxx"];
+
+        if (layer.contains("parallaxy"))
+            parallaxFactor.y = layer["parallaxy"];
+
         int pos = 0;
-        auto layerid = dmap.createLayer(layerCfg);
+        auto layerid = dmap.createLayer(layerCfg, parallaxFactor);
         for (const auto &tile : layer["data"])
         {
             unsigned int gid = tile;
