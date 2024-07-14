@@ -1,5 +1,6 @@
 #include "TimelineProperty.h"
 #include "Vector2.h"
+#include "StateMarker.h"
 
 template<typename T>
 TimelineProperty<T>::TimelineProperty(std::vector<std::pair<uint32_t, T>> &&values_) :
@@ -178,6 +179,7 @@ template class TimelineProperty<int>;
 template class TimelineProperty<Vector2<float>>;
 template class TimelineProperty<Vector2<int>>;
 template class TimelineProperty<uint32_t>;
+template class TimelineProperty<StateMarker>;
 
 template class TimelinePropertyEditable<bool>;
 template class TimelinePropertyEditable<float>;

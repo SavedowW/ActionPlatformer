@@ -15,15 +15,64 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new Action<CharacterState, false, false, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail, decltype(*this)> (
-                CharacterState::ATTACK_1, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/attack1"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver
+                CharacterState::ATTACK1_2, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/attack1_2"), StateMarker{CharacterState::NONE, {}}, *this, m_inputResolver
             ))
             ->setRealignOnSwitch(true)
+            .setRecoveryFrames(TimelineProperty<StateMarker>({
+                {0, StateMarker{CharacterState::NONE, {}}},
+                {20, StateMarker{CharacterState::NONE, {CharacterState::PREJUMP, CharacterState::PREJUMP_FORWARD}}},
+                {40, StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::PREJUMP, CharacterState::PREJUMP_FORWARD}}}
+            }))
             .setGravity({{0.0f, 0.0f}})
             .setConvertVelocityOnSwitch(true)
             .setTransitionOnLostGround(CharacterState::FLOAT)
             .setMagnetLimit(TimelineProperty<float>({
                 {0, 8.0f},
-                {5, 20.0f},
+                {8, 30.0f},
+                {13, 8.0f},
+                }))
+            .setUpdateMovementData(
+                TimelineProperty<Vector2<float>>({
+                        {0, {1.0f, 0.0f}},
+                        {1, {1.0f, 1.0f}},
+                        {11, {0.0f, 1.0f}},
+                        {17, {1.0f, 1.0f}}
+                    }), // Vel mul
+                TimelineProperty<Vector2<float>>(
+                    {
+                        {0, {0.5f, 0.0f}},
+                        {8, {4.0f, 0.0f}},
+                        {11, {0.0f, 0.0f}},
+                    }), // Dir vel mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Raw vel
+                TimelineProperty<Vector2<float>>(
+                    {
+                        {0, {1.0f, 0.0f}},
+                        {1, {1.0f, 1.0f}}
+                    }), // Inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
+            .setOutdatedTransition(CharacterState::IDLE, 50)
+        )
+    );
+
+    m_actions.push_back(
+        std::unique_ptr<CharacterGenericAction>(
+            &(new Action<CharacterState, false, false, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail, decltype(*this)> (
+                CharacterState::ATTACK1_1, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/attack1_1"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver
+            ))
+            ->setRealignOnSwitch(true)
+            .setRecoveryFrames(TimelineProperty<StateMarker>({
+                {0, StateMarker{CharacterState::NONE, {}}},
+                {20, StateMarker{CharacterState::NONE, {CharacterState::PREJUMP, CharacterState::PREJUMP_FORWARD, CharacterState::ATTACK1_2}}},
+                {40, StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::PREJUMP, CharacterState::PREJUMP_FORWARD, CharacterState::ATTACK1_2}}}
+            }))
+            .setGravity({{0.0f, 0.0f}})
+            .setConvertVelocityOnSwitch(true)
+            .setTransitionOnLostGround(CharacterState::FLOAT)
+            .setMagnetLimit(TimelineProperty<float>({
+                {0, 8.0f},
+                {5, 25.0f},
                 {9, 8.0f},
                 }))
             .setUpdateMovementData(
@@ -354,7 +403,8 @@ void PlayableCharacter::loadAnimations(Application &application_)
     m_animations[animmgmgt.getAnimID("Char1/run")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/run"), LOOPMETHOD::JUMP_LOOP);
     m_animations[animmgmgt.getAnimID("Char1/prejump")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/prejump"), LOOPMETHOD::JUMP_LOOP);
     m_animations[animmgmgt.getAnimID("Char1/float")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/float"), LOOPMETHOD::NOLOOP);
-    m_animations[animmgmgt.getAnimID("Char1/attack1")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/attack1"), LOOPMETHOD::NOLOOP);
+    m_animations[animmgmgt.getAnimID("Char1/attack1_1")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/attack1_1"), LOOPMETHOD::NOLOOP);
+    m_animations[animmgmgt.getAnimID("Char1/attack1_2")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/attack1_2"), LOOPMETHOD::NOLOOP);
 
     m_currentAnimation = m_animations[animmgmgt.getAnimID("Char1/idle")].get();
     m_currentAnimation->reset();
@@ -408,9 +458,19 @@ CharacterState PlayableCharacter::getCurrentActionState() const
     return m_currentAction->m_ownState;
 }
 
+PlayableCharacter::CharacterGenericAction *PlayableCharacter::getCurrentAction() const
+{
+    return m_currentAction;
+}
+
 const char *PlayableCharacter::getCurrentActionName() const
 {
     return CharacterStateNames.at(m_currentAction->m_ownState);
+}
+
+uint32_t PlayableCharacter::getFramesInState() const
+{
+    return m_framesInState;
 }
 
 void PlayableCharacter::switchTo(CharacterState state_)

@@ -150,6 +150,12 @@ public:
         return *this;
     }
 
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &setRecoveryFrames(TimelineProperty<StateMarker> &&recoveryFrames_)
+    {
+        m_recoveryFrames = std::move(recoveryFrames_);
+        return *this;
+    }
+
     inline virtual void onSwitchTo()
     {
         m_owner.m_currentAnimation = m_owner.m_animations[m_anim].get();
@@ -229,6 +235,14 @@ public:
         return m_appliedInertiaMultiplier[currentFrame_];
     }
 
+    bool canCancelInto(CHAR_STATES_T state_, uint32_t frame_) const
+    {
+        if (m_recoveryFrames.isEmpty())
+            return false;
+            
+        return m_recoveryFrames[frame_].getMark((int)state_);
+    }
+
     inline virtual ORIENTATION isPossibleInDirection(int extendBuffer_, bool &isProceed_) const = 0;
 
     const CHAR_STATES_T m_ownState;
@@ -267,6 +281,8 @@ protected:
 
     FrameTimer<true> *m_cooldown = nullptr;
     uint32_t m_cooldownTime = 0;
+
+    TimelineProperty<StateMarker> m_recoveryFrames;
 };
 
 template<typename CHAR_STATES_T, bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN,
@@ -335,7 +351,7 @@ public:
         auto &lInput = (possibleToLeft ? static_cast<const InputComparator&>(m_cmpLeft) : static_cast<const InputComparator&>(failin));
         auto &rInput = (possibleToRight ? static_cast<const InputComparator&>(m_cmpRight) : static_cast<const InputComparator&>(failin));
 
-        if (m_transitionableFrom[currentState])
+        if (m_transitionableFrom[currentState] || ParentClass::m_owner.getCurrentAction()->canCancelInto(ParentClass::m_ownState, ParentClass::m_owner.getFramesInState()))
             return attemptInput<REQUIRE_ALIGNMENT, FORCE_REALIGN>(lInput, rInput, orientation, inq, extendBuffer_);
 
         return ORIENTATION::UNSPECIFIED;

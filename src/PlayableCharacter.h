@@ -14,7 +14,8 @@ enum class CharacterState
     RUN,
     PREJUMP,
     PREJUMP_FORWARD,
-    ATTACK_1,
+    ATTACK1_1,
+    ATTACK1_2,
     NONE
 };
 
@@ -24,7 +25,8 @@ const inline std::map<CharacterState, const char *> CharacterStateNames{
     {CharacterState::RUN, "RUN"},
     {CharacterState::PREJUMP, "PREJUMP"},
     {CharacterState::PREJUMP_FORWARD, "PREJUMP_FORWARD"},
-    {CharacterState::ATTACK_1, "ATTACK_1"},
+    {CharacterState::ATTACK1_1, "ATTACK1_1"},
+    {CharacterState::ATTACK1_2, "ATTACK1_2"},
 };
 
 class PlayableCharacter : public Object
@@ -42,7 +44,9 @@ public:
     Vector2<float> getCameraFocusPoint() const;
 
     CharacterState getCurrentActionState() const;
+    CharacterGenericAction *getCurrentAction() const;
     const char *getCurrentActionName() const;
+    uint32_t getFramesInState() const;
     void switchTo(CharacterState state_);
     void switchTo(CharacterGenericAction *charAction_);
     
