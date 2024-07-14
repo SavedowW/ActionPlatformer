@@ -149,7 +149,7 @@ public:
         m_cooldownTime = cooldownTime_;
         return *this;
     }
-    
+
     inline virtual void onSwitchTo()
     {
         m_owner.m_currentAnimation = m_owner.m_animations[m_anim].get();
@@ -284,6 +284,20 @@ public:
     {
     }
 
+    inline virtual void onSwitchTo() override
+    {
+        if (m_realignOnSwitchForInput)
+        {
+            auto indir = m_inputResolver.getCurrentInputDir();
+            if (indir.x > 0)
+                ParentClass::m_owner.setOwnOrientation(ORIENTATION::RIGHT);
+            else if (indir.x < 0)
+                ParentClass::m_owner.setOwnOrientation(ORIENTATION::LEFT);
+        }
+
+        ParentClass::onSwitchTo();
+    }
+
     inline virtual ORIENTATION isPossibleInDirection(int extendBuffer_, bool &isProceed_) const override
     {
         if (ParentClass::m_cooldown && ParentClass::m_cooldown->isActive())
@@ -334,6 +348,13 @@ public:
         return *this;
     }
 
+    inline Action<CHAR_STATES_T, REQUIRE_ALIGNMENT, FORCE_REALIGN, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT, OWNER_T> 
+        &setRealignOnSwitch(bool realignOnSwitch_)
+    {
+        m_realignOnSwitchForInput = realignOnSwitch_;
+        return *this;
+    }
+
 protected:
     using ParentClass = GenericAction<CHAR_STATES_T, OWNER_T>;
     const Collider m_hurtbox;
@@ -345,6 +366,7 @@ protected:
     const InputResolver &m_inputResolver;
 
     utils::OptionalProperty<float> m_alignedSlopeMax;
+    bool m_realignOnSwitchForInput = false;
 };
 
 

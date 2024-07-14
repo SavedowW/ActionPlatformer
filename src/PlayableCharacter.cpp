@@ -17,7 +17,8 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             &(new Action<CharacterState, false, false, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail, decltype(*this)> (
                 CharacterState::ATTACK_1, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/attack1"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver
             ))
-            ->setGravity({{0.0f, 0.0f}})
+            ->setRealignOnSwitch(true)
+            .setGravity({{0.0f, 0.0f}})
             .setConvertVelocityOnSwitch(true)
             .setTransitionOnLostGround(CharacterState::FLOAT)
             .setMagnetLimit(TimelineProperty<float>({
