@@ -14,6 +14,7 @@ enum class CharacterState
     RUN,
     PREJUMP,
     PREJUMP_FORWARD,
+    ATTACK_1,
     NONE
 };
 
@@ -23,6 +24,7 @@ const inline std::map<CharacterState, const char *> CharacterStateNames{
     {CharacterState::RUN, "RUN"},
     {CharacterState::PREJUMP, "PREJUMP"},
     {CharacterState::PREJUMP_FORWARD, "PREJUMP_FORWARD"},
+    {CharacterState::ATTACK_1, "ATTACK_1"},
 };
 
 class PlayableCharacter : public Object

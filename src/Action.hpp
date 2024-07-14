@@ -149,7 +149,7 @@ public:
         m_cooldownTime = cooldownTime_;
         return *this;
     }
-
+    
     inline virtual void onSwitchTo()
     {
         m_owner.m_currentAnimation = m_owner.m_animations[m_anim].get();

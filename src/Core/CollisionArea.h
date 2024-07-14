@@ -30,6 +30,22 @@ inline Vector2<float> getTilePos(Vector2<T> pos_)
     return gamedata::global::tileSize.mulComponents(pos_);
 }
 
+/*
+    TODO: dynamic collider views left-to-right and right-to-left
+    Otherwise there are ambiguous situations with wrong result
+    Exmaple:
+    C
+    CC <= PPPP
+    CCC   PPPP
+    CCCC  PPPP
+        C PPPP
+        CC
+        CCC
+        CCCC
+
+    Result depends on the order in which colliders are proceeded
+*/
+
 struct CollisionArea
 {
     void addStaticCollider(const SlopeCollider &cld_);

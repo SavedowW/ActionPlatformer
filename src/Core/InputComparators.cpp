@@ -119,3 +119,19 @@ bool InputComparatorFail::operator()(const InputQueue &inputQueue_, int extendBu
 {
     return false;
 }
+
+bool InputComparatorTapAttack::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+{
+    if (inputQueue_.getFilled() == 0)
+        return false;
+
+    int lookAt = std::min(inputQueue_.getFilled() - 1, gamedata::global::inputBufferLength + extendBuffer_);
+    for (int i = 0; i <= lookAt; ++i)
+    {
+        auto &in = inputQueue_[i];
+        if (in.m_inputs.at(INPUT_BUTTON::ATTACK) == INPUT_BUTTON_STATE::PRESSED)
+            return true;
+    }
+
+    return false;
+}

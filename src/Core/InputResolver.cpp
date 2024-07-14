@@ -12,6 +12,7 @@ void InputResolver::subscribePlayer()
     subscribe(EVENTS::RIGHT);
     subscribe(EVENTS::DOWN);
     subscribe(EVENTS::LEFT);
+    subscribe(EVENTS::ATTACK);
 }
 
 void InputResolver::unsubscribePlayer()
@@ -37,6 +38,10 @@ void InputResolver::receiveInput(EVENTS event_, const float scale_)
 
         case (EVENTS::RIGHT):
             m_currentInput.m_inputs[INPUT_BUTTON::RIGHT] = (scale_ == 1.0f ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::RELEASED);
+            break;
+        
+        case (EVENTS::ATTACK):
+            m_currentInput.m_inputs[INPUT_BUTTON::ATTACK] = (scale_ == 1.0f ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::RELEASED);
             break;
     }
 }

@@ -64,6 +64,12 @@ public:
     bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;
 };
 
+class InputComparatorTapAttack : public InputComparator
+{
+public:
+    bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;
+};
+
 using InputComparator_ptr = std::unique_ptr<InputComparator>;
 
 #endif

@@ -14,6 +14,44 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
 
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
+            &(new Action<CharacterState, false, false, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail, decltype(*this)> (
+                CharacterState::ATTACK_1, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/attack1"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver
+            ))
+            ->setGravity({{0.0f, 0.0f}})
+            .setConvertVelocityOnSwitch(true)
+            .setTransitionOnLostGround(CharacterState::FLOAT)
+            .setMagnetLimit(TimelineProperty<float>({
+                {0, 8.0f},
+                {5, 20.0f},
+                {9, 8.0f},
+                }))
+            .setUpdateMovementData(
+                TimelineProperty<Vector2<float>>({
+                        {0, {1.0f, 0.0f}},
+                        {1, {1.0f, 1.0f}},
+                        {8, {0.0f, 1.0f}},
+                        {9, {1.0f, 1.0f}}
+                    }), // Vel mul
+                TimelineProperty<Vector2<float>>(
+                    {
+                        {0, {0.5f, 0.0f}},
+                        {5, {4.0f, 0.0f}},
+                        {8, {0.0f, 0.0f}},
+                    }), // Dir vel mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Raw vel
+                TimelineProperty<Vector2<float>>(
+                    {
+                        {0, {1.0f, 0.0f}},
+                        {1, {1.0f, 1.0f}}
+                    }), // Inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
+            .setOutdatedTransition(CharacterState::IDLE, 46)
+        )
+    );
+
+    m_actions.push_back(
+        std::unique_ptr<CharacterGenericAction>(
             &(new Action<CharacterState, false, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, decltype(*this)> (
                 CharacterState::PREJUMP_FORWARD, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/prejump"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver
             ))
@@ -148,6 +186,7 @@ void PlayableCharacter::update()
     for (auto &cd : m_cooldowns)
         cd.update();
 
+
     m_isIgnoringObstacles.update();
 
     m_inputResolver.update();
@@ -156,6 +195,7 @@ void PlayableCharacter::update()
         m_currentAction->onUpdate();
         m_currentAnimation->update();
     }
+    std::cout << m_inputResolver.getInputQueue()[0] << std::endl;
 
     Object::update();
 
@@ -313,6 +353,7 @@ void PlayableCharacter::loadAnimations(Application &application_)
     m_animations[animmgmgt.getAnimID("Char1/run")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/run"), LOOPMETHOD::JUMP_LOOP);
     m_animations[animmgmgt.getAnimID("Char1/prejump")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/prejump"), LOOPMETHOD::JUMP_LOOP);
     m_animations[animmgmgt.getAnimID("Char1/float")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/float"), LOOPMETHOD::NOLOOP);
+    m_animations[animmgmgt.getAnimID("Char1/attack1")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/attack1"), LOOPMETHOD::NOLOOP);
 
     m_currentAnimation = m_animations[animmgmgt.getAnimID("Char1/idle")].get();
     m_currentAnimation->reset();

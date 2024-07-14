@@ -24,7 +24,7 @@ public:
     BattleLevel(Application *application_, const Vector2<float>& size_, int lvlId_) :
     	Level(application_, size_, lvlId_),
     	m_camera({0.0f, 0.0f}, gamedata::global::baseResolution, m_size),
-        m_pc(*application_, getTileCenter(Vector2{30, 19}), m_collisionArea),
+        m_pc(*application_, getTileCenter(Vector2{29, 18}), m_collisionArea),
         m_decor(application_),
         m_tlmap(application_)
     {
@@ -57,18 +57,18 @@ public:
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{7, 19}, Vector2{1, 1}, -1, 1));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{8, 18}, Vector2{1, 1}, -1, 1));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{9, 17}, Vector2{1, 1}, -1, 1));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{10, 16}, Vector2{1, 0}, -1, 1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{10, 16}, Vector2{1, 1}, -1, 1));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{11, 15}, Vector2{2, 1}, 0));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{13, 15}, Vector2{1, 1}, -0.5));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{14.0f, 14.5f}, Vector2{9, 1}, 0));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{23.0f, 14.5f}, Vector2{1, 1}, 0.5));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{24, 15}, Vector2{1, 1}, 0));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{25, 15}, Vector2{1, 1}, 1, 2));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{26, 16}, Vector2{1, 1}, 1, 2));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{27, 17}, Vector2{1, 1}, 1, 2));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{28, 18}, Vector2{1, 1}, 1, 2));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{29, 19}, Vector2{1, 1}, 1, 2));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{30, 20}, Vector2{1, 1}, 1, 2));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{25, 15}, Vector2{6, 6}, 1, 2));
+        //m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{26, 16}, Vector2{1, 1}, 1, 2));
+        //m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{27, 17}, Vector2{1, 1}, 1, 2));
+        //m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{28, 18}, Vector2{1, 1}, 1, 2));
+        //m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{29, 19}, Vector2{1, 1}, 1, 2));
+        //m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{30, 20}, Vector2{1, 1}, 1, 2));
 
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{6, 20}, Vector2{1, 1}, 1));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{7, 21}, Vector2{1, 1}, 1));
@@ -77,14 +77,14 @@ public:
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{10, 24}, Vector2{1, 1}, 1));
 
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{11, 25}, Vector2{15, 1}, 0));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{26, 25}, Vector2{1, 0}, -1));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{27, 24}, Vector2{1, 0}, -1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{26, 25}, Vector2{1, 1}, -1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{27, 24}, Vector2{1, 1}, -1));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{28, 23}, Vector2{1, 1}, 0));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{29, 23}, Vector2{1, 0}, -1));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{30, 22}, Vector2{1, 0}, -1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{29, 23}, Vector2{1, 1}, -1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{30, 22}, Vector2{1, 1}, -1));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{31, 21}, Vector2{50, 1}, 0));
 
-        //m_camFocusAreas.emplace_back(getTileCenter(Vector2{19.0f, 10.0f}), gamedata::global::minCameraSize.y, *m_application->getRenderer());
+        m_camFocusAreas.emplace_back(getTileCenter(Vector2{19.0f, 10.0f}), Vector2{gamedata::global::minCameraSize.x, 1000.0f}, *m_application->getRenderer());
         
     }
 
@@ -255,7 +255,7 @@ protected:
 
         if (updateFocus())
         {
-            m_camera.smoothMoveTowards(m_currentCamFocusArea->getCenter(), {1.0f, 1.0f}, 0, 1.3f, 20.0f);
+            m_camera.smoothMoveTowards(m_currentCamFocusArea->getCameraTargetPosition(m_pc.getCameraFocusPoint()), {1.0f, 1.0f}, 0, 1.3f, 20.0f);
             m_camera.smoothScaleTowards(m_currentCamFocusArea->getScale());
         }
         else

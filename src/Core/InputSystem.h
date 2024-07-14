@@ -17,6 +17,7 @@ enum class EVENTS
 	RIGHT,
 	DOWN,
 	LEFT,
+	ATTACK,
 	FN1,
 	FN2,
 	FN3,
@@ -44,6 +45,7 @@ private:
 		{SDLK_d, EVENTS::RIGHT},
 		{SDLK_s, EVENTS::DOWN},
 		{SDLK_a, EVENTS::LEFT},
+		{SDLK_i, EVENTS::ATTACK},
 		{SDLK_MINUS, EVENTS::FN1},
 		{SDLK_EQUALS, EVENTS::FN2},
 		{SDLK_0, EVENTS::FN3}

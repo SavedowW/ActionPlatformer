@@ -5,7 +5,7 @@
 #include "Vector2.h"
 #include <map>
 
-enum class INPUT_BUTTON {UP, DOWN, LEFT, RIGHT};
+enum class INPUT_BUTTON {UP, DOWN, LEFT, RIGHT, ATTACK};
 enum class INPUT_BUTTON_STATE {PRESSED, HOLD, RELEASED, OFF};
 
 struct InputState
@@ -14,7 +14,8 @@ struct InputState
         {INPUT_BUTTON::UP, INPUT_BUTTON_STATE::OFF},
         {INPUT_BUTTON::DOWN, INPUT_BUTTON_STATE::OFF},
         {INPUT_BUTTON::LEFT, INPUT_BUTTON_STATE::OFF},
-        {INPUT_BUTTON::RIGHT, INPUT_BUTTON_STATE::OFF}
+        {INPUT_BUTTON::RIGHT, INPUT_BUTTON_STATE::OFF},
+        {INPUT_BUTTON::ATTACK, INPUT_BUTTON_STATE::OFF}
     };
     Vector2<int> m_dir{0, 0};
 
@@ -31,12 +32,12 @@ struct InputState
     InputState &operator=(InputState &&rhs_);
 };
 
-inline std::ostream& operator<< (std::ostream& out_, InputState& inState_)
+inline std::ostream& operator<< (std::ostream& out_, const InputState& inState_)
 {
     out_ << "(" << inState_.m_dir << "): ";
-    for (auto &el : {INPUT_BUTTON::UP, INPUT_BUTTON::DOWN, INPUT_BUTTON::LEFT, INPUT_BUTTON::RIGHT})
+    for (auto &el : {INPUT_BUTTON::UP, INPUT_BUTTON::DOWN, INPUT_BUTTON::LEFT, INPUT_BUTTON::RIGHT, INPUT_BUTTON::ATTACK})
     {
-        out_ << static_cast<int>(inState_.m_inputs[el]);
+        out_ << static_cast<int>(inState_.m_inputs.at(el));
     }
     return out_;
 }
