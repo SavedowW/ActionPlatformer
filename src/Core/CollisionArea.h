@@ -2,6 +2,7 @@
 #define COLLISION_AREA_H_
 #include "Collider.h"
 #include "GameData.h"
+#include "Trigger.h"
 #include <set>
 
 class PlayableCharacter;
@@ -50,11 +51,16 @@ struct CollisionArea
 {
     void addStaticCollider(const SlopeCollider &cld_);
     bool getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_, const PlayableCharacter &char_) const;
+    void finalize();
+    bool isAreaFree(const Collider &cld_, bool considerObstacles_);
+    const Trigger *getOverlappedTrigger(const Collider &cld_, Trigger::Tag tag_) const;
 
     std::set<int> getPlayerTouchingObstacles(const Collider &playerPb_) const;
 
     std::vector<SlopeCollider> m_staticCollisionMap;
     std::vector<int> m_obstacles;
+
+    std::vector<Trigger> m_triggers;
 
     int m_nextSlope = 0;
 };

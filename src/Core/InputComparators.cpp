@@ -115,6 +115,14 @@ bool InputComparatorHoldUp::operator()(const InputQueue &inputQueue_, int extend
     return inputQueue_[0].m_dir.y < 0;
 }
 
+bool InputComparatorHoldDown::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+{
+    if (inputQueue_.getFilled() == 0)
+        return false;
+
+    return inputQueue_[0].m_dir.y > 0;
+}
+
 bool InputComparatorFail::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
 {
     return false;
@@ -130,6 +138,78 @@ bool InputComparatorTapAttack::operator()(const InputQueue &inputQueue_, int ext
     {
         auto &in = inputQueue_[i];
         if (in.m_inputs.at(INPUT_BUTTON::ATTACK) == INPUT_BUTTON_STATE::PRESSED)
+            return true;
+    }
+
+    return false;
+}
+
+bool InputComparatorTapAnyRight::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+{
+    if (inputQueue_.getFilled() == 0)
+        return false;
+
+    int lookAt = std::min(inputQueue_.getFilled() - 1, gamedata::global::inputBufferLength + extendBuffer_);
+    for (int i = 0; i <= lookAt; ++i)
+    {
+        auto &in = inputQueue_[i];
+        if (in.m_dir.x != -1 && in.m_dir != Vector2{0.0f, 0.0f} && (
+            in.m_inputs.at(INPUT_BUTTON::UP) == INPUT_BUTTON_STATE::PRESSED ||
+            in.m_inputs.at(INPUT_BUTTON::RIGHT) == INPUT_BUTTON_STATE::PRESSED ||
+            in.m_inputs.at(INPUT_BUTTON::DOWN) == INPUT_BUTTON_STATE::PRESSED
+        ))
+            return true;
+    }
+
+    return false;
+}
+
+bool InputComparatorTapAnyLeft::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+{
+    if (inputQueue_.getFilled() == 0)
+        return false;
+
+    int lookAt = std::min(inputQueue_.getFilled() - 1, gamedata::global::inputBufferLength + extendBuffer_);
+    for (int i = 0; i <= lookAt; ++i)
+    {
+        auto &in = inputQueue_[i];
+        if (in.m_dir.x != 1 && in.m_dir != Vector2{0.0f, 0.0f} && (
+            in.m_inputs.at(INPUT_BUTTON::UP) == INPUT_BUTTON_STATE::PRESSED ||
+            in.m_inputs.at(INPUT_BUTTON::LEFT) == INPUT_BUTTON_STATE::PRESSED ||
+            in.m_inputs.at(INPUT_BUTTON::DOWN) == INPUT_BUTTON_STATE::PRESSED
+        ))
+            return true;
+    }
+
+    return false;
+}
+
+bool InputComparatorBufferedHoldRight::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+{
+    if (inputQueue_.getFilled() == 0)
+        return false;
+
+    int lookAt = std::min(inputQueue_.getFilled() - 1, gamedata::global::inputBufferLength + extendBuffer_);
+    for (int i = 0; i <= lookAt; ++i)
+    {
+        auto &in = inputQueue_[i];
+        if (in.m_dir.x > 0)
+            return true;
+    }
+
+    return false;
+}
+
+bool InputComparatorBufferedHoldLeft::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+{
+    if (inputQueue_.getFilled() == 0)
+        return false;
+
+    int lookAt = std::min(inputQueue_.getFilled() - 1, gamedata::global::inputBufferLength + extendBuffer_);
+    for (int i = 0; i <= lookAt; ++i)
+    {
+        auto &in = inputQueue_[i];
+        if (in.m_dir.x < 0)
             return true;
     }
 

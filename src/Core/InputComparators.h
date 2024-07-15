@@ -28,11 +28,30 @@ public:
     bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;
 };
 
+class InputComparatorBufferedHoldRight : public InputComparator
+{
+public:
+    bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;
+};
+
+class InputComparatorBufferedHoldLeft : public InputComparator
+{
+public:
+    bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;
+};
+
 class InputComparatorHoldUp : public InputComparator
 {
 public:
     bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;
 };
+
+class InputComparatorHoldDown : public InputComparator
+{
+public:
+    bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;
+};
+
 
 class InputComparatorTapUp : public InputComparator
 {
@@ -65,6 +84,18 @@ public:
 };
 
 class InputComparatorTapAttack : public InputComparator
+{
+public:
+    bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;
+};
+
+class InputComparatorTapAnyRight : public InputComparator
+{
+public:
+    bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;
+};
+
+class InputComparatorTapAnyLeft : public InputComparator
 {
 public:
     bool operator()(const InputQueue &inputQueue_, int extendBuffer_) const final;

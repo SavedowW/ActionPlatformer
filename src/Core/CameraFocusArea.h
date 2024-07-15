@@ -13,6 +13,7 @@ public:
     bool checkIfEnters(const Collider &cld_, bool isOwned_) const;
     float getScale() const;
     void draw(const Camera &cam_);
+    void overrideFocusArea(const Collider &area_);
 
 private:
     CameraFocusArea(float x_, float y_, float w_, float h_, Renderer &renderer_);
@@ -22,6 +23,8 @@ private:
 
     Vector2<float> m_minCameraPos;
     Vector2<float> m_maxCameraPos;
+
+    Collider m_useFocusArea;
 
 };
 

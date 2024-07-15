@@ -18,7 +18,7 @@ public:
     Vector2<float> &accessPos();
     Vector2<float> getOwnHorDir() const;
     void velocityToInertia();
-    virtual float getInertiaDrag() const;
+    virtual Vector2<float> getInertiaDrag() const;
     virtual Vector2<float> getInertiaMultiplier() const;
     Vector2<float> getPosOffest() const;
 

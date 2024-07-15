@@ -15,12 +15,22 @@ void Object::update()
 {
     m_velocity += getCurrentGravity();
 
+    auto drag = getInertiaDrag();
+
     if (m_inertia.x != 0)
     {
         auto absInertia = abs(m_inertia.x);
         auto m_inertiaSign = m_inertia.x / abs(m_inertia.x);
-        absInertia = std::max(absInertia - getInertiaDrag(), 0.0f);
+        absInertia = std::max(absInertia - drag.x, 0.0f);
         m_inertia.x = m_inertiaSign * absInertia;
+    }
+
+    if (m_inertia.y != 0)
+    {
+        auto absInertia = abs(m_inertia.y);
+        auto m_inertiaSign = m_inertia.y / abs(m_inertia.y);
+        absInertia = std::max(absInertia - drag.y, 0.0f);
+        m_inertia.y = m_inertiaSign * absInertia;
     }
 }
 
@@ -60,9 +70,9 @@ void Object::velocityToInertia()
     m_velocity = {0.0f, 0.0f};
 }
 
-float Object::getInertiaDrag() const
+Vector2<float> Object::getInertiaDrag() const
 {
-    return 1.0f;
+    return {1.0f, 0.0f};
 }
 
 Vector2<float> Object::getInertiaMultiplier() const

@@ -4,6 +4,7 @@
 #include "Object.h"
 #include "InputResolver.h"
 #include "InputComparators.h"
+#include "CollisionArea.h"
 
 /*
     Attempt provided input considering alignment rules
@@ -52,7 +53,7 @@ public:
         m_ownState(ownState_),
         m_owner(owner_),
         m_anim(anim_),
-        m_drag(1),
+        m_drag({1.0f, 0.0f}),
         m_appliedInertiaMultiplier({1.0f, 1.0f})
     {
     }
@@ -75,7 +76,7 @@ public:
         return *this;
     }
 
-    inline GenericAction<CHAR_STATES_T, OWNER_T> &setDrag(TimelineProperty<float> &&drag_)
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &setDrag(TimelineProperty<Vector2<float>> &&drag_)
     {
         m_drag = std::move(drag_);
         return *this;
@@ -190,8 +191,13 @@ public:
         if (m_transitionOnOutdated.isSet())
         {
             if (m_owner.m_framesInState >= m_duration)
-                m_owner.switchTo(m_transitionOnOutdated);
+                onOutdated();
         }
+    }
+
+    inline virtual void onOutdated()
+    {
+        m_owner.switchTo(m_transitionOnOutdated);
     }
 
     inline virtual void onTouchedGround()
@@ -220,7 +226,7 @@ public:
         return m_magnetLimit[currentFrame_];
     }
 
-    virtual float getDrag(uint32_t currentFrame_) const
+    virtual Vector2<float> getDrag(uint32_t currentFrame_) const
     {
         return m_drag[currentFrame_];
     }
@@ -264,7 +270,7 @@ protected:
 
     TimelineProperty<Vector2<float>> m_appliedInertiaMultiplier;
 
-    TimelineProperty<float> m_drag;
+    TimelineProperty<Vector2<float>> m_drag;
 
     bool m_convertVelocityOnSwitch = false;
 
@@ -441,6 +447,174 @@ protected:
     InputComparatorHoldRight m_driftRightInput;
     InputComparatorHoldUp m_driftUpInput;
 
+};
+
+template<typename CHAR_STATES_T, typename OWNER_T>
+class WallClingAction: public Action<CHAR_STATES_T, false, true, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail, OWNER_T>
+{
+public:
+    WallClingAction(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, CHAR_STATES_T switchOnLeave_) :
+        ParentAction(actionState_, hurtbox_, anim_, transitionableFrom_, owner_, inputResolver_),
+        m_switchOnLeave(switchOnLeave_)
+    {
+        ParentGenericAction::setGravity(TimelineProperty<Vector2<float>>({0.0f, 0.020f}));
+        ParentGenericAction::setConvertVelocityOnSwitch(true);
+    }
+
+    inline virtual ORIENTATION isPossibleInDirection(int extendBuffer_, bool &isProceed_) const override
+    {
+        auto &owner = ParentGenericAction::m_owner;
+        auto currentState = owner.getCurrentActionState();
+
+        if (ParentGenericAction::m_cooldown && ParentGenericAction::m_cooldown->isActive() ||
+        (!ParentAction::m_transitionableFrom[currentState] && !owner.getCurrentAction()->canCancelInto(ParentGenericAction::m_ownState, owner.getFramesInState())))
+            return ORIENTATION::UNSPECIFIED;        
+
+        isProceed_ = false;
+        auto orientation = owner.getOwnOrientation();
+        ParentAction::m_inputResolver.getInputQueue();
+        const auto &inq = ParentAction::m_inputResolver.getInputQueue();
+
+        auto *currentTrigger = owner.m_collisionArea.getOverlappedTrigger(owner.getPushbox(), Trigger::Tag::ClingArea);
+        if (!currentTrigger)
+            return ORIENTATION::UNSPECIFIED;
+
+        bool possibleToLeft = (*currentTrigger & Trigger::Tag::LEFT);
+        bool possibleToRight = (*currentTrigger & Trigger::Tag::RIGHT);
+        if (!possibleToLeft && !possibleToRight)
+            return ORIENTATION::UNSPECIFIED;
+
+        InputComparatorFail failin;
+
+        auto &lInput = (possibleToLeft ? static_cast<const InputComparator&>(ParentAction::m_cmpLeft) : static_cast<const InputComparator&>(failin));
+        auto &rInput = (possibleToRight ? static_cast<const InputComparator&>(ParentAction::m_cmpRight) : static_cast<const InputComparator&>(failin));
+
+        return attemptInput<false, true>(lInput, rInput, orientation, inq, extendBuffer_);
+
+        return ORIENTATION::UNSPECIFIED;
+    }
+
+    inline virtual void onSwitchTo() override
+    {
+        ParentAction::onSwitchTo();
+
+        auto &owner = ParentGenericAction::m_owner;
+        if (owner.m_inertia.y > 0)
+            owner.m_inertia.y = 0;
+        if (owner.m_velocity.y > 0)
+            owner.m_velocity.y = 0;
+
+        owner.m_velocity.x = 0;
+        owner.m_inertia.x = 0;
+
+        m_currentTrigger = owner.m_collisionArea.getOverlappedTrigger(owner.getPushbox(), Trigger::Tag::ClingArea);
+
+        auto pb = owner.getPushbox();
+
+        if (*m_currentTrigger & Trigger::Tag::LEFT)
+            owner.m_pos.x = m_currentTrigger->x + m_currentTrigger->w - pb.w / 2;
+        else if (*m_currentTrigger & Trigger::Tag::RIGHT)
+            owner.m_pos.x = m_currentTrigger->x + pb.w / 2;
+    }
+
+    inline virtual void onUpdate() override
+    {
+        ParentAction::onUpdate();
+
+        auto &owner = ParentGenericAction::m_owner;
+        auto playercld = owner.getPushbox();
+
+        if (!m_currentTrigger->checkCollisionWith<true, false>(playercld))
+        {
+            if (playercld.y >= m_currentTrigger->y + m_currentTrigger->h)
+                owner.switchTo(m_switchOnLeave);
+            else
+                owner.m_pos.y = m_currentTrigger->y;
+        }
+    }
+
+protected:
+    using ParentGenericAction = GenericAction<CHAR_STATES_T, OWNER_T>;
+    using ParentAction = Action<CHAR_STATES_T, false, true, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail, OWNER_T>;
+    const Trigger *m_currentTrigger = nullptr;
+    CHAR_STATES_T m_switchOnLeave;
+
+};
+
+template<typename CHAR_STATES_T, typename OWNER_T>
+class WallClingPrejump: public Action<CHAR_STATES_T, true, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail, OWNER_T>
+{
+public:
+    WallClingPrejump(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_) :
+        ParentAction(actionState_, hurtbox_, anim_, transitionableFrom_, owner_, inputResolver_)
+    {
+        ParentGenericAction::setGravity(TimelineProperty<Vector2<float>>({0.0f, 0.020f}));
+        ParentGenericAction::setConvertVelocityOnSwitch(true);
+    }
+
+    inline virtual void onSwitchTo() override
+    {
+        ParentAction::onSwitchTo();
+
+        auto &owner = ParentGenericAction::m_owner;
+        if (owner.m_inertia.y > 0)
+            owner.m_inertia.y = 0;
+        if (owner.m_velocity.y > 0)
+            owner.m_velocity.y = 0;
+    }
+
+    inline virtual void onOutdated() override
+    {
+        ParentAction::m_inputResolver.getInputQueue();
+        const auto &inq = ParentAction::m_inputResolver.getInputQueue();
+
+        Vector2<float> targetSpeed;
+        int orient = ParentGenericAction::m_owner.getOwnHorDir().x;
+
+        bool upIn = m_u(inq, 0);
+        bool sideIn = (orient > 0 ? m_r(inq, 0) : m_l(inq, 0));
+        bool downIn = m_d(inq, 0);
+
+        bool fall = false;
+
+        if (upIn)
+        {
+            if (sideIn)
+                targetSpeed = {orient * 5.0f, -5.5f};
+            else
+                targetSpeed = {orient * 1.0f, -6.5f};
+        }
+        else if (sideIn)
+        {
+            if (downIn)
+                targetSpeed = {orient * 6.0f, 0.0f};
+            else
+                targetSpeed = {orient * 6.0f, -3.0f};
+        }
+        else
+            fall = true;
+
+        std::cout << targetSpeed << std::endl;
+
+        if (fall)
+        {
+            ParentAction::m_owner.accessVelocity() = {0.0f, 0.1f};
+            ParentAction::m_owner.accessInertia() = {0.0f, 0.0f};
+        }
+        else
+            ParentAction::m_owner.accessVelocity() += targetSpeed;
+
+        ParentAction::onOutdated();
+    }
+
+protected:
+    using ParentGenericAction = GenericAction<CHAR_STATES_T, OWNER_T>;
+    using ParentAction = Action<CHAR_STATES_T, true, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail, OWNER_T>;
+
+    InputComparatorHoldLeft m_l;
+    InputComparatorHoldRight m_r;
+    InputComparatorHoldUp m_u;
+    InputComparatorHoldDown m_d;
 };
 
 #endif

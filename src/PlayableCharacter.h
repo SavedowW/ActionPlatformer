@@ -16,6 +16,8 @@ enum class CharacterState
     PREJUMP_FORWARD,
     ATTACK1_1,
     ATTACK1_2,
+    WALL_CLING,
+    WALL_PREJUMP,
     NONE
 };
 
@@ -27,6 +29,8 @@ const inline std::map<CharacterState, const char *> CharacterStateNames{
     {CharacterState::PREJUMP_FORWARD, "PREJUMP_FORWARD"},
     {CharacterState::ATTACK1_1, "ATTACK1_1"},
     {CharacterState::ATTACK1_2, "ATTACK1_2"},
+    {CharacterState::WALL_CLING, "WALL_CLING"},
+    {CharacterState::WALL_PREJUMP, "WALL_PREJUMP"},
 };
 
 class PlayableCharacter : public Object
@@ -34,6 +38,8 @@ class PlayableCharacter : public Object
 protected:
     using CharacterGenericAction = GenericAction<CharacterState, PlayableCharacter&>;
     using CharacterFloatAction = ActionFloat<CharacterState, PlayableCharacter&>;
+    using CharacterWallClingAction = WallClingAction<CharacterState, PlayableCharacter&>;
+    using CharacterWallPrejumpAction = WallClingPrejump<CharacterState, PlayableCharacter&>;
 
 public:
     PlayableCharacter(Application &application_, Vector2<float> pos_, const CollisionArea &cldArea_);
@@ -66,7 +72,7 @@ public:
     int getSlopeAngle() const;
 
     Vector2<float> &accessPreEditVelocity();
-    virtual float getInertiaDrag() const override;
+    virtual Vector2<float> getInertiaDrag() const override;
     virtual Vector2<float> getInertiaMultiplier() const override;
 
     virtual ~PlayableCharacter() = default;
@@ -74,7 +80,9 @@ public:
 protected:
     friend CharacterGenericAction;
     friend CharacterFloatAction;
+    friend CharacterWallClingAction;
     friend DebugPlayerWidget;
+    friend CharacterWallPrejumpAction;
 
     CharacterGenericAction *getAction(CharacterState charState_);
     virtual void loadAnimations(Application &application_) override;

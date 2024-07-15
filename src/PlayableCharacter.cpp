@@ -14,6 +14,30 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
 
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
+            &(new WallClingPrejump<CharacterState, decltype(*this)> (
+                CharacterState::WALL_PREJUMP, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/WallCling"), StateMarker{CharacterState::NONE, {CharacterState::WALL_CLING}}, *this, m_inputResolver
+            ))
+            ->setTransitionOnTouchedGround(CharacterState::IDLE)
+            .setOutdatedTransition(CharacterState::FLOAT, 3)
+            .setDrag(TimelineProperty<Vector2<float>>({1.0f, 0.5f}))
+        )
+    );
+
+    m_actions.push_back(
+        std::unique_ptr<CharacterGenericAction>(
+            &(new WallClingAction<CharacterState, decltype(*this)> (
+                CharacterState::WALL_CLING, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/WallCling"), StateMarker{CharacterState::NONE, {CharacterState::FLOAT}}, *this, m_inputResolver, CharacterState::FLOAT
+            ))
+            ->setDrag(TimelineProperty<Vector2<float>>({
+                {0, {1.0f, 0.3f}},
+                {1, {1.0f, 0.3f}}, // TODO: adjust for smooth upward accel, maybe use buffering
+                }))
+            .setTransitionOnTouchedGround(CharacterState::IDLE)
+        )
+    );
+
+    m_actions.push_back(
+        std::unique_ptr<CharacterGenericAction>(
             &(new Action<CharacterState, false, false, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail, decltype(*this)> (
                 CharacterState::ATTACK1_2, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/attack1_2"), StateMarker{CharacterState::NONE, {}}, *this, m_inputResolver
             ))
@@ -131,7 +155,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
                 TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
                 TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
             .setOutdatedTransition(CharacterState::FLOAT, 3)
-            .setDrag(TimelineProperty<float>(0.0f))
+            .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
             .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
             .setCooldown(&m_cooldowns[0], 5)
         )
@@ -163,7 +187,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
                 TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
                 TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
             .setOutdatedTransition(CharacterState::FLOAT, 4)
-            .setDrag(TimelineProperty<float>(0.0f))
+            .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
             .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
             .setUpdateSpeedLimitData(
                 TimelineProperty<Vector2<float>>(),
@@ -224,7 +248,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             ->setGroundedOnSwitch(false)
             .setTransitionOnTouchedGround(CharacterState::IDLE)
             .setGravity({{0.0f, 0.5f}})
-            .setDrag(TimelineProperty<float>(0.0f))
+            .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
         )
     );
 
@@ -245,7 +269,7 @@ void PlayableCharacter::update()
         m_currentAction->onUpdate();
         m_currentAnimation->update();
     }
-    std::cout << m_inputResolver.getInputQueue()[0] << std::endl;
+    //std::cout << m_inputResolver.getInputQueue()[0] << std::endl;
 
     Object::update();
 
@@ -405,6 +429,7 @@ void PlayableCharacter::loadAnimations(Application &application_)
     m_animations[animmgmgt.getAnimID("Char1/float")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/float"), LOOPMETHOD::NOLOOP);
     m_animations[animmgmgt.getAnimID("Char1/attack1_1")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/attack1_1"), LOOPMETHOD::NOLOOP);
     m_animations[animmgmgt.getAnimID("Char1/attack1_2")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/attack1_2"), LOOPMETHOD::NOLOOP);
+    m_animations[animmgmgt.getAnimID("Char1/WallCling")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/WallCling"), LOOPMETHOD::NOLOOP);
 
     m_currentAnimation = m_animations[animmgmgt.getAnimID("Char1/idle")].get();
     m_currentAnimation->reset();
@@ -513,7 +538,7 @@ Vector2<float> &PlayableCharacter::accessPreEditVelocity()
     return m_preEditVelocity;
 }
 
-float PlayableCharacter::getInertiaDrag() const
+Vector2<float> PlayableCharacter::getInertiaDrag() const
 {
     return m_currentAction->getDrag(m_framesInState);
 }

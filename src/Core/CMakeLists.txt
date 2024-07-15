@@ -30,6 +30,7 @@ Collider.cpp
 CollisionArea.cpp
 CameraFocusArea.cpp
 Tileset.cpp
+Trigger.cpp
 )
 
 add_library (Core ${CORE_SRC_FILES})

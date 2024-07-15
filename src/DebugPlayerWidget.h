@@ -14,8 +14,12 @@ public:
 private:
     Camera &m_camera;
     TextManager &m_textManager;
+    Renderer &m_renderer;
     PlayableCharacter *m_pc;
-    
+    InputResolver &m_inputResolver;
+
+    Texture_t m_arrowIn;
+    Texture_t m_arrowOut;
 };
 
 #endif

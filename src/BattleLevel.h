@@ -82,9 +82,25 @@ public:
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{28, 23}, Vector2{1, 1}, 0));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{29, 23}, Vector2{1, 1}, -1));
         m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{30, 22}, Vector2{1, 1}, -1));
-        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{31, 21}, Vector2{50, 1}, 0));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{31, 21}, Vector2{9, 9}, 1));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{40, 30}, Vector2{5, 1}, 0));
 
-        m_camFocusAreas.emplace_back(getTileCenter(Vector2{19.0f, 10.0f}), Vector2{gamedata::global::minCameraSize.x, 1000.0f}, *m_application->getRenderer());
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{45, 6}, Vector2{1, 25}, 0));
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{40, 1}, Vector2{1, 23}, 0));
+
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{41, 6}, Vector2{5, 1}, 0, 3));
+
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{41, 0}, Vector2{10, 1}, 0));
+
+        m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{50, 30}, Vector2{10, 1}, 0));
+
+        m_camFocusAreas.emplace_back(Vector2{700.0f, 250.0f}, Vector2{550.0f, 500.0f}, *m_application->getRenderer());
+        m_camFocusAreas.back().overrideFocusArea({m_camFocusAreas.back().x + 150, m_camFocusAreas.back().y, m_camFocusAreas.back().w - 400, m_camFocusAreas.back().h});
+
+        m_camFocusAreas.emplace_back(Vector2{825.0f, 250.0f}, Vector2{550.0f, 500.0f}, *m_application->getRenderer());
+        m_camFocusAreas.back().overrideFocusArea({m_camFocusAreas.back().x + 175, m_camFocusAreas.back().y, m_camFocusAreas.back().w - 300, m_camFocusAreas.back().h});
+
+        m_collisionArea.finalize();
         
     }
 
@@ -288,6 +304,11 @@ protected:
                     renderer.drawCollider(cld, {50, 50, 255, 100}, 255, m_camera);
                 else
                     renderer.drawCollider(cld, {255, 0, 0, 100}, 255, m_camera);
+            }
+
+            for (const auto &trg : m_collisionArea.m_triggers)
+            {
+                renderer.drawCollider(trg, {255, 50, 255, 50}, 100, m_camera);
             }
         }
 

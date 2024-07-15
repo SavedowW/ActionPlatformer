@@ -36,6 +36,58 @@ bool CollisionArea::getHighestVerticalMagnetCoord(const Collider &cld_, float &c
     return isFound;
 }
 
+void CollisionArea::finalize()
+{
+    float topOffset = 50.0f;
+    float botOffset = 50.0f;
+    for (const auto& cld_ : m_staticCollisionMap)
+    {
+        std::pair<Vector2<float>, Vector2<float>> leftSide = {cld_.m_points[0], cld_.m_points[3] - cld_.m_points[0]};
+        std::pair<Vector2<float>, Vector2<float>> rightSide = {cld_.m_points[1], cld_.m_points[2] - cld_.m_points[1]};
+
+        if (leftSide.second.y >= topOffset + botOffset)
+        {
+            Trigger trgarea{leftSide.first.x - 1, leftSide.first.y + topOffset, 1.0f, leftSide.second.y - topOffset - botOffset};
+            trgarea |= Trigger::Tag::ClingArea | Trigger::Tag::LEFT;
+            if (isAreaFree(trgarea, false))
+                m_triggers.push_back(trgarea);
+        }
+
+        if (rightSide.second.y >= topOffset + botOffset)
+        {
+            Trigger trgarea{rightSide.first.x, rightSide.first.y + topOffset, 1.0f, rightSide.second.y - topOffset - botOffset};
+            trgarea |= Trigger::Tag::ClingArea | Trigger::Tag::RIGHT;
+            if (isAreaFree(trgarea, false))
+                m_triggers.push_back(trgarea);
+        }
+    }
+}
+
+bool CollisionArea::isAreaFree(const Collider &cld_, bool considerObstacles_)
+{
+    float dumped = 0;
+    for (const auto &scld : m_staticCollisionMap)
+    {
+        if (!considerObstacles_ && scld.m_obstacleId)
+            continue;
+        if (scld.getFullCollisionWith<true, true, false>(cld_, dumped))
+            return false;
+    }
+
+    return true;
+}
+
+const Trigger *CollisionArea::getOverlappedTrigger(const Collider &cld_, Trigger::Tag tag_) const
+{
+    for (const auto &trg : m_triggers)
+    {
+        if ((trg.m_tag & tag_) == tag_ && trg.checkCollisionWith<true, true>(cld_))
+            return &trg;
+    }
+
+    return nullptr;
+}
+
 std::set<int> CollisionArea::getPlayerTouchingObstacles(const Collider &playerPb_) const
 {
     std::set<int> obstacleIds;
