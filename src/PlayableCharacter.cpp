@@ -249,6 +249,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, Vector2<float> p
             .setTransitionOnTouchedGround(CharacterState::IDLE)
             .setGravity({{0.0f, 0.5f}})
             .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+            .addTransitionAnim(CharacterState::WALL_PREJUMP, animmgmgt.getAnimID("Char1/FloatCling"))
         )
     );
 
@@ -430,6 +431,7 @@ void PlayableCharacter::loadAnimations(Application &application_)
     m_animations[animmgmgt.getAnimID("Char1/attack1_1")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/attack1_1"), LOOPMETHOD::NOLOOP);
     m_animations[animmgmgt.getAnimID("Char1/attack1_2")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/attack1_2"), LOOPMETHOD::NOLOOP);
     m_animations[animmgmgt.getAnimID("Char1/WallCling")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/WallCling"), LOOPMETHOD::NOLOOP);
+    m_animations[animmgmgt.getAnimID("Char1/FloatCling")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/FloatCling"), LOOPMETHOD::NOLOOP);
 
     m_currentAnimation = m_animations[animmgmgt.getAnimID("Char1/idle")].get();
     m_currentAnimation->reset();
@@ -505,8 +507,7 @@ void PlayableCharacter::switchTo(CharacterState state_)
 
 void PlayableCharacter::switchTo(CharacterGenericAction *charAction_)
 {
-    m_currentAction = charAction_;
-    m_currentAction->onSwitchTo();
+    charAction_->onSwitchTo();
 }
 
 void PlayableCharacter::onTouchedGround()

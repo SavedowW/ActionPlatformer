@@ -157,9 +157,19 @@ public:
         return *this;
     }
 
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &addTransitionAnim(CHAR_STATES_T oldState_, int anim_)
+    {
+        m_uniqueTransitionAnims[oldState_] = anim_;
+        return *this;
+    }
+
     inline virtual void onSwitchTo()
     {
-        m_owner.m_currentAnimation = m_owner.m_animations[m_anim].get();
+        auto oldState = m_owner.m_currentAction->m_ownState;
+        if (m_uniqueTransitionAnims.contains(oldState))
+            m_owner.m_currentAnimation = m_owner.m_animations[m_uniqueTransitionAnims[oldState]].get();
+        else
+            m_owner.m_currentAnimation = m_owner.m_animations[m_anim].get();
         m_owner.m_currentAnimation->reset();
         m_owner.m_currentAction = this;
         m_owner.m_framesInState = 0;
@@ -289,6 +299,8 @@ protected:
     uint32_t m_cooldownTime = 0;
 
     TimelineProperty<StateMarker> m_recoveryFrames;
+
+    std::map<CHAR_STATES_T, int> m_uniqueTransitionAnims;
 };
 
 template<typename CHAR_STATES_T, bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN,
