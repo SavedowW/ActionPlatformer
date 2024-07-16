@@ -261,6 +261,8 @@ public:
 
     inline virtual ORIENTATION isPossibleInDirection(int extendBuffer_, bool &isProceed_) const = 0;
 
+    inline virtual const Collider &getHurtbox() const = 0;
+
     const CHAR_STATES_T m_ownState;
 
 protected:
@@ -389,6 +391,11 @@ public:
         return *this;
     }
 
+    inline virtual const Collider &getHurtbox() const override
+    {
+        return m_hurtbox;
+    }
+
 protected:
     using ParentClass = GenericAction<CHAR_STATES_T, OWNER_T>;
     const Collider m_hurtbox;
@@ -402,7 +409,6 @@ protected:
     utils::OptionalProperty<float> m_alignedSlopeMax;
     bool m_realignOnSwitchForInput = false;
 };
-
 
 template<typename CHAR_STATES_T, typename OWNER_T>
 class ActionFloat: public Action<CHAR_STATES_T, false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, OWNER_T>
@@ -627,6 +633,47 @@ protected:
     InputComparatorHoldRight m_r;
     InputComparatorHoldUp m_u;
     InputComparatorHoldDown m_d;
+};
+
+
+template<typename CHAR_STATES_T, typename OWNER_T>
+class MobAction : public GenericAction<CHAR_STATES_T, OWNER_T>
+{
+public:
+    MobAction(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_) :
+        GenericAction<CHAR_STATES_T, OWNER_T>(actionState_, owner_, anim_),
+        m_hurtbox(hurtbox_),
+        m_transitionableFrom(std::move(transitionableFrom_))
+    {
+    }
+
+    inline virtual ORIENTATION isPossibleInDirection(int extendBuffer_, bool &isProceed_) const override
+    {
+        isProceed_ = false;
+        auto orientation = ParentClass::m_owner.getOwnOrientation();
+        auto currentState = ParentClass::m_owner.getCurrentActionState();
+
+        if (ParentClass::m_ownState == currentState)
+        {
+            isProceed_ = true;
+            return orientation;
+        }
+
+        if (m_transitionableFrom[currentState])
+            return orientation;
+        else
+            return ORIENTATION::UNSPECIFIED;
+    }
+
+    inline virtual const Collider &getHurtbox() const override
+    {
+        return m_hurtbox;
+    }
+
+protected:
+    using ParentClass = GenericAction<CHAR_STATES_T, OWNER_T>;
+    const Collider m_hurtbox;
+    StateMarker m_transitionableFrom;
 };
 
 #endif

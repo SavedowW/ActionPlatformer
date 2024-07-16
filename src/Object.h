@@ -7,9 +7,9 @@
 class Object
 {
 public:
-    Object(Application &application_, Vector2<float> pos_);
+    Object(Application &application_);
 
-    virtual void setOnLevel(Application &application_);
+    virtual void setOnLevel(Application &application_, Vector2<float> pos_);
 
     virtual void update();
     virtual void draw(Camera &cam_) = 0;

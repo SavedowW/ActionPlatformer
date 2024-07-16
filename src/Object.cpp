@@ -1,14 +1,14 @@
 #include "Object.h"
 
-Object::Object(Application &application_, Vector2<float> pos_) :
-    m_pos(pos_),
+Object::Object(Application &application_) :
     m_renderer(*application_.getRenderer())
 {
 }
 
-void Object::setOnLevel(Application &application_)
+void Object::setOnLevel(Application &application_, Vector2<float> pos_)
 {
     loadAnimations(application_);
+    m_pos = pos_;
 }
 
 void Object::update()

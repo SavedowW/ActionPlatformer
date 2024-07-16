@@ -4,6 +4,7 @@
 #include "Action.hpp"
 #include "CollisionArea.h"
 #include <map>
+#include "ActionCharacter.hpp"
 
 class DebugPlayerWidget;
 
@@ -33,47 +34,29 @@ const inline std::map<CharacterState, const char *> CharacterStateNames{
     {CharacterState::WALL_PREJUMP, "WALL_PREJUMP"},
 };
 
-class PlayableCharacter : public Object
+class PlayableCharacter : public ActionCharacter<PlayableCharacter, CharacterState>
 {
 protected:
-    using CharacterGenericAction = GenericAction<CharacterState, PlayableCharacter&>;
     using CharacterFloatAction = ActionFloat<CharacterState, PlayableCharacter&>;
     using CharacterWallClingAction = WallClingAction<CharacterState, PlayableCharacter&>;
     using CharacterWallPrejumpAction = WallClingPrejump<CharacterState, PlayableCharacter&>;
 
 public:
-    PlayableCharacter(Application &application_, Vector2<float> pos_, const CollisionArea &cldArea_);
+    PlayableCharacter(Application &application_, const CollisionArea &cldArea_);
 
     virtual void update() override;
-    virtual void draw(Camera &cam_) override;
-    Collider getPushbox() const override;
     Vector2<float> getCameraFocusPoint() const;
 
-    CharacterState getCurrentActionState() const;
     CharacterGenericAction *getCurrentAction() const;
     const char *getCurrentActionName() const;
-    uint32_t getFramesInState() const;
-    void switchTo(CharacterState state_);
-    void switchTo(CharacterGenericAction *charAction_);
-    
-    void onTouchedGround();
-    void onLostGround();
-    bool attemptResetGround();
 
-    bool isIgnoringAllObstacles();
-    void cleanIgnoredObstacles();
-    bool touchedObstacleTop(int obstacleId_);
-    bool touchedObstacleBottom(int obstacleId_);
-    bool touchedObstacleSlope(int obstacleId_);
-    bool touchedObstacleSide(int obstacleId_);
-    bool checkIgnoringObstacle(int obstacleId_) const;
-
-    void setSlopeAngle(float angle_);
-    int getSlopeAngle() const;
+    virtual bool isIgnoringAllObstacles() override;
+    virtual void cleanIgnoredObstacles() override;
+    virtual bool touchedObstacleTop(int obstacleId_) override;
+    virtual bool touchedObstacleSlope(int obstacleId_) override;
+    virtual bool checkIgnoringObstacle(int obstacleId_) const override;
 
     Vector2<float> &accessPreEditVelocity();
-    virtual Vector2<float> getInertiaDrag() const override;
-    virtual Vector2<float> getInertiaMultiplier() const override;
 
     virtual ~PlayableCharacter() = default;
 
@@ -84,39 +67,18 @@ protected:
     friend DebugPlayerWidget;
     friend CharacterWallPrejumpAction;
 
-    CharacterGenericAction *getAction(CharacterState charState_);
     virtual void loadAnimations(Application &application_) override;
-    virtual Vector2<float> getCurrentGravity() const override;
 
-    // true if no transition happend
-    bool transitionState();
-
-    Renderer &m_renderer;
-
-    std::map<int, std::unique_ptr<Animation>> m_animations;
-    Animation *m_currentAnimation;
     InputResolver m_inputResolver;
-
-    std::vector<std::unique_ptr<CharacterGenericAction>> m_actions;
-
-    CharacterGenericAction *m_currentAction;
 
     Vector2<float> m_preEditVelocity;
 
-    uint32_t m_framesInState = 0;
-    bool isGrounded = false;
-
-    const CollisionArea &m_collisionArea;
-
     InputComparatorTapAnyDown m_fallthroughInput;
     FrameTimer<false> m_isIgnoringObstacles;
-    std::set<int> m_ignoredObstacles;
 
     std::array<FrameTimer<true>, 1> m_cooldowns;
 
     Vector2<float> m_cameraOffset;
-
-    float m_onSlopeWithAngle;
 };
 
 #endif

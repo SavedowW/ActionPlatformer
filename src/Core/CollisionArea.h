@@ -50,7 +50,7 @@ inline Vector2<float> getTilePos(Vector2<T> pos_)
 struct CollisionArea
 {
     void addStaticCollider(const SlopeCollider &cld_);
-    bool getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_, const PlayableCharacter &char_) const;
+    bool getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_) const;
     void finalize();
     bool isAreaFree(const Collider &cld_, bool considerObstacles_);
     const Trigger *getOverlappedTrigger(const Collider &cld_, Trigger::Tag tag_) const;

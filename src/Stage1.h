@@ -3,17 +3,7 @@
 
 #include "BattleLevel.h"
 
-class Stage1Background : public Background
-{
-public:
-    Stage1Background(TextureManager *textureManager_)
-    {
-    }
-
-    virtual ~Stage1Background() = default;
-};
-
-class Stage1 : public BattleLevel<Stage1Background>
+class Stage1 : public BattleLevel
 {
 public:
     Stage1(Application *application_, const Vector2<float>& size_, int lvlId_);

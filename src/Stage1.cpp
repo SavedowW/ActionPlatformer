@@ -4,7 +4,6 @@
 Stage1::Stage1(Application *application_, const Vector2<float>& size_, int lvlId_) :
     BattleLevel(application_, size_, lvlId_)
 {
-    m_background = std::make_unique<Stage1Background>(application_->getTextureManager());
 }
 
 void Stage1::update()
