@@ -67,7 +67,7 @@ struct ComponentObstacleFallthrough : public Component<ComponentPhysical>
 
 struct ComponentAnimationRenderable : public Component<ComponentTransform, ComponentPhysical>
 {
-    ComponentAnimationRenderable(Renderer *renderer_);
+    ComponentAnimationRenderable(Renderer &renderer_);
 
     ComponentAnimationRenderable(const ComponentAnimationRenderable &rhs_) = default;
     ComponentAnimationRenderable(ComponentAnimationRenderable &&rhs_) = default;
@@ -77,7 +77,7 @@ struct ComponentAnimationRenderable : public Component<ComponentTransform, Compo
     void draw(Camera &cam_);
     virtual void onUpdate() override;
 
-    Renderer *m_renderer;
+    Renderer &m_renderer;
     std::map<int, std::unique_ptr<Animation>> m_animations;
     Animation *m_currentAnimation;
 };

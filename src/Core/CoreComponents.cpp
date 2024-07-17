@@ -146,7 +146,7 @@ bool ComponentPhysical::attemptResetGround()
     return false;
 }
 
-ComponentAnimationRenderable::ComponentAnimationRenderable(Renderer *renderer_) :
+ComponentAnimationRenderable::ComponentAnimationRenderable(Renderer &renderer_) :
     m_renderer(renderer_)
 {
 }
@@ -174,11 +174,11 @@ void ComponentAnimationRenderable::draw(Camera &cam_)
         auto spr = m_currentAnimation->getSprite();
         auto edge = m_currentAnimation->getBorderSprite();
 
-        m_renderer->renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, cam_, 0.0f, flip);
+        m_renderer.renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, cam_, 0.0f, flip);
 
         if (gamedata::debug::drawColliders)
         {
-            m_renderer->drawCollider(getComponent<ComponentPhysical>().getPushbox(), {238, 195, 154, 50}, 100, cam_);
+            m_renderer.drawCollider(getComponent<ComponentPhysical>().getPushbox(), {238, 195, 154, 50}, 100, cam_);
         }
     }
 }

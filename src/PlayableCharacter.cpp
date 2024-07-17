@@ -12,7 +12,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new WallClingPrejump<CharacterState, decltype(*this)> (
-                CharacterState::WALL_PREJUMP, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/WallCling"), StateMarker{CharacterState::NONE, {CharacterState::WALL_CLING}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
+                CharacterState::WALL_PREJUMP, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/WallCling"), StateMarker{CharacterState::NONE, {CharacterState::WALL_CLING}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>(), getComponent<ComponentAnimationRenderable>()
             ))
             ->setTransitionOnTouchedGround(CharacterState::IDLE)
             .setOutdatedTransition(CharacterState::FLOAT, 3)
@@ -23,7 +23,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new WallClingAction<CharacterState, decltype(*this)> (
-                CharacterState::WALL_CLING, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/WallCling"), StateMarker{CharacterState::NONE, {CharacterState::FLOAT}}, *this, m_inputResolver, CharacterState::FLOAT, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
+                CharacterState::WALL_CLING, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/WallCling"), StateMarker{CharacterState::NONE, {CharacterState::FLOAT}}, *this, m_inputResolver, CharacterState::FLOAT, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>(), getComponent<ComponentAnimationRenderable>()
             ))
             ->setDrag(TimelineProperty<Vector2<float>>({
                 {0, {1.0f, 0.3f}},
@@ -36,7 +36,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new PlayerAction<CharacterState, false, false, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail, decltype(*this)> (
-                CharacterState::ATTACK1_2, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/attack1_2"), StateMarker{CharacterState::NONE, {}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
+                CharacterState::ATTACK1_2, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/attack1_2"), StateMarker{CharacterState::NONE, {}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>(), getComponent<ComponentAnimationRenderable>()
             ))
             ->setRealignOnSwitch(true)
             .setRecoveryFrames(TimelineProperty<StateMarker>({
@@ -80,7 +80,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new PlayerAction<CharacterState, false, false, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail, decltype(*this)> (
-                CharacterState::ATTACK1_1, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/attack1_1"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
+                CharacterState::ATTACK1_1, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/attack1_1"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>(), getComponent<ComponentAnimationRenderable>()
             ))
             ->setRealignOnSwitch(true)
             .setRecoveryFrames(TimelineProperty<StateMarker>({
@@ -124,7 +124,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new PlayerAction<CharacterState, false, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, decltype(*this)> (
-                CharacterState::PREJUMP_FORWARD, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/prejump"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
+                CharacterState::PREJUMP_FORWARD, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/prejump"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>(), getComponent<ComponentAnimationRenderable>()
             ))
             ->setAlignedSlopeMax(0.5f)
             .setGroundedOnSwitch(true)
@@ -161,7 +161,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new PlayerAction<CharacterState, false, false, InputComparatorTapUp, InputComparatorTapUp, true, InputComparatorTapUp, InputComparatorTapUp, decltype(*this)> (
-                CharacterState::PREJUMP, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/prejump"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
+                CharacterState::PREJUMP, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/prejump"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>(), getComponent<ComponentAnimationRenderable>()
             ))
             ->setGroundedOnSwitch(true)
             .setGravity({{0.0f, 0.0f}})
@@ -196,7 +196,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new PlayerAction<CharacterState, false, true, InputComparatorHoldLeft, InputComparatorHoldRight, true, InputComparatorHoldLeft, InputComparatorHoldRight, decltype(*this)> (
-                CharacterState::RUN, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/run"), StateMarker{CharacterState::NONE, {CharacterState::IDLE}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
+                CharacterState::RUN, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/run"), StateMarker{CharacterState::NONE, {CharacterState::IDLE}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>(), getComponent<ComponentAnimationRenderable>()
             ))
             ->setGroundedOnSwitch(true)
             .setGravity({{0.0f, 0.0f}})
@@ -223,7 +223,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new PlayerAction<CharacterState, false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
-                CharacterState::IDLE, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/idle"), StateMarker{CharacterState::NONE, {CharacterState::RUN}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
+                CharacterState::IDLE, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/idle"), StateMarker{CharacterState::NONE, {CharacterState::RUN}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>(), getComponent<ComponentAnimationRenderable>()
             ))
             ->setGroundedOnSwitch(true)
             .setGravity({{0.0f, 0.0f}})
@@ -240,7 +240,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new ActionFloat<CharacterState, decltype(*this)> (
-                CharacterState::FLOAT, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/float"), StateMarker{CharacterState::NONE, {}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
+                CharacterState::FLOAT, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/float"), StateMarker{CharacterState::NONE, {}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>(), getComponent<ComponentAnimationRenderable>()
             ))
             ->setGroundedOnSwitch(false)
             .setTransitionOnTouchedGround(CharacterState::IDLE)
@@ -288,17 +288,19 @@ void PlayableCharacter::loadAnimations(Application &application_)
 {
     AnimationManager animmgmgt = *application_.getAnimationManager();
 
-    m_animations[animmgmgt.getAnimID("Char1/idle")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/idle"), LOOPMETHOD::NOLOOP);
-    m_animations[animmgmgt.getAnimID("Char1/run")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/run"), LOOPMETHOD::JUMP_LOOP);
-    m_animations[animmgmgt.getAnimID("Char1/prejump")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/prejump"), LOOPMETHOD::JUMP_LOOP);
-    m_animations[animmgmgt.getAnimID("Char1/float")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/float"), LOOPMETHOD::NOLOOP);
-    m_animations[animmgmgt.getAnimID("Char1/attack1_1")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/attack1_1"), LOOPMETHOD::NOLOOP);
-    m_animations[animmgmgt.getAnimID("Char1/attack1_2")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/attack1_2"), LOOPMETHOD::NOLOOP);
-    m_animations[animmgmgt.getAnimID("Char1/WallCling")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/WallCling"), LOOPMETHOD::NOLOOP);
-    m_animations[animmgmgt.getAnimID("Char1/FloatCling")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/FloatCling"), LOOPMETHOD::NOLOOP);
+    auto &animrnd = getComponent<ComponentAnimationRenderable>();
 
-    m_currentAnimation = m_animations[animmgmgt.getAnimID("Char1/idle")].get();
-    m_currentAnimation->reset();
+    animrnd.m_animations[animmgmgt.getAnimID("Char1/idle")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/idle"), LOOPMETHOD::NOLOOP);
+    animrnd.m_animations[animmgmgt.getAnimID("Char1/run")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/run"), LOOPMETHOD::JUMP_LOOP);
+    animrnd.m_animations[animmgmgt.getAnimID("Char1/prejump")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/prejump"), LOOPMETHOD::JUMP_LOOP);
+    animrnd.m_animations[animmgmgt.getAnimID("Char1/float")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/float"), LOOPMETHOD::NOLOOP);
+    animrnd.m_animations[animmgmgt.getAnimID("Char1/attack1_1")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/attack1_1"), LOOPMETHOD::NOLOOP);
+    animrnd.m_animations[animmgmgt.getAnimID("Char1/attack1_2")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/attack1_2"), LOOPMETHOD::NOLOOP);
+    animrnd.m_animations[animmgmgt.getAnimID("Char1/WallCling")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/WallCling"), LOOPMETHOD::NOLOOP);
+    animrnd.m_animations[animmgmgt.getAnimID("Char1/FloatCling")] = std::make_unique<Animation>(animmgmgt, animmgmgt.getAnimID("Char1/FloatCling"), LOOPMETHOD::NOLOOP);
+
+    animrnd.m_currentAnimation = animrnd.m_animations[animmgmgt.getAnimID("Char1/idle")].get();
+    animrnd.m_currentAnimation->reset();
 }
 
 Vector2<float> PlayableCharacter::getCameraFocusPoint() const

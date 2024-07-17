@@ -4,7 +4,7 @@
 #include "CollisionArea.h"
 #include "Application.h"
 
-class MovableCharacter : public ComponentEntity<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough>
+class MovableCharacter : public ComponentEntity<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, ComponentAnimationRenderable>
 {
 public:
     MovableCharacter(Application &application_, const CollisionArea &cldArea_);
@@ -15,8 +15,6 @@ public:
     virtual void onTouchedGround() = 0;
     virtual void onLostGround() = 0;
     virtual void resolveDeps() override;
-
-    virtual void draw(Camera &cam_) = 0;
 
 protected:
 };

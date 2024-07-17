@@ -10,8 +10,7 @@ protected:
 
 public:
     ActionCharacter(Application &application_, const CollisionArea &cldArea_) :
-        MovableCharacter(application_, cldArea_),
-        m_renderer(*application_.getRenderer())
+        MovableCharacter(application_, cldArea_)
     {
     }
 
@@ -71,7 +70,6 @@ public:
         if (transitionState())
         {
             m_currentAction->onUpdate();
-            m_currentAnimation->update();
         }
 
         auto &physcomp = getComponent<ComponentPhysical>();
@@ -128,46 +126,11 @@ protected:
         return true;
     }
 
-    void draw(Camera &cam_)
-    {
-        auto &transform = getComponent<ComponentTransform>();
-        if (m_currentAnimation != nullptr)
-        {
-            auto texSize = m_currentAnimation->getSize();
-            auto animorigin = m_currentAnimation->getOrigin();
-            auto texPos = transform.m_pos;
-            texPos.y -= animorigin.y;
-            SDL_RendererFlip flip = SDL_FLIP_NONE;
-            if (transform.m_ownOrientation == ORIENTATION::LEFT)
-            {
-                flip = SDL_FLIP_HORIZONTAL;
-                texPos.x -= (texSize.x - animorigin.x);
-            }
-            else
-            {
-                texPos.x -= animorigin.x;
-            }
-
-            auto spr = m_currentAnimation->getSprite();
-            auto edge = m_currentAnimation->getBorderSprite();
-
-            m_renderer.renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, cam_, 0.0f, flip);
-    
-            if (gamedata::debug::drawColliders)
-            {
-                m_renderer.drawCollider(getComponent<ComponentPhysical>().getPushbox(), {238, 195, 154, 50}, 100, cam_);
-            }
-        }
-    }
-
     std::vector<std::unique_ptr<CharacterGenericAction>> m_actions;
     CharacterGenericAction *m_currentAction;
     uint32_t m_framesInState = 0;
     bool isGrounded = false;
 
-    Renderer &m_renderer;
-    std::map<int, std::unique_ptr<Animation>> m_animations;
-    Animation *m_currentAnimation;
 
 };
 

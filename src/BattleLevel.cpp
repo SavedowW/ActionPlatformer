@@ -280,7 +280,7 @@ void BattleLevel::draw()
     }
 
     for (auto &el : m_actionCharacters)
-        el->draw(m_camera);
+        el->getComponent<ComponentAnimationRenderable>().draw(m_camera);
 
     if (gamedata::debug::drawFocusAreas)
     {

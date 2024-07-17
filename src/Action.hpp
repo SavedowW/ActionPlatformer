@@ -52,14 +52,15 @@ template<typename CHAR_STATES_T, typename OWNER_T>
 class GenericAction
 {
 public:
-    GenericAction(CHAR_STATES_T ownState_, OWNER_T &owner_, int anim_, ComponentTransform &transform_,  ComponentPhysical &physical_) :
+    GenericAction(CHAR_STATES_T ownState_, OWNER_T &owner_, int anim_, ComponentTransform &transform_,  ComponentPhysical &physical_, ComponentAnimationRenderable &renderable_) :
         m_ownState(ownState_),
         m_owner(owner_),
         m_anim(anim_),
         m_drag({1.0f, 0.0f}),
         m_appliedInertiaMultiplier({1.0f, 1.0f}),
         m_transform(transform_),
-        m_physical(physical_)
+        m_physical(physical_),
+        m_renderable(renderable_)
     {
     }
 
@@ -172,10 +173,10 @@ public:
     {
         auto oldState = m_owner.m_currentAction->m_ownState;
         if (m_uniqueTransitionAnims.contains(oldState))
-            m_owner.m_currentAnimation = m_owner.m_animations[m_uniqueTransitionAnims[oldState]].get();
+            m_renderable.m_currentAnimation = m_renderable.m_animations[m_uniqueTransitionAnims[oldState]].get();
         else
-            m_owner.m_currentAnimation = m_owner.m_animations[m_anim].get();
-        m_owner.m_currentAnimation->reset();
+            m_renderable.m_currentAnimation = m_renderable.m_animations[m_anim].get();
+        m_renderable.m_currentAnimation->reset();
         m_owner.m_currentAction = this;
         m_owner.m_framesInState = 0;
 
@@ -313,6 +314,7 @@ protected:
 
     ComponentTransform &m_transform;
     ComponentPhysical &m_physical;
+    ComponentAnimationRenderable &m_renderable;
 };
 
 template<typename CHAR_STATES_T, bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN,
@@ -322,8 +324,8 @@ template<typename CHAR_STATES_T, bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN,
 class PlayerAction : public GenericAction<CHAR_STATES_T, OWNER_T>
 {
 public:
-    PlayerAction(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, ComponentTransform &transform_, ComponentPhysical &physical_) :
-        GenericAction<CHAR_STATES_T, OWNER_T>(actionState_, owner_, anim_, transform_, physical_),
+    PlayerAction(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, ComponentTransform &transform_, ComponentPhysical &physical_, ComponentAnimationRenderable &renderable_) :
+        GenericAction<CHAR_STATES_T, OWNER_T>(actionState_, owner_, anim_, transform_, physical_, renderable_),
         m_hurtbox(hurtbox_),
         m_transitionableFrom(std::move(transitionableFrom_)),
         m_inputResolver(inputResolver_)
@@ -426,8 +428,8 @@ template<typename CHAR_STATES_T, typename OWNER_T>
 class ActionFloat: public PlayerAction<CHAR_STATES_T, false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, OWNER_T>
 {
 public:
-    ActionFloat(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, ComponentTransform &transform_, ComponentPhysical &physical_) :
-        ParentAction(actionState_, hurtbox_, anim_, transitionableFrom_, owner_, inputResolver_, transform_, physical_)
+    ActionFloat(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, ComponentTransform &transform_, ComponentPhysical &physical_, ComponentAnimationRenderable &renderable_) :
+        ParentAction(actionState_, hurtbox_, anim_, transitionableFrom_, owner_, inputResolver_, transform_, physical_, renderable_)
     {
     }
 
@@ -481,8 +483,8 @@ template<typename CHAR_STATES_T, typename OWNER_T>
 class WallClingAction: public PlayerAction<CHAR_STATES_T, false, true, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail, OWNER_T>
 {
 public:
-    WallClingAction(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, CHAR_STATES_T switchOnLeave_, ComponentTransform &transform_, ComponentPhysical &physical_) :
-        ParentAction(actionState_, hurtbox_, anim_, transitionableFrom_, owner_, inputResolver_, transform_, physical_),
+    WallClingAction(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, CHAR_STATES_T switchOnLeave_, ComponentTransform &transform_, ComponentPhysical &physical_, ComponentAnimationRenderable &renderable_) :
+        ParentAction(actionState_, hurtbox_, anim_, transitionableFrom_, owner_, inputResolver_, transform_, physical_, renderable_),
         m_switchOnLeave(switchOnLeave_)
     {
         ParentGenericAction::setGravity(TimelineProperty<Vector2<float>>({0.0f, 0.020f}));
@@ -573,8 +575,8 @@ template<typename CHAR_STATES_T, typename OWNER_T>
 class WallClingPrejump: public PlayerAction<CHAR_STATES_T, true, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail, OWNER_T>
 {
 public:
-    WallClingPrejump(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, ComponentTransform &transform_, ComponentPhysical &physical_) :
-        ParentAction(actionState_, hurtbox_, anim_, transitionableFrom_, owner_, inputResolver_, transform_, physical_)
+    WallClingPrejump(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, ComponentTransform &transform_, ComponentPhysical &physical_, ComponentAnimationRenderable &renderable_) :
+        ParentAction(actionState_, hurtbox_, anim_, transitionableFrom_, owner_, inputResolver_, transform_, physical_, renderable_)
     {
         ParentGenericAction::setGravity(TimelineProperty<Vector2<float>>({0.0f, 0.020f}));
         ParentGenericAction::setConvertVelocityOnSwitch(true);
@@ -649,8 +651,8 @@ template<typename CHAR_STATES_T, typename OWNER_T>
 class MobAction : public GenericAction<CHAR_STATES_T, OWNER_T>
 {
 public:
-    MobAction(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_,  ComponentTransform &transform_, ComponentPhysical &physical_) :
-        GenericAction<CHAR_STATES_T, OWNER_T>(actionState_, owner_, anim_, transform_, physical_),
+    MobAction(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_,  ComponentTransform &transform_, ComponentPhysical &physical_, ComponentAnimationRenderable &renderable_) :
+        GenericAction<CHAR_STATES_T, OWNER_T>(actionState_, owner_, anim_, transform_, physical_, renderable_),
         m_hurtbox(hurtbox_),
         m_transitionableFrom(std::move(transitionableFrom_))
     {
