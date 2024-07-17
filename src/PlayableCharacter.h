@@ -50,12 +50,6 @@ public:
     CharacterGenericAction *getCurrentAction() const;
     const char *getCurrentActionName() const;
 
-    virtual bool isIgnoringAllObstacles() override;
-    virtual void cleanIgnoredObstacles() override;
-    virtual bool touchedObstacleTop(int obstacleId_) override;
-    virtual bool touchedObstacleSlope(int obstacleId_) override;
-    virtual bool checkIgnoringObstacle(int obstacleId_) const override;
-
     Vector2<float> &accessPreEditVelocity();
 
     virtual ~PlayableCharacter() = default;
@@ -74,7 +68,6 @@ protected:
     Vector2<float> m_preEditVelocity;
 
     InputComparatorTapAnyDown m_fallthroughInput;
-    FrameTimer<false> m_isIgnoringObstacles;
 
     std::array<FrameTimer<true>, 1> m_cooldowns;
 

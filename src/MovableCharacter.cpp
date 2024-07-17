@@ -1,58 +1,26 @@
 #include "MovableCharacter.h"
 
 MovableCharacter::MovableCharacter(Application &application_, const CollisionArea &cldArea_) :
-    Object(application_),
-    m_collisionArea(cldArea_),
-    m_onSlopeWithAngle(0)
+    ComponentEntity(ComponentTransform(), ComponentPhysical(cldArea_), ComponentObstacleFallthrough())
 {
-
+    resolveDeps();
 }
 
-void MovableCharacter::cleanIgnoredObstacles()
+void MovableCharacter::setOnLevel(Application &application_, Vector2<float> pos_)
 {
-    auto touched = m_collisionArea.getPlayerTouchingObstacles(getPushbox());
-    std::set<int> res;
-    std::set_intersection(
-        m_ignoredObstacles.begin(), m_ignoredObstacles.end(),
-        touched.begin(), touched.end(),
-        std::inserter(res, res.begin()));
-
-    m_ignoredObstacles = res;
+    loadAnimations(application_);
+    getComponent<ComponentTransform>().m_pos = pos_;
 }
 
-bool MovableCharacter::touchedObstacleTop(int obstacleId_)
+
+void MovableCharacter::resolveDeps()
 {
-    return !m_ignoredObstacles.contains(obstacleId_);
+    getComponent<ComponentPhysical>().ResolveDeps(&getComponent<ComponentTransform>(), &getComponent<ComponentObstacleFallthrough>());
+    getComponent<ComponentObstacleFallthrough>().ResolveDeps(&getComponent<ComponentPhysical>());
 }
 
-bool MovableCharacter::touchedObstacleBottom(int obstacleId_)
+void MovableCharacter::update()
 {
-    m_ignoredObstacles.insert(obstacleId_);
-    return false;
+    onUpdate();
 }
 
-bool MovableCharacter::touchedObstacleSlope(int obstacleId_)
-{
-    return !m_ignoredObstacles.contains(obstacleId_);
-}
-
-bool MovableCharacter::touchedObstacleSide(int obstacleId_)
-{
-    m_ignoredObstacles.insert(obstacleId_);
-    return false;
-}
-
-bool MovableCharacter::checkIgnoringObstacle(int obstacleId_) const
-{
-    return m_ignoredObstacles.contains(obstacleId_);
-}
-
-void MovableCharacter::setSlopeAngle(float angle_)
-{
-    m_onSlopeWithAngle = angle_;
-}
-
-int MovableCharacter::getSlopeAngle() const
-{
-    return m_onSlopeWithAngle;
-}

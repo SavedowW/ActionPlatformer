@@ -14,7 +14,6 @@ set(SRC_FILES
 main.cpp
 BattleLevel.cpp
 Stage1.cpp
-Object.cpp
 PlayableCharacter.cpp
 DebugPlayerWidget.cpp
 StaticDecor.cpp

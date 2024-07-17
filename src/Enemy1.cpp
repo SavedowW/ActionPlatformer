@@ -7,7 +7,7 @@ Enemy1::Enemy1(Application &application_, const CollisionArea &cldArea_) :
 
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(new MobAction<Enemy1States, decltype(*this)> (
-                Enemy1States::IDLE, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/run"), StateMarker{Enemy1States::NONE, {}}, *this
+                Enemy1States::IDLE, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/run"), StateMarker{Enemy1States::NONE, {}}, *this, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
             )
         )
     );
@@ -15,7 +15,7 @@ Enemy1::Enemy1(Application &application_, const CollisionArea &cldArea_) :
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new MobAction<Enemy1States, decltype(*this)> (
-                Enemy1States::FLOAT, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/float"), StateMarker{Enemy1States::NONE, {}}, *this
+                Enemy1States::FLOAT, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/float"), StateMarker{Enemy1States::NONE, {}}, *this, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
             ))
             ->setGroundedOnSwitch(false)
             .setTransitionOnTouchedGround(Enemy1States::IDLE)
@@ -25,11 +25,6 @@ Enemy1::Enemy1(Application &application_, const CollisionArea &cldArea_) :
     );
 
     m_currentAction = getAction(Enemy1States::FLOAT);
-}
-
-bool Enemy1::isIgnoringAllObstacles()
-{
-    return false;
 }
 
 void Enemy1::loadAnimations(Application &application_)

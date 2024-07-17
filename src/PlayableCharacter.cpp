@@ -12,7 +12,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new WallClingPrejump<CharacterState, decltype(*this)> (
-                CharacterState::WALL_PREJUMP, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/WallCling"), StateMarker{CharacterState::NONE, {CharacterState::WALL_CLING}}, *this, m_inputResolver
+                CharacterState::WALL_PREJUMP, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/WallCling"), StateMarker{CharacterState::NONE, {CharacterState::WALL_CLING}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
             ))
             ->setTransitionOnTouchedGround(CharacterState::IDLE)
             .setOutdatedTransition(CharacterState::FLOAT, 3)
@@ -23,11 +23,11 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new WallClingAction<CharacterState, decltype(*this)> (
-                CharacterState::WALL_CLING, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/WallCling"), StateMarker{CharacterState::NONE, {CharacterState::FLOAT}}, *this, m_inputResolver, CharacterState::FLOAT
+                CharacterState::WALL_CLING, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/WallCling"), StateMarker{CharacterState::NONE, {CharacterState::FLOAT}}, *this, m_inputResolver, CharacterState::FLOAT, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
             ))
             ->setDrag(TimelineProperty<Vector2<float>>({
                 {0, {1.0f, 0.3f}},
-                {1, {1.0f, 0.3f}}, // TODO: adjust for smooth upward accel, maybe use buffering
+                {1, {1.0f, 0.3f}},
                 }))
             .setTransitionOnTouchedGround(CharacterState::IDLE)
         )
@@ -36,7 +36,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new Action<CharacterState, false, false, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail, decltype(*this)> (
-                CharacterState::ATTACK1_2, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/attack1_2"), StateMarker{CharacterState::NONE, {}}, *this, m_inputResolver
+                CharacterState::ATTACK1_2, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/attack1_2"), StateMarker{CharacterState::NONE, {}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
             ))
             ->setRealignOnSwitch(true)
             .setRecoveryFrames(TimelineProperty<StateMarker>({
@@ -80,7 +80,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new Action<CharacterState, false, false, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail, decltype(*this)> (
-                CharacterState::ATTACK1_1, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/attack1_1"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver
+                CharacterState::ATTACK1_1, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/attack1_1"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
             ))
             ->setRealignOnSwitch(true)
             .setRecoveryFrames(TimelineProperty<StateMarker>({
@@ -124,7 +124,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new Action<CharacterState, false, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, decltype(*this)> (
-                CharacterState::PREJUMP_FORWARD, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/prejump"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver
+                CharacterState::PREJUMP_FORWARD, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/prejump"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
             ))
             ->setAlignedSlopeMax(0.5f)
             .setGroundedOnSwitch(true)
@@ -161,7 +161,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new Action<CharacterState, false, false, InputComparatorTapUp, InputComparatorTapUp, true, InputComparatorTapUp, InputComparatorTapUp, decltype(*this)> (
-                CharacterState::PREJUMP, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/prejump"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver
+                CharacterState::PREJUMP, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/prejump"), StateMarker{CharacterState::NONE, {CharacterState::RUN, CharacterState::IDLE}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
             ))
             ->setGroundedOnSwitch(true)
             .setGravity({{0.0f, 0.0f}})
@@ -196,7 +196,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new Action<CharacterState, false, true, InputComparatorHoldLeft, InputComparatorHoldRight, true, InputComparatorHoldLeft, InputComparatorHoldRight, decltype(*this)> (
-                CharacterState::RUN, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/run"), StateMarker{CharacterState::NONE, {CharacterState::IDLE}}, *this, m_inputResolver
+                CharacterState::RUN, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/run"), StateMarker{CharacterState::NONE, {CharacterState::IDLE}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
             ))
             ->setGroundedOnSwitch(true)
             .setGravity({{0.0f, 0.0f}})
@@ -223,7 +223,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new Action<CharacterState, false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, decltype(*this)> (
-                CharacterState::IDLE, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/idle"), StateMarker{CharacterState::NONE, {CharacterState::RUN}}, *this, m_inputResolver
+                CharacterState::IDLE, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/idle"), StateMarker{CharacterState::NONE, {CharacterState::RUN}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
             ))
             ->setGroundedOnSwitch(true)
             .setGravity({{0.0f, 0.0f}})
@@ -240,7 +240,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new ActionFloat<CharacterState, decltype(*this)> (
-                CharacterState::FLOAT, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/float"), StateMarker{CharacterState::NONE, {}}, *this, m_inputResolver
+                CharacterState::FLOAT, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/float"), StateMarker{CharacterState::NONE, {}}, *this, m_inputResolver, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>()
             ))
             ->setGroundedOnSwitch(false)
             .setTransitionOnTouchedGround(CharacterState::IDLE)
@@ -255,19 +255,25 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
 
 void PlayableCharacter::update()
 {
+    auto &transform = getComponent<ComponentTransform>();
+    auto &physical = getComponent<ComponentPhysical>();
+    auto &ignoreObstacles = getComponent<ComponentObstacleFallthrough>();
+
     for (auto &cd : m_cooldowns)
         cd.update();
 
-    m_isIgnoringObstacles.update();
     m_inputResolver.update();
+
+    if (m_currentAction->canFallThrough(m_framesInState) && m_fallthroughInput(m_inputResolver.getInputQueue(), 0))
+        ignoreObstacles.setIgnoringObstacles();
 
     ActionCharacter::update();
 
-    m_preEditVelocity = m_velocity;
+    m_preEditVelocity = physical.m_velocity;
 
-    if ((m_velocity + m_inertia) != Vector2{0.0f, 0.0f})
+    if ((physical.m_velocity + physical.m_inertia) != Vector2{0.0f, 0.0f})
         {
-            auto tarcamoffset = utils::limitVectorLength((m_velocity + m_inertia).mulComponents(Vector2{1.0f, 0.0f}) * 30, 100.0f);
+            auto tarcamoffset = utils::limitVectorLength((physical.m_velocity + physical.m_inertia).mulComponents(Vector2{1.0f, 0.0f}) * 30, 100.0f);
             auto deltaVec = tarcamoffset - m_cameraOffset;
             auto dlen = deltaVec.getLen();
             auto ddir = deltaVec.normalised();
@@ -276,52 +282,6 @@ void PlayableCharacter::update()
 
             m_cameraOffset += ddir * offsetLen;
         }
-}
-
-bool PlayableCharacter::isIgnoringAllObstacles()
-{
-    if (m_currentAction->canFallThrough(m_framesInState) && m_fallthroughInput(m_inputResolver.getInputQueue(), 0))
-        m_isIgnoringObstacles.begin(5);
-    return m_isIgnoringObstacles.isActive();
-}
-
-void PlayableCharacter::cleanIgnoredObstacles()
-{
-    auto touched = m_collisionArea.getPlayerTouchingObstacles(getPushbox());
-    std::set<int> res;
-    std::set_intersection(
-        m_ignoredObstacles.begin(), m_ignoredObstacles.end(),
-        touched.begin(), touched.end(),
-        std::inserter(res, res.begin()));
-
-    m_ignoredObstacles = res;
-}
-
-// true if not ignored
-bool PlayableCharacter::touchedObstacleTop(int obstacleId_)
-{
-    if (m_isIgnoringObstacles.isActive())
-    {
-        m_ignoredObstacles.insert(obstacleId_);
-        return false;
-    }
-
-    return !m_ignoredObstacles.contains(obstacleId_);
-}
-
-bool PlayableCharacter::touchedObstacleSlope(int obstacleId_)
-{
-    if (m_isIgnoringObstacles.isActive())
-    {
-        m_ignoredObstacles.insert(obstacleId_);
-        return false;
-    }
-    return !m_ignoredObstacles.contains(obstacleId_);
-}
-
-bool PlayableCharacter::checkIgnoringObstacle(int obstacleId_) const
-{
-    return m_isIgnoringObstacles.isActive() || m_ignoredObstacles.contains(obstacleId_);
 }
 
 void PlayableCharacter::loadAnimations(Application &application_)
@@ -343,7 +303,7 @@ void PlayableCharacter::loadAnimations(Application &application_)
 
 Vector2<float> PlayableCharacter::getCameraFocusPoint() const
 {
-    return m_pos - Vector2{0.0f, 60.0f} + m_cameraOffset;
+    return getComponent<ComponentTransform>().m_pos - Vector2{0.0f, 60.0f} + m_cameraOffset;
 }
 
 PlayableCharacter::CharacterGenericAction *PlayableCharacter::getCurrentAction() const

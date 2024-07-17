@@ -29,7 +29,7 @@ void BattleLevel::enter()
 
     m_pc->setOnLevel(*m_application, getTileCenter(Vector2{29, 18}));
     m_camera.setScale(gamedata::global::minCameraScale);
-    m_camera.setPos(m_pc->accessPos());
+    m_camera.setPos(m_pc->getComponent<ComponentTransform>().m_pos);
 
     m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{0, 20}, Vector2{6, 1}, 0));
     m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{6, 20}, Vector2{1, 1}, -1, 1));
@@ -89,39 +89,36 @@ void BattleLevel::update()
     {
         chr->update();
 
-        const auto offset = chr->getPosOffest();
-        auto &pos = chr->accessPos();
-        Collider pb = chr->getPushbox();
+        auto &transform = chr->getComponent<ComponentTransform>();
+        auto &physical = chr->getComponent<ComponentPhysical>();
+        auto &obshandle = chr->getComponent<ComponentObstacleFallthrough>();
 
-        auto oldHeight = pos.y;
+        const auto offset = physical.getPosOffest();
+        Collider pb = physical.getPushbox();
+
+        auto oldHeight = transform.m_pos.y;
         auto oldTop = pb.y;
         auto oldRightEdge = pb.x + pb.w;
         auto oldLeftEdge = pb.x;
-
-        chr->isIgnoringAllObstacles();
 
         bool groundCollision = false;
         float touchedSlope = 0.0f;
         float highest = m_size.y;
 
-        auto &vel = chr->accessVelocity();
-        auto &inr = chr->accessInertia();
-
-
         {
-            pos.y += offset.y;
-            pb = chr->getPushbox();
+            transform.m_pos.y += offset.y;
+            pb = physical.getPushbox();
             if (offset.y < 0)
             {
                 for (auto &cld : m_collisionArea.m_staticCollisionMap)
                 {
-                    if (cld.getFullCollisionWith<true, false>(chr->getPushbox(), highest))
+                    if (cld.getFullCollisionWith<true, false>(physical.getPushbox(), highest))
                     {
-                        if (cld.m_obstacleId && !chr->touchedObstacleBottom(cld.m_obstacleId) || cld.m_highestSlopePoint > oldTop)
+                        if (cld.m_obstacleId && !obshandle.touchedObstacleBottom(cld.m_obstacleId) || cld.m_highestSlopePoint > oldTop)
                             continue;
 
-                        pos.y = cld.m_points[2].y+ pb.h;
-                        pb = chr->getPushbox();
+                        transform.m_pos.y = cld.m_points[2].y + pb.h;
+                        pb = physical.getPushbox();
                     }
                 }
             }
@@ -129,64 +126,64 @@ void BattleLevel::update()
             {
                 for (auto &cld : m_collisionArea.m_staticCollisionMap)
                 {
-                    if (cld.getFullCollisionWith<true, false>(chr->getPushbox(), highest))
+                    if (cld.getFullCollisionWith<true, false>(physical.getPushbox(), highest))
                     {
-                        if (cld.m_obstacleId && (!chr->touchedObstacleTop(cld.m_obstacleId) || highest < oldHeight))
+                        if (cld.m_obstacleId && (!obshandle.touchedObstacleTop(cld.m_obstacleId) || highest < oldHeight))
                             continue;
 
-                        pos.y = highest;
+                        transform.m_pos.y = highest;
                         if (cld.m_topAngleCoef != 0)
                             touchedSlope = cld.m_topAngleCoef;
                         groundCollision = true;
-                        pb = chr->getPushbox();
+                        pb = physical.getPushbox();
 
-                        if (vel.y > 0)
-                            vel.y = 0;
-                        if (inr.y > 0)
-                            inr.y = 0;
+                        if (physical.m_velocity.y > 0)
+                            physical.m_velocity.y = 0;
+                        if (physical.m_inertia.y > 0)
+                            physical.m_inertia.y = 0;
                     }
                 }
             }
         }
 
         {
-            pos.x += offset.x;
-            pb = chr->getPushbox();
+            transform.m_pos.x += offset.x;
+            pb = physical.getPushbox();
             if (offset.x > 0)
             {
                 for (auto &cld : m_collisionArea.m_staticCollisionMap)
                 {
-                    auto colres = cld.getFullCollisionWith<false, true, true>(chr->getPushbox(), highest);
+                    auto colres = cld.getFullCollisionWith<false, true, true>(physical.getPushbox(), highest);
                     bool aligned = cld.getOrientationDir() > 0;
                     if (colres == 1 && aligned) // Touched slope from right direction
                     {
-                        if (cld.m_obstacleId && !chr->touchedObstacleSlope(cld.m_obstacleId))
+                        if (cld.m_obstacleId && !obshandle.touchedObstacleSlope(cld.m_obstacleId))
                             continue;
 
-                        pos.y = highest;
+                        transform.m_pos.y = highest;
                         if (cld.m_topAngleCoef != 0)
                             touchedSlope = cld.m_topAngleCoef;
-                        pb = chr->getPushbox();
+                        pb = physical.getPushbox();
                         groundCollision = true;
 
-                        if (vel.y > 0)
-                            vel.y = 0;
-                        if (inr.y > 0)
-                            inr.y = 0;
+                        if (physical.m_velocity.y > 0)
+                            physical.m_velocity.y = 0;
+                        if (physical.m_inertia.y > 0)
+                            physical.m_inertia.y = 0;
                     }
                     else if (colres) // Touched inner box
                     {
-                        if (cld.m_obstacleId && !chr->touchedObstacleSide(cld.m_obstacleId))
+                        if (cld.m_obstacleId && !obshandle.touchedObstacleSide(cld.m_obstacleId))
                             continue;
 
                         std::cout << "Touched edge, teleporting to it, offset.x > 0\n";
 
-                        pos.x = cld.m_tlPos.x - pb.w / 2.0f;
-                        pb = chr->getPushbox();
-                        if (vel.x < 0)
-                            vel.x = 0;
-                        if (inr.x < 0)
-                            inr.x = 0;
+                        transform.m_pos.x = cld.m_tlPos.x - pb.w / 2.0f;
+                        pb = physical.getPushbox();
+                        if (physical.m_velocity.x < 0)
+                            physical.m_velocity.x = 0;
+                        if (physical.m_inertia.x < 0)
+                            physical.m_inertia.x = 0;
                     }
                 }
             }
@@ -194,44 +191,44 @@ void BattleLevel::update()
             {
                 for (auto &cld : m_collisionArea.m_staticCollisionMap)
                 {
-                    auto colres = cld.getFullCollisionWith<false, true, true>(chr->getPushbox(), highest);
+                    auto colres = cld.getFullCollisionWith<false, true, true>(physical.getPushbox(), highest);
                     bool aligned = cld.getOrientationDir() < 0;
                     if (colres == 1 && aligned) // Touched slope from right direction
                     {
-                        if (cld.m_obstacleId && !chr->touchedObstacleSlope(cld.m_obstacleId))
+                        if (cld.m_obstacleId && !obshandle.touchedObstacleSlope(cld.m_obstacleId))
                             continue;
 
-                        pos.y = highest;
+                        transform.m_pos.y = highest;
                         if (cld.m_topAngleCoef != 0)
                             touchedSlope = cld.m_topAngleCoef;
-                        pb = chr->getPushbox();
+                        pb = physical.getPushbox();
                         groundCollision = true;
 
-                        if (vel.y > 0)
-                            vel.y = 0;
-                        if (inr.y > 0)
-                            inr.y = 0;
+                        if (physical.m_velocity.y > 0)
+                            physical.m_velocity.y = 0;
+                        if (physical.m_inertia.y > 0)
+                            physical.m_inertia.y = 0;
                     }
                     else if (colres) // Touched inner box
                     {
-                        if (cld.m_obstacleId && !chr->touchedObstacleSide(cld.m_obstacleId))
+                        if (cld.m_obstacleId && !obshandle.touchedObstacleSide(cld.m_obstacleId))
                             continue;
 
                         std::cout << "Touched edge, teleporting to it, offset.x < 0\n";
 
-                        pos.x = cld.m_tlPos.x + cld.m_size.x + pb.w / 2.0f;
-                        pb = chr->getPushbox();
-                        if (vel.x < 0)
-                            vel.x = 0;
-                        if (inr.x < 0)
-                            inr.x = 0;
+                        transform.m_pos.x = cld.m_tlPos.x + cld.m_size.x + pb.w / 2.0f;
+                        pb = physical.getPushbox();
+                        if (physical.m_velocity.x < 0)
+                            physical.m_velocity.x = 0;
+                        if (physical.m_inertia.x < 0)
+                            physical.m_inertia.x = 0;
                     }
                 }
             }
         }
 
-        chr->cleanIgnoredObstacles();
-        chr->setSlopeAngle(touchedSlope);
+        obshandle.cleanIgnoredObstacles();
+        physical.m_onSlopeWithAngle = touchedSlope;
 
         if (groundCollision)
         {
@@ -239,7 +236,7 @@ void BattleLevel::update()
         }
         else
         {
-            if (!chr->attemptResetGround())
+            if (!physical.attemptResetGround())
                 chr->onLostGround();
         }
     }
@@ -299,7 +296,7 @@ void BattleLevel::draw()
 
 bool BattleLevel::updateFocus()
 {
-    auto pb = m_pc->getPushbox();
+    auto pb = m_pc->getComponent<ComponentPhysical>().getPushbox();
     if (m_currentCamFocusArea)
     {
         if (m_currentCamFocusArea->checkIfEnters(pb, true))

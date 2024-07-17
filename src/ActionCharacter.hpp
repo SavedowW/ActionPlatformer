@@ -32,16 +32,17 @@ public:
 
     virtual void onTouchedGround() override
     {
+        auto &physcomp = getComponent<ComponentPhysical>();
         if (!isGrounded)
         {
             isGrounded = true;
             m_currentAction->onTouchedGround();
 
-            if (m_inertia.y > 0)
-                m_inertia.y = 0;
+            if (physcomp.m_inertia.y > 0)
+                physcomp.m_inertia.y = 0;
 
-            if (m_velocity.y > 0)
-                m_velocity.y = 0;
+            if (physcomp.m_velocity.y > 0)
+                physcomp.m_velocity.y = 0;
         }
     }
 
@@ -52,43 +53,6 @@ public:
             isGrounded = false;
             m_currentAction->onLostGround();
         }
-    }
-
-    virtual bool attemptResetGround() override
-    {
-        auto pb = getPushbox();
-        float lim = m_currentAction->getMagnetLimit(m_framesInState);
-        if (lim <= 0.0f)
-            return false;
-
-        float height = m_pos.y;
-        if (m_collisionArea.getHighestVerticalMagnetCoord(pb, height, m_ignoredObstacles))
-        {
-            float magnetRange = height - m_pos.y;
-            if (magnetRange <= lim)
-            {
-                std::cout << "MAGNET: " << magnetRange << std::endl;
-                m_pos.y = height;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    Collider getPushbox() const
-    {
-        return m_currentAction->getHurtbox() + m_pos;
-    }
-
-    Vector2<float> getInertiaDrag() const
-    {
-        return m_currentAction->getDrag(m_framesInState);
-    }
-
-    Vector2<float> getInertiaMultiplier() const
-    {
-        return m_currentAction->getAppliedInertiaMultiplier(m_framesInState);
     }
 
     CHAR_STATE_T getCurrentActionState() const
@@ -104,7 +68,19 @@ public:
             m_currentAnimation->update();
         }
 
-        Object::update();
+        auto &physcomp = getComponent<ComponentPhysical>();
+
+        physcomp.m_gravity = m_currentAction->getGravity(m_framesInState);
+        if (physcomp.m_velocity.y + physcomp.m_inertia.y > 0)
+            physcomp.m_gravity *= 1.3f;
+
+        physcomp.m_drag = m_currentAction->getDrag(m_framesInState);
+
+        physcomp.m_inertiaMultiplier = m_currentAction->getAppliedInertiaMultiplier(m_framesInState);
+
+        physcomp.m_magnetLimit = m_currentAction->getMagnetLimit(m_framesInState);
+
+        MovableCharacter::update();
     }
 
     virtual ~ActionCharacter() = default;
@@ -119,16 +95,9 @@ protected:
         return nullptr;
     }
 
-    Vector2<float> getCurrentGravity() const
-    {
-        auto grav = m_currentAction->getGravity(m_framesInState);
-        if (m_velocity.y + m_inertia.y > 0)
-            grav *= 1.3f;
-        return grav;
-    }
-
     bool transitionState()
     {
+        auto &transform = getComponent<ComponentTransform>();
         m_framesInState++;
 
         for (auto &el : m_actions)
@@ -137,12 +106,12 @@ protected:
             auto res = el->isPossibleInDirection(0, proceed);
             if (proceed)
             {
-                m_ownOrientation = res;
+                transform.m_ownOrientation = res;
                 return true;
             }
             if (res != ORIENTATION::UNSPECIFIED)
             {
-                m_ownOrientation = res;
+                transform.m_ownOrientation = res;
                 switchTo(el.get());
                 return false;
             }
@@ -153,14 +122,15 @@ protected:
 
     void draw(Camera &cam_)
     {
+        auto &transform = getComponent<ComponentTransform>();
         if (m_currentAnimation != nullptr)
         {
             auto texSize = m_currentAnimation->getSize();
             auto animorigin = m_currentAnimation->getOrigin();
-            auto texPos = m_pos;
+            auto texPos = transform.m_pos;
             texPos.y -= animorigin.y;
             SDL_RendererFlip flip = SDL_FLIP_NONE;
-            if (m_ownOrientation == ORIENTATION::LEFT)
+            if (transform.m_ownOrientation == ORIENTATION::LEFT)
             {
                 flip = SDL_FLIP_HORIZONTAL;
                 texPos.x -= (texSize.x - animorigin.x);
@@ -177,7 +147,7 @@ protected:
     
             if (gamedata::debug::drawColliders)
             {
-                m_renderer.drawCollider(getPushbox(), {238, 195, 154, 50}, 100, cam_);
+                m_renderer.drawCollider(getComponent<ComponentPhysical>().getPushbox(), {238, 195, 154, 50}, 100, cam_);
             }
         }
     }

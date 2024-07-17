@@ -1,10 +1,13 @@
 #ifndef ACTIONS_H_
 #define ACTIONS_H_
 
-#include "Object.h"
+#include "CoreComponents.h"
 #include "InputResolver.h"
 #include "InputComparators.h"
 #include "CollisionArea.h"
+#include "TimelineProperty.h"
+#include "FrameTimer.h"
+#include "StateMarker.h"
 
 /*
     Attempt provided input considering alignment rules
@@ -49,12 +52,14 @@ template<typename CHAR_STATES_T, typename OWNER_T>
 class GenericAction
 {
 public:
-    GenericAction(CHAR_STATES_T ownState_, OWNER_T &owner_, int anim_) :
+    GenericAction(CHAR_STATES_T ownState_, OWNER_T &owner_, int anim_, ComponentTransform &transform_,  ComponentPhysical &physical_) :
         m_ownState(ownState_),
         m_owner(owner_),
         m_anim(anim_),
         m_drag({1.0f, 0.0f}),
-        m_appliedInertiaMultiplier({1.0f, 1.0f})
+        m_appliedInertiaMultiplier({1.0f, 1.0f}),
+        m_transform(transform_),
+        m_physical(physical_)
     {
     }
 
@@ -175,28 +180,30 @@ public:
         m_owner.m_framesInState = 0;
 
         if (m_convertVelocityOnSwitch)
-            m_owner.velocityToInertia();
+            m_physical.velocityToInertia();
 
         if (m_setGroundedOnSwitch.isSet())
             m_owner.isGrounded = m_setGroundedOnSwitch;
 
         if (m_cooldown)
             m_cooldown->begin(m_cooldownTime);
+
+        m_physical.m_pushbox = getHurtbox();
     }
 
     inline virtual void onUpdate()
     {
         if (m_usingUpdateMovement)
         {
-            m_owner.m_velocity = m_owner.m_velocity.mulComponents(m_mulOwnVelUpd[m_owner.m_framesInState]) + m_owner.getOwnHorDir().mulComponents(m_mulOwnDirVelUpd[m_owner.m_framesInState]) + m_rawAddVelUpd[m_owner.m_framesInState];
-            m_owner.m_inertia = m_owner.m_inertia.mulComponents(m_mulOwnInrUpd[m_owner.m_framesInState]) + m_owner.getOwnHorDir().mulComponents(m_mulOwnDirInrUpd[m_owner.m_framesInState]) + m_rawAddInrUpd[m_owner.m_framesInState];
+            m_physical.m_velocity = m_physical.m_velocity.mulComponents(m_mulOwnVelUpd[m_owner.m_framesInState]) + m_transform.getOwnHorDir().mulComponents(m_mulOwnDirVelUpd[m_owner.m_framesInState]) + m_rawAddVelUpd[m_owner.m_framesInState];
+            m_physical.m_inertia = m_physical.m_inertia.mulComponents(m_mulOwnInrUpd[m_owner.m_framesInState]) + m_transform.getOwnHorDir().mulComponents(m_mulOwnDirInrUpd[m_owner.m_framesInState]) + m_rawAddInrUpd[m_owner.m_framesInState];
         }
 
         if (!m_ownVelLimitUpd.isEmpty())
-            m_owner.m_velocity = utils::clamp(m_owner.m_velocity, -m_ownVelLimitUpd[m_owner.m_framesInState], m_ownVelLimitUpd[m_owner.m_framesInState]);
+            m_physical.m_velocity = utils::clamp(m_physical.m_velocity, -m_ownVelLimitUpd[m_owner.m_framesInState], m_ownVelLimitUpd[m_owner.m_framesInState]);
 
         if (!m_ownInrLimitUpd.isEmpty())
-            m_owner.m_inertia = utils::clamp(m_owner.m_inertia, -m_ownInrLimitUpd[m_owner.m_framesInState], m_ownInrLimitUpd[m_owner.m_framesInState]);
+            m_physical.m_inertia = utils::clamp(m_physical.m_inertia, -m_ownInrLimitUpd[m_owner.m_framesInState], m_ownInrLimitUpd[m_owner.m_framesInState]);
 
         if (m_transitionOnOutdated.isSet())
         {
@@ -303,6 +310,9 @@ protected:
     TimelineProperty<StateMarker> m_recoveryFrames;
 
     std::map<CHAR_STATES_T, int> m_uniqueTransitionAnims;
+
+    ComponentTransform &m_transform;
+    ComponentPhysical &m_physical;
 };
 
 template<typename CHAR_STATES_T, bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN,
@@ -312,8 +322,8 @@ template<typename CHAR_STATES_T, bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN,
 class Action : public GenericAction<CHAR_STATES_T, OWNER_T>
 {
 public:
-    Action(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_) :
-        GenericAction<CHAR_STATES_T, OWNER_T>(actionState_, owner_, anim_),
+    Action(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, ComponentTransform &transform_, ComponentPhysical &physical_) :
+        GenericAction<CHAR_STATES_T, OWNER_T>(actionState_, owner_, anim_, transform_, physical_),
         m_hurtbox(hurtbox_),
         m_transitionableFrom(std::move(transitionableFrom_)),
         m_inputResolver(inputResolver_)
@@ -326,9 +336,9 @@ public:
         {
             auto indir = m_inputResolver.getCurrentInputDir();
             if (indir.x > 0)
-                ParentClass::m_owner.setOwnOrientation(ORIENTATION::RIGHT);
+                ParentClass::m_transform.m_ownOrientation = ORIENTATION::RIGHT;
             else if (indir.x < 0)
-                ParentClass::m_owner.setOwnOrientation(ORIENTATION::LEFT);
+                ParentClass::m_transform.m_ownOrientation = ORIENTATION::LEFT;
         }
 
         ParentClass::onSwitchTo();
@@ -339,19 +349,21 @@ public:
         if (ParentClass::m_cooldown && ParentClass::m_cooldown->isActive())
             return ORIENTATION::UNSPECIFIED;
 
+        auto &physical = ParentClass::m_owner.getComponent<ComponentPhysical>();
+
         isProceed_ = false;
-        auto orientation = ParentClass::m_owner.getOwnOrientation();
+        auto orientation = ParentClass::m_transform.m_ownOrientation;
         const auto &inq = m_inputResolver.getInputQueue();
         auto currentState = ParentClass::m_owner.getCurrentActionState();
 
         ORIENTATION SlopeDir = ORIENTATION::UNSPECIFIED;
-        if (ParentClass::m_owner.getSlopeAngle() > 0)
+        if (physical.m_onSlopeWithAngle > 0)
             SlopeDir = ORIENTATION::RIGHT;
-        else if (ParentClass::m_owner.getSlopeAngle() < 0)
+        else if (physical.m_onSlopeWithAngle < 0)
             SlopeDir = ORIENTATION::LEFT;
 
-        bool possibleToLeft = (!m_alignedSlopeMax.isSet() || ParentClass::m_owner.getSlopeAngle() <= 0 || ParentClass::m_owner.getSlopeAngle() <= m_alignedSlopeMax);
-        bool possibleToRight = (!m_alignedSlopeMax.isSet() || ParentClass::m_owner.getSlopeAngle() >= 0 || -ParentClass::m_owner.getSlopeAngle() <= m_alignedSlopeMax);
+        bool possibleToLeft = (!m_alignedSlopeMax.isSet() || physical.m_onSlopeWithAngle <= 0 || physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
+        bool possibleToRight = (!m_alignedSlopeMax.isSet() || physical.m_onSlopeWithAngle >= 0 || -physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
 
         InputComparatorFail failin;
 
@@ -414,16 +426,16 @@ template<typename CHAR_STATES_T, typename OWNER_T>
 class ActionFloat: public Action<CHAR_STATES_T, false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, OWNER_T>
 {
 public:
-    ActionFloat(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_) :
-        ParentAction(actionState_, hurtbox_, anim_, transitionableFrom_, owner_, inputResolver_)
+    ActionFloat(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, ComponentTransform &transform_, ComponentPhysical &physical_) :
+        ParentAction(actionState_, hurtbox_, anim_, transitionableFrom_, owner_, inputResolver_, transform_, physical_)
     {
     }
 
     inline virtual void onSwitchTo() override
     {
         ParentAction::onSwitchTo();
-        if (ParentAction::m_owner.m_isIgnoringObstacles.isActive() && abs(ParentAction::m_owner.m_velocity.x) > 0.8f)
-            ParentAction::m_owner.m_velocity.y += 5.0f;
+        if (ParentAction::m_owner.getComponent<ComponentObstacleFallthrough>().isIgnoringAllObstacles() && abs(ParentAction::m_physical.m_velocity.x) > 0.8f)
+            ParentAction::m_physical.m_velocity.y += 5.0f;
     }
 
     inline virtual void onUpdate() override
@@ -431,32 +443,30 @@ public:
         ParentAction::onUpdate();
 
         const auto &inq = ParentAction::m_inputResolver.getInputQueue();
-        auto &vel = ParentAction::m_owner.accessVelocity();
-        auto &inr = ParentAction::m_owner.accessInertia();
 
         if (m_driftLeftInput(inq, 0))
         {
-            if (vel.x > -4.0f)
-                vel.x -= 0.15f;
+            if (ParentAction::m_physical.m_velocity.x > -4.0f)
+                ParentAction::m_physical.m_velocity.x -= 0.15f;
         }
 
         if (m_driftRightInput(inq, 0))
         {
-            if (vel.x < 4.0f)
-                vel.x += 0.15f;
+            if (ParentAction::m_physical.m_velocity.x < 4.0f)
+                ParentAction::m_physical.m_velocity.x += 0.15f;
         }
 
-        if (ParentAction::m_owner.accessVelocity().y < 0 && m_driftUpInput(inq, 0))
+        if (ParentAction::m_physical.m_velocity.y < 0 && m_driftUpInput(inq, 0))
         {
             if (ParentAction::m_owner.m_framesInState < 10.0f)
-                vel.y -= 0.4f;
+                ParentAction::m_physical.m_velocity.y -= 0.4f;
         }
 
-        auto total = vel.x + inr.x;
+        auto total = ParentAction::m_physical.m_velocity.x + ParentAction::m_physical.m_inertia.x;
         if (total > 0)
-            ParentAction::m_owner.setOwnOrientation(ORIENTATION::RIGHT);
+            ParentAction::m_transform.m_ownOrientation = ORIENTATION::RIGHT;
         else if (total < 0)
-            ParentAction::m_owner.setOwnOrientation(ORIENTATION::LEFT);
+            ParentAction::m_transform.m_ownOrientation = ORIENTATION::LEFT;
     }
 
 protected:
@@ -471,8 +481,8 @@ template<typename CHAR_STATES_T, typename OWNER_T>
 class WallClingAction: public Action<CHAR_STATES_T, false, true, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail, OWNER_T>
 {
 public:
-    WallClingAction(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, CHAR_STATES_T switchOnLeave_) :
-        ParentAction(actionState_, hurtbox_, anim_, transitionableFrom_, owner_, inputResolver_),
+    WallClingAction(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, CHAR_STATES_T switchOnLeave_, ComponentTransform &transform_, ComponentPhysical &physical_) :
+        ParentAction(actionState_, hurtbox_, anim_, transitionableFrom_, owner_, inputResolver_, transform_, physical_),
         m_switchOnLeave(switchOnLeave_)
     {
         ParentGenericAction::setGravity(TimelineProperty<Vector2<float>>({0.0f, 0.020f}));
@@ -489,11 +499,11 @@ public:
             return ORIENTATION::UNSPECIFIED;        
 
         isProceed_ = false;
-        auto orientation = owner.getOwnOrientation();
+        auto orientation = ParentGenericAction::m_transform.m_ownOrientation;
         ParentAction::m_inputResolver.getInputQueue();
         const auto &inq = ParentAction::m_inputResolver.getInputQueue();
 
-        auto *currentTrigger = owner.m_collisionArea.getOverlappedTrigger(owner.getPushbox(), Trigger::Tag::ClingArea);
+        auto *currentTrigger = ParentGenericAction::m_physical.m_collisionArea.getOverlappedTrigger(ParentGenericAction::m_physical.getPushbox(), Trigger::Tag::ClingArea);
         if (!currentTrigger)
             return ORIENTATION::UNSPECIFIED;
 
@@ -517,22 +527,22 @@ public:
         ParentAction::onSwitchTo();
 
         auto &owner = ParentGenericAction::m_owner;
-        if (owner.m_inertia.y > 0)
-            owner.m_inertia.y = 0;
-        if (owner.m_velocity.y > 0)
-            owner.m_velocity.y = 0;
+        if (ParentGenericAction::m_physical.m_inertia.y > 0)
+            ParentGenericAction::m_physical.m_inertia.y = 0;
+        if (ParentGenericAction::m_physical.m_velocity.y > 0)
+            ParentGenericAction::m_physical.m_velocity.y = 0;
 
-        owner.m_velocity.x = 0;
-        owner.m_inertia.x = 0;
+        ParentGenericAction::m_physical.m_velocity.x = 0;
+        ParentGenericAction::m_physical.m_inertia.x = 0;
 
-        m_currentTrigger = owner.m_collisionArea.getOverlappedTrigger(owner.getPushbox(), Trigger::Tag::ClingArea);
+        auto pb = ParentGenericAction::m_physical.getPushbox();
+        m_currentTrigger = ParentGenericAction::m_physical.m_collisionArea.getOverlappedTrigger(pb, Trigger::Tag::ClingArea);
 
-        auto pb = owner.getPushbox();
 
         if (*m_currentTrigger & Trigger::Tag::LEFT)
-            owner.m_pos.x = m_currentTrigger->x + m_currentTrigger->w - pb.w / 2;
+            ParentGenericAction::m_transform.m_pos.x = m_currentTrigger->x + m_currentTrigger->w - pb.w / 2;
         else if (*m_currentTrigger & Trigger::Tag::RIGHT)
-            owner.m_pos.x = m_currentTrigger->x + pb.w / 2;
+            ParentGenericAction::m_transform.m_pos.x = m_currentTrigger->x + pb.w / 2;
     }
 
     inline virtual void onUpdate() override
@@ -540,14 +550,14 @@ public:
         ParentAction::onUpdate();
 
         auto &owner = ParentGenericAction::m_owner;
-        auto playercld = owner.getPushbox();
+        auto playercld = ParentGenericAction::m_physical.getPushbox();
 
         if (!m_currentTrigger->checkCollisionWith<true, false>(playercld))
         {
             if (playercld.y >= m_currentTrigger->y + m_currentTrigger->h)
                 owner.switchTo(m_switchOnLeave);
             else
-                owner.m_pos.y = m_currentTrigger->y;
+                ParentGenericAction::m_transform.m_pos.y = m_currentTrigger->y;
         }
     }
 
@@ -563,8 +573,8 @@ template<typename CHAR_STATES_T, typename OWNER_T>
 class WallClingPrejump: public Action<CHAR_STATES_T, true, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail, OWNER_T>
 {
 public:
-    WallClingPrejump(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_) :
-        ParentAction(actionState_, hurtbox_, anim_, transitionableFrom_, owner_, inputResolver_)
+    WallClingPrejump(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, ComponentTransform &transform_, ComponentPhysical &physical_) :
+        ParentAction(actionState_, hurtbox_, anim_, transitionableFrom_, owner_, inputResolver_, transform_, physical_)
     {
         ParentGenericAction::setGravity(TimelineProperty<Vector2<float>>({0.0f, 0.020f}));
         ParentGenericAction::setConvertVelocityOnSwitch(true);
@@ -574,11 +584,10 @@ public:
     {
         ParentAction::onSwitchTo();
 
-        auto &owner = ParentGenericAction::m_owner;
-        if (owner.m_inertia.y > 0)
-            owner.m_inertia.y = 0;
-        if (owner.m_velocity.y > 0)
-            owner.m_velocity.y = 0;
+        if (ParentGenericAction::m_physical.m_inertia.y > 0)
+            ParentGenericAction::m_physical.m_inertia.y = 0;
+        if (ParentGenericAction::m_physical.m_velocity.y > 0)
+            ParentGenericAction::m_physical.m_velocity.y = 0;
     }
 
     inline virtual void onOutdated() override
@@ -587,7 +596,7 @@ public:
         const auto &inq = ParentAction::m_inputResolver.getInputQueue();
 
         Vector2<float> targetSpeed;
-        int orient = ParentGenericAction::m_owner.getOwnHorDir().x;
+        int orient = ParentGenericAction::m_transform.getOwnHorDir().x;
 
         bool upIn = m_u(inq, 0);
         bool sideIn = (orient > 0 ? m_r(inq, 0) : m_l(inq, 0));
@@ -616,11 +625,11 @@ public:
 
         if (fall)
         {
-            ParentAction::m_owner.accessVelocity() = {0.0f, 0.1f};
-            ParentAction::m_owner.accessInertia() = {0.0f, 0.0f};
+            ParentAction::m_physical.m_velocity = {0.0f, 0.1f};
+            ParentAction::m_physical.m_inertia = {0.0f, 0.0f};
         }
         else
-            ParentAction::m_owner.accessVelocity() += targetSpeed;
+            ParentAction::m_physical.m_velocity += targetSpeed;
 
         ParentAction::onOutdated();
     }
@@ -640,8 +649,8 @@ template<typename CHAR_STATES_T, typename OWNER_T>
 class MobAction : public GenericAction<CHAR_STATES_T, OWNER_T>
 {
 public:
-    MobAction(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_) :
-        GenericAction<CHAR_STATES_T, OWNER_T>(actionState_, owner_, anim_),
+    MobAction(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_,  ComponentTransform &transform_, ComponentPhysical &physical_) :
+        GenericAction<CHAR_STATES_T, OWNER_T>(actionState_, owner_, anim_, transform_, physical_),
         m_hurtbox(hurtbox_),
         m_transitionableFrom(std::move(transitionableFrom_))
     {
@@ -650,7 +659,7 @@ public:
     inline virtual ORIENTATION isPossibleInDirection(int extendBuffer_, bool &isProceed_) const override
     {
         isProceed_ = false;
-        auto orientation = ParentClass::m_owner.getOwnOrientation();
+        auto orientation = ParentClass::m_transform.m_ownOrientation;
         auto currentState = ParentClass::m_owner.getCurrentActionState();
 
         if (ParentClass::m_ownState == currentState)
