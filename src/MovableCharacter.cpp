@@ -6,12 +6,6 @@ MovableCharacter::MovableCharacter(Application &application_, const CollisionAre
     resolveDeps();
 }
 
-void MovableCharacter::setOnLevel(Application &application_, Vector2<float> pos_)
-{
-    loadAnimations(application_);
-    getComponent<ComponentTransform>().m_pos = pos_;
-}
-
 
 void MovableCharacter::resolveDeps()
 {

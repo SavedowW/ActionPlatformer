@@ -319,10 +319,10 @@ template<typename CHAR_STATES_T, bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN,
     typename CMP_LEFT, typename CMP_RIGHT,
     bool ATTEMPT_PROCEED, typename CMP_PROCEED_LEFT, typename CMP_PROCEED_RIGHT,
     typename OWNER_T>
-class Action : public GenericAction<CHAR_STATES_T, OWNER_T>
+class PlayerAction : public GenericAction<CHAR_STATES_T, OWNER_T>
 {
 public:
-    Action(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, ComponentTransform &transform_, ComponentPhysical &physical_) :
+    PlayerAction(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, ComponentTransform &transform_, ComponentPhysical &physical_) :
         GenericAction<CHAR_STATES_T, OWNER_T>(actionState_, owner_, anim_, transform_, physical_),
         m_hurtbox(hurtbox_),
         m_transitionableFrom(std::move(transitionableFrom_)),
@@ -389,14 +389,14 @@ public:
         return ORIENTATION::UNSPECIFIED;
     }
 
-    inline Action<CHAR_STATES_T, REQUIRE_ALIGNMENT, FORCE_REALIGN, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT, OWNER_T> 
+    inline PlayerAction<CHAR_STATES_T, REQUIRE_ALIGNMENT, FORCE_REALIGN, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT, OWNER_T> 
         &setAlignedSlopeMax(float alignedSlopeMax_)
     {
         m_alignedSlopeMax = alignedSlopeMax_;
         return *this;
     }
 
-    inline Action<CHAR_STATES_T, REQUIRE_ALIGNMENT, FORCE_REALIGN, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT, OWNER_T> 
+    inline PlayerAction<CHAR_STATES_T, REQUIRE_ALIGNMENT, FORCE_REALIGN, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT, OWNER_T> 
         &setRealignOnSwitch(bool realignOnSwitch_)
     {
         m_realignOnSwitchForInput = realignOnSwitch_;
@@ -423,7 +423,7 @@ protected:
 };
 
 template<typename CHAR_STATES_T, typename OWNER_T>
-class ActionFloat: public Action<CHAR_STATES_T, false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, OWNER_T>
+class ActionFloat: public PlayerAction<CHAR_STATES_T, false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, OWNER_T>
 {
 public:
     ActionFloat(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, ComponentTransform &transform_, ComponentPhysical &physical_) :
@@ -470,7 +470,7 @@ public:
     }
 
 protected:
-    using ParentAction = Action<CHAR_STATES_T, false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, OWNER_T>;
+    using ParentAction = PlayerAction<CHAR_STATES_T, false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle, OWNER_T>;
     InputComparatorHoldLeft m_driftLeftInput;
     InputComparatorHoldRight m_driftRightInput;
     InputComparatorHoldUp m_driftUpInput;
@@ -478,7 +478,7 @@ protected:
 };
 
 template<typename CHAR_STATES_T, typename OWNER_T>
-class WallClingAction: public Action<CHAR_STATES_T, false, true, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail, OWNER_T>
+class WallClingAction: public PlayerAction<CHAR_STATES_T, false, true, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail, OWNER_T>
 {
 public:
     WallClingAction(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, CHAR_STATES_T switchOnLeave_, ComponentTransform &transform_, ComponentPhysical &physical_) :
@@ -563,14 +563,14 @@ public:
 
 protected:
     using ParentGenericAction = GenericAction<CHAR_STATES_T, OWNER_T>;
-    using ParentAction = Action<CHAR_STATES_T, false, true, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail, OWNER_T>;
+    using ParentAction = PlayerAction<CHAR_STATES_T, false, true, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail, OWNER_T>;
     const Trigger *m_currentTrigger = nullptr;
     CHAR_STATES_T m_switchOnLeave;
 
 };
 
 template<typename CHAR_STATES_T, typename OWNER_T>
-class WallClingPrejump: public Action<CHAR_STATES_T, true, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail, OWNER_T>
+class WallClingPrejump: public PlayerAction<CHAR_STATES_T, true, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail, OWNER_T>
 {
 public:
     WallClingPrejump(CHAR_STATES_T actionState_, const Collider &hurtbox_, int anim_, StateMarker transitionableFrom_, OWNER_T &owner_, const InputResolver &inputResolver_, ComponentTransform &transform_, ComponentPhysical &physical_) :
@@ -636,7 +636,7 @@ public:
 
 protected:
     using ParentGenericAction = GenericAction<CHAR_STATES_T, OWNER_T>;
-    using ParentAction = Action<CHAR_STATES_T, true, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail, OWNER_T>;
+    using ParentAction = PlayerAction<CHAR_STATES_T, true, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail, OWNER_T>;
 
     InputComparatorHoldLeft m_l;
     InputComparatorHoldRight m_r;

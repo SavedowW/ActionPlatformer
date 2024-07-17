@@ -15,6 +15,12 @@ public:
     {
     }
 
+    virtual void setOnLevel(Application &application_, Vector2<float> pos_) override
+    {
+        loadAnimations(application_);
+        getComponent<ComponentTransform>().m_pos = pos_;
+    }
+
     uint32_t getFramesInState() const
     {
         return m_framesInState;
@@ -86,6 +92,8 @@ public:
     virtual ~ActionCharacter() = default;
 
 protected:
+    virtual void loadAnimations(Application &application_) = 0;
+
     CharacterGenericAction *getAction(CHAR_STATE_T charState_)
     {
         for (auto &el : m_actions)
