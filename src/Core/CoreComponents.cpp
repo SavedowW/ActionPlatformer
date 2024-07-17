@@ -145,3 +145,45 @@ bool ComponentPhysical::attemptResetGround()
 
     return false;
 }
+
+ComponentAnimationRenderable::ComponentAnimationRenderable(Renderer *renderer_) :
+    m_renderer(renderer_)
+{
+}
+
+void ComponentAnimationRenderable::draw(Camera &cam_)
+{
+    auto &transform = getComponent<ComponentTransform>();
+    if (m_currentAnimation != nullptr)
+    {
+        auto texSize = m_currentAnimation->getSize();
+        auto animorigin = m_currentAnimation->getOrigin();
+        auto texPos = transform.m_pos;
+        texPos.y -= animorigin.y;
+        SDL_RendererFlip flip = SDL_FLIP_NONE;
+        if (transform.m_ownOrientation == ORIENTATION::LEFT)
+        {
+            flip = SDL_FLIP_HORIZONTAL;
+            texPos.x -= (texSize.x - animorigin.x);
+        }
+        else
+        {
+            texPos.x -= animorigin.x;
+        }
+
+        auto spr = m_currentAnimation->getSprite();
+        auto edge = m_currentAnimation->getBorderSprite();
+
+        m_renderer->renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, cam_, 0.0f, flip);
+
+        if (gamedata::debug::drawColliders)
+        {
+            m_renderer->drawCollider(getComponent<ComponentPhysical>().getPushbox(), {238, 195, 154, 50}, 100, cam_);
+        }
+    }
+}
+
+void ComponentAnimationRenderable::onUpdate()
+{
+    m_currentAnimation->update();
+}

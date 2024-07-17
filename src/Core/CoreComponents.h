@@ -3,8 +3,13 @@
 #include "ComponentEntity.hpp"
 #include "Vector2.h"
 #include "FrameTimer.h"
-#include <set>
 #include "CollisionArea.h"
+#include "Renderer.h"
+#include "AnimationManager.h"
+#include <set>
+#include <map>
+#include <memory>
+#include <utility>
 
 struct ComponentObstacleFallthrough;
 
@@ -58,6 +63,23 @@ struct ComponentObstacleFallthrough : public Component<ComponentPhysical>
 
     FrameTimer<false> m_isIgnoringObstacles;
     std::set<int> m_ignoredObstacles;
+};
+
+struct ComponentAnimationRenderable : public Component<ComponentTransform, ComponentPhysical>
+{
+    ComponentAnimationRenderable(Renderer *renderer_);
+
+    ComponentAnimationRenderable(const ComponentAnimationRenderable &rhs_) = default;
+    ComponentAnimationRenderable(ComponentAnimationRenderable &&rhs_) = default;
+    ComponentAnimationRenderable &operator=(const ComponentAnimationRenderable &rhs_) = delete;
+    ComponentAnimationRenderable &operator=(ComponentAnimationRenderable &&rhs_) = delete;
+
+    void draw(Camera &cam_);
+    virtual void onUpdate() override;
+
+    Renderer *m_renderer;
+    std::map<int, std::unique_ptr<Animation>> m_animations;
+    Animation *m_currentAnimation;
 };
 
 #endif
