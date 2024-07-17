@@ -84,7 +84,7 @@ public:
 
         physcomp.m_magnetLimit = m_currentAction->getMagnetLimit(m_framesInState);
 
-        MovableCharacter::update();
+        onUpdate();
     }
 
     virtual ~ActionCharacter() = default;

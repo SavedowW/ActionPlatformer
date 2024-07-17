@@ -10,7 +10,7 @@ public:
     MovableCharacter(Application &application_, const CollisionArea &cldArea_);
 
     virtual void setOnLevel(Application &application_, Vector2<float> pos_) = 0;
-    virtual void update();
+    virtual void update() = 0;
 
     virtual void onTouchedGround() = 0;
     virtual void onLostGround() = 0;

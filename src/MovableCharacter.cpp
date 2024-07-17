@@ -13,9 +13,3 @@ void MovableCharacter::resolveDeps()
     getComponent<ComponentObstacleFallthrough>().ResolveDeps(&getComponent<ComponentPhysical>());
     getComponent<ComponentAnimationRenderable>().ResolveDeps(&getComponent<ComponentTransform>(), &getComponent<ComponentPhysical>());
 }
-
-void MovableCharacter::update()
-{
-    onUpdate();
-}
-
