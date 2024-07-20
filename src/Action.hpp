@@ -502,7 +502,6 @@ public:
 
         isProceed_ = false;
         auto orientation = ParentGenericAction::m_transform.m_ownOrientation;
-        ParentAction::m_inputResolver.getInputQueue();
         const auto &inq = ParentAction::m_inputResolver.getInputQueue();
 
         auto *currentTrigger = ParentGenericAction::m_physical.m_collisionArea.getOverlappedTrigger(ParentGenericAction::m_physical.getPushbox(), Trigger::Tag::ClingArea);
@@ -554,7 +553,7 @@ public:
         auto &owner = ParentGenericAction::m_owner;
         auto playercld = ParentGenericAction::m_physical.getPushbox();
 
-        if (!m_currentTrigger->checkCollisionWith<true, false>(playercld))
+        if (!(m_currentTrigger->checkCollisionWith(playercld) & utils::OverlapResult::BOTH_OVERLAP))
         {
             if (playercld.getTopEdge() >= m_currentTrigger->getBottomEdge())
                 owner.switchTo(m_switchOnLeave);

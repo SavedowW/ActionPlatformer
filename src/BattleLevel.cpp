@@ -27,7 +27,7 @@ void BattleLevel::enter()
 {
     Level::enter();
 
-    m_pc->setOnLevel(*m_application, getTileCenter(Vector2{29, 18}));
+    m_pc->setOnLevel(*m_application, getTileCenter(Vector2{35, 20}));
     m_camera.setScale(gamedata::global::minCameraScale);
     m_camera.setPos(m_pc->getComponent<ComponentTransform>().m_pos);
 

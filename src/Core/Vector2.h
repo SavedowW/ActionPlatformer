@@ -190,13 +190,6 @@ struct Collider
     Vector2<float> m_center;
     Vector2<float> m_halfSize;
     
-    template<typename T1, typename T2>
-    constexpr inline Collider(const Vector2<T1> &center_, const Vector2<T2> &halfSize_) :
-        m_center(center_),
-        m_halfSize(halfSize_)
-    {
-    }
-
     public:
     constexpr inline Collider operator+(const Vector2<float>& rhs_) const
     {
@@ -223,31 +216,27 @@ struct Collider
         return m_center.y + m_halfSize.y;
     }
 
-    //TODO: flags in output
-    template<bool H_OVERLAP_ONLY, bool V_OVERLAP_ONLY>
-    constexpr inline bool checkCollisionWith(const Collider& rhs_) const
+    //First 6 bits describe horizontal overlap, second 6 bits - vertical
+    inline utils::OverlapResult checkCollisionWith(const Collider& rhs_) const
     {
-        auto delta = (m_center - rhs_.m_center).abs();
-        auto maxdst = m_halfSize + rhs_.m_halfSize;
-        bool hor = (H_OVERLAP_ONLY ? delta.x < maxdst.x : delta.x <= maxdst.x);
-        bool ver = (V_OVERLAP_ONLY ? delta.y < maxdst.y : delta.y <= maxdst.y);
+        auto res = utils::getOverlap<0>(getLeftEdge(), getRightEdge(), rhs_.getLeftEdge(), rhs_.getRightEdge()) |
+            utils::getOverlap<6>(getTopEdge(), getBottomEdge(), rhs_.getTopEdge(), rhs_.getBottomEdge());
 
-        return hor & ver;
+        if ((res & utils::OverlapResult::OVERLAP_X) && (res & utils::OverlapResult::OVERLAP_Y))
+        {
+            res |= utils::OverlapResult::BOTH_OVERLAP;
+        }
+        else if ((res & utils::OverlapResult::TOUCH_X) && (res & utils::OverlapResult::TOUCH_Y))
+        {
+            res |= utils::OverlapResult::BOTH_TOUCH;
+        }
+        else if ((res & utils::OverlapResult::OOT_X) && (res & utils::OverlapResult::OOT_Y))
+        {
+            res |= utils::OverlapResult::BOTH_OOT;
+        }
+
+        return res;
     }
-
-    
-    /* TODO: template params and flags in output
-    constexpr inline int isWithinHorizontalBounds(float leftBound_, float rightBound_) const
-    {
-        if (getLeftEdge() < leftBound_)
-            return -1;
-        
-        if (getRightEdge() > rightBound_)
-            return 1;
-
-        return 0;
-    }
-    */
     
     constexpr inline float rangeToLeftBound(float leftBound_) const
     {

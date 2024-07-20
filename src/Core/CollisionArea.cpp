@@ -81,7 +81,7 @@ const Trigger *CollisionArea::getOverlappedTrigger(const Collider &cld_, Trigger
 {
     for (const auto &trg : m_triggers)
     {
-        if ((trg.m_tag & tag_) == tag_ && trg.checkCollisionWith<true, true>(cld_))
+        if ((trg.m_tag & tag_) == tag_ && ((trg.checkCollisionWith(cld_) & utils::OverlapResult::BOTH_OOT) == utils::OverlapResult::BOTH_OVERLAP))
             return &trg;
     }
 

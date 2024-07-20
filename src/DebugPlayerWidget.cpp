@@ -65,7 +65,7 @@ void DebugPlayerWidget::draw(Renderer &renderer_, Camera &camera_)
     for (int i = 0; i < 4; ++i)
     {
         auto &spr = (isValid[i] ? m_arrowIn : m_arrowOut);
-        SDL_FPoint sdlcenter = {spr->m_w / 2, spr->m_h / 2};
+        SDL_FPoint sdlcenter = {spr->m_w / 2.0f, spr->m_h / 2.0f};
 
         m_renderer.renderTexture(spr->getSprite(),
         arrowPos[i].x, arrowPos[i].y, spr->m_w, spr->m_h, angles[i], &sdlcenter, SDL_FLIP_NONE);
