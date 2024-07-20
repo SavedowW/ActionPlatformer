@@ -17,7 +17,7 @@ Trigger::Tag operator&(const Trigger::Tag &lhs_, const Trigger::Tag &rhs_)
 }
 
 Trigger::Trigger(float nx, float ny, float nw, float nh) :
-    Collider(nx, ny, nw, nh)
+    Collider(Vector2{nx + nw / 2.0f, ny + nh / 2.0f}, Vector2{nw / 2.0f, nh / 2.0f})
 {
 }
 

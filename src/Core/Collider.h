@@ -53,28 +53,33 @@ struct SlopeCollider
         if (!horRes)
             return 0;
 
+        float leftEdge = cld_.getLeftEdge();
+        float rightEdge = cld_.getRightEdge();
+        float topEdge = cld_.getTopEdge();
+        float bottomEdge = cld_.getBottomEdge();
+
         if (horRes == 1)
-            highest = std::min(m_tlPos.y, m_tlPos.y + m_topAngleCoef * (cld_.x + cld_.w - m_tlPos.x));
+            highest = std::min(m_tlPos.y, m_tlPos.y + m_topAngleCoef * (rightEdge - m_tlPos.x));
         else if (horRes == 2)
-            highest = std::min(m_tlPos.y + m_topAngleCoef * m_size.x, m_tlPos.y + m_topAngleCoef * (cld_.x - m_tlPos.x));
+            highest = std::min(m_tlPos.y + m_topAngleCoef * m_size.x, m_tlPos.y + m_topAngleCoef * (leftEdge - m_tlPos.x));
         else if (horRes == 3)
             highest = std::min(m_tlPos.y, m_tlPos.y + m_topAngleCoef * m_size.x);
         else if (horRes == 4)
-            highest = std::min(m_tlPos.y + m_topAngleCoef * (cld_.x - m_tlPos.x), m_tlPos.y + m_topAngleCoef * (cld_.x + cld_.w - m_tlPos.x));
+            highest = std::min(m_tlPos.y + m_topAngleCoef * (leftEdge - m_tlPos.x), m_tlPos.y + m_topAngleCoef * (rightEdge - m_tlPos.x));
 
         if (PRIORITIZE_BOX)
         {
             if (m_hasBox && (V_OVERLAP_ONLY ? 
-                    getVerticalOverlap(m_lowestSlopePoint, m_points[3].y, cld_.y, cld_.y + cld_.h) : 
-                    getVerticalCollision(m_lowestSlopePoint, m_points[3].y, cld_.y, cld_.y + cld_.h)))
+                    getVerticalOverlap(m_lowestSlopePoint, m_points[3].y, topEdge, bottomEdge) : 
+                    getVerticalCollision(m_lowestSlopePoint, m_points[3].y, topEdge, bottomEdge)))
                     {
                         highestPoint_ = m_lowestSlopePoint;
                         return 2;
                     }
                     
-            if (m_hasSlope && cld_.y + cld_.h <= m_lowestSlopePoint && (V_OVERLAP_ONLY ? 
-                    getVerticalOverlap(highest, m_lowestSlopePoint, cld_.y, cld_.y + cld_.h) : 
-                    getVerticalCollision(highest, m_lowestSlopePoint, cld_.y, cld_.y + cld_.h)))
+            if (m_hasSlope && bottomEdge <= m_lowestSlopePoint && (V_OVERLAP_ONLY ? 
+                    getVerticalOverlap(highest, m_lowestSlopePoint, topEdge, bottomEdge) : 
+                    getVerticalCollision(highest, m_lowestSlopePoint, topEdge, bottomEdge)))
                     {
                         highestPoint_ = highest;
                         return 1;
@@ -83,16 +88,16 @@ struct SlopeCollider
         else
         {
             if (m_hasSlope && (V_OVERLAP_ONLY ? 
-                    getVerticalOverlap(highest, m_lowestSlopePoint, cld_.y, cld_.y + cld_.h) : 
-                    getVerticalCollision(highest, m_lowestSlopePoint, cld_.y, cld_.y + cld_.h)))
+                    getVerticalOverlap(highest, m_lowestSlopePoint, topEdge, bottomEdge) : 
+                    getVerticalCollision(highest, m_lowestSlopePoint, topEdge, bottomEdge)))
                     {
                         highestPoint_ = highest;
                         return 1;
                     }
     
             if (m_hasBox && (V_OVERLAP_ONLY ? 
-                    getVerticalOverlap(m_lowestSlopePoint, m_points[3].y, cld_.y, cld_.y + cld_.h) : 
-                    getVerticalCollision(m_lowestSlopePoint, m_points[3].y, cld_.y, cld_.y + cld_.h)))
+                    getVerticalOverlap(m_lowestSlopePoint, m_points[3].y, topEdge, bottomEdge) : 
+                    getVerticalCollision(m_lowestSlopePoint, m_points[3].y, topEdge, bottomEdge)))
                     {
                         highestPoint_ = m_lowestSlopePoint;
                         return 2;

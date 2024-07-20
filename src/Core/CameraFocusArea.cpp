@@ -1,10 +1,10 @@
 #include "CameraFocusArea.h"
 
-CameraFocusArea::CameraFocusArea(Vector2<float> pos_, Vector2<float> size_, Renderer &renderer_) :
-    CameraFocusArea(pos_.x, pos_.y,
-    std::max(gamedata::global::minCameraSize.x, size_.x),
-    std::max(gamedata::global::minCameraSize.y, size_.y),
-    renderer_)
+CameraFocusArea::CameraFocusArea(Vector2<float> center_, Vector2<float> size_, Renderer &renderer_) :
+    CameraFocusArea(center_,
+        std::max(gamedata::global::minCameraSize.x, size_.x),
+        std::max(gamedata::global::minCameraSize.y, size_.y),
+        renderer_)
 {
 }
 
@@ -37,13 +37,13 @@ bool CameraFocusArea::checkIfEnters(const Collider &cld_, bool isOwned_) const
         return cld_.getOwnOverlapPortion(m_useFocusArea) > 0.8; 
 }
 
-CameraFocusArea::CameraFocusArea(float x_, float y_, float w_, float h_, Renderer &renderer_) :
-    Collider(x_ - w_ / 2.0f, y_ - h_ / 2.0f, w_, h_),
-    m_useFocusArea(x_ - w_ / 2.0f, y_ - h_ / 2.0f, w_, h_),
+CameraFocusArea::CameraFocusArea(Vector2<float> center_, float scaledSizeX_, float scaledSizeY_, Renderer &renderer_) :
+    Collider(center_, Vector2{scaledSizeX_ / 2.0f, scaledSizeY_ / 2.0f}),
+    m_useFocusArea(center_,  Vector2{scaledSizeX_ / 2.0f, scaledSizeY_ / 2.0f}),
     m_renderer(renderer_),
-    m_scale(std::min(w_ / gamedata::global::baseResolution.x, h_ / gamedata::global::baseResolution.y))
+    m_scale(std::min(scaledSizeX_/ gamedata::global::baseResolution.x, scaledSizeY_ / gamedata::global::baseResolution.y))
 {
-    auto camSize = gamedata::global::baseResolution * m_scale;
-    m_minCameraPos = camSize / 2 + Vector2{x, y};
-    m_maxCameraPos = Vector2{x, y} + Vector2{w, h} - camSize / 2;
+    auto halfCamSize = gamedata::global::baseResolution * (m_scale / 2.0f);
+    m_minCameraPos = m_center - m_halfSize + halfCamSize;
+    m_maxCameraPos = m_center + m_halfSize - halfCamSize;
 }

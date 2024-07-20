@@ -16,7 +16,8 @@ Vector2<float> ComponentTransform::getOwnHorDir() const
 }
 
 ComponentPhysical::ComponentPhysical(const CollisionArea &cldArea_) :
-    m_collisionArea(cldArea_)
+    m_collisionArea(cldArea_),
+    m_pushbox(Vector2<float>{}, Vector2<float>{})
 {
 }
 

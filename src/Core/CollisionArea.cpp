@@ -14,7 +14,7 @@ void CollisionArea::addStaticCollider(const SlopeCollider &cld_)
 bool CollisionArea::getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_) const
 {
     float baseCoord = coord_;
-    float bot = cld_.y + cld_.h;
+    float bot = cld_.getBottomEdge();
     bool isFound = false;
     for (const auto &cld : m_staticCollisionMap)
     {

@@ -73,11 +73,11 @@ void BattleLevel::enter()
 
     m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{50, 30}, Vector2{10, 1}, 0));
 
-    m_camFocusAreas.emplace_back(Vector2{700.0f, 250.0f}, Vector2{550.0f, 500.0f}, *m_application->getRenderer());
-    m_camFocusAreas.back().overrideFocusArea({m_camFocusAreas.back().x + 150, m_camFocusAreas.back().y, m_camFocusAreas.back().w - 400, m_camFocusAreas.back().h});
+    m_camFocusAreas.emplace_back(getTilePos(Vector2{43, 16}), gamedata::global::tileSize.mulComponents(Vector2{40.0f, 32.0f}), *m_application->getRenderer());
+    m_camFocusAreas.back().overrideFocusArea({getTilePos(Vector2{43, 15}), gamedata::global::tileSize.mulComponents(Vector2{15.0f, 30.0f}) / 2.0f});
 
-    m_camFocusAreas.emplace_back(Vector2{825.0f, 250.0f}, Vector2{550.0f, 500.0f}, *m_application->getRenderer());
-    m_camFocusAreas.back().overrideFocusArea({m_camFocusAreas.back().x + 175, m_camFocusAreas.back().y, m_camFocusAreas.back().w - 300, m_camFocusAreas.back().h});
+    m_camFocusAreas.emplace_back(getTilePos(Vector2{58, 16}), gamedata::global::tileSize.mulComponents(Vector2{40.0f, 32.0f}), *m_application->getRenderer());
+    m_camFocusAreas.back().overrideFocusArea({getTilePos(Vector2{58, 15}), gamedata::global::tileSize.mulComponents(Vector2{15.0f, 30.0f}) / 2.0f});
 
     m_collisionArea.finalize();
     
@@ -97,9 +97,9 @@ void BattleLevel::update()
         Collider pb = physical.getPushbox();
 
         auto oldHeight = transform.m_pos.y;
-        auto oldTop = pb.y;
-        auto oldRightEdge = pb.x + pb.w;
-        auto oldLeftEdge = pb.x;
+        auto oldTop = pb.getTopEdge();
+        auto oldRightEdge = pb.getRightEdge();
+        auto oldLeftEdge = pb.getLeftEdge();
 
         bool groundCollision = false;
         float touchedSlope = 0.0f;
@@ -117,7 +117,7 @@ void BattleLevel::update()
                         if (cld.m_obstacleId && !obshandle.touchedObstacleBottom(cld.m_obstacleId) || cld.m_highestSlopePoint > oldTop)
                             continue;
 
-                        transform.m_pos.y = cld.m_points[2].y + pb.h;
+                        transform.m_pos.y = cld.m_points[2].y + pb.getSize().y;
                         pb = physical.getPushbox();
                     }
                 }
@@ -178,7 +178,7 @@ void BattleLevel::update()
 
                         std::cout << "Touched edge, teleporting to it, offset.x > 0\n";
 
-                        transform.m_pos.x = cld.m_tlPos.x - pb.w / 2.0f;
+                        transform.m_pos.x = cld.m_tlPos.x - pb.m_halfSize.x;
                         pb = physical.getPushbox();
                         if (physical.m_velocity.x < 0)
                             physical.m_velocity.x = 0;
@@ -216,7 +216,7 @@ void BattleLevel::update()
 
                         std::cout << "Touched edge, teleporting to it, offset.x < 0\n";
 
-                        transform.m_pos.x = cld.m_tlPos.x + cld.m_size.x + pb.w / 2.0f;
+                        transform.m_pos.x = cld.m_tlPos.x + cld.m_size.x + pb.m_halfSize.x;
                         pb = physical.getPushbox();
                         if (physical.m_velocity.x < 0)
                             physical.m_velocity.x = 0;

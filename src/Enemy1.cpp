@@ -7,7 +7,7 @@ Enemy1::Enemy1(Application &application_, const CollisionArea &cldArea_) :
 
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(new MobAction<Enemy1States, decltype(*this)> (
-                Enemy1States::IDLE, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/run"), StateMarker{Enemy1States::NONE, {}}, *this, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>(), getComponent<ComponentAnimationRenderable>()
+                Enemy1States::IDLE,  Collider{Vector2{0.0f, -30.0f}, Vector2{10.0f, 30.0f}}, animmgmgt.getAnimID("Char1/run"), StateMarker{Enemy1States::NONE, {}}, *this, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>(), getComponent<ComponentAnimationRenderable>()
             )
         )
     );
@@ -15,7 +15,7 @@ Enemy1::Enemy1(Application &application_, const CollisionArea &cldArea_) :
     m_actions.push_back(
         std::unique_ptr<CharacterGenericAction>(
             &(new MobAction<Enemy1States, decltype(*this)> (
-                Enemy1States::FLOAT, Collider{-10, -60, 20, 60}, animmgmgt.getAnimID("Char1/float"), StateMarker{Enemy1States::NONE, {}}, *this, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>(), getComponent<ComponentAnimationRenderable>()
+                Enemy1States::FLOAT,  Collider{Vector2{0.0f, -30.0f}, Vector2{10.0f, 30.0f}}, animmgmgt.getAnimID("Char1/float"), StateMarker{Enemy1States::NONE, {}}, *this, getComponent<ComponentTransform>(), getComponent<ComponentPhysical>(), getComponent<ComponentAnimationRenderable>()
             ))
             ->setGroundedOnSwitch(false)
             .setTransitionOnTouchedGround(Enemy1States::IDLE)

@@ -542,9 +542,9 @@ public:
 
 
         if (*m_currentTrigger & Trigger::Tag::LEFT)
-            ParentGenericAction::m_transform.m_pos.x = m_currentTrigger->x + m_currentTrigger->w - pb.w / 2;
+            ParentGenericAction::m_transform.m_pos.x = m_currentTrigger->getRightEdge() - pb.m_halfSize.x;
         else if (*m_currentTrigger & Trigger::Tag::RIGHT)
-            ParentGenericAction::m_transform.m_pos.x = m_currentTrigger->x + pb.w / 2;
+            ParentGenericAction::m_transform.m_pos.x = m_currentTrigger->getLeftEdge() + pb.m_halfSize.x;
     }
 
     inline virtual void onUpdate() override
@@ -556,10 +556,10 @@ public:
 
         if (!m_currentTrigger->checkCollisionWith<true, false>(playercld))
         {
-            if (playercld.y >= m_currentTrigger->y + m_currentTrigger->h)
+            if (playercld.getTopEdge() >= m_currentTrigger->getBottomEdge())
                 owner.switchTo(m_switchOnLeave);
             else
-                ParentGenericAction::m_transform.m_pos.y = m_currentTrigger->y;
+                ParentGenericAction::m_transform.m_pos.y = m_currentTrigger->getTopEdge();
         }
     }
 

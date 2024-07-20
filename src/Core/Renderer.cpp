@@ -169,8 +169,8 @@ void Renderer::drawRectangle(const Vector2<float> &pos_, const Vector2<float> &s
 	Vector2<int> rectTL = pos_ - camTL;
 
 	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
-	SDL_FRect rect = { rectTL.x, rectTL.y, size_.x, size_.y };
-	SDL_RenderDrawRectF(m_renderer, &rect);
+	SDL_Rect rect = { rectTL.x, rectTL.y, static_cast<int>(size_.x), static_cast<int>(size_.y) };
+	SDL_RenderDrawRect(m_renderer, &rect);
 }
 
 void Renderer::drawRectangle(const Vector2<float> &pos_, const Vector2<float> &size_, const SDL_Color& col_)
@@ -186,8 +186,8 @@ void Renderer::fillRectangle(const Vector2<float> &pos_, const Vector2<float> &s
 	Vector2<int> rectTL = pos_ - camTL;
 
 	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
-	SDL_FRect rect = { rectTL.x, rectTL.y, size_.x, size_.y };
-	SDL_RenderFillRectF(m_renderer, &rect);
+	SDL_Rect rect = { rectTL.x, rectTL.y, static_cast<int>(size_.x), static_cast<int>(size_.y) };
+	SDL_RenderFillRect(m_renderer, &rect);
 }
 
 void Renderer::fillRectangle(const Vector2<float> &pos_, const Vector2<float> &size_, const SDL_Color& col_)
@@ -209,13 +209,14 @@ void Renderer::drawGeometry(SDL_Texture *texture, const SDL_Vertex *vertices, in
 void Renderer::drawCollider(const Collider &cld_, const SDL_Color &col_, uint8_t borderAlpha_, const Camera &cam_)
 {
 	Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
-	Vector2<int> rectTL = Vector2<int>(cld_.x, cld_.y) - camTL;
+	Vector2<int> rectTL = Vector2<int>(cld_.getTopLeft()) - camTL;
+    Vector2<int> rectSize = cld_.getSize();
 
-	SDL_FRect rect = { rectTL.x, rectTL.y, cld_.w, cld_.h };
+	SDL_Rect rect = { rectTL.x, rectTL.y, rectSize.x, rectSize.y };
 	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
-	SDL_RenderFillRectF(m_renderer, &rect);
+	SDL_RenderFillRect(m_renderer, &rect);
 	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, borderAlpha_);
-	SDL_RenderDrawRectF(m_renderer, &rect);
+	SDL_RenderDrawRect(m_renderer, &rect);
 }
 
 void Renderer::drawCollider(const SlopeCollider &cld_, const SDL_Color &col_, uint8_t borderAlpha_, const Camera &cam_)

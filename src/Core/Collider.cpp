@@ -55,33 +55,38 @@ int SlopeCollider::getOrientationDir() const
 
 float SlopeCollider::getTopHeight(const Collider &cld_, int horOverlapType_) const
 {
+    float leftEdge = cld_.getLeftEdge();
+    float rightEdge = cld_.getRightEdge();
+    
     if (horOverlapType_ == 3) // Second collider's boundaries are outside of this collider's boundaries
     {
         return m_highestSlopePoint;
     }
     else if (horOverlapType_ == 4) // Second collider is inside this collider
     {
-        return std::min(m_tlPos.y + m_topAngleCoef * (cld_.x - m_tlPos.x), m_tlPos.y + m_topAngleCoef * (cld_.x + cld_.w - m_tlPos.x));
+        return std::min(m_tlPos.y + m_topAngleCoef * (leftEdge - m_tlPos.x), m_tlPos.y + m_topAngleCoef * (rightEdge - m_tlPos.x));
     }
     else if (horOverlapType_ == 1) // Second collider is on top of 1st vertical line
     {
-        return std::min(m_tlPos.y, m_tlPos.y + m_topAngleCoef * (cld_.x + cld_.w - m_tlPos.x));
+        return std::min(m_tlPos.y, m_tlPos.y + m_topAngleCoef * (rightEdge - m_tlPos.x));
     }
     else // Second collider is on top of 2nd vertical line
     {
-        return std::min(m_tlPos.y + m_topAngleCoef * m_size.x, m_tlPos.y + m_topAngleCoef * (cld_.x - m_tlPos.x));
+        return std::min(m_tlPos.y + m_topAngleCoef * m_size.x, m_tlPos.y + m_topAngleCoef * (leftEdge - m_tlPos.x));
     }
 }
 
 int SlopeCollider::getHorizontalOverlap(const Collider &cld_) const
 {
-    if (cld_.x <= m_tlPos.x && cld_.x + cld_.w >= m_points[1].x)
+    float leftEdge = cld_.getLeftEdge();
+    float rightEdge = cld_.getRightEdge();
+    if (leftEdge <= m_tlPos.x && rightEdge >= m_points[1].x)
 		return 3;
-    if (cld_.x >= m_tlPos.x && cld_.x + cld_.w <= m_points[1].x)
+    if (leftEdge >= m_tlPos.x && rightEdge <= m_points[1].x)
 		return 4;
-    if (cld_.x + cld_.w > m_tlPos.x && cld_.x <= m_tlPos.x)
+    if (rightEdge > m_tlPos.x && leftEdge <= m_tlPos.x)
 		return 1;
-	if (cld_.x + cld_.w >= m_points[1].x && cld_.x < m_points[1].x)
+	if (rightEdge >= m_points[1].x && leftEdge < m_points[1].x)
 		return 2;
 	
     
@@ -90,13 +95,16 @@ int SlopeCollider::getHorizontalOverlap(const Collider &cld_) const
 
 int SlopeCollider::getHorizontalCollision(const Collider &cld_) const
 {
-    if (cld_.x <= m_tlPos.x && cld_.x + cld_.w >= m_points[1].x)
+    float leftEdge = cld_.getLeftEdge();
+    float rightEdge = cld_.getRightEdge();
+
+    if (leftEdge <= m_tlPos.x && rightEdge >= m_points[1].x)
 		return 3;
-    if (cld_.x >= m_tlPos.x && cld_.x + cld_.w <= m_points[1].x)
+    if (leftEdge >= m_tlPos.x && rightEdge <= m_points[1].x)
 		return 4;
-    if (cld_.x + cld_.w >= m_tlPos.x && cld_.x <= m_tlPos.x)
+    if (rightEdge >= m_tlPos.x && leftEdge <= m_tlPos.x)
 		return 1;
-	if (cld_.x + cld_.w >= m_points[1].x && cld_.x <= m_points[1].x)
+	if (rightEdge >= m_points[1].x && leftEdge <= m_points[1].x)
 		return 2;
 	else
 		return 0;
