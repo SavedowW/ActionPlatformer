@@ -306,37 +306,6 @@ namespace utils
         return {min + (max - min) * alpha};
     }
 
-    inline std::vector<Vector2<int>> getAreaEdgePoints(int w_, int h_, const Vector2<int> &origin_, int len_)
-    {
-        int minx = origin_.x - len_;
-        int maxx = origin_.x + len_;
-
-        int miny = origin_.y - len_;
-        int maxy = origin_.y + len_;
-
-        std::vector<Vector2<int>> points;
-
-        for (int x = minx; x <= maxx; ++x)
-        {
-            for (int y : {miny, maxy})
-            {
-                if (x >= 0 && x < w_ && y >= 0 && y < h_)
-                    points.push_back({x, y});
-            }
-        }
-
-        for (int y = miny + 1; y < maxy; ++y)
-        {
-            for (int x : {minx, maxx})
-            {
-                if (x >= 0 && x < w_ && y >= 0 && y < h_)
-                    points.push_back({x, y});
-            }
-        }
-
-        return points;
-    }
-
     template <typename T>
     inline std::string toString(const Vector2<T> &v_)
     {

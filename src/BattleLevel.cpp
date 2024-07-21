@@ -71,13 +71,17 @@ void BattleLevel::enter()
 
     m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{41, 0}, Vector2{10, 1}, 0));
 
-    m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{50, 30}, Vector2{10, 1}, 0));
+    m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{50, 30}, Vector2{6, 1}, 0));
+    m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{69, 30}, Vector2{6, 1}, 0));
 
     m_camFocusAreas.emplace_back(getTilePos(Vector2{43, 16}), gamedata::global::tileSize.mulComponents(Vector2{40.0f, 32.0f}), *m_application->getRenderer());
-    m_camFocusAreas.back().overrideFocusArea({getTilePos(Vector2{43, 15}), gamedata::global::tileSize.mulComponents(Vector2{15.0f, 30.0f}) / 2.0f});
+    m_camFocusAreas.back().overrideFocusArea({getTilePos(Vector2{42.5f, 15.0f}), gamedata::global::tileSize.mulComponents(Vector2{7.0f, 30.0f}) / 2.0f});
 
     m_camFocusAreas.emplace_back(getTilePos(Vector2{58, 16}), gamedata::global::tileSize.mulComponents(Vector2{40.0f, 32.0f}), *m_application->getRenderer());
-    m_camFocusAreas.back().overrideFocusArea({getTilePos(Vector2{58, 15}), gamedata::global::tileSize.mulComponents(Vector2{15.0f, 30.0f}) / 2.0f});
+    m_camFocusAreas.back().overrideFocusArea({getTilePos(Vector2{58.0f, 15.0f}), gamedata::global::tileSize.mulComponents(Vector2{24.0f, 30.0f}) / 2.0f});
+
+    m_camFocusAreas.emplace_back(getTilePos(Vector2{76, 16}), gamedata::global::tileSize.mulComponents(Vector2{40.0f, 32.0f}), *m_application->getRenderer());
+    m_camFocusAreas.back().overrideFocusArea({getTilePos(Vector2{80.25f, 15.0f}), gamedata::global::tileSize.mulComponents(Vector2{20.5f, 30.0f}) / 2.0f});
 
     m_collisionArea.finalize();
     
@@ -95,6 +99,7 @@ void BattleLevel::update()
 
         const auto offset = physical.getPosOffest();
         Collider pb = physical.getPushbox();
+        bool noUpwardLanding = chr->getNoUpwardLanding();
 
         auto oldHeight = transform.m_pos.y;
         auto oldTop = pb.getTopEdge();
@@ -106,59 +111,29 @@ void BattleLevel::update()
         float highest = m_size.y;
 
         {
-            transform.m_pos.y += offset.y;
-            pb = physical.getPushbox();
-            if (offset.y < 0)
-            {
-                for (auto &cld : m_collisionArea.m_staticCollisionMap)
-                {
-                    if (cld.getFullCollisionWith<true, false>(physical.getPushbox(), highest))
-                    {
-                        if (cld.m_obstacleId && !obshandle.touchedObstacleBottom(cld.m_obstacleId) || cld.m_highestSlopePoint > oldTop)
-                            continue;
-
-                        transform.m_pos.y = cld.m_points[2].y + pb.getSize().y;
-                        pb = physical.getPushbox();
-                    }
-                }
-            }
-            else
-            {
-                for (auto &cld : m_collisionArea.m_staticCollisionMap)
-                {
-                    if (cld.getFullCollisionWith<true, false>(physical.getPushbox(), highest))
-                    {
-                        if (cld.m_obstacleId && (!obshandle.touchedObstacleTop(cld.m_obstacleId) || highest < oldHeight))
-                            continue;
-
-                        transform.m_pos.y = highest;
-                        if (cld.m_topAngleCoef != 0)
-                            touchedSlope = cld.m_topAngleCoef;
-                        groundCollision = true;
-                        pb = physical.getPushbox();
-
-                        if (physical.m_velocity.y > 0)
-                            physical.m_velocity.y = 0;
-                        if (physical.m_inertia.y > 0)
-                            physical.m_inertia.y = 0;
-                    }
-                }
-            }
-        }
-
-        {
             transform.m_pos.x += offset.x;
             pb = physical.getPushbox();
             if (offset.x > 0)
             {
                 for (auto &cld : m_collisionArea.m_staticCollisionMap)
                 {
-                    auto colres = cld.getFullCollisionWith<false, true, true>(physical.getPushbox(), highest);
+                    auto overlap = cld.getFullCollisionWith(physical.getPushbox(), highest);
                     bool aligned = cld.getOrientationDir() > 0;
-                    if (colres == 1 && aligned) // Touched slope from right direction
+                    auto heightDiff = abs(cld.m_lowestSlopePoint - pb.getBottomEdge());
+
+                    if ((overlap & utils::OverlapResult::TOUCH_MIN1_MAX2) && (overlap & utils::OverlapResult::BOTH_OOT))
+                    {
+                        if (cld.m_topAngleCoef != 0)
+                            touchedSlope = cld.m_topAngleCoef;
+                        groundCollision = true;
+                    }
+
+                    if (aligned && pb.getTopEdge() <= cld.m_lowestSlopePoint && (overlap & utils::OverlapResult::OOT_SLOPE) && (overlap & utils::OverlapResult::OVERLAP_Y)) // Touched slope from right direction
                     {
                         if (cld.m_obstacleId && !obshandle.touchedObstacleSlope(cld.m_obstacleId))
                             continue;
+
+                        std::cout << "Touched slope, teleporting on top, offset.x > 0\n";
 
                         transform.m_pos.y = highest;
                         if (cld.m_topAngleCoef != 0)
@@ -171,7 +146,7 @@ void BattleLevel::update()
                         if (physical.m_inertia.y > 0)
                             physical.m_inertia.y = 0;
                     }
-                    else if (colres) // Touched inner box
+                    else if ((!aligned || cld.m_hasBox) && (overlap & utils::OverlapResult::OOT_BOX) && (overlap & utils::OverlapResult::OVERLAP_Y) && pb.getBottomEdge() > cld.m_lowestSlopePoint) // Touched inner box
                     {
                         if (cld.m_obstacleId && !obshandle.touchedObstacleSide(cld.m_obstacleId))
                             continue;
@@ -191,12 +166,23 @@ void BattleLevel::update()
             {
                 for (auto &cld : m_collisionArea.m_staticCollisionMap)
                 {
-                    auto colres = cld.getFullCollisionWith<false, true, true>(physical.getPushbox(), highest);
+                    auto overlap = cld.getFullCollisionWith(physical.getPushbox(), highest);
                     bool aligned = cld.getOrientationDir() < 0;
-                    if (colres == 1 && aligned) // Touched slope from right direction
+                    auto heightDiff = abs(cld.m_lowestSlopePoint - pb.getBottomEdge());
+
+                    if ((overlap & utils::OverlapResult::TOUCH_MIN1_MAX2) && (overlap & utils::OverlapResult::BOTH_OOT))
+                    {
+                        if (cld.m_topAngleCoef != 0)
+                            touchedSlope = cld.m_topAngleCoef;
+                        groundCollision = true;
+                    }
+
+                    if (aligned && pb.getTopEdge() <= cld.m_lowestSlopePoint && (overlap & utils::OverlapResult::OOT_SLOPE) && (overlap & utils::OverlapResult::OVERLAP_Y)) // Touched slope from right direction
                     {
                         if (cld.m_obstacleId && !obshandle.touchedObstacleSlope(cld.m_obstacleId))
                             continue;
+
+                        std::cout << "Touched slope, teleporting on top, offset.x < 0\n";
 
                         transform.m_pos.y = highest;
                         if (cld.m_topAngleCoef != 0)
@@ -209,7 +195,7 @@ void BattleLevel::update()
                         if (physical.m_inertia.y > 0)
                             physical.m_inertia.y = 0;
                     }
-                    else if (colres) // Touched inner box
+                    else if ((!aligned || cld.m_hasBox) && (overlap & utils::OverlapResult::OOT_BOX) && (overlap & utils::OverlapResult::OVERLAP_Y) && pb.getBottomEdge() > cld.m_lowestSlopePoint) // Touched inner box
                     {
                         if (cld.m_obstacleId && !obshandle.touchedObstacleSide(cld.m_obstacleId))
                             continue;
@@ -222,6 +208,62 @@ void BattleLevel::update()
                             physical.m_velocity.x = 0;
                         if (physical.m_inertia.x < 0)
                             physical.m_inertia.x = 0;
+                    }
+                }
+            }
+        }
+
+        {
+            transform.m_pos.y += offset.y;
+            pb = physical.getPushbox();
+            if (offset.y < 0) // TODO: fully reset upward velocity and inertia if hitting the ceiling far from the corner
+            {
+                if (noUpwardLanding)
+                {
+                    touchedSlope = 0;
+                    groundCollision = false;
+                }
+
+                for (auto &cld : m_collisionArea.m_staticCollisionMap)
+                {
+                    if (cld.m_highestSlopePoint > oldTop)
+                        continue;
+
+                    auto overlap = cld.getFullCollisionWith(pb, highest);
+                    if ((overlap & utils::OverlapResult::OVERLAP_X) && (overlap & utils::OverlapResult::OOT_Y))
+                    {
+                        if (cld.m_obstacleId && !obshandle.touchedObstacleBottom(cld.m_obstacleId))
+                            continue;
+
+                        std::cout << "Touched ceiling, teleporting to bottom, offset.y < 0\n";
+
+                        transform.m_pos.y = cld.m_points[2].y + pb.getSize().y;
+                        pb = physical.getPushbox();
+                    }
+                }
+            }
+            else
+            {
+                for (auto &cld : m_collisionArea.m_staticCollisionMap)
+                {
+                    auto overlap = cld.getFullCollisionWith(physical.getPushbox(), highest);
+                    if ((overlap & utils::OverlapResult::OVERLAP_X) && (overlap & utils::OverlapResult::OOT_Y))
+                    {
+                        if (cld.m_obstacleId && (!obshandle.touchedObstacleTop(cld.m_obstacleId) || highest < oldHeight))
+                            continue;
+
+                        std::cout << "Touched slope top, teleporting on top, offset.y > 0\n";
+
+                        transform.m_pos.y = highest;
+                        if (cld.m_topAngleCoef != 0)
+                            touchedSlope = cld.m_topAngleCoef;
+                        groundCollision = true;
+                        pb = physical.getPushbox();
+
+                        if (physical.m_velocity.y > 0)
+                            physical.m_velocity.y = 0;
+                        if (physical.m_inertia.y > 0)
+                            physical.m_inertia.y = 0;
                     }
                 }
             }

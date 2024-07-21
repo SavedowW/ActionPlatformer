@@ -37,86 +37,69 @@ struct SlopeCollider
     Vector2<float> m_points[4];
     void generatePoints();
 
-    /*
-        Return values:
-        0 - no overlap
-        1 - found overlap with slope part
-        2 - found overlap with box part
-    */
-    template<bool H_OVERLAP_ONLY, bool V_OVERLAP_ONLY, bool PRIORITIZE_BOX = false>
-    inline int getFullCollisionWith(const Collider &cld_, float &highestPoint_) const
+    inline utils::OverlapResult getFullCollisionWith(const Collider &cld_, float &highestPoint_) const
     {
-        auto horRes = (H_OVERLAP_ONLY ? getHorizontalOverlap(cld_) : getHorizontalCollision(cld_));
-
-        float highest = 0;
-
-        if (!horRes)
-            return 0;
-
         float leftEdge = cld_.getLeftEdge();
         float rightEdge = cld_.getRightEdge();
         float topEdge = cld_.getTopEdge();
         float bottomEdge = cld_.getBottomEdge();
 
-        if (horRes == 1)
-            highest = std::min(m_tlPos.y, m_tlPos.y + m_topAngleCoef * (rightEdge - m_tlPos.x));
-        else if (horRes == 2)
-            highest = std::min(m_tlPos.y + m_topAngleCoef * m_size.x, m_tlPos.y + m_topAngleCoef * (leftEdge - m_tlPos.x));
-        else if (horRes == 3)
-            highest = std::min(m_tlPos.y, m_tlPos.y + m_topAngleCoef * m_size.x);
-        else if (horRes == 4)
-            highest = std::min(m_tlPos.y + m_topAngleCoef * (leftEdge - m_tlPos.x), m_tlPos.y + m_topAngleCoef * (rightEdge - m_tlPos.x));
+        auto hRes = utils::getOverlap<0>(m_points[0].x, m_points[1].x, leftEdge, rightEdge);
 
-        if (PRIORITIZE_BOX)
+        float highest = 0;
+
+        if (hRes == utils::OverlapResult::NONE)
+            return hRes;
+
+        if (m_topAngleCoef == 0) // Flat
         {
-            if (m_hasBox && (V_OVERLAP_ONLY ? 
-                    getVerticalOverlap(m_lowestSlopePoint, m_points[3].y, topEdge, bottomEdge) : 
-                    getVerticalCollision(m_lowestSlopePoint, m_points[3].y, topEdge, bottomEdge)))
-                    {
-                        highestPoint_ = m_lowestSlopePoint;
-                        return 2;
-                    }
-                    
-            if (m_hasSlope && bottomEdge <= m_lowestSlopePoint && (V_OVERLAP_ONLY ? 
-                    getVerticalOverlap(highest, m_lowestSlopePoint, topEdge, bottomEdge) : 
-                    getVerticalCollision(highest, m_lowestSlopePoint, topEdge, bottomEdge)))
-                    {
-                        highestPoint_ = highest;
-                        return 1;
-                    }
+            highest = m_highestSlopePoint;
         }
-        else
+        else if (m_topAngleCoef > 0) // Goes down to the right
         {
-            if (m_hasSlope && (V_OVERLAP_ONLY ? 
-                    getVerticalOverlap(highest, m_lowestSlopePoint, topEdge, bottomEdge) : 
-                    getVerticalCollision(highest, m_lowestSlopePoint, topEdge, bottomEdge)))
-                    {
-                        highestPoint_ = highest;
-                        return 1;
-                    }
-    
-            if (m_hasBox && (V_OVERLAP_ONLY ? 
-                    getVerticalOverlap(m_lowestSlopePoint, m_points[3].y, topEdge, bottomEdge) : 
-                    getVerticalCollision(m_lowestSlopePoint, m_points[3].y, topEdge, bottomEdge)))
-                    {
-                        highestPoint_ = m_lowestSlopePoint;
-                        return 2;
-                    }
+            auto x = std::max(m_tlPos.x, leftEdge);
+            highest = getHeightAt(x);
+        }
+        else // Goes up to the right
+        {
+            auto x = std::min(m_points[1].x, rightEdge);
+            highest = getHeightAt(x);
         }
 
-        return 0;
+        hRes |= utils::getOverlap<6>(highest, m_points[2].y, topEdge, bottomEdge);
+
+        if ((hRes & utils::OverlapResult::OVERLAP_X) && (hRes & utils::OverlapResult::OVERLAP_Y))
+        {
+            hRes |= utils::OverlapResult::BOTH_OVERLAP;
+        }
+        else if ((hRes & utils::OverlapResult::TOUCH_X) && (hRes & utils::OverlapResult::TOUCH_Y))
+        {
+            hRes |= utils::OverlapResult::BOTH_TOUCH;
+        }
+        else if ((hRes & utils::OverlapResult::OOT_X) && (hRes & utils::OverlapResult::OOT_Y))
+        {
+            hRes |= utils::OverlapResult::BOTH_OOT;
+        }
+
+        if (!!(hRes & utils::OverlapResult::OOT_Y))
+        {
+            highestPoint_ = highest;
+
+            if (bottomEdge >= m_lowestSlopePoint)
+                hRes |= utils::OverlapResult::OOT_BOX;
+
+            if (topEdge <= m_lowestSlopePoint)
+                hRes |= utils::OverlapResult::OOT_SLOPE;
+        }
+
+        return hRes;
     }
 
-    int getHorizontalOverlap(const Collider &cld_) const;
-    int getHorizontalCollision(const Collider &cld_) const;
-
-    bool getVerticalOverlap(float l1Highest_, float l1Lowest_, float l2Highest_, float l2Lowest_) const;
-    bool getVerticalCollision(float l1Highest_, float l1Lowest_, float l2Highest_, float l2Lowest_) const;
-
-    float getTopCoord() const;
     int getOrientationDir() const;
 
-    float getTopHeight(const Collider &cld_, int horOverlapType_) const;
+    float getTopHeight(const Collider &cld_, utils::OverlapResult horOverlapType_) const;
+
+    float getHeightAt(float x) const;
 };
 
 

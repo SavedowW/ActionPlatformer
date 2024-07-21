@@ -47,6 +47,7 @@ public:
     virtual void update() override;
     Vector2<float> getCameraFocusPoint() const;
 
+    virtual bool getNoUpwardLanding() override;
     CharacterGenericAction *getCurrentAction() const;
     const char *getCurrentActionName() const;
 

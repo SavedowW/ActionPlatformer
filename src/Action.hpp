@@ -94,6 +94,12 @@ public:
         return *this;
     }
 
+    inline GenericAction<CHAR_STATES_T, OWNER_T> &setNoLanding(TimelineProperty<bool> &&noLanding_)
+    {
+        m_noUpwardLanding = std::move(noLanding_);
+        return *this;
+    }
+
     inline GenericAction<CHAR_STATES_T, OWNER_T> &setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>> &&inerMul_)
     {
         m_appliedInertiaMultiplier = std::move(inerMul_);
@@ -254,6 +260,12 @@ public:
         return m_canFallThrough[currentFrame_];
     }
 
+    virtual bool getNoUpwardLanding(uint32_t currentFrame_) const
+    {
+        return m_noUpwardLanding[currentFrame_];
+    }
+
+
     virtual Vector2<float> getAppliedInertiaMultiplier(uint32_t currentFrame_) const
     {
         return m_appliedInertiaMultiplier[currentFrame_];
@@ -315,6 +327,8 @@ protected:
     ComponentTransform &m_transform;
     ComponentPhysical &m_physical;
     ComponentAnimationRenderable &m_renderable;
+
+    TimelineProperty<bool> m_noUpwardLanding;
 };
 
 template<typename CHAR_STATES_T, bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN,
@@ -617,7 +631,7 @@ public:
             if (downIn)
                 targetSpeed = {orient * 6.0f, 0.0f};
             else
-                targetSpeed = {orient * 6.0f, -3.0f};
+                targetSpeed = {orient * 7.0f, -3.0f};
         }
         else
             fall = true;

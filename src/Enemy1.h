@@ -23,6 +23,7 @@ class Enemy1 : public ActionCharacter<Enemy1, Enemy1States>
 {
 public:
     Enemy1(Application &application_, const CollisionArea &cldArea_);
+    virtual bool getNoUpwardLanding() override;
 
 protected:
     friend CharacterGenericAction;

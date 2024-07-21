@@ -247,6 +247,7 @@ PlayableCharacter::PlayableCharacter(Application &application_, const CollisionA
             .setGravity({{0.0f, 0.5f}})
             .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
             .addTransitionAnim(CharacterState::WALL_PREJUMP, animmgmgt.getAnimID("Char1/FloatCling"))
+            .setNoLanding(TimelineProperty<bool>({{0, true}, {2, false}}))
         )
     );
 
@@ -306,6 +307,11 @@ void PlayableCharacter::loadAnimations(Application &application_)
 Vector2<float> PlayableCharacter::getCameraFocusPoint() const
 {
     return getComponent<ComponentTransform>().m_pos - Vector2{0.0f, 60.0f} + m_cameraOffset;
+}
+
+bool PlayableCharacter::getNoUpwardLanding()
+{
+    return m_currentAction->getNoUpwardLanding(m_framesInState);
 }
 
 PlayableCharacter::CharacterGenericAction *PlayableCharacter::getCurrentAction() const

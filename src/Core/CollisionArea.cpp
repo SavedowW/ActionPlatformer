@@ -21,8 +21,8 @@ bool CollisionArea::getHighestVerticalMagnetCoord(const Collider &cld_, float &c
         if (cld.m_obstacleId && ignoredObstacles_.contains(cld.m_obstacleId))
             continue;
 
-        auto horOverlap = cld.getHorizontalOverlap(cld_);
-        if (horOverlap)
+        auto horOverlap = utils::getOverlap<0>(cld.m_points[0].x, cld.m_points[1].x, cld_.getLeftEdge(), cld_.getRightEdge()) ;//cld.getHorizontalOverlap(cld_);
+        if (!!(horOverlap & utils::OverlapResult::OVERLAP_X))
         {
             auto height = cld.getTopHeight(cld_, horOverlap);
             if (height > baseCoord && (!isFound || height < coord_))
@@ -70,7 +70,8 @@ bool CollisionArea::isAreaFree(const Collider &cld_, bool considerObstacles_)
     {
         if (!considerObstacles_ && scld.m_obstacleId)
             continue;
-        if (scld.getFullCollisionWith<true, true, false>(cld_, dumped))
+        auto colres = scld.getFullCollisionWith(cld_, dumped);
+        if ((colres & utils::OverlapResult::OVERLAP_X) && (colres & utils::OverlapResult::OVERLAP_Y))
             return false;
     }
 
@@ -97,7 +98,7 @@ std::set<int> CollisionArea::getPlayerTouchingObstacles(const Collider &playerPb
         if (obstacleIds.contains(m_staticCollisionMap[i].m_obstacleId))
             continue;
 
-        if (m_staticCollisionMap[i].getFullCollisionWith<false, false>(playerPb_, dumped))
+        if (!!(m_staticCollisionMap[i].getFullCollisionWith(playerPb_, dumped) & utils::OverlapResult::BOTH_OOT))
             obstacleIds.insert(m_staticCollisionMap[i].m_obstacleId);
     }
 

@@ -186,11 +186,11 @@ namespace utils
         MAX2_EQ_MAX1 =    0b0000'0000'00'1100'00,
 
         // Extra
-        OOT_BOX =           0b0001'0000'00'0000'00, // Slopes only
-        OOT_SLOPE =         0b0010'0000'00'0000'00, // Slopes only
-        BOTH_TOUCH =        0b0100'0000'00'0000'00,
-        BOTH_OVERLAP =      0b1000'0000'00'0000'00,
-        BOTH_OOT =          0b1100'0000'00'0000'00,
+        OOT_BOX =         0b0001'0000'00'0000'00, // Slopes only
+        OOT_SLOPE =       0b0010'0000'00'0000'00, // Slopes only
+        BOTH_TOUCH =      0b0100'0000'00'0000'00,
+        BOTH_OVERLAP =    0b1000'0000'00'0000'00,
+        BOTH_OOT =        0b1100'0000'00'0000'00,
 
         // Read-only masks
         OVERLAP_X =   0b0000'0000'00'1111'00,
@@ -240,6 +240,26 @@ namespace utils
     constexpr inline bool operator||(const OverlapResult& lhs_, const OverlapResult& rhs_)
     {
         return static_cast<uint16_t>(lhs_) || static_cast<uint16_t>(rhs_);
+    }
+
+    constexpr inline bool operator&&(const OverlapResult& lhs_, bool rhs_)
+    {
+        return static_cast<uint16_t>(lhs_) && rhs_;
+    }
+
+    constexpr inline bool operator&&(bool lhs_, const OverlapResult& rhs_)
+    {
+        return lhs_ && static_cast<uint16_t>(rhs_);
+    }
+
+    constexpr inline bool operator||(const OverlapResult& lhs_, bool rhs_)
+    {
+        return static_cast<uint16_t>(lhs_) || rhs_;
+    }
+
+    constexpr inline bool operator||(bool lhs_, const OverlapResult& rhs_)
+    {
+        return lhs_ || static_cast<uint16_t>(rhs_);
     }
 
     /*

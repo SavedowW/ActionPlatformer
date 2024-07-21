@@ -27,6 +27,11 @@ Enemy1::Enemy1(Application &application_, const CollisionArea &cldArea_) :
     m_currentAction = getAction(Enemy1States::FLOAT);
 }
 
+bool Enemy1::getNoUpwardLanding()
+{
+    return m_currentAction->getNoUpwardLanding(m_framesInState);
+}
+
 void Enemy1::loadAnimations(Application &application_)
 {
     AnimationManager animmgmgt = *application_.getAnimationManager();
