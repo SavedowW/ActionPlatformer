@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <string>
 #include <SDL.h>
+#include <regex>
 
 namespace utils
 {
@@ -298,19 +299,106 @@ namespace utils
 
     }
 
+    constexpr inline std::string getIntend(int intend_)
+    {
+        return std::string(intend_, ' ');
+    }
+
+    inline std::string replaceAll(std::string src_, const std::string &replacable_, const std::string &toReplace_)
+    {
+        return std::regex_replace(src_, std::regex(replacable_), toReplace_);
+    }
+
+    constexpr inline std::string wrap(const std::string &src_)
+    {
+        return "\"" + src_ + "\"";
+    }
+
+    inline std::string normalizeType(const std::string &reg_)
+    {
+
+        auto res = replaceAll(reg_, "struct ", "");
+        res = replaceAll(res, "class ", "");
+        res = replaceAll(res, " ", "");
+
+        res = replaceAll(res, "([^ ]),([^ ])", "$1 , $2");
+        res = replaceAll(res, " ,([^ ])", " , $1");
+        res = replaceAll(res, "([^ ]), ", "$1 , ");
+
+        res = replaceAll(res, "([^ ])<([^ ])", "$1 < $2");
+        res = replaceAll(res, " <([^ ])", " < $1");
+        res = replaceAll(res, "([^ ])< ", "$1 < ");
+
+        res = replaceAll(res, "([^ ])>([^ ])", "$1 > $2");
+        res = replaceAll(res, " >([^ ])", " > $1");
+        res = replaceAll(res, "([^ ])> ", "$1 > ");
+
+        return res;
+    }
+
+    inline void dumpType(std::ostream &os_, const std::string &type_)
+    {
+        auto res = replaceAll(type_, " ", "");
+        int intendLevel = 0;
+        for (const auto &ch : type_)
+        {
+            if (ch == '>')
+            {
+                intendLevel -= 4;
+                os_ << "\n" << getIntend(intendLevel);
+                os_ << ch;
+            }
+            else
+            {
+                os_ << ch;
+
+                if (ch == '<')
+                    intendLevel += 4;
+            }
+                
+
+            if (ch == '<' || ch == ',')
+                os_ << "\n" << getIntend(intendLevel);
+        }
+    }
+
 }
+
+// Assert uniqueness
+template <typename...>
+inline constexpr auto is_unique = std::true_type{};
+
+template <typename T, typename... Rest>
+inline constexpr auto is_unique<T, Rest...> = std::bool_constant<
+    (!std::is_same_v<T, Rest> && ...) && is_unique<Rest...>
+>{};
+
 
 template <typename T, size_t len>
 std::ostream& operator<< (std::ostream& out, const std::array<T, len>& arr)
 {
-    std::cout << "[";
+    out << "[";
     for (int i = 0; i < len; ++i)
     {
-        std::cout << arr[i];
+        out << arr[i];
         if (i != len - 1)
-            std::cout << ", ";
+            out << ", ";
     }
-    std::cout << "]";
+    out << "]";
+    return out;
+}
+
+template <typename T>
+std::ostream& operator<< (std::ostream& out, const std::vector<T>& vec)
+{
+    out << "[";
+    for (int i = 0; i < vec.size(); ++i)
+    {
+        out << vec[i];
+        if (i != vec.size() - 1)
+            out << ", ";
+    }
+    out << "]";
     return out;
 }
 

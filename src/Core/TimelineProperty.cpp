@@ -1,6 +1,9 @@
 #include "TimelineProperty.h"
 #include "Vector2.h"
-#include "StateMarker.h"
+#include "StateMarker.hpp"
+
+enum class CharacterState;
+enum class Enemy1States;
 
 template<typename T>
 TimelineProperty<T>::TimelineProperty(std::vector<std::pair<uint32_t, T>> &&values_) :
@@ -179,7 +182,8 @@ template class TimelineProperty<int>;
 template class TimelineProperty<Vector2<float>>;
 template class TimelineProperty<Vector2<int>>;
 template class TimelineProperty<uint32_t>;
-template class TimelineProperty<StateMarker>;
+template class TimelineProperty<StateMarker<CharacterState>>;
+template class TimelineProperty<StateMarker<Enemy1States>>;
 
 template class TimelinePropertyEditable<bool>;
 template class TimelinePropertyEditable<float>;

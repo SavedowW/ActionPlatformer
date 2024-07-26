@@ -18,7 +18,6 @@ FrameTimer.cpp
 TextManager.cpp
 TimelineProperty.cpp
 ResourceCounter.cpp
-StateMarker.cpp
 EngineAnimation.cpp
 HUD.cpp
 DebugDataWidget.cpp

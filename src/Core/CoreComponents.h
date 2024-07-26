@@ -1,6 +1,6 @@
 #ifndef CORE_COMPONENTS_H_
 #define CORE_COMPONENTS_H_
-#include "ComponentEntity.hpp"
+#include "InputResolver.h"
 #include "Vector2.h"
 #include "FrameTimer.h"
 #include "CollisionArea.h"
@@ -11,24 +11,31 @@
 #include <memory>
 #include <utility>
 
-struct ComponentObstacleFallthrough;
-
-struct ComponentTransform : public Component<>
+struct ComponentTransform
 {
     ComponentTransform() = default;
 
-    Vector2<float> m_pos;
+    ComponentTransform(const Vector2<float> &pos_, ORIENTATION orient_);
 
+    ComponentTransform (const ComponentTransform &rhs_) = delete;
+    ComponentTransform (ComponentTransform &&rhs_) = default;
+    ComponentTransform &operator=(const ComponentTransform &rhs_) = delete;
+    ComponentTransform &operator=(ComponentTransform &&rhs_) = default;
+    
+    Vector2<float> m_pos;
     ORIENTATION m_ownOrientation = ORIENTATION::RIGHT;
 
-    Vector2<float> getOwnHorDir() const;
+    Vector2<int> getOwnHorDir() const;
 };
 
-struct ComponentPhysical : public Component<ComponentTransform, ComponentObstacleFallthrough>
+struct ComponentPhysical
 {
-    ComponentPhysical(const CollisionArea &cldArea_);
+    ComponentPhysical() = default;
 
-    virtual void onUpdate() override;
+    ComponentPhysical (const ComponentPhysical &rhs_) = delete;
+    ComponentPhysical (ComponentPhysical &&rhs_) = default;
+    ComponentPhysical &operator=(const ComponentPhysical &rhs_) = delete;
+    ComponentPhysical &operator=(ComponentPhysical &&rhs_) = default;
 
     Vector2<float> m_velocity;
     Vector2<float> m_inertia;
@@ -36,25 +43,25 @@ struct ComponentPhysical : public Component<ComponentTransform, ComponentObstacl
     Vector2<float> m_gravity;
     Vector2<float> m_inertiaMultiplier;
     Collider m_pushbox;
-    const CollisionArea &m_collisionArea;
     float m_magnetLimit = 0.0f;
     float m_onSlopeWithAngle = 0.0f;
 
     void velocityToInertia();
-    Collider getPushbox();
     Vector2<float> getPosOffest() const;
     bool attemptResetGround();
 };
 
-struct ComponentObstacleFallthrough : public Component<ComponentPhysical>
+struct ComponentObstacleFallthrough
 {
     ComponentObstacleFallthrough() = default;
 
-    virtual void onUpdate() override;
+    ComponentObstacleFallthrough (const ComponentObstacleFallthrough &rhs_) = delete;
+    ComponentObstacleFallthrough (ComponentObstacleFallthrough &&rhs_) = default;
+    ComponentObstacleFallthrough &operator=(const ComponentObstacleFallthrough &rhs_) = delete;
+    ComponentObstacleFallthrough &operator=(ComponentObstacleFallthrough &&rhs_) = default;
 
     void setIgnoringObstacles();
     bool isIgnoringAllObstacles() const;
-    void cleanIgnoredObstacles();
     bool touchedObstacleTop(int obstacleId_);
     bool touchedObstacleBottom(int obstacleId_);
     bool touchedObstacleSlope(int obstacleId_);
@@ -65,21 +72,30 @@ struct ComponentObstacleFallthrough : public Component<ComponentPhysical>
     std::set<int> m_ignoredObstacles;
 };
 
-struct ComponentAnimationRenderable : public Component<ComponentTransform, ComponentPhysical>
+struct ComponentAnimationRenderable
 {
-    ComponentAnimationRenderable(Renderer &renderer_);
+    ComponentAnimationRenderable() = default;
 
-    ComponentAnimationRenderable(const ComponentAnimationRenderable &rhs_) = default;
-    ComponentAnimationRenderable(ComponentAnimationRenderable &&rhs_) = default;
+    ComponentAnimationRenderable (const ComponentAnimationRenderable &rhs_) = delete;
+    ComponentAnimationRenderable (ComponentAnimationRenderable &&rhs_) = default;
     ComponentAnimationRenderable &operator=(const ComponentAnimationRenderable &rhs_) = delete;
-    ComponentAnimationRenderable &operator=(ComponentAnimationRenderable &&rhs_) = delete;
+    ComponentAnimationRenderable &operator=(ComponentAnimationRenderable &&rhs_) = default;
 
-    void draw(Camera &cam_);
-    virtual void onUpdate() override;
-
-    Renderer &m_renderer;
     std::map<int, std::unique_ptr<Animation>> m_animations;
     Animation *m_currentAnimation;
 };
+
+struct ComponentPlayerInput
+{
+    ComponentPlayerInput(std::unique_ptr<InputResolver> &&inputResolver_);
+
+    ComponentPlayerInput (const ComponentPlayerInput &rhs_) = delete;
+    ComponentPlayerInput (ComponentPlayerInput &&rhs_) = default;
+    ComponentPlayerInput &operator=(const ComponentPlayerInput &rhs_) = delete;
+    ComponentPlayerInput &operator=(ComponentPlayerInput &&rhs_) = default;
+
+    std::unique_ptr<InputResolver> m_inputResolver;
+};
+
 
 #endif

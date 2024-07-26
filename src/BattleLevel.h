@@ -15,6 +15,14 @@
 #include "PlayableCharacter.h"
 #include "CollisionArea.h"
 #include "DecorationBuilder.h"
+#include "yaECS.hpp"
+
+using ArchPlayer = ECS::EntityData<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, ComponentAnimationRenderable, ComponentPlayerInput>;
+using ArchMob = ECS::EntityData<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, ComponentAnimationRenderable>;
+
+// Make an archetype list for example
+using MyReg = ECS::ArchList<>
+    ::addTypelist<ArchPlayer::WithSM<CharacterState>>;
 
 class BattleLevel : public Level
 {
@@ -43,6 +51,8 @@ protected:
 
     DecorLayers m_decor;
     Tileset m_tlmap;
+
+    ECS::Registry<MyReg> m_registry;
 };
 
 #endif
