@@ -1,6 +1,5 @@
 #include "BattleLevel.h"
 #include "Application.h"
-#include "Enemy1.h"
 
 BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_, int lvlId_) :
     Level(application_, size_, lvlId_),
@@ -8,14 +7,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_decor(application_),
     m_tlmap(application_)
 {
-    m_pc = new PlayableCharacter(*application_, m_collisionArea);
-    m_actionCharacters.push_back(std::unique_ptr<MovableCharacter>(m_pc));
-
-    m_actionCharacters.push_back(std::unique_ptr<MovableCharacter>(new Enemy1(*application_, m_collisionArea)));
-    m_actionCharacters[1]->setOnLevel(*m_application, getTileCenter(Vector2{31, 16}));
-
     m_hud.addWidget(std::make_unique<DebugDataWidget>(*m_application, m_camera, lvlId_, size_, m_lastFrameTimeMS));
-    m_hud.addWidget(std::make_unique<DebugPlayerWidget>(*m_application, m_camera, m_pc));
 
     m_tlmap.load("Tiles/Tilemap-sheet");
 
@@ -27,9 +19,8 @@ void BattleLevel::enter()
 {
     Level::enter();
 
-    m_pc->setOnLevel(*m_application, getTileCenter(Vector2{35, 20}));
     m_camera.setScale(gamedata::global::minCameraScale);
-    m_camera.setPos(m_pc->getComponent<ComponentTransform>().m_pos);
+    m_camera.setPos({0.0f, 0.0f});
 
     m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{0, 20}, Vector2{6, 1}, 0));
     m_collisionArea.addStaticCollider(getColliderForTileRange(Vector2{6, 20}, Vector2{1, 1}, -1, 1));
@@ -89,7 +80,7 @@ void BattleLevel::enter()
 
 void BattleLevel::update()
 {
-    for (auto &chr : m_actionCharacters)
+    /*for (auto &chr : m_actionCharacters)
     {
         chr->update();
 
@@ -281,16 +272,16 @@ void BattleLevel::update()
             if (!physical.attemptResetGround())
                 chr->onLostGround();
         }
-    }
+    }*/
 
     if (updateFocus())
     {
-        m_camera.smoothMoveTowards(m_currentCamFocusArea->getCameraTargetPosition(m_pc->getCameraFocusPoint()), {1.0f, 1.0f}, 0, 1.3f, 20.0f);
+        //m_camera.smoothMoveTowards(m_currentCamFocusArea->getCameraTargetPosition(m_pc->getCameraFocusPoint()), {1.0f, 1.0f}, 0, 1.3f, 20.0f);
         m_camera.smoothScaleTowards(m_currentCamFocusArea->getScale());
     }
     else
     {
-        m_camera.smoothMoveTowards(m_pc->getCameraFocusPoint(), {1.0f, 0.5f}, 5.0f, 1.6f, 80.0f);
+        //m_camera.smoothMoveTowards(m_pc->getCameraFocusPoint(), {1.0f, 0.5f}, 5.0f, 1.6f, 80.0f);
         m_camera.smoothScaleTowards(gamedata::global::maxCameraScale);
     }
     m_camera.update();
@@ -321,8 +312,8 @@ void BattleLevel::draw()
         }
     }
 
-    for (auto &el : m_actionCharacters)
-        el->getComponent<ComponentAnimationRenderable>().draw(m_camera);
+    //for (auto &el : m_actionCharacters)
+    //    el->getComponent<ComponentAnimationRenderable>().draw(m_camera);
 
     if (gamedata::debug::drawFocusAreas)
     {
@@ -338,7 +329,7 @@ void BattleLevel::draw()
 
 bool BattleLevel::updateFocus()
 {
-    auto pb = m_pc->getComponent<ComponentPhysical>().getPushbox();
+    /*auto pb = m_pc->getComponent<ComponentPhysical>().getPushbox();
     if (m_currentCamFocusArea)
     {
         if (m_currentCamFocusArea->checkIfEnters(pb, true))
@@ -354,7 +345,7 @@ bool BattleLevel::updateFocus()
             m_currentCamFocusArea = &cfa;
             return true;
         }
-    }
+    }*/
 
     return false;
 }

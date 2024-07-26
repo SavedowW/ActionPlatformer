@@ -14,13 +14,9 @@ set(SRC_FILES
 main.cpp
 BattleLevel.cpp
 Stage1.cpp
-PlayableCharacter.cpp
-DebugPlayerWidget.cpp
 StaticDecor.cpp
 DecorationBuilder.cpp
 DecorLayers.cpp
-MovableCharacter.cpp
-Enemy1.cpp
 )
 
 set(INCLUDE_DIRS

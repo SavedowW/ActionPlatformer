@@ -15,6 +15,32 @@ template<typename ENUM_TYPE>
 class StateMarker
 {
 public:
+    inline StateMarker() = default;
+
+    inline StateMarker(StateMarker &&rhs_) :
+        m_stateMarks(std::move(rhs_.m_stateMarks))
+    {
+
+    }
+
+    inline StateMarker &operator=(StateMarker &&rhs_)
+    {
+        m_stateMarks = std::move(rhs_.m_stateMarks);
+        return *this;
+    }
+
+    inline StateMarker(const StateMarker &rhs_) :
+        m_stateMarks(rhs_.m_stateMarks)
+    {
+
+    }
+
+    inline StateMarker &operator=(const StateMarker &rhs_)
+    {
+        m_stateMarks = rhs_.m_stateMarks;
+        return *this;
+    }
+
     inline StateMarker(ENUM_TYPE lastElemP1_, const std::vector<ENUM_TYPE> &trueFields_)  :
         m_stateMarks(static_cast<int>(lastElemP1_) / STATE_HOLDER_SIZE + 1 , 0)
     {

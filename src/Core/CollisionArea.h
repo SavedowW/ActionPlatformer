@@ -5,8 +5,6 @@
 #include "Trigger.h"
 #include <set>
 
-class PlayableCharacter;
-
 template<typename T1, typename T2>
 inline Collider getColliderForTileRange(Vector2<T1> pos_, Vector2<T2> size_)
 {

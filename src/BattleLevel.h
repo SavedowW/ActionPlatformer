@@ -11,18 +11,16 @@
 #include <ranges>
 #include <set>
 #include "DebugDataWidget.h"
-#include "DebugPlayerWidget.h"
-#include "PlayableCharacter.h"
 #include "CollisionArea.h"
 #include "DecorationBuilder.h"
 #include "yaECS.hpp"
 
-using ArchPlayer = ECS::EntityData<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, ComponentAnimationRenderable, ComponentPlayerInput>;
-using ArchMob = ECS::EntityData<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, ComponentAnimationRenderable>;
+//using ArchPlayer = ECS::EntityData<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, ComponentAnimationRenderable, ComponentPlayerInput>;
+//using ArchMob = ECS::EntityData<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, ComponentAnimationRenderable>;
 
 // Make an archetype list for example
-using MyReg = ECS::ArchList<>
-    ::addTypelist<ArchPlayer::WithSM<CharacterState>>;
+//using MyReg = ECS::ArchList<>
+//    ::addTypelist<ArchPlayer::WithSM<CharacterState>>;
 
 class BattleLevel : public Level
 {
@@ -41,9 +39,6 @@ protected:
     HUD m_hud;
     Camera m_camera;
 
-    PlayableCharacter *m_pc;
-    std::vector<std::unique_ptr<MovableCharacter>> m_actionCharacters;
-
     CollisionArea m_collisionArea;
 
     std::vector<CameraFocusArea> m_camFocusAreas;
@@ -52,7 +47,7 @@ protected:
     DecorLayers m_decor;
     Tileset m_tlmap;
 
-    ECS::Registry<MyReg> m_registry;
+    //ECS::Registry<MyReg> m_registry;
 };
 
 #endif

@@ -1,5 +1,4 @@
 #include "CollisionArea.h"
-#include "PlayableCharacter.h"
 
 void CollisionArea::addStaticCollider(const SlopeCollider &cld_)
 {
