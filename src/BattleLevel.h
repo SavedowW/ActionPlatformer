@@ -100,6 +100,34 @@ struct RenderSystem
     Camera &m_camera;
 };
 
+struct PhysicsSystem
+{
+    PhysicsSystem(ECS::Registry<MyReg> &reg_, Vector2<float> levelSize_);
+
+    void update();
+
+    template<typename T>
+    void updateArch(T &arch_)
+    {
+        for (int i = 0; i < arch_.size(); ++i)
+        {
+            auto inst = arch_.getEntity(i);
+            proceedEntity(std::get<ComponentTransform&>(inst), std::get<ComponentPhysical&>(inst), std::get<ComponentObstacleFallthrough&>(inst));
+        }
+    }
+
+    void proceedEntity(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_);
+
+    using PhysicalQuery = std::invoke_result_t<decltype(&ECS::Registry<MyReg>::getQuery<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough>), ECS::Registry<MyReg>>;
+    PhysicalQuery m_physicalQuery;
+
+    using StaticColliderQuery = std::invoke_result_t<decltype(&ECS::Registry<MyReg>::getQuery<ComponentStaticCollider>), ECS::Registry<MyReg>>;
+    StaticColliderQuery m_staticColliderQuery;
+
+    Vector2<float> m_levelSize;
+};
+
+
 struct InputHandlingSystem
 {
     InputHandlingSystem(ECS::Registry<MyReg> &reg_);
@@ -148,6 +176,7 @@ protected:
     PlayerSystem m_playerSystem;
     RenderSystem m_rendersys;
     InputHandlingSystem m_inputsys;
+    PhysicsSystem m_physsys;
 };
 
 #endif

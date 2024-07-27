@@ -9,7 +9,8 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_tlmap(application_),
     m_playerSystem(m_registry, *application_),
     m_rendersys(m_registry, *application_, m_camera),
-    m_inputsys(m_registry)
+    m_inputsys(m_registry),
+    m_physsys(m_registry, size_)
 {
     m_hud.addWidget(std::make_unique<DebugDataWidget>(*m_application, m_camera, lvlId_, size_, m_lastFrameTimeMS));
     m_registry.addEntity(ComponentTransform({50.0f, 100.0f}, ORIENTATION::RIGHT), ComponentPhysical(), ComponentObstacleFallthrough(), ComponentAnimationRenderable(), 
@@ -84,6 +85,7 @@ void BattleLevel::enter()
 void BattleLevel::update()
 {
     m_inputsys.update();
+    m_physsys.update();
     /*for (auto &chr : m_actionCharacters)
     {
         chr->update();
@@ -370,8 +372,9 @@ void PlayerSystem::setup()
     auto &trans = parch.get<ComponentTransform>()[0];
 
     phys.m_pushbox = {Vector2{0.0f, -30.0f}, Vector2{10.0f, 30.0f}};
+    phys.m_gravity = {0.0f, 0.5f};
 
-    
+
     auto &inp = parch.get<ComponentPlayerInput>()[0];
     inp.m_inputResolver->subscribePlayer();
     inp.m_inputResolver->setInputEnabled(true);
@@ -478,4 +481,110 @@ void InputHandlingSystem::update()
                 (updateArch(args))
                 ), ...);
         }, m_query.m_tpl);
+}
+
+PhysicsSystem::PhysicsSystem(ECS::Registry<MyReg> &reg_, Vector2<float> levelSize_) :
+    m_physicalQuery{reg_.getQuery<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough>()},
+    m_staticColliderQuery{reg_.getQuery<ComponentStaticCollider>()},
+    m_levelSize(levelSize_)
+{
+}
+
+void PhysicsSystem::update()
+{
+    std::apply([&](auto&&... args) {
+            ((
+                (updateArch(args))
+                ), ...);
+        }, m_physicalQuery.m_tpl);
+}
+
+void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_)
+{
+    // Common stuff
+    phys_.m_velocity += phys_.m_gravity;
+
+    if (phys_.m_inertia.x != 0)
+    {
+        auto absInertia = abs(phys_.m_inertia.x);
+        auto m_inertiaSign = phys_.m_inertia.x / abs(phys_.m_inertia.x);
+        absInertia = std::max(absInertia - phys_.m_drag.x, 0.0f);
+        phys_.m_inertia.x = m_inertiaSign * absInertia;
+    }
+
+    if (phys_.m_inertia.y != 0)
+    {
+        auto absInertia = abs(phys_.m_inertia.y);
+        auto m_inertiaSign = phys_.m_inertia.y / abs(phys_.m_inertia.y);
+        absInertia = std::max(absInertia - phys_.m_drag.y, 0.0f);
+        phys_.m_inertia.y = m_inertiaSign * absInertia;
+    }
+
+    std::cout << m_staticColliderQuery.size() << std::endl;
+
+    // Prepare vars for collision detection
+    auto offset = phys_.getPosOffest();
+    auto pb = phys_.m_pushbox + trans_.m_pos;
+
+    auto oldHeight = trans_.m_pos.y;
+    auto oldTop = pb.getTopEdge();
+    auto oldRightEdge = pb.getRightEdge();
+    auto oldLeftEdge = pb.getLeftEdge();
+
+    bool groundCollision = false;
+    float touchedSlope = 0.0f;
+    float highest = m_levelSize.y;
+
+    // Fall collision detection
+    auto resolveFall = [&](const ComponentStaticCollider &csc_, int obstacleId_)
+    {
+        auto overlap = csc_.m_collider.getFullCollisionWith(pb, highest);
+        if ((overlap & utils::OverlapResult::OVERLAP_X) && (overlap & utils::OverlapResult::OOT_Y))
+        {
+            if (obstacleId_ && (!obsFallthrough_.touchedObstacleTop(obstacleId_) || highest < oldHeight))
+                return;
+
+            //std::cout << "Touched slope top, teleporting on top, offset.y > 0\n";
+
+            trans_.m_pos.y = highest;
+            if (csc_.m_collider.m_topAngleCoef != 0)
+                touchedSlope = csc_.m_collider.m_topAngleCoef;
+            groundCollision = true;
+            pb = phys_.m_pushbox + trans_.m_pos;
+
+            if (phys_.m_velocity.y > 0)
+                phys_.m_velocity.y = 0;
+            if (phys_.m_inertia.y > 0)
+                phys_.m_inertia.y = 0;
+        }
+    };
+
+    // Fall iteration over colliders depending on archetype
+    auto distrbFall = [&] <typename T> (T &cld_) { 
+        auto &colliders = cld_.get<ComponentStaticCollider>();
+        if constexpr (T::template contains<ComponentObstacle>())
+        {
+            auto &obstacles = cld_.get<ComponentObstacle>();
+            for (int i = 0; i < cld_.size(); ++i)
+                resolveFall(colliders[i], obstacles[i].m_obstacleId);
+        }
+        else
+        {
+            for (int i = 0; i < cld_.size(); ++i)
+                resolveFall(colliders[i], 0);
+        }
+    };
+
+    // Y axis movement handling
+    {
+        trans_.m_pos.y += offset.y;
+        if (offset.y > 0)
+        {
+            std::apply([&](auto&&... args) {
+            ((
+                (distrbFall(args))
+                ), ...);
+            }, m_staticColliderQuery.m_tpl);
+        }
+    }
 }
