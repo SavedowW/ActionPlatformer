@@ -173,6 +173,17 @@ namespace ECS
         {
             return std::get<Archetype<TT...>&>(m_tpl);
         }
+
+        template<int ID>
+        constexpr inline auto &get()
+        {
+            return std::get<ID>(m_tpl);
+        }
+
+        static constexpr inline auto size()
+        {
+            return std::tuple_size<std::tuple<Args...>>::value;
+        }
     };
 
     // Utility functions to either move a component from archetype or get an empty component, used to convery entities

@@ -407,7 +407,6 @@ void TextManager::generateSimpleShadedSymbols(std::vector<std::array<fonts::Symb
             symbols_[i].m_h = shadeH + 1;
             symbols_[i].m_tex = renderer_.createTexture(symbols_[i].m_w, symbols_[i].m_h);
             TTF_GlyphMetrics32(font, chid, &symbols_[i].m_minx, &symbols_[i].m_maxx, &symbols_[i].m_miny, &symbols_[i].m_maxy, &symbols_[i].m_advance);
-            SDL_SetTextureBlendMode(symbols_[i].m_tex, SDL_BLENDMODE_BLEND);
 
             renderer_.setRenderTarget(symbols_[i].m_tex);
             SDL_RenderCopy(sdlrenderer, shade, nullptr, &dstShadow1);

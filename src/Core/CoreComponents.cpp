@@ -1,23 +1,8 @@
 #include "CoreComponents.h"
 
 ComponentTransform::ComponentTransform(const Vector2<float> &pos_, ORIENTATION orient_) :
-    m_pos(pos_), m_ownOrientation(orient_)
+    m_pos(pos_), m_orientation(orient_)
 {
-}
-
-Vector2<int> ComponentTransform::getOwnHorDir() const
-{
-    switch (m_ownOrientation)
-    {
-        case ORIENTATION::LEFT:
-            return {-1, 0};
-
-        case ORIENTATION::RIGHT:
-            return {1, 0};
-
-        default:
-            return {0, 0};
-    }
 }
 
 void ComponentPhysical::velocityToInertia()

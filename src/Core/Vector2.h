@@ -6,7 +6,25 @@
 #include <type_traits>
 #include <map>
 
-enum class ORIENTATION {RIGHT = 0, LEFT = 1, UNSPECIFIED = 2};
+enum class ORIENTATION : int8_t
+{
+    RIGHT = 1,
+    LEFT = -1,
+    UNSPECIFIED = 0
+};
+
+template<typename T>
+inline constexpr ORIENTATION ValueToOrientation(const T &rhs_)
+{
+    return static_cast<ORIENTATION>((rhs_ > 0) - (rhs_ < 0));
+}
+
+template<typename T>
+inline constexpr int ValueToOrientationInt(const T &rhs_)
+{
+    return static_cast<int>((rhs_ > 0) - (rhs_ < 0));
+}
+
 inline const std::map<ORIENTATION, const char *> OrientationNames {
     {ORIENTATION::RIGHT, "RIGHT"},
     {ORIENTATION::LEFT, "LEFT"},
@@ -32,6 +50,12 @@ struct Vector2
         y = rhs.y;
     }
 
+    constexpr inline Vector2(ORIENTATION orient_)
+    {
+        x = static_cast<T>(orient_);
+        y = 0;
+    }
+
     template <typename TR>
     constexpr inline Vector2<T> &operator=(const Vector2<TR> &rhs)
     {
@@ -48,18 +72,17 @@ struct Vector2
 
     constexpr inline bool operator==(const ORIENTATION &rhs_) const
     {
-        return (x > 0 && rhs_ == ORIENTATION::RIGHT) || (x < 0 && rhs_ == ORIENTATION::LEFT) || (x == 0 && rhs_ == ORIENTATION::UNSPECIFIED);
+        return (x == static_cast<T>(rhs_));
     }
 
-    template<ORIENTATION DEFAULT = ORIENTATION::UNSPECIFIED>
-    constexpr inline bool getOrientation() const
+    operator ORIENTATION()
     {
-        if (x > 0)
-            return ORIENTATION::RIGHT;
-        else if (x < 0)
-            return ORIENTATION::LEFT;
-        else
-            return DEFAULT;
+        return static_cast<ORIENTATION>(x);
+    }
+
+    constexpr inline ORIENTATION getOrientation() const
+    {
+        return static_cast<ORIENTATION>(ValueToOrientation(x));
     }
 
     template<typename TR>

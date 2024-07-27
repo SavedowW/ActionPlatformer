@@ -23,9 +23,7 @@ struct ComponentTransform
     ComponentTransform &operator=(ComponentTransform &&rhs_) = default;
     
     Vector2<float> m_pos;
-    ORIENTATION m_ownOrientation = ORIENTATION::RIGHT;
-
-    Vector2<int> getOwnHorDir() const;
+    ORIENTATION m_orientation = ORIENTATION::RIGHT;
 };
 
 struct ComponentPhysical
@@ -48,7 +46,6 @@ struct ComponentPhysical
 
     void velocityToInertia();
     Vector2<float> getPosOffest() const;
-    bool attemptResetGround();
 };
 
 struct ComponentObstacleFallthrough

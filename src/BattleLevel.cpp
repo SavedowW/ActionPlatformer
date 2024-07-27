@@ -5,9 +5,14 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     Level(application_, size_, lvlId_),
     m_camera({0.0f, 0.0f}, gamedata::global::baseResolution, m_size),
     m_decor(application_),
-    m_tlmap(application_)
+    m_tlmap(application_),
+    m_playerSystem(m_registry, *application_),
+    m_rendersys(m_registry, *application_, m_camera),
+    m_inputsys(m_registry)
 {
     m_hud.addWidget(std::make_unique<DebugDataWidget>(*m_application, m_camera, lvlId_, size_, m_lastFrameTimeMS));
+    m_registry.addEntity(ComponentTransform({50.0f, 100.0f}, ORIENTATION::RIGHT), ComponentPhysical(), ComponentObstacleFallthrough(), ComponentAnimationRenderable(), 
+        ComponentPlayerInput(std::unique_ptr<InputResolver>(new InputResolver(application_->getInputSystem()))), StateMachine<ArchPlayer::MakeRef, CharacterState>());
 
     m_tlmap.load("Tiles/Tilemap-sheet");
 
@@ -18,6 +23,8 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
 void BattleLevel::enter()
 {
     Level::enter();
+
+    m_playerSystem.setup();
 
     m_camera.setScale(gamedata::global::minCameraScale);
     m_camera.setPos({0.0f, 0.0f});
@@ -80,6 +87,7 @@ void BattleLevel::enter()
 
 void BattleLevel::update()
 {
+    m_inputsys.update();
     /*for (auto &chr : m_actionCharacters)
     {
         chr->update();
@@ -315,6 +323,8 @@ void BattleLevel::draw()
     //for (auto &el : m_actionCharacters)
     //    el->getComponent<ComponentAnimationRenderable>().draw(m_camera);
 
+    m_rendersys.draw();
+
     if (gamedata::debug::drawFocusAreas)
     {
         for (auto &cfa : m_camFocusAreas)
@@ -348,4 +358,110 @@ bool BattleLevel::updateFocus()
     }*/
 
     return false;
+}
+
+PlayerSystem::PlayerSystem(ECS::Registry<MyReg> &reg_, Application &app_) :
+    m_query{reg_.getQueryTl(ArchPlayer::WithSM<CharacterState>())},
+    m_animManager(*app_.getAnimationManager())
+{
+    
+}
+
+void PlayerSystem::setup()
+{
+    static_assert(decltype(m_query)::size() == 1, "Player query should contain only 1 archetype");
+    auto &parch = m_query.get<0>();
+    if (parch.size() != 1)
+        throw std::exception("Player archetype should contain only one entity");
+
+    auto &animrnd = parch.get<ComponentAnimationRenderable>()[0];
+
+    animrnd.m_animations[m_animManager.getAnimID("Char1/idle")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/idle"), LOOPMETHOD::NOLOOP);
+    animrnd.m_animations[m_animManager.getAnimID("Char1/run")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/run"), LOOPMETHOD::JUMP_LOOP);
+    animrnd.m_animations[m_animManager.getAnimID("Char1/prejump")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/prejump"), LOOPMETHOD::JUMP_LOOP);
+    animrnd.m_animations[m_animManager.getAnimID("Char1/float")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/float"), LOOPMETHOD::NOLOOP);
+    animrnd.m_animations[m_animManager.getAnimID("Char1/attack1_1")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/attack1_1"), LOOPMETHOD::NOLOOP);
+    animrnd.m_animations[m_animManager.getAnimID("Char1/attack1_2")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/attack1_2"), LOOPMETHOD::NOLOOP);
+    animrnd.m_animations[m_animManager.getAnimID("Char1/WallCling")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/WallCling"), LOOPMETHOD::NOLOOP);
+    animrnd.m_animations[m_animManager.getAnimID("Char1/FloatCling")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/FloatCling"), LOOPMETHOD::NOLOOP);
+
+    animrnd.m_currentAnimation = animrnd.m_animations[m_animManager.getAnimID("Char1/idle")].get();
+    animrnd.m_currentAnimation->reset();
+    
+
+    auto &phys = parch.get<ComponentPhysical>()[0];
+    auto &trans = parch.get<ComponentTransform>()[0];
+
+    phys.m_pushbox = {Vector2{0.0f, -30.0f}, Vector2{10.0f, 30.0f}};
+
+    
+    auto &inp = parch.get<ComponentPlayerInput>()[0];
+    inp.m_inputResolver->subscribePlayer();
+    inp.m_inputResolver->setInputEnabled(true);
+
+}
+
+RenderSystem::RenderSystem(ECS::Registry<MyReg> &reg_, Application &app_, Camera &camera_) :
+    m_query{reg_.getQuery<ComponentAnimationRenderable>()},
+    m_renderer(*app_.getRenderer()),
+    m_camera(camera_)
+{
+}
+
+void RenderSystem::draw()
+{
+    std::apply([&](auto&&... args) {
+            ((
+                (drawArch(args))
+                ), ...);
+        }, m_query.m_tpl);
+}
+
+void RenderSystem::drawInstance(ComponentTransform &trans_, ComponentAnimationRenderable &ren_)
+{
+    if (ren_.m_currentAnimation != nullptr)
+    {
+        auto texSize = ren_.m_currentAnimation->getSize();
+        auto animorigin = ren_.m_currentAnimation->getOrigin();
+        auto texPos = trans_.m_pos;
+        texPos.y -= animorigin.y;
+        SDL_RendererFlip flip = SDL_FLIP_NONE;
+        if (trans_.m_orientation == ORIENTATION::LEFT)
+        {
+            flip = SDL_FLIP_HORIZONTAL;
+            texPos.x -= (texSize.x - animorigin.x);
+        }
+        else
+        {
+            texPos.x -= animorigin.x;
+        }
+
+        auto spr = ren_.m_currentAnimation->getSprite();
+        auto edge = ren_.m_currentAnimation->getBorderSprite();
+
+        m_renderer.renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, m_camera, 0.0f, flip);
+    }
+}
+
+void RenderSystem::drawCollider(ComponentTransform &trans_, ComponentPhysical &phys_)
+{
+    if (gamedata::debug::drawColliders)
+    {
+        auto pb = phys_.m_pushbox + trans_.m_pos;;
+        m_renderer.drawCollider(pb, {238, 195, 154, 50}, 100, m_camera);
+    }
+}
+
+InputHandlingSystem::InputHandlingSystem(ECS::Registry<MyReg> &reg_) :
+    m_query{reg_.getQuery<ComponentPlayerInput>()}
+{
+}
+
+void InputHandlingSystem::update()
+{
+    std::apply([&](auto&&... args) {
+            ((
+                (updateArch(args))
+                ), ...);
+        }, m_query.m_tpl);
 }

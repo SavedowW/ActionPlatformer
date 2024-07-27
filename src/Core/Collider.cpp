@@ -40,12 +40,7 @@ void SlopeCollider::generatePoints()
 
 int SlopeCollider::getOrientationDir() const
 {
-    if (m_topAngleCoef > 0)
-        return -1;
-    else if (m_topAngleCoef < 0)
-        return 1;
-    else
-        return 0;
+    return ValueToOrientationInt(-m_topAngleCoef);
 }
 
 float SlopeCollider::getTopHeight(const Collider &cld_, utils::OverlapResult horOverlapType_) const
