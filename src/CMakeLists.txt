@@ -18,6 +18,7 @@ StaticDecor.cpp
 DecorationBuilder.cpp
 DecorLayers.cpp
 PlayableCharacter.cpp
+TileMapHelper.cpp
 )
 
 set(INCLUDE_DIRS

@@ -1,6 +1,6 @@
 #include "DecorationBuilder.h"
-#include "CollisionArea.h"
 #include <fstream>
+#include "TileMapHelper.hpp"
 
 DecorationBuilder::DecorationBuilder(Application &app_) :
     m_app(app_),

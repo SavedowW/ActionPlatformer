@@ -26,7 +26,6 @@ InputState.cpp
 InputComparators.cpp
 InputResolver.cpp
 Collider.cpp
-CollisionArea.cpp
 CameraFocusArea.cpp
 Tileset.cpp
 Trigger.cpp

@@ -69,3 +69,9 @@ ComponentPlayerInput::ComponentPlayerInput(std::unique_ptr<InputResolver> &&inpu
     m_inputResolver(std::move(inputResolver_))
 {
 }
+
+ComponentStaticCollider::ComponentStaticCollider(const SlopeCollider &collider_) :
+    m_collider(collider_)
+{
+
+}

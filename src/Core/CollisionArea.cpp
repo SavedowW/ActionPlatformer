@@ -1,15 +1,5 @@
 #include "CollisionArea.h"
 
-void CollisionArea::addStaticCollider(const SlopeCollider &cld_)
-{
-    int insertId = (cld_.m_hasSlope ? m_nextSlope++ : m_staticCollisionMap.size());
-    m_staticCollisionMap.insert(m_staticCollisionMap.begin() + insertId, cld_);
-
-    if (cld_.m_obstacleId)
-        m_obstacles.push_back(insertId);
-
-}
-
 bool CollisionArea::getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_) const
 {
     float baseCoord = coord_;

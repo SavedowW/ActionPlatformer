@@ -11,7 +11,6 @@
 #include <ranges>
 #include <set>
 #include "DebugDataWidget.h"
-#include "CollisionArea.h"
 #include "DecorationBuilder.h"
 #include "PlayableCharacter.h"
 #include "yaECS.hpp"
@@ -21,7 +20,10 @@ using ArchPlayer = ECS::EntityData<ComponentTransform, ComponentPhysical, Compon
 
 // Make an archetype list for example
 using MyReg = ECS::ArchList<>
-    ::addTypelist<ArchPlayer::WithSM<CharacterState>>;
+    ::addTypelist<ArchPlayer::WithSM<CharacterState>>
+    ::add<ComponentStaticCollider>
+    ::add<ComponentStaticCollider, ComponentObstacle>
+    ::add<ComponentTrigger>;
 
 struct PlayerSystem
 {
@@ -51,7 +53,25 @@ struct RenderSystem
         {
             auto inst = arch_.getEntity(i);
 
-            drawInstance(std::get<ComponentTransform&>(inst), std::get<ComponentAnimationRenderable&>(inst));
+            if constexpr (T::template containsOne<ComponentStaticCollider>() && !T::template containsOne<ComponentObstacle>())
+            {
+                drawCollider(std::get<ComponentStaticCollider&>(inst));
+            }
+
+            if constexpr (T::template containsOne<ComponentStaticCollider>() && T::template containsOne<ComponentObstacle>())
+            {
+                drawObstacle(std::get<ComponentStaticCollider&>(inst));
+            }
+
+            if constexpr (T::template containsOne<ComponentTrigger>())
+            {
+                drawTrigger(std::get<ComponentTrigger&>(inst));
+            }
+
+            if constexpr (T::template containsOne<ComponentTransform>() && T::template containsOne<ComponentAnimationRenderable>())
+            {
+                drawInstance(std::get<ComponentTransform&>(inst), std::get<ComponentAnimationRenderable&>(inst));
+            }
 
             if constexpr (T::template containsOne<ComponentPhysical>())
             {
@@ -62,11 +82,20 @@ struct RenderSystem
 
     void drawInstance(ComponentTransform &trans_, ComponentAnimationRenderable &ren_);
     void drawCollider(ComponentTransform &trans_, ComponentPhysical &phys_);
+    void drawCollider(ComponentStaticCollider &cld_);
+    void drawObstacle(ComponentStaticCollider &cld_);
+    void drawTrigger(ComponentTrigger &cld_);
 
     using PlayerQuery = std::invoke_result_t<decltype(&ECS::Registry<MyReg>::getQuery<ComponentAnimationRenderable>), 
     ECS::Registry<MyReg>>;
-
     PlayerQuery m_query;
+
+    using StaticColliderQuery = std::invoke_result_t<decltype(&ECS::Registry<MyReg>::getQuery<ComponentStaticCollider>), ECS::Registry<MyReg>>;
+    StaticColliderQuery m_staticColliderQuery;
+
+    using StaticTriggerQuery = std::invoke_result_t<decltype(&ECS::Registry<MyReg>::getQuery<ComponentTrigger>), ECS::Registry<MyReg>>;
+    StaticTriggerQuery m_staticTriggerQuery;
+
     Renderer &m_renderer;
     Camera &m_camera;
 };
@@ -108,8 +137,6 @@ protected:
 
     HUD m_hud;
     Camera m_camera;
-
-    CollisionArea m_collisionArea;
 
     std::vector<CameraFocusArea> m_camFocusAreas;
     CameraFocusArea *m_currentCamFocusArea = nullptr;

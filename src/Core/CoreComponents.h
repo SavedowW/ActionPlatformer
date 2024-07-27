@@ -3,9 +3,10 @@
 #include "InputResolver.h"
 #include "Vector2.h"
 #include "FrameTimer.h"
-#include "CollisionArea.h"
 #include "Renderer.h"
+#include "Collider.h"
 #include "AnimationManager.h"
+#include "Trigger.h"
 #include <set>
 #include <map>
 #include <memory>
@@ -47,6 +48,30 @@ struct ComponentPhysical
     void velocityToInertia();
     Vector2<float> getPosOffest() const;
 };
+
+struct ComponentStaticCollider
+{
+    ComponentStaticCollider() = default;
+    ComponentStaticCollider(const SlopeCollider &collider_);
+
+    ComponentStaticCollider (const ComponentStaticCollider &rhs_) = delete;
+    ComponentStaticCollider (ComponentStaticCollider &&rhs_) = default;
+    ComponentStaticCollider &operator=(const ComponentStaticCollider &rhs_) = delete;
+    ComponentStaticCollider &operator=(ComponentStaticCollider &&rhs_) = default;
+
+    SlopeCollider m_collider;
+};
+
+struct ComponentObstacle
+{
+    int m_obstacleId;
+};
+
+struct ComponentTrigger
+{
+    Trigger m_trigger;
+};
+
 
 struct ComponentObstacleFallthrough
 {
