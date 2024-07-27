@@ -45,6 +45,8 @@ struct ComponentPhysical
     float m_magnetLimit = 0.0f;
     float m_onSlopeWithAngle = 0.0f;
 
+    bool m_isGrounded = true;
+
     void velocityToInertia();
     Vector2<float> getPosOffest() const;
 };

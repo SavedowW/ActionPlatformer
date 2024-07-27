@@ -20,6 +20,9 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
 
     DecorationBuilder bld(*application_);
     m_decor = std::move(bld.buildDecorLayers("Resources/Sprites/Tiles/map.json", m_tlmap));
+
+    StateMachine<ArchPlayer::MakeRef, CharacterState> sm;
+    GenericState<ArchPlayer::MakeRef, CharacterState> floatstate(CharacterState::FLOAT, CharacterStateNames.at(CharacterState::FLOAT), StateMarker{CharacterState::NONE, {}}, application_->getAnimationManager()->getAnimID("Char1/float"));
 }
 
 void BattleLevel::enter()
@@ -364,7 +367,7 @@ void PlayerSystem::setup()
     animrnd.m_animations[m_animManager.getAnimID("Char1/WallCling")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/WallCling"), LOOPMETHOD::NOLOOP);
     animrnd.m_animations[m_animManager.getAnimID("Char1/FloatCling")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/FloatCling"), LOOPMETHOD::NOLOOP);
 
-    animrnd.m_currentAnimation = animrnd.m_animations[m_animManager.getAnimID("Char1/idle")].get();
+    animrnd.m_currentAnimation = animrnd.m_animations[m_animManager.getAnimID("Char1/float")].get();
     animrnd.m_currentAnimation->reset();
     
 
@@ -379,6 +382,43 @@ void PlayerSystem::setup()
     inp.m_inputResolver->subscribePlayer();
     inp.m_inputResolver->setInputEnabled(true);
 
+
+    auto &sm = parch.get<StateMachine<ArchPlayer::MakeRef, CharacterState>>()[0];
+
+    sm.addState(std::unique_ptr<GenericState<ArchPlayer::MakeRef, CharacterState>>(
+        &(new PlayerState<false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>(
+            CharacterState::IDLE, {CharacterState::NONE, {CharacterState::RUN}}, m_animManager.getAnimID("Char1/idle")))
+        ->setGroundedOnSwitch(true)
+        .setGravity({{0.0f, 0.0f}})
+        .setConvertVelocityOnSwitch(true)
+        .setTransitionOnLostGround(CharacterState::FLOAT)
+        .setMagnetLimit(TimelineProperty<float>(8.0f))
+        .setCanFallThrough(TimelineProperty(true))
+        .setUpdateSpeedLimitData(
+            TimelineProperty<Vector2<float>>({9999.9f, 0.0f}),
+            TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
+    ));
+
+    sm.addState(std::unique_ptr<GenericState<ArchPlayer::MakeRef, CharacterState>>(
+        &(new PlayerState<false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>(
+            CharacterState::FLOAT, {CharacterState::NONE, {}}, m_animManager.getAnimID("Char1/float")))
+        ->setGroundedOnSwitch(false)
+        .setTransitionOnTouchedGround(CharacterState::IDLE)
+        .setGravity({{0.0f, 0.5f}})
+        .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+        .setNoLanding(TimelineProperty<bool>({{0, true}, {2, false}}))
+    ));
+
+    sm.setInitialState(CharacterState::FLOAT);
+}
+
+void PlayerSystem::update()
+{
+    std::apply([&](auto&&... args) {
+            ((
+                (updateArch(args))
+                ), ...);
+        }, m_query.m_tpl);
 }
 
 RenderSystem::RenderSystem(ECS::Registry<MyReg> &reg_, Application &app_, Camera &camera_) :
@@ -499,7 +539,7 @@ void PhysicsSystem::update()
         }, m_physicalQuery.m_tpl);
 }
 
-void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_)
+void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, auto *sm_, auto inst_)
 {
     // Common stuff
     phys_.m_velocity += phys_.m_gravity;
@@ -520,7 +560,7 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
         phys_.m_inertia.y = m_inertiaSign * absInertia;
     }
 
-    std::cout << m_staticColliderQuery.size() << std::endl;
+    //std::cout << m_staticColliderQuery.size() << std::endl;
 
     // Prepare vars for collision detection
     auto offset = phys_.getPosOffest();
@@ -585,6 +625,24 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
                 (distrbFall(args))
                 ), ...);
             }, m_staticColliderQuery.m_tpl);
+        }
+    }
+
+    //obshandle.cleanIgnoredObstacles();
+    phys_.m_onSlopeWithAngle = touchedSlope;
+
+    if (sm_)
+    {
+        auto *currentState = sm_->getRealCurrentState();
+
+        if (groundCollision)
+        {
+            currentState->onTouchedGround(inst_);
+        }
+        else
+        {
+            //if (!physical.attemptResetGround())
+                currentState->onLostGround(inst_);
         }
     }
 }

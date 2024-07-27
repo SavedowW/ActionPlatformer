@@ -15,7 +15,6 @@
 #include "PlayableCharacter.h"
 #include "yaECS.hpp"
 
-using ArchPlayer = ECS::EntityData<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, ComponentAnimationRenderable, ComponentPlayerInput>;
 //using ArchMob = ECS::EntityData<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, ComponentAnimationRenderable>;
 
 // Make an archetype list for example
@@ -30,6 +29,20 @@ struct PlayerSystem
     PlayerSystem(ECS::Registry<MyReg> &reg_, Application &app_);
 
     void setup();
+
+    void update();
+
+    template<typename T>
+    void updateArch(T &arch_)
+    {
+        auto &smcs = arch_.template get<StateMachine<ArchPlayer::MakeRef, CharacterState>>();
+        for (int i = 0; i < arch_.size(); ++i)
+        {
+            auto inst = arch_.template getEntity<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, ComponentAnimationRenderable, ComponentPlayerInput>(i);
+            auto &smc = smcs[i];
+            smc.update(inst, 0);
+        }
+    }
 
     using PlayerQuery = std::invoke_result_t<decltype(&ECS::Registry<MyReg>::getQueryTl<
     ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, ComponentAnimationRenderable, ComponentPlayerInput, 
@@ -112,11 +125,14 @@ struct PhysicsSystem
         for (int i = 0; i < arch_.size(); ++i)
         {
             auto inst = arch_.getEntity(i);
-            proceedEntity(std::get<ComponentTransform&>(inst), std::get<ComponentPhysical&>(inst), std::get<ComponentObstacleFallthrough&>(inst));
+            if constexpr (T::template isLastSpecialization<StateMachine>())
+                proceedEntity(std::get<ComponentTransform&>(inst), std::get<ComponentPhysical&>(inst), std::get<ComponentObstacleFallthrough&>(inst), &arch_.getLast()[i], TypeManip::tupleWithoutLast(inst));
+            else
+                proceedEntity(std::get<ComponentTransform&>(inst), std::get<ComponentPhysical&>(inst), std::get<ComponentObstacleFallthrough&>(inst), nullptr, inst);
         }
     }
 
-    void proceedEntity(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_);
+    void proceedEntity(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, auto *sm_, auto inst_);
 
     using PhysicalQuery = std::invoke_result_t<decltype(&ECS::Registry<MyReg>::getQuery<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough>), ECS::Registry<MyReg>>;
     PhysicalQuery m_physicalQuery;
