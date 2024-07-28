@@ -20,9 +20,18 @@
 // Make an archetype list for example
 using MyReg = ECS::ArchList<>
     ::addTypelist<ArchPlayer::WithSM<CharacterState>>
-    ::add<ComponentStaticCollider>
-    ::add<ComponentStaticCollider, ComponentObstacle>
-    ::add<ComponentTrigger>;
+    ::add<ComponentStaticCollider> // Expected to be unchanged (no entities removed, added or switched positions)
+    ::add<ComponentStaticCollider, ComponentObstacle> // Expected to be unchanged (no entities removed, added or switched positions)
+    ::add<ComponentTrigger>; // Expected to be unchanged (no entities removed, added or switched positions)
+
+/* 
+    TODO: porting:
+    Camera system (track player, handle focus areas)
+    Camera focus areas
+    Rest of the states
+    Triggers, wall clinging
+    Custom float state (speed up after forcing falling, air drift)
+*/
 
 struct PlayerSystem
 {

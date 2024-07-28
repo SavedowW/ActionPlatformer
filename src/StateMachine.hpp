@@ -291,9 +291,6 @@ public:
 
         animrnd.m_currentAnimation->update();
 
-        // TODO: Magnet limit ?
-        // TODO: recovery frames
-
         // Handle velocity and inertia changes
         if (m_usingUpdateMovement)
         {
@@ -368,7 +365,7 @@ public:
     const PLAYER_STATE_T m_stateId;
 
 protected:
-    const StateMarker<PLAYER_STATE_T> m_transitionableFrom;
+    const StateMarker<PLAYER_STATE_T> m_transitionableFrom; // TODO: either to timeline property or add timeline property with cancel options
     std::string m_stateName;
     ParentSM *m_parent = nullptr;
 

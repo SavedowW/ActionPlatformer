@@ -474,7 +474,7 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
     float touchedSlope = 0.0f;
     float highest = m_levelSize.y;
 
-    // Fall collision detection
+    // Fall collision detection - single collider vs single entity
     auto resolveFall = [&](const ComponentStaticCollider &csc_, int obstacleId_)
     {
         auto overlap = csc_.m_collider.getFullCollisionWith(pb, highest);
@@ -631,7 +631,7 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
         }
     };
 
-    // Fall iteration over colliders depending on archetype
+    // Iteration over colliders depending on archetype
     auto distrbObstacle = [&] <typename T> (T &cld_, const auto &distrib_)
     { 
         auto &colliders = cld_.get<ComponentStaticCollider>();

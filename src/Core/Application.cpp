@@ -52,7 +52,7 @@ Application::~Application()
 
 Application& Application::operator=(Application &&rhs)
 {
-    // TODO
+    // TODO:
 
     throw std::runtime_error("Not implemented yet");
 
@@ -61,7 +61,7 @@ Application& Application::operator=(Application &&rhs)
 
 Application::Application(Application &&rhs)
 {
-    // TODO
+    // TODO:
 
     throw std::runtime_error("Not implemented yet");
 }
