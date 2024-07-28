@@ -75,6 +75,8 @@ void BattleLevel::enter()
     m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{6, 4}, Vector2{1, 7}, 0)));
     m_registry.addEntity(ComponentTrigger(createTrigger({6, 4}, {6, 10}, Trigger::Tag::RIGHT | Trigger::Tag::ClingArea)));
 
+    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{1, 19}, Vector2{1, 1}, 0)));
+
     m_camFocusAreas.emplace_back(getTilePos(Vector2{43, 16}), gamedata::global::tileSize.mulComponents(Vector2{40.0f, 32.0f}), *m_application->getRenderer());
     m_camFocusAreas.back().overrideFocusArea({getTilePos(Vector2{42.5f, 15.0f}), gamedata::global::tileSize.mulComponents(Vector2{7.0f, 30.0f}) / 2.0f});
 
@@ -488,14 +490,24 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
             if (obstacleId_ && !obsFallthrough_.touchedObstacleSide(obstacleId_))
                 return;
 
-            std::cout << "Touched edge, teleporting to it, offset.x > 0\n";
+            auto overlapPortion = utils::getOverlapPortion(pb.getTopEdge(), pb.getBottomEdge(), highest, csc_.m_collider.m_points[2].y);
 
-            trans_.m_pos.x = csc_.m_collider.m_tlPos.x - pb.m_halfSize.x;
-            pb = phys_.m_pushbox + trans_.m_pos;
-            if (phys_.m_velocity.x < 0)
-                phys_.m_velocity.x = 0;
-            if (phys_.m_inertia.x < 0)
-                phys_.m_inertia.x = 0;
+            if (overlapPortion >= 0.1 || !phys_.m_onSlopeWithAngle != 0)
+            {
+                std::cout << "Touched edge, teleporting to it, offset.x > 0\n";
+                trans_.m_pos.x = csc_.m_collider.m_tlPos.x - pb.m_halfSize.x;
+                trans_.m_pos.x = csc_.m_collider.m_tlPos.x + csc_.m_collider.m_size.x + pb.m_halfSize.x;
+                pb = phys_.m_pushbox + trans_.m_pos;
+            }
+
+            if (overlapPortion >= 0.15)
+            {
+                std::cout << "Hard collision, limiting speed\n";
+                if (phys_.m_velocity.x > 0)
+                    phys_.m_velocity.x = 0;
+                if (phys_.m_inertia.x > 0)
+                    phys_.m_inertia.x = 0;
+            }
         }
     };
 
@@ -536,14 +548,23 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
             if (obstacleId_ && !obsFallthrough_.touchedObstacleSide(obstacleId_))
                 return;
 
-            std::cout << "Touched edge, teleporting to it, offset.x < 0\n";
+            auto overlapPortion = utils::getOverlapPortion(pb.getTopEdge(), pb.getBottomEdge(), highest, csc_.m_collider.m_points[2].y);
 
-            trans_.m_pos.x = csc_.m_collider.m_tlPos.x + csc_.m_collider.m_size.x + pb.m_halfSize.x;
-            pb = phys_.m_pushbox + trans_.m_pos;
-            if (phys_.m_velocity.x < 0)
-                phys_.m_velocity.x = 0;
-            if (phys_.m_inertia.x < 0)
-                phys_.m_inertia.x = 0;
+            if (overlapPortion >= 0.1 || !phys_.m_onSlopeWithAngle != 0)
+            {
+                std::cout << "Touched edge, teleporting to it, offset.x < 0\n";
+                trans_.m_pos.x = csc_.m_collider.m_tlPos.x + csc_.m_collider.m_size.x + pb.m_halfSize.x;
+                pb = phys_.m_pushbox + trans_.m_pos;
+            }
+
+            if (overlapPortion >= 0.15)
+            {
+                std::cout << "Hard collision, limiting speed\n";
+                if (phys_.m_velocity.x < 0)
+                    phys_.m_velocity.x = 0;
+                if (phys_.m_inertia.x < 0)
+                    phys_.m_inertia.x = 0;
+            }
         }
     };
 

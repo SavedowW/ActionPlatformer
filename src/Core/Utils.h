@@ -299,6 +299,18 @@ namespace utils
 
     }
 
+    // Gets portion of l1, overlapped by l2, result is in range [0, 1]
+    inline float getOverlapPortion(float l1min_, float l1max_, float l2min_, float l2max_)
+    {
+        auto pmin = std::max(l1min_, l2min_);
+        auto pmax = std::min(l1max_, l2max_);
+
+        if (pmin >= pmax)
+            return 0;
+
+        return (pmax - pmin) / (l1max_ - l1min_);
+    }
+
     constexpr inline std::string getIntend(int intend_)
     {
         return std::string(intend_, ' ');
