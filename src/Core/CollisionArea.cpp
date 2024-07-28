@@ -25,19 +25,3 @@ const Trigger *CollisionArea::getOverlappedTrigger(const Collider &cld_, Trigger
 
     return nullptr;
 }
-
-std::set<int> CollisionArea::getPlayerTouchingObstacles(const Collider &playerPb_) const
-{
-    std::set<int> obstacleIds;
-    float dumped = 0.0f;
-    for (const auto &i : m_obstacles)
-    {
-        if (obstacleIds.contains(m_staticCollisionMap[i].m_obstacleId))
-            continue;
-
-        if (!!(m_staticCollisionMap[i].getFullCollisionWith(playerPb_, dumped) & utils::OverlapResult::BOTH_OOT))
-            obstacleIds.insert(m_staticCollisionMap[i].m_obstacleId);
-    }
-
-    return obstacleIds;
-}

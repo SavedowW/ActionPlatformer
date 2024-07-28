@@ -26,8 +26,6 @@ struct CollisionArea
     bool isAreaFree(const Collider &cld_, bool considerObstacles_);
     const Trigger *getOverlappedTrigger(const Collider &cld_, Trigger::Tag tag_) const;
 
-    std::set<int> getPlayerTouchingObstacles(const Collider &playerPb_) const;
-
     std::vector<SlopeCollider> m_staticCollisionMap;
     std::vector<int> m_obstacles;
 

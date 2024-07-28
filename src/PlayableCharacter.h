@@ -85,6 +85,12 @@ public:
     inline virtual bool update(ArchPlayer::MakeRef &owner_, uint32_t currentFrame_)
     {
         auto res = ParentClass::update(owner_, currentFrame_);
+
+        auto &compInput = std::get<ComponentPlayerInput&>(owner_);
+        auto &compFallthrough = std::get<ComponentObstacleFallthrough&>(owner_);
+        if (compInput.m_inputResolver->getInputQueue()[0].m_inputs.at(INPUT_BUTTON::DOWN) == INPUT_BUTTON_STATE::PRESSED)
+            compFallthrough.setIgnoringObstacles();
+
         if (!res)
             return false;
 
@@ -93,7 +99,6 @@ public:
 
         auto &transform = std::get<ComponentTransform&>(owner_);
         auto &physical = std::get<ComponentPhysical&>(owner_);
-        auto &compInput = std::get<ComponentPlayerInput&>(owner_);
 
         auto orientation = transform.m_orientation;
         const auto &inq = compInput.m_inputResolver->getInputQueue();

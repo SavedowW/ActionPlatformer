@@ -13,7 +13,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_physsys(m_registry, size_)
 {
     m_hud.addWidget(std::make_unique<DebugDataWidget>(*m_application, m_camera, lvlId_, size_, m_lastFrameTimeMS));
-    m_registry.addEntity(ComponentTransform({50.0f, 100.0f}, ORIENTATION::RIGHT), ComponentPhysical(), ComponentObstacleFallthrough(), ComponentAnimationRenderable(), 
+    m_registry.addEntity(ComponentTransform({50.0f, 300.0f}, ORIENTATION::RIGHT), ComponentPhysical(), ComponentObstacleFallthrough(), ComponentAnimationRenderable(), 
         ComponentPlayerInput(std::unique_ptr<InputResolver>(new InputResolver(application_->getInputSystem()))), StateMachine<ArchPlayer::MakeRef, CharacterState>());
 
     m_tlmap.load("Tiles/Tilemap-sheet");
@@ -496,7 +496,6 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
             {
                 std::cout << "Touched edge, teleporting to it, offset.x > 0\n";
                 trans_.m_pos.x = csc_.m_collider.m_tlPos.x - pb.m_halfSize.x;
-                trans_.m_pos.x = csc_.m_collider.m_tlPos.x + csc_.m_collider.m_size.x + pb.m_halfSize.x;
                 pb = phys_.m_pushbox + trans_.m_pos;
             }
 
@@ -641,7 +640,7 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
         }
     }
 
-    //obshandle.cleanIgnoredObstacles();
+    resetEntityObstacles(trans_, phys_, obsFallthrough_);
     phys_.m_onSlopeWithAngle = touchedSlope;
 
     if (sm_)
@@ -658,6 +657,8 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
                 currentState->onLostGround(inst_);
         }
     }
+
+    obsFallthrough_.m_isIgnoringObstacles.update();
 }
 
 bool PhysicsSystem::magnetEntity(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_)
@@ -728,4 +729,53 @@ bool PhysicsSystem::getHighestVerticalMagnetCoord(const Collider &cld_, float &c
     }, m_staticColliderQuery.m_tpl);
 
     return isFound;
+}
+
+void PhysicsSystem::resetEntityObstacles(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_)
+{
+    auto touched = getTouchedObstacles(phys_.m_pushbox + trans_.m_pos);
+    std::set<int> res;
+    std::set_intersection(
+        obsFallthrough_.m_ignoredObstacles.begin(), obsFallthrough_.m_ignoredObstacles.end(),
+        touched.begin(), touched.end(),
+        std::inserter(res, res.begin()));
+
+    if (obsFallthrough_.m_ignoredObstacles.size() != res.size())
+        std::cout << "Reseted obstacles\n";
+
+    obsFallthrough_.m_ignoredObstacles = res;
+}
+
+std::set<int> PhysicsSystem::getTouchedObstacles(const Collider &pb_) const
+{
+    std::set<int> obstacleIds;
+    float dumped = 0.0f;
+
+    auto proceedObstacle = [&](const SlopeCollider &areaCld_, int obstacleId_) 
+    {
+        if (obstacleIds.contains(obstacleId_))
+            return false;
+
+        return !!(areaCld_.getFullCollisionWith(pb_, dumped) & utils::OverlapResult::BOTH_OOT);
+    };
+
+    auto distrbObstacle = [&] <typename T> (T &cld_)
+    { 
+        if constexpr (T::template contains<ComponentObstacle>())
+        {
+            auto &colliders = cld_.get<ComponentStaticCollider>();
+            auto &obstacles = cld_.get<ComponentObstacle>();
+            for (int i = 0; i < cld_.size(); ++i)
+                if (proceedObstacle(colliders[i].m_collider, obstacles[i].m_obstacleId))
+                    obstacleIds.insert(obstacles[i].m_obstacleId);
+        }
+    };
+
+    std::apply([&](auto&&... args) {
+    ((
+        (distrbObstacle(args))
+        ), ...);
+    }, m_staticColliderQuery.m_tpl);
+
+    return obstacleIds;
 }
