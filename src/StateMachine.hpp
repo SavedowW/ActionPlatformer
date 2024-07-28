@@ -317,6 +317,7 @@ public:
         }
 
         physical.m_noUpwardLanding = m_noUpwardLanding[currentFrame_];
+        physical.m_magnetLimit = m_magnetLimit[currentFrame_];
 
         return true;
     }

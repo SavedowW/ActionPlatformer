@@ -633,8 +633,78 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
         }
         else
         {
-            //if (!physical.attemptResetGround())
+            if (!magnetEntity(trans_, phys_, obsFallthrough_))
                 currentState->onLostGround(inst_);
         }
     }
+}
+
+bool PhysicsSystem::magnetEntity(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_)
+{
+    if (phys_.m_magnetLimit <= 0.0f)
+        return false;
+
+    auto pb = phys_.m_pushbox + trans_.m_pos;
+
+    float height = trans_.m_pos.y;
+    if ( getHighestVerticalMagnetCoord(pb, height, obsFallthrough_.m_ignoredObstacles, obsFallthrough_.m_isIgnoringObstacles.isActive()))
+    {
+        float magnetRange = height - trans_.m_pos.y;
+        if (magnetRange <= phys_.m_magnetLimit)
+        {
+            std::cout << "MAGNET: " << magnetRange << std::endl;
+            trans_.m_pos.y = height;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool PhysicsSystem::getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_) const
+{
+    float baseCoord = coord_;
+    float bot = cld_.getBottomEdge();
+    bool isFound = false;
+    auto proceedCollider = [&](const SlopeCollider &areaCld_, int obstacleId_)
+    {
+        if (obstacleId_ && (ignoreAllObstacles_ || ignoredObstacles_.contains(obstacleId_)))
+            return;
+
+        auto horOverlap = utils::getOverlap<0>(areaCld_.m_points[0].x, areaCld_.m_points[1].x, cld_.getLeftEdge(), cld_.getRightEdge()); //cld.getHorizontalOverlap(cld_);
+        if (!!(horOverlap & utils::OverlapResult::OVERLAP_X))
+        {
+            auto height = areaCld_.getTopHeight(cld_, horOverlap);
+            if (height > baseCoord && (!isFound || height < coord_))
+            {
+                coord_ = height;
+                isFound = true;
+            }
+        }
+    };
+
+    // Fall iteration over colliders depending on archetype
+    auto distrbObstacle = [&] <typename T> (T &cld_)
+    { 
+        auto &colliders = cld_.get<ComponentStaticCollider>();
+        if constexpr (T::template contains<ComponentObstacle>())
+        {
+            auto &obstacles = cld_.get<ComponentObstacle>();
+            for (int i = 0; i < cld_.size(); ++i)
+                proceedCollider(colliders[i].m_collider, obstacles[i].m_obstacleId);
+        }
+        else
+        {
+            for (int i = 0; i < cld_.size(); ++i)
+                proceedCollider(colliders[i].m_collider, 0);
+        }
+    };
+
+    std::apply([&](auto&&... args) {
+    ((
+        (distrbObstacle(args))
+        ), ...);
+    }, m_staticColliderQuery.m_tpl);
+
+    return isFound;
 }

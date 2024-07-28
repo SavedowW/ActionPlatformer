@@ -23,8 +23,6 @@
 
 struct CollisionArea
 {
-    bool getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_) const;
-    void finalize();
     bool isAreaFree(const Collider &cld_, bool considerObstacles_);
     const Trigger *getOverlappedTrigger(const Collider &cld_, Trigger::Tag tag_) const;
 

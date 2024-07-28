@@ -1,57 +1,5 @@
 #include "CollisionArea.h"
 
-bool CollisionArea::getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_) const
-{
-    float baseCoord = coord_;
-    float bot = cld_.getBottomEdge();
-    bool isFound = false;
-    for (const auto &cld : m_staticCollisionMap)
-    {
-        if (cld.m_obstacleId && ignoredObstacles_.contains(cld.m_obstacleId))
-            continue;
-
-        auto horOverlap = utils::getOverlap<0>(cld.m_points[0].x, cld.m_points[1].x, cld_.getLeftEdge(), cld_.getRightEdge()) ;//cld.getHorizontalOverlap(cld_);
-        if (!!(horOverlap & utils::OverlapResult::OVERLAP_X))
-        {
-            auto height = cld.getTopHeight(cld_, horOverlap);
-            if (height > baseCoord && (!isFound || height < coord_))
-            {
-                coord_ = height;
-                isFound = true;
-            }
-        }
-    }
-
-    return isFound;
-}
-
-void CollisionArea::finalize()
-{
-    float topOffset = 50.0f;
-    float botOffset = 50.0f;
-    for (const auto& cld_ : m_staticCollisionMap)
-    {
-        std::pair<Vector2<float>, Vector2<float>> leftSide = {cld_.m_points[0], cld_.m_points[3] - cld_.m_points[0]};
-        std::pair<Vector2<float>, Vector2<float>> rightSide = {cld_.m_points[1], cld_.m_points[2] - cld_.m_points[1]};
-
-        if (leftSide.second.y >= topOffset + botOffset)
-        {
-            Trigger trgarea{leftSide.first.x - 1, leftSide.first.y + topOffset, 1.0f, leftSide.second.y - topOffset - botOffset};
-            trgarea |= Trigger::Tag::ClingArea | Trigger::Tag::LEFT;
-            if (isAreaFree(trgarea, false))
-                m_triggers.push_back(trgarea);
-        }
-
-        if (rightSide.second.y >= topOffset + botOffset)
-        {
-            Trigger trgarea{rightSide.first.x, rightSide.first.y + topOffset, 1.0f, rightSide.second.y - topOffset - botOffset};
-            trgarea |= Trigger::Tag::ClingArea | Trigger::Tag::RIGHT;
-            if (isAreaFree(trgarea, false))
-                m_triggers.push_back(trgarea);
-        }
-    }
-}
-
 bool CollisionArea::isAreaFree(const Collider &cld_, bool considerObstacles_)
 {
     float dumped = 0;
