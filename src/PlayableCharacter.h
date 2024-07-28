@@ -13,13 +13,17 @@ enum class CharacterState {
     IDLE,
     FLOAT,
     RUN,
+    PREJUMP,
+    PREJUMP_FORWARD,
     NONE
 };
 
 inline const std::map<CharacterState, std::string> CharacterStateNames {
     {CharacterState::IDLE, "IDLE"},
     {CharacterState::FLOAT, "IDLE"},
-    {CharacterState::RUN, "RUN"}
+    {CharacterState::RUN, "RUN"},
+    {CharacterState::PREJUMP, "PREJUMP"},
+    {CharacterState::PREJUMP_FORWARD, "PREJUMP_FORWARD"}
 };
 
 template<bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN>

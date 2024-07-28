@@ -53,37 +53,38 @@ public:
 
     inline virtual bool update(Owner_t &owner_, uint32_t currentFrame_)
     {
-        if (m_currentState->update(owner_, m_framesInState))
+        auto updres = m_currentState->update(owner_, m_framesInState);
+        auto *untilst = (updres ? nullptr : m_currentState);
+
+        if (!attemptTransition(owner_, untilst))
         {
-            if (!attemptTransition(owner_))
-            {
-                m_framesInState++;
-            }
-            else
-                return true;
+            m_framesInState++;
         }
         else
-            m_framesInState++;
+            return true;
 
         return false;
     }
 
-    bool attemptTransition(Owner_t &owner_)
+    bool attemptTransition(Owner_t &owner_, OwnedState* until_)
     {
         auto currentStateId = m_currentState->m_stateId;
         for (auto &el : m_states)
         {
-            if (!el->transitionableFrom(currentStateId))
-                continue;
-
-            auto res = el->isPossible(owner_);
-            if (res != ORIENTATION::UNSPECIFIED)
+            if (el->transitionableFrom(currentStateId))
             {
-                auto &trans = std::get<ComponentTransform&>(owner_);
-                trans.m_orientation = res;
-                switchCurrentState(owner_, el.get());
-                return true;
+                auto res = el->isPossible(owner_);
+                if (res != ORIENTATION::UNSPECIFIED)
+                {
+                    auto &trans = std::get<ComponentTransform&>(owner_);
+                    trans.m_orientation = res;
+                    switchCurrentState(owner_, el.get());
+                    return true;
+                }
             }
+
+            if (el.get() == until_)
+                return false;
         }
 
         return false;
@@ -272,6 +273,9 @@ public:
             m_cooldown->begin(m_cooldownTime);
 
         physical.m_pushbox = Collider{Vector2{0.0f, -30.0f}, Vector2{10.0f, 30.0f}}; // TODO: to property
+
+        physical.m_noUpwardLanding = m_noUpwardLanding[0];
+        physical.m_magnetLimit = m_magnetLimit[0];
     }
 
     inline virtual void leave(Owner_t &owner_, PLAYER_STATE_T to_)
@@ -309,15 +313,15 @@ public:
         if (!m_ownInrLimitUpd.isEmpty())
             physical.m_inertia = utils::clamp(physical.m_inertia, -m_ownInrLimitUpd[currentFrame_], m_ownInrLimitUpd[currentFrame_]);
 
+        physical.m_noUpwardLanding = m_noUpwardLanding[currentFrame_];
+        physical.m_magnetLimit = m_magnetLimit[currentFrame_];
+
         // Handle duration
         if (m_transitionOnOutdated.isSet())
         {
             if (currentFrame_ >= m_duration)
                 onOutdated(owner_);
         }
-
-        physical.m_noUpwardLanding = m_noUpwardLanding[currentFrame_];
-        physical.m_magnetLimit = m_magnetLimit[currentFrame_];
 
         return true;
     }

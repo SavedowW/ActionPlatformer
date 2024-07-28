@@ -196,6 +196,70 @@ void PlayerSystem::setup()
     auto &sm = parch.get<StateMachine<ArchPlayer::MakeRef, CharacterState>>()[0];
 
     sm.addState(std::unique_ptr<GenericState<ArchPlayer::MakeRef, CharacterState>>(
+        &(new PlayerState<false, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, true, InputComparatorIdle, InputComparatorIdle>(
+            CharacterState::PREJUMP_FORWARD, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::RUN}}, m_animManager.getAnimID("Char1/prejump")))
+        ->setAlignedSlopeMax(0.5f)
+        .setGroundedOnSwitch(true)
+        .setGravity({{0.0f, 0.0f}})
+        .setConvertVelocityOnSwitch(true)
+        .setTransitionOnLostGround(CharacterState::FLOAT)
+        .setMagnetLimit(TimelineProperty<float>(8.0f))
+        .setUpdateMovementData(
+            TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
+            TimelineProperty<Vector2<float>>(
+                {
+                    {0, {0.0f, 0.0f}},
+                    {3, {3.5f, 0.0f}},
+                }), // Dir vel mul
+            TimelineProperty<Vector2<float>>(
+                {
+                    {0, {0.0f, 0.0f}},
+                    {3, {0.0f, -5.0f}},
+                }), // Raw vel
+            TimelineProperty<Vector2<float>>(
+                {
+                    {0, {1.0f, 1.0f}},
+                    {3, {0.5f, 1.0f}}
+                }), // Inr mul
+            TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
+            TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
+        .setOutdatedTransition(CharacterState::FLOAT, 3)
+        .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+        .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+    ));
+
+    sm.addState(std::unique_ptr<GenericState<ArchPlayer::MakeRef, CharacterState>>(
+        &(new PlayerState<false, false, InputComparatorTapUp, InputComparatorTapUp, true, InputComparatorIdle, InputComparatorIdle>(
+            CharacterState::PREJUMP, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::RUN}}, m_animManager.getAnimID("Char1/prejump")))
+        ->setGroundedOnSwitch(true)
+        .setGravity({{0.0f, 0.0f}})
+        .setConvertVelocityOnSwitch(true)
+        .setTransitionOnLostGround(CharacterState::FLOAT)
+        .setMagnetLimit(TimelineProperty<float>(8.0f))
+        .setUpdateMovementData(
+            TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
+            TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir vel mul
+            TimelineProperty<Vector2<float>>(
+                {
+                    {0, {0.0f, 0.0f}},
+                    {4, {0.0f, -6.0f}},
+                }), // Raw vel
+            TimelineProperty<Vector2<float>>(
+                {
+                    {0, {1.0f, 1.0f}},
+                    {4, {0.5f, 1.0f}}
+                }), // Inr mul
+            TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
+            TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
+        .setOutdatedTransition(CharacterState::FLOAT, 4)
+        .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+        .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+        .setUpdateSpeedLimitData(
+            TimelineProperty<Vector2<float>>(),
+            TimelineProperty<Vector2<float>>({9999.9f, 4.0f}))
+    ));
+
+    sm.addState(std::unique_ptr<GenericState<ArchPlayer::MakeRef, CharacterState>>(
         &(new PlayerState<false, true, InputComparatorHoldLeft, InputComparatorHoldRight, true, InputComparatorHoldLeft, InputComparatorHoldRight>(
             CharacterState::RUN, {CharacterState::NONE, {CharacterState::IDLE}}, m_animManager.getAnimID("Char1/run")))
         ->setGroundedOnSwitch(true)
