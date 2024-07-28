@@ -46,6 +46,7 @@ struct ComponentPhysical
     float m_onSlopeWithAngle = 0.0f;
 
     bool m_isGrounded = true;
+    bool m_noUpwardLanding = false;
 
     void velocityToInertia();
     Vector2<float> getPosOffest() const;

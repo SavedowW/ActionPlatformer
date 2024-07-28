@@ -278,15 +278,17 @@ public:
     {
     }
 
-    // True if its ok to attmept to change state
+    // True if its ok to attempt to change state
     inline virtual bool update(Owner_t &owner_, uint32_t currentFrame_)
     {
         auto &transform = std::get<ComponentTransform&>(owner_);
         auto &physical = std::get<ComponentPhysical&>(owner_);
+        auto &animrnd = std::get<ComponentAnimationRenderable&>(owner_);
+
+        animrnd.m_currentAnimation->update();
 
         // TODO: Magnet limit ?
         // TODO: recovery frames
-        // TODO: no upward landing
 
         // Handle velocity and inertia changes
         if (m_usingUpdateMovement)
@@ -313,6 +315,8 @@ public:
             if (currentFrame_ >= m_duration)
                 onOutdated(owner_);
         }
+
+        physical.m_noUpwardLanding = m_noUpwardLanding[currentFrame_];
 
         return true;
     }

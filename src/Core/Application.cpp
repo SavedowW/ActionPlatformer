@@ -7,6 +7,8 @@ Application::Application()
 		std::cout << "SDL initialization error: " << SDL_GetError() << std::endl;
 		throw std::runtime_error("Cannot initialize SDL");
 	}
+    
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 
 	if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG)
 	{

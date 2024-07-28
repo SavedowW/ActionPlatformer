@@ -82,6 +82,35 @@ public:
         */
     }
 
+    inline virtual bool update(ArchPlayer::MakeRef &owner_, uint32_t currentFrame_)
+    {
+        auto res = ParentClass::update(owner_, currentFrame_);
+        if (!res)
+            return false;
+
+        if (!ATTEMPT_PROCEED)
+            return true;
+
+        auto &transform = std::get<ComponentTransform&>(owner_);
+        auto &physical = std::get<ComponentPhysical&>(owner_);
+        auto &compInput = std::get<ComponentPlayerInput&>(owner_);
+
+        auto orientation = transform.m_orientation;
+        const auto &inq = compInput.m_inputResolver->getInputQueue();
+
+        bool possibleToLeft = (!m_alignedSlopeMax.isSet() || physical.m_onSlopeWithAngle <= 0 || physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
+        bool possibleToRight = (!m_alignedSlopeMax.isSet() || physical.m_onSlopeWithAngle >= 0 || -physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
+
+        InputComparatorFail failin;
+
+        auto &lInput = (possibleToLeft ? static_cast<const InputComparator&>(m_cmpProcLeft) : static_cast<const InputComparator&>(failin));
+        auto &rInput = (possibleToRight ? static_cast<const InputComparator&>(m_cmpProcRight) : static_cast<const InputComparator&>(failin));
+
+        auto inres = attemptInput<true, false>(lInput, rInput, orientation, inq, 0);
+        return inres == ORIENTATION::UNSPECIFIED;
+
+    }
+
     inline virtual ORIENTATION isPossible(ArchPlayer::MakeRef &owner_) const override
     {
         if (ParentClass::isPossible(owner_) == ORIENTATION::UNSPECIFIED)
@@ -105,18 +134,6 @@ public:
         bool possibleToRight = (!m_alignedSlopeMax.isSet() || physical.m_onSlopeWithAngle >= 0 || -physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
 
         InputComparatorFail failin;
-
-        if (this == currentState && ATTEMPT_PROCEED)
-        {
-            auto &lInput = (possibleToLeft ? static_cast<const InputComparator&>(m_cmpProcLeft) : static_cast<const InputComparator&>(failin));
-            auto &rInput = (possibleToRight ? static_cast<const InputComparator&>(m_cmpProcRight) : static_cast<const InputComparator&>(failin));
-
-            auto res = attemptInput<true, false>(lInput, rInput, orientation, inq, 0);
-            if (res != ORIENTATION::UNSPECIFIED)
-            {
-                return res;
-            }
-        }
 
         auto &lInput = (possibleToLeft ? static_cast<const InputComparator&>(m_cmpLeft) : static_cast<const InputComparator&>(failin));
         auto &rInput = (possibleToRight ? static_cast<const InputComparator&>(m_cmpRight) : static_cast<const InputComparator&>(failin));
