@@ -30,7 +30,6 @@ CameraFocusArea.cpp
 Tileset.cpp
 Trigger.cpp
 CoreComponents.cpp
-UntypeContainer.cpp
 )
 
 add_library (Core ${CORE_SRC_FILES})

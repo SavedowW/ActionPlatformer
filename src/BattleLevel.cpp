@@ -2,6 +2,25 @@
 #include "Application.h"
 #include "TileMapHelper.hpp"
 
+void addCollider(entt::registry &reg_, const SlopeCollider &cld_)
+{
+    auto newid = reg_.create();
+    reg_.emplace<ComponentStaticCollider>(newid, cld_);
+}
+
+void addTrigger(entt::registry &reg_, const Trigger &trg_)
+{
+    auto newid = reg_.create();
+    reg_.emplace<ComponentTrigger>(newid, trg_);
+}
+
+void addCollider(entt::registry &reg_, const SlopeCollider &cld_, int id_)
+{
+    auto newid = reg_.create();
+    reg_.emplace<ComponentStaticCollider>(newid, cld_);
+    reg_.emplace<ComponentObstacle>(newid, id_);
+}
+
 BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_, int lvlId_) :
     Level(application_, size_, lvlId_),
     m_camera({0.0f, 0.0f}, gamedata::global::baseResolution, m_size),
@@ -10,12 +29,18 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_playerSystem(m_registry, *application_),
     m_rendersys(m_registry, *application_, m_camera),
     m_inputsys(m_registry),
-    m_physsys(m_registry, size_)
+    m_physsys(m_registry, size_),
+    m_camsys(m_registry, m_camera)
 {
     m_hud.addWidget(std::make_unique<DebugDataWidget>(*m_application, m_camera, lvlId_, size_, m_lastFrameTimeMS));
-    m_registry.createEntity<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, ComponentAnimationRenderable, ComponentPlayerInput, StateMachine>
-    (ComponentTransform({50.0f, 300.0f}, ORIENTATION::RIGHT), 
-        ComponentPlayerInput(std::unique_ptr<InputResolver>(new InputResolver(application_->getInputSystem()))));
+    auto playerId = m_registry.create();
+    m_registry.emplace<ComponentTransform>(playerId, Vector2{50.0f, 300.0f}, ORIENTATION::RIGHT);
+    m_registry.emplace<ComponentPhysical>(playerId);
+    m_registry.emplace<ComponentObstacleFallthrough>(playerId);
+    m_registry.emplace<ComponentAnimationRenderable>(playerId);
+    m_registry.emplace<ComponentPlayerInput>(playerId, std::unique_ptr<InputResolver>(new InputResolver(application_->getInputSystem())));
+    m_registry.emplace<ComponentDynamicCameraTarget>(playerId);
+    m_registry.emplace<StateMachine>(playerId);
 
     m_tlmap.load("Tiles/Tilemap-sheet");
 
@@ -32,48 +57,48 @@ void BattleLevel::enter()
     m_camera.setScale(gamedata::global::minCameraScale);
     m_camera.setPos({0.0f, 0.0f});
 
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{0, 20}, Vector2{6, 1}, 0)));
-    m_registry.createEntity<ComponentStaticCollider, ComponentObstacle>(ComponentStaticCollider(getColliderForTileRange(Vector2{6, 20}, Vector2{1, 1}, -1)), ComponentObstacle(1));
-    m_registry.createEntity<ComponentStaticCollider, ComponentObstacle>(ComponentStaticCollider(getColliderForTileRange(Vector2{7, 19}, Vector2{1, 1}, -1)), ComponentObstacle(1));
-    m_registry.createEntity<ComponentStaticCollider, ComponentObstacle>(ComponentStaticCollider(getColliderForTileRange(Vector2{8, 18}, Vector2{1, 1}, -1)), ComponentObstacle(1));
-    m_registry.createEntity<ComponentStaticCollider, ComponentObstacle>(ComponentStaticCollider(getColliderForTileRange(Vector2{9, 17}, Vector2{1, 1}, -1)), ComponentObstacle(1));
-    m_registry.createEntity<ComponentStaticCollider, ComponentObstacle>(ComponentStaticCollider(getColliderForTileRange(Vector2{10, 16}, Vector2{1, 1}, -1)), ComponentObstacle(1));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{11, 15}, Vector2{2, 1}, 0)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{13, 15}, Vector2{1, 1}, -0.5)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{14.0f, 14.5f}, Vector2{9, 1}, 0)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{23.0f, 14.5f}, Vector2{1, 1}, 0.5)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{24, 15}, Vector2{1, 1}, 0)));
-    m_registry.createEntity<ComponentStaticCollider, ComponentObstacle>(ComponentStaticCollider(getColliderForTileRange(Vector2{25, 15}, Vector2{6, 6}, 1)), ComponentObstacle(1));
+    addCollider(m_registry, getColliderForTileRange(Vector2{0, 20}, Vector2{6, 1}, 0));
+    addCollider(m_registry, getColliderForTileRange(Vector2{6, 20}, Vector2{1, 1}, -1), 1);
+    addCollider(m_registry, getColliderForTileRange(Vector2{7, 19}, Vector2{1, 1}, -1), 1);
+    addCollider(m_registry, getColliderForTileRange(Vector2{8, 18}, Vector2{1, 1}, -1), 1);
+    addCollider(m_registry, getColliderForTileRange(Vector2{9, 17}, Vector2{1, 1}, -1), 1);
+    addCollider(m_registry, getColliderForTileRange(Vector2{10, 16}, Vector2{1, 1}, -1), 1);
+    addCollider(m_registry, getColliderForTileRange(Vector2{11, 15}, Vector2{2, 1}, 0));
+    addCollider(m_registry, getColliderForTileRange(Vector2{13, 15}, Vector2{1, 1}, -0.5));
+    addCollider(m_registry, getColliderForTileRange(Vector2{14.0f, 14.5f}, Vector2{9, 1}, 0));
+    addCollider(m_registry, getColliderForTileRange(Vector2{23.0f, 14.5f}, Vector2{1, 1}, 0.5));
+    addCollider(m_registry, getColliderForTileRange(Vector2{24, 15}, Vector2{1, 1}, 0));
+    addCollider(m_registry, getColliderForTileRange(Vector2{25, 15}, Vector2{6, 6}, 1), 1);
 
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{6, 20}, Vector2{1, 1}, 1)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{7, 21}, Vector2{1, 1}, 1)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{8, 22}, Vector2{1, 1}, 1)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{9, 23}, Vector2{1, 1}, 1)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{10, 24}, Vector2{1, 1}, 1)));
+    addCollider(m_registry, getColliderForTileRange(Vector2{6, 20}, Vector2{1, 1}, 1));
+    addCollider(m_registry, getColliderForTileRange(Vector2{7, 21}, Vector2{1, 1}, 1));
+    addCollider(m_registry, getColliderForTileRange(Vector2{8, 22}, Vector2{1, 1}, 1));
+    addCollider(m_registry, getColliderForTileRange(Vector2{9, 23}, Vector2{1, 1}, 1));
+    addCollider(m_registry, getColliderForTileRange(Vector2{10, 24}, Vector2{1, 1}, 1));
 
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{11, 25}, Vector2{15, 1}, 0)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{26, 25}, Vector2{1, 1}, -1)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{27, 24}, Vector2{1, 1}, -1)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{28, 23}, Vector2{1, 1}, 0)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{29, 23}, Vector2{1, 1}, -1)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{30, 22}, Vector2{1, 1}, -1)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{31, 21}, Vector2{9, 9}, 1)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{40, 30}, Vector2{5, 1}, 0)));
+    addCollider(m_registry, getColliderForTileRange(Vector2{11, 25}, Vector2{15, 1}, 0));
+    addCollider(m_registry, getColliderForTileRange(Vector2{26, 25}, Vector2{1, 1}, -1));
+    addCollider(m_registry, getColliderForTileRange(Vector2{27, 24}, Vector2{1, 1}, -1));
+    addCollider(m_registry, getColliderForTileRange(Vector2{28, 23}, Vector2{1, 1}, 0));
+    addCollider(m_registry, getColliderForTileRange(Vector2{29, 23}, Vector2{1, 1}, -1));
+    addCollider(m_registry, getColliderForTileRange(Vector2{30, 22}, Vector2{1, 1}, -1));
+    addCollider(m_registry, getColliderForTileRange(Vector2{31, 21}, Vector2{9, 9}, 1));
+    addCollider(m_registry, getColliderForTileRange(Vector2{40, 30}, Vector2{5, 1}, 0));
 
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{45, 6}, Vector2{1, 25}, 0)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{40, 1}, Vector2{1, 23}, 0)));
+    addCollider(m_registry, getColliderForTileRange(Vector2{45, 6}, Vector2{1, 25}, 0));
+    addCollider(m_registry, getColliderForTileRange(Vector2{40, 1}, Vector2{1, 23}, 0));
 
-    m_registry.createEntity<ComponentStaticCollider, ComponentObstacle>(ComponentStaticCollider(getColliderForTileRange(Vector2{41, 6}, Vector2{5, 1}, 0)), ComponentObstacle(3));
+    addCollider(m_registry, getColliderForTileRange(Vector2{41, 6}, Vector2{5, 1}, 0), 3);
 
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{41, 0}, Vector2{10, 1}, 0)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{50, 30}, Vector2{6, 1}, 0)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{69, 30}, Vector2{6, 1}, 0)));
+    addCollider(m_registry, getColliderForTileRange(Vector2{41, 0}, Vector2{10, 1}, 0));
+    addCollider(m_registry, getColliderForTileRange(Vector2{50, 30}, Vector2{6, 1}, 0));
+    addCollider(m_registry, getColliderForTileRange(Vector2{69, 30}, Vector2{6, 1}, 0));
 
-    m_registry.createEntity<ComponentTrigger>(ComponentTrigger(createTrigger({6, 4}, {6, 10}, Trigger::Tag::LEFT | Trigger::Tag::ClingArea)));
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{6, 4}, Vector2{1, 7}, 0)));
-    m_registry.createEntity<ComponentTrigger>(ComponentTrigger(createTrigger({6, 4}, {6, 10}, Trigger::Tag::RIGHT | Trigger::Tag::ClingArea)));
+    addTrigger(m_registry, createTrigger({6, 4}, {6, 10}, Trigger::Tag::LEFT | Trigger::Tag::ClingArea));
+    addCollider(m_registry, getColliderForTileRange(Vector2{6, 4}, Vector2{1, 7}, 0));
+    addTrigger(m_registry, createTrigger({6, 4}, {6, 10}, Trigger::Tag::RIGHT | Trigger::Tag::ClingArea));
 
-    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{1, 19}, Vector2{1, 1}, 0)));
+    addCollider(m_registry, getColliderForTileRange(Vector2{1, 19}, Vector2{1, 1}, 0));
 
     m_camFocusAreas.emplace_back(getTilePos(Vector2{43, 16}), gamedata::global::tileSize.mulComponents(Vector2{40.0f, 32.0f}), *m_application->getRenderer());
     m_camFocusAreas.back().overrideFocusArea({getTilePos(Vector2{42.5f, 15.0f}), gamedata::global::tileSize.mulComponents(Vector2{7.0f, 30.0f}) / 2.0f});
@@ -88,19 +113,10 @@ void BattleLevel::enter()
 void BattleLevel::update()
 {
     m_inputsys.update();
-    m_playerSystem.update(m_registry);
+    m_playerSystem.update();
     m_physsys.update();
+    m_camsys.update();
 
-    if (updateFocus())
-    {
-        //m_camera.smoothMoveTowards(m_currentCamFocusArea->getCameraTargetPosition(m_pc->getCameraFocusPoint()), {1.0f, 1.0f}, 0, 1.3f, 20.0f);
-        m_camera.smoothScaleTowards(m_currentCamFocusArea->getScale());
-    }
-    else
-    {
-        //m_camera.smoothMoveTowards(m_pc->getCameraFocusPoint(), {1.0f, 0.5f}, 5.0f, 1.6f, 80.0f);
-        m_camera.smoothScaleTowards(gamedata::global::maxCameraScale);
-    }
     m_camera.update();
 
     m_hud.update();
@@ -150,8 +166,8 @@ bool BattleLevel::updateFocus()
     return false;
 }
 
-PlayerSystem::PlayerSystem(ECS::Registry<Components> &reg_, Application &app_) :
-    m_query{reg_.makeQuery<ComponentPlayerInput, StateMachine>()},
+PlayerSystem::PlayerSystem(entt::registry &reg_, Application &app_) :
+    m_reg(reg_),
     m_animManager(*app_.getAnimationManager())
 {
     
@@ -159,9 +175,8 @@ PlayerSystem::PlayerSystem(ECS::Registry<Components> &reg_, Application &app_) :
 
 void PlayerSystem::setup()
 {
-    m_query.update();
-    m_query.revapply<ComponentTransform, ComponentPhysical, ComponentPlayerInput, ComponentAnimationRenderable, StateMachine>
-    ([&m_animManager = this->m_animManager](const auto &idx_, ComponentTransform &trans, ComponentPhysical &phys, ComponentPlayerInput &inp, ComponentAnimationRenderable &animrnd, StateMachine &sm)
+    auto view = m_reg.view<ComponentTransform, ComponentPhysical, ComponentPlayerInput, ComponentAnimationRenderable, StateMachine>();
+    view.each([&m_animManager = this->m_animManager](auto idx_, ComponentTransform &trans, ComponentPhysical &phys, ComponentPlayerInput &inp, ComponentAnimationRenderable &animrnd, StateMachine &sm)
     {
         animrnd.m_animations[m_animManager.getAnimID("Char1/idle")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/idle"), LOOPMETHOD::NOLOOP);
         animrnd.m_animations[m_animManager.getAnimID("Char1/run")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/run"), LOOPMETHOD::JUMP_LOOP);
@@ -300,20 +315,19 @@ void PlayerSystem::setup()
     });
 }
 
-void PlayerSystem::update(ECS::Registry<Components> &reg_)
+void PlayerSystem::update()
 {
-    m_query.update();
-    m_query.applyview([&reg_](const auto &idx_, auto view_){
-        auto &sm = view_.get<StateMachine>();
-        sm.update(view_, 0);
+    auto view = m_reg.view<ComponentTransform, StateMachine, ComponentDynamicCameraTarget>();
+    auto *ptr = &m_reg;
+    for (auto [entity, trans, sm, dtar] : view.each())
+    {
+        sm.update({ptr, entity}, 0);
         std::cout << sm << std::endl;
-    });
+    }
 }
 
-RenderSystem::RenderSystem(ECS::Registry<Components> &reg_, Application &app_, Camera &camera_) :
-    m_query{reg_.makeQuery<ComponentAnimationRenderable>()},
-    m_staticColliderQuery{reg_.makeQuery<ComponentStaticCollider>()},
-    m_staticTriggerQuery{reg_.makeQuery<ComponentTrigger>()},
+RenderSystem::RenderSystem(entt::registry &reg_, Application &app_, Camera &camera_) :
+    m_reg(reg_),
     m_renderer(*app_.getRenderer()),
     m_camera(camera_)
 {
@@ -321,34 +335,30 @@ RenderSystem::RenderSystem(ECS::Registry<Components> &reg_, Application &app_, C
 
 void RenderSystem::draw()
 {
-    m_query.update();
-    m_staticColliderQuery.update();
-    m_staticTriggerQuery.update();
+    auto viewColliders = m_reg.view<ComponentStaticCollider>();
+    auto viewTriggers = m_reg.view<ComponentTrigger>();
+    auto viewInstances = m_reg.view<ComponentTransform, ComponentAnimationRenderable>();
+    auto viewPhysical = m_reg.view<ComponentTransform, ComponentPhysical>();
 
-    auto distribute = [](RenderSystem *sys_, const ECS::EntityIndex &idx_, ECS::CheapEntityView<Components> view_){
+    for (auto [idx, scld] : viewColliders.each())
+    {
+        if (m_reg.all_of<ComponentObstacle>(idx))
+            drawObstacle(scld);
+        else
+            drawCollider(scld);
+    }
 
-        if (view_.contains<ComponentStaticCollider>() && !view_.contains<ComponentObstacle>())
-            RenderSystem::drawCollider(sys_, view_.get<ComponentStaticCollider>());
-        
-        if (view_.contains<ComponentStaticCollider, ComponentObstacle>())
-            RenderSystem::drawObstacle(sys_, view_.get<ComponentStaticCollider>());
+    for (auto [idx, trg] : viewTriggers.each())
+        drawTrigger(trg);
 
-        if (view_.contains<ComponentTrigger>())
-            RenderSystem::drawTrigger(sys_, view_.get<ComponentTrigger>());
+    for (auto [idx, trans, inst] : viewInstances.each())
+        drawInstance(trans, inst);
 
-        if (view_.contains<ComponentTransform, ComponentAnimationRenderable>())
-            RenderSystem::drawInstance(sys_, view_.get<ComponentTransform>(), view_.get<ComponentAnimationRenderable>());
-
-        if (view_.contains<ComponentTransform, ComponentPhysical>())
-            RenderSystem::drawCollider(sys_, view_.get<ComponentTransform>(), view_.get<ComponentPhysical>());
-    };
-
-    m_staticColliderQuery.applyview(distribute, this);
-    m_staticTriggerQuery.applyview(distribute, this);
-    m_query.applyview(distribute, this);
+    for (auto [idx, trans, phys] : viewPhysical.each())
+        drawCollider(trans, phys);
 }
 
-void RenderSystem::drawInstance(RenderSystem *rensys_, ComponentTransform &trans_, ComponentAnimationRenderable &ren_)
+void RenderSystem::drawInstance(ComponentTransform &trans_, ComponentAnimationRenderable &ren_)
 {
     if (ren_.m_currentAnimation != nullptr)
     {
@@ -370,80 +380,80 @@ void RenderSystem::drawInstance(RenderSystem *rensys_, ComponentTransform &trans
         auto spr = ren_.m_currentAnimation->getSprite();
         auto edge = ren_.m_currentAnimation->getBorderSprite();
 
-        rensys_->m_renderer.renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, rensys_->m_camera, 0.0f, flip);
+        m_renderer.renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, m_camera, 0.0f, flip);
     }
 }
 
-void RenderSystem::drawCollider(RenderSystem *ren_, ComponentTransform &trans_, ComponentPhysical &phys_)
+void RenderSystem::drawCollider(ComponentTransform &trans_, ComponentPhysical &phys_)
 {
     if (gamedata::debug::drawColliders)
     {
         auto pb = phys_.m_pushbox + trans_.m_pos;;
-        ren_->m_renderer.drawCollider(pb, {238, 195, 154, 50}, 100, ren_->m_camera);
+        m_renderer.drawCollider(pb, {238, 195, 154, 50}, 100, m_camera);
     }
 }
 
-void RenderSystem::drawCollider(RenderSystem *ren_, ComponentStaticCollider &cld_)
+void RenderSystem::drawCollider(ComponentStaticCollider &cld_)
 {
     if (gamedata::debug::drawColliders)
     {
-        ren_->m_renderer.drawCollider(cld_.m_collider, {255, 0, 0, 100}, 255, ren_->m_camera);
+        m_renderer.drawCollider(cld_.m_collider, {255, 0, 0, 100}, 255, m_camera);
     }
 }
 
-void RenderSystem::drawObstacle(RenderSystem *ren_, ComponentStaticCollider &cld_)
+void RenderSystem::drawObstacle(ComponentStaticCollider &cld_)
 {
     if (gamedata::debug::drawColliders)
     {
-        ren_->m_renderer.drawCollider(cld_.m_collider, {50, 50, 255, 100}, 255, ren_->m_camera);
+        m_renderer.drawCollider(cld_.m_collider, {50, 50, 255, 100}, 255, m_camera);
     }
 }
 
-void RenderSystem::drawTrigger(RenderSystem *ren_, ComponentTrigger &cld_)
+void RenderSystem::drawTrigger(ComponentTrigger &cld_)
 {
     if (gamedata::debug::drawColliders)
     {
-        ren_->m_renderer.drawCollider(cld_.m_trigger, {255, 50, 255, 50}, 100, ren_->m_camera);
+        m_renderer.drawCollider(cld_.m_trigger, {255, 50, 255, 50}, 100, m_camera);
     }
 }
 
-InputHandlingSystem::InputHandlingSystem(ECS::Registry<Components> &reg_) :
-    m_query{reg_.makeQuery<ComponentPlayerInput>()}
+InputHandlingSystem::InputHandlingSystem(entt::registry &reg_) :
+    m_reg(reg_)
 {
 }
 
 void InputHandlingSystem::update()
 {
-    m_query.update();
-    m_query.apply<ComponentPlayerInput>([](const auto &idx_, ComponentPlayerInput &inp_)
+    auto view = m_reg.view<ComponentPlayerInput>();
+    for (auto [idx, inp] : view.each())
     {
-        inp_.m_inputResolver->update();
-    });
+        inp.m_inputResolver->update();
+    };
 }
 
-PhysicsSystem::PhysicsSystem(ECS::Registry<Components> &reg_, Vector2<float> levelSize_) :
-    m_physicalQuery{reg_.makeQuery<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough>()},
-    m_staticColliderQuery{reg_.makeQuery<ComponentStaticCollider>()},
+PhysicsSystem::PhysicsSystem(entt::registry &reg_, Vector2<float> levelSize_) :
+    m_reg(reg_),
     m_levelSize(levelSize_)
 {
 }
 
 void PhysicsSystem::update()
 {
-    m_physicalQuery.update();
-    m_staticColliderQuery.update();
+    //m_physicalQuery{reg_.makeQuery<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough>()},
+    //m_staticColliderQuery{reg_.makeQuery<ComponentStaticCollider>()},
+    auto viewPhys = m_reg.view<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough>();
+    auto viewscld = m_reg.view<ComponentStaticCollider>();
 
-    auto distribute = [](PhysicsSystem *sys_, const ECS::EntityIndex &idx_, ECS::CheapEntityView<Components> view_){
-        if (view_.contains<StateMachine>())
-            sys_->proceedEntity(view_.get<ComponentTransform>(), view_.get<ComponentPhysical>(), view_.get<ComponentObstacleFallthrough>(), &view_.get<StateMachine>(), view_);
+    for (auto [idx, trans, phys, obsfall] : viewPhys.each())
+    {
+        if (m_reg.all_of<StateMachine>(idx))
+            proceedEntity(viewscld, idx, trans, phys, obsfall, &m_reg.get<StateMachine>(idx));
         else
-            sys_->proceedEntity(view_.get<ComponentTransform>(), view_.get<ComponentPhysical>(), view_.get<ComponentObstacleFallthrough>(), nullptr, view_);
-    };
-
-    m_physicalQuery.applyview(distribute, this);
+            proceedEntity(viewscld, idx, trans, phys, obsfall, nullptr);
+    }
 }
 
-void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, StateMachine *sm_, ECS::CheapEntityView<Components> &inst_)
+void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, StateMachine *sm_)
 {
     // Common stuff
     phys_.m_velocity += phys_.m_gravity;
@@ -638,11 +648,12 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
     };
 
     // Iteration over colliders depending on archetype
-    auto distrbObstacle = [](const auto &distrib_, const ECS::EntityIndex &idx_, ECS::CheapEntityView<Components> view_){
-        if (view_.contains<ComponentObstacle>())
-            distrib_(view_.get<ComponentStaticCollider>(), view_.get<ComponentObstacle>().m_obstacleId);
+    auto distrbObstacle = [&clds_, &reg = this->m_reg](auto idx, ComponentStaticCollider& cld_, auto &distrib_)
+    {
+        if (reg.all_of<ComponentObstacle>(idx))
+            distrib_(cld_, reg.get<ComponentObstacle>(idx).m_obstacleId);
         else
-            distrib_(view_.get<ComponentStaticCollider>(), 0);
+            distrib_(cld_, 0);
     };
 
     // X axis movement handling
@@ -654,12 +665,14 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
 
         if (offset.x > 0)
         {
-            m_staticColliderQuery.applyview(distrbObstacle, resolveRight);
+            for (auto [idx, cld] : clds_.each())
+                distrbObstacle(idx, cld, resolveRight);
         }
         // Moving to the left
         else if (offset.x < 0)
         {
-            m_staticColliderQuery.applyview(distrbObstacle, resolveLeft);
+            for (auto [idx, cld] : clds_.each())
+                distrbObstacle(idx, cld, resolveLeft);
         }
     }
 
@@ -671,7 +684,8 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
         // Falling / staying in place
         if (offset.y >= 0)
         {
-            m_staticColliderQuery.applyview(distrbObstacle, resolveFall);
+            for (auto [idx, cld] : clds_.each())
+                distrbObstacle(idx, cld, resolveFall);
         }
         // Rising
         else // TODO: fully reset upward velocity and inertia if hitting the ceiling far from the corner
@@ -682,7 +696,8 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
                 groundCollision = false;
             }
 
-            m_staticColliderQuery.applyview(distrbObstacle, resolveRise);
+            for (auto [idx, cld] : clds_.each())
+                distrbObstacle(idx, cld, resolveRise);
         }
     }
 
@@ -695,19 +710,19 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
 
         if (groundCollision)
         {
-            currentState->onTouchedGround(inst_);
+            currentState->onTouchedGround({&m_reg, idx_});
         }
         else
         {
-            if (!magnetEntity(trans_, phys_, obsFallthrough_))
-                currentState->onLostGround(inst_);
+            if (!magnetEntity(clds_, trans_, phys_, obsFallthrough_))
+                currentState->onLostGround({&m_reg, idx_});
         }
     }
 
     obsFallthrough_.m_isIgnoringObstacles.update();
 }
 
-bool PhysicsSystem::magnetEntity(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_)
+bool PhysicsSystem::magnetEntity(auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_)
 {
     if (phys_.m_magnetLimit <= 0.0f)
         return false;
@@ -715,7 +730,7 @@ bool PhysicsSystem::magnetEntity(ComponentTransform &trans_, ComponentPhysical &
     auto pb = phys_.m_pushbox + trans_.m_pos;
 
     float height = trans_.m_pos.y;
-    if ( getHighestVerticalMagnetCoord(pb, height, obsFallthrough_.m_ignoredObstacles, obsFallthrough_.m_isIgnoringObstacles.isActive()))
+    if ( getHighestVerticalMagnetCoord(clds_, pb, height, obsFallthrough_.m_ignoredObstacles, obsFallthrough_.m_isIgnoringObstacles.isActive()))
     {
         float magnetRange = height - trans_.m_pos.y;
         if (magnetRange <= phys_.m_magnetLimit)
@@ -729,7 +744,7 @@ bool PhysicsSystem::magnetEntity(ComponentTransform &trans_, ComponentPhysical &
     return false;
 }
 
-bool PhysicsSystem::getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_)
+bool PhysicsSystem::getHighestVerticalMagnetCoord(auto &clds_, const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_)
 {
     float baseCoord = coord_;
     float bot = cld_.getBottomEdge();
@@ -752,20 +767,19 @@ bool PhysicsSystem::getHighestVerticalMagnetCoord(const Collider &cld_, float &c
     };
 
     // Fall iteration over colliders depending on archetype
-    auto distrbObstacle = [&proceedCollider](const ECS::EntityIndex &idx_, ECS::CheapEntityView<Components> cld_)
+    auto distrbObstacle = [&proceedCollider, &reg = this->m_reg](auto idx, ComponentStaticCollider& cld_)
     {
-        auto &collider = cld_.get<ComponentStaticCollider>();
-        if (cld_.contains<ComponentObstacle>())
+        if (reg.all_of<ComponentObstacle>(idx))
         {
-            proceedCollider(collider.m_collider, cld_.get<ComponentObstacle>().m_obstacleId);
+            proceedCollider(cld_.m_collider, reg.get<ComponentObstacle>(idx).m_obstacleId);
         }
         else
         {
-            proceedCollider(collider.m_collider, 0);
+            proceedCollider(cld_.m_collider, 0);
         }
     };
 
-    m_staticColliderQuery.applyview(distrbObstacle);
+    clds_.each(distrbObstacle);
 
     return isFound;
 }
@@ -787,6 +801,7 @@ void PhysicsSystem::resetEntityObstacles(ComponentTransform &trans_, ComponentPh
 
 std::set<int> PhysicsSystem::getTouchedObstacles(const Collider &pb_)
 {
+    auto viewObstacles = m_reg.view<ComponentStaticCollider, ComponentObstacle>();
     std::set<int> obstacleIds;
     float dumped = 0.0f;
 
@@ -798,18 +813,58 @@ std::set<int> PhysicsSystem::getTouchedObstacles(const Collider &pb_)
         return !!(areaCld_.getFullCollisionWith(pb_, dumped) & utils::OverlapResult::BOTH_OOT);
     };
 
-    auto distrbObstacle = [&proceedObstacle, &obstacleIds](const ECS::EntityIndex &idx_, ECS::CheapEntityView<Components> cld_)
-    { 
-        if (cld_.contains<ComponentObstacle>())
-        {
-            auto &collider = cld_.get<ComponentStaticCollider>();
-            auto &obstacle = cld_.get<ComponentObstacle>();
-            if (proceedObstacle(collider.m_collider, obstacle.m_obstacleId))
-                obstacleIds.insert(obstacle.m_obstacleId);
-        }
-    };
-
-    m_staticColliderQuery.applyview(distrbObstacle);
+    for (auto [idx, cld, obst] : viewObstacles.each())
+    {
+        if (proceedObstacle(cld.m_collider, obst.m_obstacleId))
+            obstacleIds.insert(obst.m_obstacleId);
+    }
 
     return obstacleIds;
+}
+
+CameraSystem::CameraSystem(entt::registry &reg_, Camera &cam_) :
+    m_reg(reg_),
+    m_cam(cam_)
+{
+}
+
+void CameraSystem::update()
+{
+    //reg_.makeQuery<ComponentDynamicCameraTarget>()
+    Vector2<float> target;
+    auto view = m_reg.view<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>();
+    for (auto [idx_, trans_, phys_, tar_] : view.each())
+    {
+            if ((phys_.m_velocity + phys_.m_inertia) != Vector2{0.0f, 0.0f})
+            {
+                auto tarcamoffset = utils::limitVectorLength((phys_.m_velocity + phys_.m_inertia).mulComponents(Vector2{1.0f, 0.0f}) * 30, 100.0f);
+                auto deltaVec = tarcamoffset - tar_.m_offset;
+                auto dlen = deltaVec.getLen();
+                auto ddir = deltaVec.normalised();
+                float offsetLen = pow(dlen, 2.0f) / 400.0f;
+                offsetLen = utils::clamp(offsetLen, 0.0f, dlen);
+
+                tar_.m_offset += ddir * offsetLen;
+            }
+
+        target = trans_.m_pos - Vector2{0.0f, 60.0f} + tar_.m_offset;
+
+        break;
+    };
+
+    if (updateFocus())
+    {
+        //m_camera.smoothMoveTowards(m_currentCamFocusArea->getCameraTargetPosition(m_pc->getCameraFocusPoint()), {1.0f, 1.0f}, 0, 1.3f, 20.0f);
+        //m_cam.smoothScaleTowards(m_currentCamFocusArea->getScale());
+    }
+    else
+    {
+        m_cam.smoothMoveTowards(target, {1.0f, 0.5f}, 5.0f, 1.6f, 80.0f);
+        m_cam.smoothScaleTowards(gamedata::global::maxCameraScale);
+    }
+}
+
+bool CameraSystem::updateFocus()
+{
+    return false;
 }

@@ -1,26 +1,19 @@
 #ifndef STATE_MACHINE_H_
 #define STATE_MACHINE_H_
-#include "yaECS.hpp"
-#include "TypeManip.hpp"
 #include "Vector2.h"
 #include "StateMarker.hpp"
 #include "CoreComponents.h"
+#include <entt/entt.hpp>
+
+struct EntityAnywhere
+{
+    entt::registry *reg;
+    entt::entity idx;
+};
 
 using CharState = int;
 
 class GenericState;
-class StateMachine;
-
-using Components = TypeManip::TypeRegistry<>::Create
-    ::Add<ComponentTransform>
-    ::Add<ComponentPhysical>
-    ::Add<ComponentStaticCollider>
-    ::Add<ComponentObstacle>
-    ::Add<ComponentTrigger>
-    ::Add<ComponentObstacleFallthrough>
-    ::Add<ComponentAnimationRenderable>
-    ::Add<ComponentPlayerInput>
-    ::Add<StateMachine>;
 
 class StateMachine
 {
@@ -34,14 +27,14 @@ public:
     virtual GenericState *getRealCurrentState();
 
     void addState(std::unique_ptr<GenericState> &&state_);
-    void switchCurrentState(ECS::CheapEntityView<Components> &owner_, GenericState *state_);
-    bool attemptTransition(ECS::CheapEntityView<Components> &owner_, GenericState* until_);
+    void switchCurrentState(EntityAnywhere owner_, GenericState *state_);
+    bool attemptTransition(EntityAnywhere owner_, GenericState* until_);
 
-    virtual bool update(ECS::CheapEntityView<Components> &owner_, uint32_t currentFrame_);
+    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_);
     virtual std::string getName() const;
 
     template<typename PLAYER_STATE_T>
-    void switchCurrentState(ECS::CheapEntityView<Components> &owner_, PLAYER_STATE_T stateId_)
+    void switchCurrentState(EntityAnywhere owner_, PLAYER_STATE_T stateId_)
     {
         switchCurrentState(owner_, m_states[m_stateIds[static_cast<CharState>(stateId_)]].get());
     }
@@ -124,10 +117,10 @@ public:
     GenericState &setCooldown(FrameTimer<true> *cooldown_, int cooldownTime_);
     GenericState &setRecoveryFrames(TimelineProperty<StateMarker> &&recoveryFrames_);
 
-    virtual void enter(ECS::CheapEntityView<Components> &owner_, CharState from_);
-    virtual void leave(ECS::CheapEntityView<Components> &owner_, CharState to_);
-    virtual bool update(ECS::CheapEntityView<Components> &owner_, uint32_t currentFrame_);
-    virtual ORIENTATION isPossible(ECS::CheapEntityView<Components> &owner_) const;
+    virtual void enter(EntityAnywhere owner_, CharState from_);
+    virtual void leave(EntityAnywhere owner_, CharState to_);
+    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_);
+    virtual ORIENTATION isPossible(EntityAnywhere owner_) const;
     virtual std::string getName(uint32_t framesInState_) const;
 
     template<typename PLAYER_STATE_T>
@@ -136,9 +129,9 @@ public:
         return m_transitionableFrom[state_];
     }
 
-    virtual void onOutdated(ECS::CheapEntityView<Components> &owner_);
-    virtual void onTouchedGround(ECS::CheapEntityView<Components> &owner_);
-    virtual void onLostGround(ECS::CheapEntityView<Components> &owner_);
+    virtual void onOutdated(EntityAnywhere owner_);
+    virtual void onTouchedGround(EntityAnywhere owner_);
+    virtual void onLostGround(EntityAnywhere owner_);
 
     const CharState m_stateId;
 
@@ -197,7 +190,7 @@ public:
     {}
 
     virtual std::string getName(uint32_t framesInState_) const override;
-    virtual bool update(ECS::CheapEntityView<Components> &owner_, uint32_t currentFrame_) override;
+    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
     virtual GenericState *getRealCurrentState() override;
 };
 

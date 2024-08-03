@@ -123,5 +123,16 @@ struct ComponentPlayerInput
     std::unique_ptr<InputResolver> m_inputResolver;
 };
 
+struct ComponentDynamicCameraTarget
+{
+    ComponentDynamicCameraTarget() = default;
+
+    ComponentDynamicCameraTarget (const ComponentDynamicCameraTarget &rhs_) = delete;
+    ComponentDynamicCameraTarget (ComponentDynamicCameraTarget &&rhs_) = default;
+    ComponentDynamicCameraTarget &operator=(const ComponentDynamicCameraTarget &rhs_) = delete;
+    ComponentDynamicCameraTarget &operator=(ComponentDynamicCameraTarget &&rhs_) = default;
+
+    Vector2<float> m_offset;
+};
 
 #endif

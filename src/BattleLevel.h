@@ -13,7 +13,6 @@
 #include "DebugDataWidget.h"
 #include "DecorationBuilder.h"
 #include "PlayableCharacter.h"
-#include "yaECS.hpp"
 
 /* 
     TODO: porting:
@@ -26,63 +25,70 @@
 
 struct PlayerSystem
 {
-    PlayerSystem(ECS::Registry<Components> &reg_, Application &app_);
+    PlayerSystem(entt::registry &reg_, Application &app_);
 
     void setup();
-    void update(ECS::Registry<Components> &reg_);
+    void update();
 
-    ECS::Query<Components> m_query;
+    entt::registry &m_reg;
     AnimationManager &m_animManager;
+};
+
+struct CameraSystem
+{
+    CameraSystem(entt::registry &reg_, Camera &cam_);
+
+    void update();
+    bool updateFocus();
+
+    entt::registry &m_reg;
+    Camera &m_cam;
 };
 
 struct RenderSystem
 {
-    RenderSystem(ECS::Registry<Components> &reg_, Application &app_, Camera &camera_);
+    RenderSystem(entt::registry &reg_, Application &app_, Camera &camera_);
 
     void draw();
 
-    static void drawInstance(RenderSystem *rensys_, ComponentTransform &trans_, ComponentAnimationRenderable &ren_);
-    static void drawCollider(RenderSystem *ren_, ComponentTransform &trans_, ComponentPhysical &phys_);
-    static void drawCollider(RenderSystem *ren_, ComponentStaticCollider &cld_);
-    static void drawObstacle(RenderSystem *ren_, ComponentStaticCollider &cld_);
-    static void drawTrigger(RenderSystem *ren_, ComponentTrigger &cld_);
+    void drawInstance(ComponentTransform &trans_, ComponentAnimationRenderable &ren_);
+    void drawCollider(ComponentTransform &trans_, ComponentPhysical &phys_);
+    void drawCollider(ComponentStaticCollider &cld_);
+    void drawObstacle(ComponentStaticCollider &cld_);
+    void drawTrigger(ComponentTrigger &cld_);
 
-    ECS::Query<Components> m_query;
-    ECS::Query<Components> m_staticColliderQuery;
-    ECS::Query<Components> m_staticTriggerQuery;
 
+    entt::registry &m_reg;
     Renderer &m_renderer;
     Camera &m_camera;
 };
 
 struct PhysicsSystem
 {
-    PhysicsSystem(ECS::Registry<Components> &reg_, Vector2<float> levelSize_);
+    PhysicsSystem(entt::registry &reg_, Vector2<float> levelSize_);
 
     void update();
 
-    void proceedEntity(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, StateMachine *sm_, ECS::CheapEntityView<Components> &inst_);
+    void proceedEntity(auto &clds_, entt::entity idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, StateMachine *sm_);
     
-    bool magnetEntity(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_);
-    bool getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_);
+    bool magnetEntity(auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_);
+    bool getHighestVerticalMagnetCoord(auto &clds_, const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_);
 
     void resetEntityObstacles(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_);
     std::set<int> getTouchedObstacles(const Collider &pb_);
 
-    ECS::Query<Components> m_physicalQuery;
-    ECS::Query<Components> m_staticColliderQuery;
-
+    entt::registry &m_reg;
     Vector2<float> m_levelSize;
 };
 
 
 struct InputHandlingSystem
 {
-    InputHandlingSystem(ECS::Registry<Components> &reg_);
+    InputHandlingSystem(entt::registry &reg_);
 
     void update();
 
-    ECS::Query<Components> m_query;
+    entt::registry &m_reg;
 };
 
 class BattleLevel : public Level
@@ -108,11 +114,12 @@ protected:
     DecorLayers m_decor;
     Tileset m_tlmap;
 
-    ECS::Registry<Components> m_registry;
+    entt::registry m_registry;
     PlayerSystem m_playerSystem;
     RenderSystem m_rendersys;
     InputHandlingSystem m_inputsys;
     PhysicsSystem m_physsys;
+    CameraSystem m_camsys;
 };
 
 #endif

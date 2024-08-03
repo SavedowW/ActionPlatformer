@@ -8,6 +8,12 @@
 class CameraFocusArea : public Collider
 {
 public:
+    CameraFocusArea() = default;
+    CameraFocusArea(CameraFocusArea &&rhs_) = default;
+    CameraFocusArea &operator=(CameraFocusArea &&rhs_) = default;
+    CameraFocusArea(const CameraFocusArea &rhs_) = delete;
+    CameraFocusArea &operator=(const CameraFocusArea &rhs_) = delete;
+    
     CameraFocusArea(Vector2<float> center_, Vector2<float> size_, Renderer &renderer_);
     Vector2<float> getCameraTargetPosition(const Vector2<float> &playerFocusPosition_);
     bool checkIfEnters(const Collider &cld_, bool isOwned_) const;
@@ -18,7 +24,7 @@ public:
 private:
     CameraFocusArea(Vector2<float> center_, float scaledSizeX_, float scaledSizeY_, Renderer &renderer_);
     
-    Renderer &m_renderer;
+    Renderer *m_renderer;
     float m_scale;
 
     Vector2<float> m_minCameraPos;

@@ -12,7 +12,7 @@ void StateMachine::addState(std::unique_ptr<GenericState> &&state_)
     m_states.push_back(std::move(state_));
 }
 
-void StateMachine::switchCurrentState(ECS::CheapEntityView<Components> &owner_, GenericState *state_)
+void StateMachine::switchCurrentState(EntityAnywhere owner_, GenericState *state_)
 {
     m_currentState->leave(owner_, state_->m_stateId);
     state_->enter(owner_, m_currentState->m_stateId);
@@ -20,7 +20,7 @@ void StateMachine::switchCurrentState(ECS::CheapEntityView<Components> &owner_, 
     m_framesInState = 0;
 }
 
-bool StateMachine::update(ECS::CheapEntityView<Components> &owner_, uint32_t currentFrame_)
+bool StateMachine::update(EntityAnywhere owner_, uint32_t currentFrame_)
 {
     auto updres = m_currentState->update(owner_, m_framesInState);
     auto *untilst = (updres ? nullptr : m_currentState);
@@ -35,7 +35,7 @@ bool StateMachine::update(ECS::CheapEntityView<Components> &owner_, uint32_t cur
     return false;
 }
 
-bool StateMachine::attemptTransition(ECS::CheapEntityView<Components> &owner_, GenericState* until_)
+bool StateMachine::attemptTransition(EntityAnywhere owner_, GenericState* until_)
 {
     auto currentStateId = m_currentState->m_stateId;
     for (auto &el : m_states)
@@ -45,7 +45,7 @@ bool StateMachine::attemptTransition(ECS::CheapEntityView<Components> &owner_, G
             auto res = el->isPossible(owner_);
             if (res != ORIENTATION::UNSPECIFIED)
             {
-                auto &trans = owner_.get<ComponentTransform>();
+                auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
                 trans.m_orientation = res;
                 switchCurrentState(owner_, el.get());
                 return true;
@@ -164,12 +164,12 @@ GenericState &GenericState::setRecoveryFrames(TimelineProperty<StateMarker> &&re
     return *this;
 }
 
-void GenericState::enter(ECS::CheapEntityView<Components> &owner_, CharState from_)
+void GenericState::enter(EntityAnywhere owner_, CharState from_)
 {
     std::cout << "Switched to " << m_stateName << std::endl;
 
-    auto &renderable = owner_.get<ComponentAnimationRenderable>();
-    auto &physical = owner_.get<ComponentPhysical>();
+    auto &renderable = owner_.reg->get<ComponentAnimationRenderable>(owner_.idx);
+    auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
 
     // Handle animation
     if (m_uniqueTransitionAnims.contains(from_))
@@ -196,15 +196,15 @@ void GenericState::enter(ECS::CheapEntityView<Components> &owner_, CharState fro
     physical.m_magnetLimit = m_magnetLimit[0];
 }
 
-void GenericState::leave(ECS::CheapEntityView<Components> &owner_, CharState to_)
+void GenericState::leave(EntityAnywhere owner_, CharState to_)
 {
 }
 
-bool GenericState::update(ECS::CheapEntityView<Components> &owner_, uint32_t currentFrame_)
+bool GenericState::update(EntityAnywhere owner_, uint32_t currentFrame_)
 {
-    auto &transform = owner_.get<ComponentTransform>();
-    auto &physical = owner_.get<ComponentPhysical>();
-    auto &animrnd = owner_.get<ComponentAnimationRenderable>();
+    auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
+    auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
+    auto &animrnd = owner_.reg->get<ComponentAnimationRenderable>(owner_.idx);
 
     animrnd.m_currentAnimation->update();
 
@@ -240,9 +240,9 @@ bool GenericState::update(ECS::CheapEntityView<Components> &owner_, uint32_t cur
     return true;
 }
 
-ORIENTATION GenericState::isPossible(ECS::CheapEntityView<Components> &owner_) const
+ORIENTATION GenericState::isPossible(EntityAnywhere owner_) const
 {
-    return owner_.get<ComponentTransform>().m_orientation;
+    return owner_.reg->get<ComponentTransform>(owner_.idx).m_orientation;
 }
 
 std::string GenericState::getName(uint32_t framesInState_) const
@@ -250,12 +250,12 @@ std::string GenericState::getName(uint32_t framesInState_) const
     return m_stateName + " (" + std::to_string(framesInState_) + ")";
 }
 
-void GenericState::onOutdated(ECS::CheapEntityView<Components> &owner_)
+void GenericState::onOutdated(EntityAnywhere owner_)
 {
     m_parent->switchCurrentState(owner_, m_transitionOnOutdated);
 }
 
-void GenericState::onTouchedGround(ECS::CheapEntityView<Components> &owner_)
+void GenericState::onTouchedGround(EntityAnywhere owner_)
 {
     if (m_transitionOnLand.isSet())
     {
@@ -263,7 +263,7 @@ void GenericState::onTouchedGround(ECS::CheapEntityView<Components> &owner_)
     }
 }
 
-void GenericState::onLostGround(ECS::CheapEntityView<Components> &owner_)
+void GenericState::onLostGround(EntityAnywhere owner_)
 {
     if (m_transitionOnLostGround.isSet())
     {
@@ -276,7 +276,7 @@ std::string NodeState::getName(uint32_t framesInState_) const
     return std::string(GenericState::m_stateName) + " (" + std::to_string(framesInState_) + ") -> " + StateMachine::m_currentState->getName(StateMachine::m_framesInState);
 }
 
-bool NodeState::update(ECS::CheapEntityView<Components> &owner_, uint32_t currentFrame_)
+bool NodeState::update(EntityAnywhere owner_, uint32_t currentFrame_)
 {
     GenericState::update(owner_, currentFrame_);
     return StateMachine::update(owner_, currentFrame_);

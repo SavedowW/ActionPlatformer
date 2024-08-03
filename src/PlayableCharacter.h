@@ -2,7 +2,6 @@
 #define PLAYABLE_CHARACTER_H_
 #include "CoreComponents.h"
 #include "StateMachine.h"
-#include "yaECS.hpp"
 #include "InputComparators.h"
 #include <map>
 #include <string>
@@ -66,11 +65,11 @@ public:
     {
     }
 
-    inline virtual void enter(ECS::CheapEntityView<Components> &owner_, CharState from_) override
+    inline virtual void enter(EntityAnywhere owner_, CharState from_) override
     {
         GenericState::enter(owner_, from_);
 
-        auto &transform = owner_.get<ComponentTransform>();
+        auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
 
         /* TODO: realign for input direction
         if (m_realignOnSwitchForInput)
@@ -84,12 +83,12 @@ public:
         */
     }
 
-    inline virtual bool update(ECS::CheapEntityView<Components> &owner_, uint32_t currentFrame_)
+    inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_)
     {
         auto res = GenericState::update(owner_, currentFrame_);
 
-        auto &compInput = owner_.get<ComponentPlayerInput>();
-        auto &compFallthrough = owner_.get<ComponentObstacleFallthrough>();
+        auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
+        auto &compFallthrough = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
         if (compInput.m_inputResolver->getInputQueue()[0].m_inputs.at(INPUT_BUTTON::DOWN) == INPUT_BUTTON_STATE::PRESSED)
             compFallthrough.setIgnoringObstacles();
 
@@ -99,8 +98,8 @@ public:
         if (!ATTEMPT_PROCEED)
             return true;
 
-        auto &transform = owner_.get<ComponentTransform>();
-        auto &physical = owner_.get<ComponentPhysical>();
+        auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
+        auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
 
         auto orientation = transform.m_orientation;
         const auto &inq = compInput.m_inputResolver->getInputQueue();
@@ -118,14 +117,14 @@ public:
 
     }
 
-    inline virtual ORIENTATION isPossible(ECS::CheapEntityView<Components> &owner_) const override
+    inline virtual ORIENTATION isPossible(EntityAnywhere owner_) const override
     {
         if (GenericState::isPossible(owner_) == ORIENTATION::UNSPECIFIED)
             return ORIENTATION::UNSPECIFIED;
 
-        auto &transform = owner_.get<ComponentTransform>();
-        auto &physical = owner_.get<ComponentPhysical>();
-        auto &compInput = owner_.get<ComponentPlayerInput>();
+        auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
+        auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
+        auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
 
         auto orientation = transform.m_orientation;
         const auto &inq = compInput.m_inputResolver->getInputQueue();
@@ -182,23 +181,23 @@ public:
     {
     }
 
-    inline virtual void enter(ECS::CheapEntityView<Components> &owner_, CharState from_) override
+    inline virtual void enter(EntityAnywhere owner_, CharState from_) override
     {
         ParentAction::enter(owner_, from_);
 
-        auto &fallthrough = owner_.get<ComponentObstacleFallthrough>();
-        auto &phys = owner_.get<ComponentPhysical>();
+        auto &fallthrough = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
+        auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
         if (fallthrough.isIgnoringAllObstacles() && abs(phys.m_velocity.x) > 0.8f)
             phys.m_velocity.y += 5.0f;
     }
 
-    inline virtual bool update(ECS::CheapEntityView<Components> &owner_, uint32_t currentFrame_) override
+    inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
     {
         auto res = ParentAction::update(owner_, currentFrame_);
 
-        const auto &inq = owner_.get<ComponentPlayerInput>().m_inputResolver->getInputQueue();
-        auto &phys = owner_.get<ComponentPhysical>();
-        auto &trans = owner_.get<ComponentTransform>();
+        const auto &inq = owner_.reg->get<ComponentPlayerInput>(owner_.idx).m_inputResolver->getInputQueue();
+        auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
+        auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
 
         if (m_driftLeftInput(inq, 0))
         {
