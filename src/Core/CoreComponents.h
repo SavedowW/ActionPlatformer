@@ -75,7 +75,6 @@ struct ComponentTrigger
     Trigger m_trigger;
 };
 
-
 struct ComponentObstacleFallthrough
 {
     ComponentObstacleFallthrough() = default;

@@ -16,11 +16,8 @@
 
 /* 
     TODO: porting:
-    Camera system (track player, handle focus areas)
-    Camera focus areas
     Rest of the states
     Triggers, wall clinging
-    Custom float state (speed up after forcing falling, air drift)
 */
 
 struct PlayerSystem
@@ -39,10 +36,12 @@ struct CameraSystem
     CameraSystem(entt::registry &reg_, Camera &cam_);
 
     void update();
-    bool updateFocus();
+    bool updateFocus(const Collider &playerPb_);
 
     entt::registry &m_reg;
+    entt::entity m_playerId;
     Camera &m_cam;
+    std::optional<entt::entity> m_currentFocusArea;
 };
 
 struct RenderSystem
@@ -56,6 +55,7 @@ struct RenderSystem
     void drawCollider(ComponentStaticCollider &cld_);
     void drawObstacle(ComponentStaticCollider &cld_);
     void drawTrigger(ComponentTrigger &cld_);
+    void drawFocusArea(CameraFocusArea &cfa_);
 
 
     entt::registry &m_reg;
@@ -102,8 +102,6 @@ public:
 protected:
     void update() override;
     void draw() override;
-
-    bool updateFocus();
 
     HUD m_hud;
     Camera m_camera;

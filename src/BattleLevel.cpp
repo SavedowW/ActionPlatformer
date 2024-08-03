@@ -42,6 +42,8 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_registry.emplace<ComponentDynamicCameraTarget>(playerId);
     m_registry.emplace<StateMachine>(playerId);
 
+    m_camsys.m_playerId = playerId;
+
     m_tlmap.load("Tiles/Tilemap-sheet");
 
     DecorationBuilder bld(*application_);
@@ -100,14 +102,17 @@ void BattleLevel::enter()
 
     addCollider(m_registry, getColliderForTileRange(Vector2{1, 19}, Vector2{1, 1}, 0));
 
-    m_camFocusAreas.emplace_back(getTilePos(Vector2{43, 16}), gamedata::global::tileSize.mulComponents(Vector2{40.0f, 32.0f}), *m_application->getRenderer());
-    m_camFocusAreas.back().overrideFocusArea({getTilePos(Vector2{42.5f, 15.0f}), gamedata::global::tileSize.mulComponents(Vector2{7.0f, 30.0f}) / 2.0f});
+   auto newfocus = m_registry.create();
+   m_registry.emplace<CameraFocusArea>(newfocus, getTilePos(Vector2{43, 16}), gamedata::global::tileSize.mulComponents(Vector2{40.0f, 32.0f}), *m_application->getRenderer());
+   m_registry.get<CameraFocusArea>(newfocus).overrideFocusArea({getTilePos(Vector2{42.5f, 15.0f}), gamedata::global::tileSize.mulComponents(Vector2{7.0f, 30.0f}) / 2.0f});
 
-    m_camFocusAreas.emplace_back(getTilePos(Vector2{58, 16}), gamedata::global::tileSize.mulComponents(Vector2{40.0f, 32.0f}), *m_application->getRenderer());
-    m_camFocusAreas.back().overrideFocusArea({getTilePos(Vector2{58.0f, 15.0f}), gamedata::global::tileSize.mulComponents(Vector2{24.0f, 30.0f}) / 2.0f});
+   newfocus = m_registry.create();
+   m_registry.emplace<CameraFocusArea>(newfocus, getTilePos(Vector2{58, 16}), gamedata::global::tileSize.mulComponents(Vector2{40.0f, 32.0f}), *m_application->getRenderer());
+   m_registry.get<CameraFocusArea>(newfocus).overrideFocusArea({getTilePos(Vector2{58.0f, 15.0f}), gamedata::global::tileSize.mulComponents(Vector2{24.0f, 30.0f}) / 2.0f});
 
-    m_camFocusAreas.emplace_back(getTilePos(Vector2{76, 16}), gamedata::global::tileSize.mulComponents(Vector2{40.0f, 32.0f}), *m_application->getRenderer());
-    m_camFocusAreas.back().overrideFocusArea({getTilePos(Vector2{80.25f, 15.0f}), gamedata::global::tileSize.mulComponents(Vector2{20.5f, 30.0f}) / 2.0f});
+   newfocus = m_registry.create();
+   m_registry.emplace<CameraFocusArea>(newfocus, getTilePos(Vector2{76, 16}), gamedata::global::tileSize.mulComponents(Vector2{40.0f, 32.0f}), *m_application->getRenderer());
+   m_registry.get<CameraFocusArea>(newfocus).overrideFocusArea({getTilePos(Vector2{80.25f, 15.0f}), gamedata::global::tileSize.mulComponents(Vector2{20.5f, 30.0f}) / 2.0f});
 }
 
 void BattleLevel::update()
@@ -131,39 +136,10 @@ void BattleLevel::draw()
 
     m_rendersys.draw();
 
-    if (gamedata::debug::drawFocusAreas)
-    {
-        for (auto &cfa : m_camFocusAreas)
-            cfa.draw(m_camera);
-    }
-
     renderer.switchToHUD({0, 0, 0, 0});
     m_hud.draw(renderer, m_camera);
 
     renderer.updateScreen(m_camera);
-}
-
-bool BattleLevel::updateFocus()
-{
-    /*auto pb = m_pc->getComponent<ComponentPhysical>().getPushbox();
-    if (m_currentCamFocusArea)
-    {
-        if (m_currentCamFocusArea->checkIfEnters(pb, true))
-            return true;
-        else
-            m_currentCamFocusArea = nullptr;
-    }
-
-    for (auto &cfa: m_camFocusAreas)
-    {
-        if (cfa.checkIfEnters(pb, false))
-        {
-            m_currentCamFocusArea = &cfa;
-            return true;
-        }
-    }*/
-
-    return false;
 }
 
 PlayerSystem::PlayerSystem(entt::registry &reg_, Application &app_) :
@@ -339,6 +315,7 @@ void RenderSystem::draw()
     auto viewTriggers = m_reg.view<ComponentTrigger>();
     auto viewInstances = m_reg.view<ComponentTransform, ComponentAnimationRenderable>();
     auto viewPhysical = m_reg.view<ComponentTransform, ComponentPhysical>();
+    auto viewFocuses = m_reg.view<CameraFocusArea>();
 
     for (auto [idx, scld] : viewColliders.each())
     {
@@ -356,6 +333,9 @@ void RenderSystem::draw()
 
     for (auto [idx, trans, phys] : viewPhysical.each())
         drawCollider(trans, phys);
+
+    for (auto [idx, area] : viewFocuses.each())
+        drawFocusArea(area);
 }
 
 void RenderSystem::drawInstance(ComponentTransform &trans_, ComponentAnimationRenderable &ren_)
@@ -415,6 +395,11 @@ void RenderSystem::drawTrigger(ComponentTrigger &cld_)
     {
         m_renderer.drawCollider(cld_.m_trigger, {255, 50, 255, 50}, 100, m_camera);
     }
+}
+
+void RenderSystem::drawFocusArea(CameraFocusArea &cfa_)
+{
+    cfa_.draw(m_camera);
 }
 
 InputHandlingSystem::InputHandlingSystem(entt::registry &reg_) :
@@ -830,32 +815,27 @@ CameraSystem::CameraSystem(entt::registry &reg_, Camera &cam_) :
 
 void CameraSystem::update()
 {
-    //reg_.makeQuery<ComponentDynamicCameraTarget>()
     Vector2<float> target;
-    auto view = m_reg.view<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>();
-    for (auto [idx_, trans_, phys_, tar_] : view.each())
+    auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(m_playerId);
+    if ((phys.m_velocity + phys.m_inertia) != Vector2{0.0f, 0.0f})
     {
-            if ((phys_.m_velocity + phys_.m_inertia) != Vector2{0.0f, 0.0f})
-            {
-                auto tarcamoffset = utils::limitVectorLength((phys_.m_velocity + phys_.m_inertia).mulComponents(Vector2{1.0f, 0.0f}) * 30, 100.0f);
-                auto deltaVec = tarcamoffset - tar_.m_offset;
-                auto dlen = deltaVec.getLen();
-                auto ddir = deltaVec.normalised();
-                float offsetLen = pow(dlen, 2.0f) / 400.0f;
-                offsetLen = utils::clamp(offsetLen, 0.0f, dlen);
+        auto tarcamoffset = utils::limitVectorLength((phys.m_velocity + phys.m_inertia).mulComponents(Vector2{1.0f, 0.0f}) * 30, 100.0f);
+        auto deltaVec = tarcamoffset - dtar.m_offset;
+        auto dlen = deltaVec.getLen();
+        auto ddir = deltaVec.normalised();
+        float offsetLen = pow(dlen, 2.0f) / 400.0f;
+        offsetLen = utils::clamp(offsetLen, 0.0f, dlen);
 
-                tar_.m_offset += ddir * offsetLen;
-            }
+        dtar.m_offset += ddir * offsetLen;
+    }
 
-        target = trans_.m_pos - Vector2{0.0f, 60.0f} + tar_.m_offset;
+    target = trans.m_pos - Vector2{0.0f, 60.0f} + dtar.m_offset;
 
-        break;
-    };
-
-    if (updateFocus())
+    if (updateFocus(phys.m_pushbox + trans.m_pos))
     {
-        //m_camera.smoothMoveTowards(m_currentCamFocusArea->getCameraTargetPosition(m_pc->getCameraFocusPoint()), {1.0f, 1.0f}, 0, 1.3f, 20.0f);
-        //m_cam.smoothScaleTowards(m_currentCamFocusArea->getScale());
+        auto &area = m_reg.get<CameraFocusArea>(*m_currentFocusArea);
+        m_cam.smoothMoveTowards(area.getCameraTargetPosition(target), {1.0f, 1.0f}, 0, 1.3f, 20.0f);
+        m_cam.smoothScaleTowards(area.getScale());
     }
     else
     {
@@ -864,7 +844,27 @@ void CameraSystem::update()
     }
 }
 
-bool CameraSystem::updateFocus()
+bool CameraSystem::updateFocus(const Collider &playerPb_)
 {
+    if (m_currentFocusArea)
+    {
+        auto &area = m_reg.get<CameraFocusArea>(*m_currentFocusArea);
+        if (area.checkIfEnters(playerPb_, true))
+            return true;
+        else
+            m_currentFocusArea.reset();
+    }
+
+    auto areas = m_reg.view<CameraFocusArea>();
+
+    for (auto [idx, area]: areas.each())
+    {
+        if (area.checkIfEnters(playerPb_, false))
+        {
+            m_currentFocusArea = idx;
+            return true;
+        }
+    }
+
     return false;
 }
