@@ -173,4 +173,69 @@ protected:
     bool m_realignOnSwitchForInput = false;
 };
 
+
+class PlayerActionFloat: public PlayerState<false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>
+{
+public:
+    PlayerActionFloat(int anim_, StateMarker transitionableFrom_) :
+        PlayerState<false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>(CharacterState::FLOAT, std::move(transitionableFrom_), anim_)
+    {
+    }
+
+    inline virtual void enter(ECS::CheapEntityView<Components> &owner_, CharState from_) override
+    {
+        ParentAction::enter(owner_, from_);
+
+        auto &fallthrough = owner_.get<ComponentObstacleFallthrough>();
+        auto &phys = owner_.get<ComponentPhysical>();
+        if (fallthrough.isIgnoringAllObstacles() && abs(phys.m_velocity.x) > 0.8f)
+            phys.m_velocity.y += 5.0f;
+    }
+
+    inline virtual bool update(ECS::CheapEntityView<Components> &owner_, uint32_t currentFrame_) override
+    {
+        auto res = ParentAction::update(owner_, currentFrame_);
+
+        const auto &inq = owner_.get<ComponentPlayerInput>().m_inputResolver->getInputQueue();
+        auto &phys = owner_.get<ComponentPhysical>();
+        auto &trans = owner_.get<ComponentTransform>();
+
+        if (m_driftLeftInput(inq, 0))
+        {
+            if (phys.m_velocity.x > -4.0f)
+                phys.m_velocity.x -= 0.15f;
+        }
+
+        if (m_driftRightInput(inq, 0))
+        {
+            if (phys.m_velocity.x < 4.0f)
+                phys.m_velocity.x += 0.15f;
+        }
+
+        if (phys.m_velocity.y < 0 && m_driftUpInput(inq, 0))
+        {
+            if (m_parent->m_framesInState < 10.0f)
+                phys.m_velocity.y -= 0.4f;
+        }
+
+        auto total = phys.m_velocity.x + phys.m_inertia.x;
+        if (total > 0)
+            trans.m_orientation = ORIENTATION::RIGHT;
+        else if (total < 0)
+            trans.m_orientation = ORIENTATION::LEFT;
+
+        if (phys.m_velocity.y + phys.m_inertia.y > 0)
+            phys.m_gravity *= 1.3f;
+
+        return res;
+    }
+
+protected:
+    using ParentAction = PlayerState<false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>;
+    InputComparatorHoldLeft m_driftLeftInput;
+    InputComparatorHoldRight m_driftRightInput;
+    InputComparatorHoldUp m_driftUpInput;
+
+};
+
 #endif

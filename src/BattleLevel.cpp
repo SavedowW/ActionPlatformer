@@ -287,8 +287,8 @@ void PlayerSystem::setup()
         ));
 
         sm.addState(std::unique_ptr<GenericState>(
-            &(new PlayerState<false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>(
-                CharacterState::FLOAT, {CharacterState::NONE, {}}, m_animManager.getAnimID("Char1/float")))
+            &(new PlayerActionFloat(
+                m_animManager.getAnimID("Char1/float"), {CharacterState::NONE, {}}))
             ->setGroundedOnSwitch(false)
             .setTransitionOnTouchedGround(CharacterState::IDLE)
             .setGravity({{0.0f, 0.5f}})
@@ -333,7 +333,7 @@ void RenderSystem::draw()
         if (view_.contains<ComponentStaticCollider, ComponentObstacle>())
             RenderSystem::drawObstacle(sys_, view_.get<ComponentStaticCollider>());
 
-        if (view_.contains<ComponentStaticCollider, ComponentTrigger>())
+        if (view_.contains<ComponentTrigger>())
             RenderSystem::drawTrigger(sys_, view_.get<ComponentTrigger>());
 
         if (view_.contains<ComponentTransform, ComponentAnimationRenderable>())

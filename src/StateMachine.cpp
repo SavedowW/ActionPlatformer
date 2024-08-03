@@ -22,37 +22,38 @@ void StateMachine::switchCurrentState(ECS::CheapEntityView<Components> &owner_, 
 
 bool StateMachine::update(ECS::CheapEntityView<Components> &owner_, uint32_t currentFrame_)
 {
-    if (m_currentState->update(owner_, m_framesInState))
+    auto updres = m_currentState->update(owner_, m_framesInState);
+    auto *untilst = (updres ? nullptr : m_currentState);
+
+    if (!attemptTransition(owner_, untilst))
     {
-        if (!attemptTransition(owner_))
-        {
-            m_framesInState++;
-        }
-        else
-            return true;
+        m_framesInState++;
     }
     else
-        m_framesInState++;
+        return true;
 
     return false;
 }
 
-bool StateMachine::attemptTransition(ECS::CheapEntityView<Components> &owner_)
+bool StateMachine::attemptTransition(ECS::CheapEntityView<Components> &owner_, GenericState* until_)
 {
     auto currentStateId = m_currentState->m_stateId;
-    auto &trans = owner_.get<ComponentTransform>();
     for (auto &el : m_states)
     {
-        if (!el->transitionableFrom(currentStateId))
-            continue;
-
-        auto res = el->isPossible(owner_);
-        if (res != ORIENTATION::UNSPECIFIED)
+        if (el->transitionableFrom(currentStateId))
         {
-            trans.m_orientation = res;
-            switchCurrentState(owner_, el.get());
-            return true;
+            auto res = el->isPossible(owner_);
+            if (res != ORIENTATION::UNSPECIFIED)
+            {
+                auto &trans = owner_.get<ComponentTransform>();
+                trans.m_orientation = res;
+                switchCurrentState(owner_, el.get());
+                return true;
+            }
         }
+
+        if (el.get() == until_)
+            return false;
     }
 
     return false;

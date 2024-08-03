@@ -35,7 +35,7 @@ public:
 
     void addState(std::unique_ptr<GenericState> &&state_);
     void switchCurrentState(ECS::CheapEntityView<Components> &owner_, GenericState *state_);
-    bool attemptTransition(ECS::CheapEntityView<Components> &owner_);
+    bool attemptTransition(ECS::CheapEntityView<Components> &owner_, GenericState* until_);
 
     virtual bool update(ECS::CheapEntityView<Components> &owner_, uint32_t currentFrame_);
     virtual std::string getName() const;
