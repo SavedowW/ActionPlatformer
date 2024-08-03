@@ -112,6 +112,7 @@ struct ComponentAnimationRenderable
 
 struct ComponentPlayerInput
 {
+    ComponentPlayerInput() = default;
     ComponentPlayerInput(std::unique_ptr<InputResolver> &&inputResolver_);
 
     ComponentPlayerInput (const ComponentPlayerInput &rhs_) = delete;

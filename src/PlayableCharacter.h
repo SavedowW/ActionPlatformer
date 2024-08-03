@@ -1,13 +1,11 @@
 #ifndef PLAYABLE_CHARACTER_H_
 #define PLAYABLE_CHARACTER_H_
 #include "CoreComponents.h"
-#include "StateMachine.hpp"
+#include "StateMachine.h"
 #include "yaECS.hpp"
 #include "InputComparators.h"
 #include <map>
 #include <string>
-
-using ArchPlayer = ECS::EntityData<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, ComponentAnimationRenderable, ComponentPlayerInput>;
 
 enum class CharacterState {
     IDLE,
@@ -60,19 +58,19 @@ inline ORIENTATION attemptInput(const InputComparator &cmpL_, const InputCompara
 template<bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN,
     typename CMP_LEFT, typename CMP_RIGHT,
     bool ATTEMPT_PROCEED, typename CMP_PROCEED_LEFT, typename CMP_PROCEED_RIGHT>
-class PlayerState : public GenericState<ArchPlayer::MakeRef, CharacterState>
+class PlayerState : public GenericState
 {
 public:
-    PlayerState(CharacterState actionState_, StateMarker<CharacterState> &&transitionableFrom_, int anim_) :
-        GenericState<ArchPlayer::MakeRef, CharacterState>(actionState_, CharacterStateNames.at(actionState_), std::move(transitionableFrom_), anim_)
+    PlayerState(CharacterState actionState_, StateMarker &&transitionableFrom_, int anim_) :
+        GenericState(actionState_, CharacterStateNames.at(actionState_), std::move(transitionableFrom_), anim_)
     {
     }
 
-    inline virtual void enter(ArchPlayer::MakeRef &owner_, CharacterState from_) override
+    inline virtual void enter(ECS::CheapEntityView<Components> &owner_, CharState from_) override
     {
-        ParentClass::enter(owner_, from_);
+        GenericState::enter(owner_, from_);
 
-        auto &transform = std::get<ComponentTransform&>(owner_);
+        auto &transform = owner_.get<ComponentTransform>();
 
         /* TODO: realign for input direction
         if (m_realignOnSwitchForInput)
@@ -86,12 +84,12 @@ public:
         */
     }
 
-    inline virtual bool update(ArchPlayer::MakeRef &owner_, uint32_t currentFrame_)
+    inline virtual bool update(ECS::CheapEntityView<Components> &owner_, uint32_t currentFrame_)
     {
-        auto res = ParentClass::update(owner_, currentFrame_);
+        auto res = GenericState::update(owner_, currentFrame_);
 
-        auto &compInput = std::get<ComponentPlayerInput&>(owner_);
-        auto &compFallthrough = std::get<ComponentObstacleFallthrough&>(owner_);
+        auto &compInput = owner_.get<ComponentPlayerInput>();
+        auto &compFallthrough = owner_.get<ComponentObstacleFallthrough>();
         if (compInput.m_inputResolver->getInputQueue()[0].m_inputs.at(INPUT_BUTTON::DOWN) == INPUT_BUTTON_STATE::PRESSED)
             compFallthrough.setIgnoringObstacles();
 
@@ -101,8 +99,8 @@ public:
         if (!ATTEMPT_PROCEED)
             return true;
 
-        auto &transform = std::get<ComponentTransform&>(owner_);
-        auto &physical = std::get<ComponentPhysical&>(owner_);
+        auto &transform = owner_.get<ComponentTransform>();
+        auto &physical = owner_.get<ComponentPhysical>();
 
         auto orientation = transform.m_orientation;
         const auto &inq = compInput.m_inputResolver->getInputQueue();
@@ -120,18 +118,18 @@ public:
 
     }
 
-    inline virtual ORIENTATION isPossible(ArchPlayer::MakeRef &owner_) const override
+    inline virtual ORIENTATION isPossible(ECS::CheapEntityView<Components> &owner_) const override
     {
-        if (ParentClass::isPossible(owner_) == ORIENTATION::UNSPECIFIED)
+        if (GenericState::isPossible(owner_) == ORIENTATION::UNSPECIFIED)
             return ORIENTATION::UNSPECIFIED;
 
-        auto &transform = std::get<ComponentTransform&>(owner_);
-        auto &physical = std::get<ComponentPhysical&>(owner_);
-        auto &compInput = std::get<ComponentPlayerInput&>(owner_);
+        auto &transform = owner_.get<ComponentTransform>();
+        auto &physical = owner_.get<ComponentPhysical>();
+        auto &compInput = owner_.get<ComponentPlayerInput>();
 
         auto orientation = transform.m_orientation;
         const auto &inq = compInput.m_inputResolver->getInputQueue();
-        auto currentState = ParentClass::m_parent->m_currentState;
+        auto currentState = GenericState::m_parent->m_currentState;
 
         ORIENTATION SlopeDir = ORIENTATION::UNSPECIFIED;
         if (physical.m_onSlopeWithAngle > 0)
@@ -165,7 +163,6 @@ public:
     }
 
 protected:
-    using ParentClass = GenericState<ArchPlayer::MakeRef, CharacterState>;
     const Collider m_hurtbox;
     CMP_LEFT m_cmpLeft;
     CMP_RIGHT m_cmpRight;

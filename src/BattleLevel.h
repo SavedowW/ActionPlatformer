@@ -15,15 +15,6 @@
 #include "PlayableCharacter.h"
 #include "yaECS.hpp"
 
-//using ArchMob = ECS::EntityData<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, ComponentAnimationRenderable>;
-
-// Make an archetype list for example
-using MyReg = ECS::ArchList<>
-    ::addTypelist<ArchPlayer::WithSM<CharacterState>>
-    ::add<ComponentStaticCollider> // Expected to be unchanged (no entities removed, added or switched positions)
-    ::add<ComponentStaticCollider, ComponentObstacle> // Expected to be unchanged (no entities removed, added or switched positions)
-    ::add<ComponentTrigger>; // Expected to be unchanged (no entities removed, added or switched positions)
-
 /* 
     TODO: porting:
     Camera system (track player, handle focus areas)
@@ -35,88 +26,30 @@ using MyReg = ECS::ArchList<>
 
 struct PlayerSystem
 {
-    PlayerSystem(ECS::Registry<MyReg> &reg_, Application &app_);
+    PlayerSystem(ECS::Registry<Components> &reg_, Application &app_);
 
     void setup();
+    void update(ECS::Registry<Components> &reg_);
 
-    void update();
-
-    template<typename T>
-    void updateArch(T &arch_)
-    {
-        auto &smcs = arch_.template get<StateMachine<ArchPlayer::MakeRef, CharacterState>>();
-        for (int i = 0; i < arch_.size(); ++i)
-        {
-            auto inst = arch_.template getEntity<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, ComponentAnimationRenderable, ComponentPlayerInput>(i);
-            auto &smc = smcs[i];
-            smc.update(inst, 0);
-        }
-    }
-
-    using PlayerQuery = std::invoke_result_t<decltype(&ECS::Registry<MyReg>::getQueryTl<
-    ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, ComponentAnimationRenderable, ComponentPlayerInput, 
-    StateMachine<ArchPlayer::MakeRef, CharacterState>>), 
-    ECS::Registry<MyReg>, ArchPlayer::WithSM<CharacterState>>;
-
-    PlayerQuery m_query;
+    ECS::Query<Components> m_query;
     AnimationManager &m_animManager;
 };
 
 struct RenderSystem
 {
-    RenderSystem(ECS::Registry<MyReg> &reg_, Application &app_, Camera &camera_);
+    RenderSystem(ECS::Registry<Components> &reg_, Application &app_, Camera &camera_);
 
     void draw();
 
-    template<typename T>
-    void drawArch(T &arch_)
-    {
-        for (int i = 0; i < arch_.size(); ++i)
-        {
-            auto inst = arch_.getEntity(i);
+    static void drawInstance(RenderSystem *rensys_, ComponentTransform &trans_, ComponentAnimationRenderable &ren_);
+    static void drawCollider(RenderSystem *ren_, ComponentTransform &trans_, ComponentPhysical &phys_);
+    static void drawCollider(RenderSystem *ren_, ComponentStaticCollider &cld_);
+    static void drawObstacle(RenderSystem *ren_, ComponentStaticCollider &cld_);
+    static void drawTrigger(RenderSystem *ren_, ComponentTrigger &cld_);
 
-            if constexpr (T::template containsOne<ComponentStaticCollider>() && !T::template containsOne<ComponentObstacle>())
-            {
-                drawCollider(std::get<ComponentStaticCollider&>(inst));
-            }
-
-            if constexpr (T::template containsOne<ComponentStaticCollider>() && T::template containsOne<ComponentObstacle>())
-            {
-                drawObstacle(std::get<ComponentStaticCollider&>(inst));
-            }
-
-            if constexpr (T::template containsOne<ComponentTrigger>())
-            {
-                drawTrigger(std::get<ComponentTrigger&>(inst));
-            }
-
-            if constexpr (T::template containsOne<ComponentTransform>() && T::template containsOne<ComponentAnimationRenderable>())
-            {
-                drawInstance(std::get<ComponentTransform&>(inst), std::get<ComponentAnimationRenderable&>(inst));
-            }
-
-            if constexpr (T::template containsOne<ComponentPhysical>())
-            {
-                drawCollider(std::get<ComponentTransform&>(inst), std::get<ComponentPhysical&>(inst));
-            }
-        }
-    }
-
-    void drawInstance(ComponentTransform &trans_, ComponentAnimationRenderable &ren_);
-    void drawCollider(ComponentTransform &trans_, ComponentPhysical &phys_);
-    void drawCollider(ComponentStaticCollider &cld_);
-    void drawObstacle(ComponentStaticCollider &cld_);
-    void drawTrigger(ComponentTrigger &cld_);
-
-    using PlayerQuery = std::invoke_result_t<decltype(&ECS::Registry<MyReg>::getQuery<ComponentAnimationRenderable>), 
-    ECS::Registry<MyReg>>;
-    PlayerQuery m_query;
-
-    using StaticColliderQuery = std::invoke_result_t<decltype(&ECS::Registry<MyReg>::getQuery<ComponentStaticCollider>), ECS::Registry<MyReg>>;
-    StaticColliderQuery m_staticColliderQuery;
-
-    using StaticTriggerQuery = std::invoke_result_t<decltype(&ECS::Registry<MyReg>::getQuery<ComponentTrigger>), ECS::Registry<MyReg>>;
-    StaticTriggerQuery m_staticTriggerQuery;
+    ECS::Query<Components> m_query;
+    ECS::Query<Components> m_staticColliderQuery;
+    ECS::Query<Components> m_staticTriggerQuery;
 
     Renderer &m_renderer;
     Camera &m_camera;
@@ -124,36 +57,20 @@ struct RenderSystem
 
 struct PhysicsSystem
 {
-    PhysicsSystem(ECS::Registry<MyReg> &reg_, Vector2<float> levelSize_);
+    PhysicsSystem(ECS::Registry<Components> &reg_, Vector2<float> levelSize_);
 
     void update();
 
-    template<typename T>
-    void updateArch(T &arch_)
-    {
-        for (int i = 0; i < arch_.size(); ++i)
-        {
-            auto inst = arch_.getEntity(i);
-            if constexpr (T::template isLastSpecialization<StateMachine>())
-                proceedEntity(std::get<ComponentTransform&>(inst), std::get<ComponentPhysical&>(inst), std::get<ComponentObstacleFallthrough&>(inst), &arch_.getLast()[i], TypeManip::tupleWithoutLast(inst));
-            else
-                proceedEntity(std::get<ComponentTransform&>(inst), std::get<ComponentPhysical&>(inst), std::get<ComponentObstacleFallthrough&>(inst), nullptr, inst);
-        }
-    }
-
-    void proceedEntity(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, auto *sm_, auto inst_);
+    void proceedEntity(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, StateMachine *sm_, ECS::CheapEntityView<Components> &inst_);
     
     bool magnetEntity(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_);
-    bool getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_) const;
+    bool getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_);
 
     void resetEntityObstacles(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_);
-    std::set<int> getTouchedObstacles(const Collider &pb_) const;
+    std::set<int> getTouchedObstacles(const Collider &pb_);
 
-    using PhysicalQuery = std::invoke_result_t<decltype(&ECS::Registry<MyReg>::getQuery<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough>), ECS::Registry<MyReg>>;
-    PhysicalQuery m_physicalQuery;
-
-    using StaticColliderQuery = std::invoke_result_t<decltype(&ECS::Registry<MyReg>::getQuery<ComponentStaticCollider>), ECS::Registry<MyReg>>;
-    StaticColliderQuery m_staticColliderQuery;
+    ECS::Query<Components> m_physicalQuery;
+    ECS::Query<Components> m_staticColliderQuery;
 
     Vector2<float> m_levelSize;
 };
@@ -161,23 +78,11 @@ struct PhysicsSystem
 
 struct InputHandlingSystem
 {
-    InputHandlingSystem(ECS::Registry<MyReg> &reg_);
+    InputHandlingSystem(ECS::Registry<Components> &reg_);
 
     void update();
 
-    template<typename T>
-    void updateArch(T &arch_)
-    {
-        auto &inps = arch_.get<ComponentPlayerInput>();
-        for (int i = 0; i < arch_.size(); ++i)
-        {
-            inps[i].m_inputResolver->update();
-        }
-    }
-
-    using InputQuery = std::invoke_result_t<decltype(&ECS::Registry<MyReg>::getQuery<ComponentPlayerInput>), 
-    ECS::Registry<MyReg>>;
-    InputQuery m_query;
+    ECS::Query<Components> m_query;
 };
 
 class BattleLevel : public Level
@@ -203,7 +108,7 @@ protected:
     DecorLayers m_decor;
     Tileset m_tlmap;
 
-    ECS::Registry<MyReg> m_registry;
+    ECS::Registry<Components> m_registry;
     PlayerSystem m_playerSystem;
     RenderSystem m_rendersys;
     InputHandlingSystem m_inputsys;

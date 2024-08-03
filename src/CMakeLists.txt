@@ -19,6 +19,7 @@ DecorationBuilder.cpp
 DecorLayers.cpp
 PlayableCharacter.cpp
 TileMapHelper.cpp
+StateMachine.cpp
 )
 
 set(INCLUDE_DIRS
@@ -27,6 +28,9 @@ ${CMAKE_CURRENT_LIST_DIR}/Core
 ${SDL2_mixer_INCLUDE_DIRS}
 ${lz4_INCLUDE_DIRS}
 )
+
+message(Paths:)
+message(${lz4_INCLUDE_DIRS})
 
 set(LINK_LIBRARIES
 ${SDL2_LIBRARIES}

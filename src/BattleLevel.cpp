@@ -13,16 +13,14 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_physsys(m_registry, size_)
 {
     m_hud.addWidget(std::make_unique<DebugDataWidget>(*m_application, m_camera, lvlId_, size_, m_lastFrameTimeMS));
-    m_registry.addEntity(ComponentTransform({50.0f, 300.0f}, ORIENTATION::RIGHT), ComponentPhysical(), ComponentObstacleFallthrough(), ComponentAnimationRenderable(), 
-        ComponentPlayerInput(std::unique_ptr<InputResolver>(new InputResolver(application_->getInputSystem()))), StateMachine<ArchPlayer::MakeRef, CharacterState>());
+    m_registry.createEntity<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, ComponentAnimationRenderable, ComponentPlayerInput, StateMachine>
+    (ComponentTransform({50.0f, 300.0f}, ORIENTATION::RIGHT), 
+        ComponentPlayerInput(std::unique_ptr<InputResolver>(new InputResolver(application_->getInputSystem()))));
 
     m_tlmap.load("Tiles/Tilemap-sheet");
 
     DecorationBuilder bld(*application_);
     m_decor = std::move(bld.buildDecorLayers("Resources/Sprites/Tiles/map.json", m_tlmap));
-
-    StateMachine<ArchPlayer::MakeRef, CharacterState> sm;
-    GenericState<ArchPlayer::MakeRef, CharacterState> floatstate(CharacterState::FLOAT, CharacterStateNames.at(CharacterState::FLOAT), StateMarker{CharacterState::NONE, {}}, application_->getAnimationManager()->getAnimID("Char1/float"));
 }
 
 void BattleLevel::enter()
@@ -34,48 +32,48 @@ void BattleLevel::enter()
     m_camera.setScale(gamedata::global::minCameraScale);
     m_camera.setPos({0.0f, 0.0f});
 
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{0, 20}, Vector2{6, 1}, 0)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{6, 20}, Vector2{1, 1}, -1)), ComponentObstacle(1));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{7, 19}, Vector2{1, 1}, -1)), ComponentObstacle(1));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{8, 18}, Vector2{1, 1}, -1)), ComponentObstacle(1));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{9, 17}, Vector2{1, 1}, -1)), ComponentObstacle(1));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{10, 16}, Vector2{1, 1}, -1)), ComponentObstacle(1));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{11, 15}, Vector2{2, 1}, 0)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{13, 15}, Vector2{1, 1}, -0.5)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{14.0f, 14.5f}, Vector2{9, 1}, 0)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{23.0f, 14.5f}, Vector2{1, 1}, 0.5)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{24, 15}, Vector2{1, 1}, 0)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{25, 15}, Vector2{6, 6}, 1)), ComponentObstacle(1));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{0, 20}, Vector2{6, 1}, 0)));
+    m_registry.createEntity<ComponentStaticCollider, ComponentObstacle>(ComponentStaticCollider(getColliderForTileRange(Vector2{6, 20}, Vector2{1, 1}, -1)), ComponentObstacle(1));
+    m_registry.createEntity<ComponentStaticCollider, ComponentObstacle>(ComponentStaticCollider(getColliderForTileRange(Vector2{7, 19}, Vector2{1, 1}, -1)), ComponentObstacle(1));
+    m_registry.createEntity<ComponentStaticCollider, ComponentObstacle>(ComponentStaticCollider(getColliderForTileRange(Vector2{8, 18}, Vector2{1, 1}, -1)), ComponentObstacle(1));
+    m_registry.createEntity<ComponentStaticCollider, ComponentObstacle>(ComponentStaticCollider(getColliderForTileRange(Vector2{9, 17}, Vector2{1, 1}, -1)), ComponentObstacle(1));
+    m_registry.createEntity<ComponentStaticCollider, ComponentObstacle>(ComponentStaticCollider(getColliderForTileRange(Vector2{10, 16}, Vector2{1, 1}, -1)), ComponentObstacle(1));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{11, 15}, Vector2{2, 1}, 0)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{13, 15}, Vector2{1, 1}, -0.5)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{14.0f, 14.5f}, Vector2{9, 1}, 0)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{23.0f, 14.5f}, Vector2{1, 1}, 0.5)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{24, 15}, Vector2{1, 1}, 0)));
+    m_registry.createEntity<ComponentStaticCollider, ComponentObstacle>(ComponentStaticCollider(getColliderForTileRange(Vector2{25, 15}, Vector2{6, 6}, 1)), ComponentObstacle(1));
 
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{6, 20}, Vector2{1, 1}, 1)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{7, 21}, Vector2{1, 1}, 1)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{8, 22}, Vector2{1, 1}, 1)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{9, 23}, Vector2{1, 1}, 1)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{10, 24}, Vector2{1, 1}, 1)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{6, 20}, Vector2{1, 1}, 1)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{7, 21}, Vector2{1, 1}, 1)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{8, 22}, Vector2{1, 1}, 1)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{9, 23}, Vector2{1, 1}, 1)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{10, 24}, Vector2{1, 1}, 1)));
 
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{11, 25}, Vector2{15, 1}, 0)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{26, 25}, Vector2{1, 1}, -1)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{27, 24}, Vector2{1, 1}, -1)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{28, 23}, Vector2{1, 1}, 0)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{29, 23}, Vector2{1, 1}, -1)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{30, 22}, Vector2{1, 1}, -1)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{31, 21}, Vector2{9, 9}, 1)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{40, 30}, Vector2{5, 1}, 0)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{11, 25}, Vector2{15, 1}, 0)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{26, 25}, Vector2{1, 1}, -1)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{27, 24}, Vector2{1, 1}, -1)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{28, 23}, Vector2{1, 1}, 0)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{29, 23}, Vector2{1, 1}, -1)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{30, 22}, Vector2{1, 1}, -1)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{31, 21}, Vector2{9, 9}, 1)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{40, 30}, Vector2{5, 1}, 0)));
 
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{45, 6}, Vector2{1, 25}, 0)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{40, 1}, Vector2{1, 23}, 0)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{45, 6}, Vector2{1, 25}, 0)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{40, 1}, Vector2{1, 23}, 0)));
 
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{41, 6}, Vector2{5, 1}, 0)), ComponentObstacle(3));
+    m_registry.createEntity<ComponentStaticCollider, ComponentObstacle>(ComponentStaticCollider(getColliderForTileRange(Vector2{41, 6}, Vector2{5, 1}, 0)), ComponentObstacle(3));
 
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{41, 0}, Vector2{10, 1}, 0)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{50, 30}, Vector2{6, 1}, 0)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{69, 30}, Vector2{6, 1}, 0)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{41, 0}, Vector2{10, 1}, 0)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{50, 30}, Vector2{6, 1}, 0)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{69, 30}, Vector2{6, 1}, 0)));
 
-    m_registry.addEntity(ComponentTrigger(createTrigger({6, 4}, {6, 10}, Trigger::Tag::LEFT | Trigger::Tag::ClingArea)));
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{6, 4}, Vector2{1, 7}, 0)));
-    m_registry.addEntity(ComponentTrigger(createTrigger({6, 4}, {6, 10}, Trigger::Tag::RIGHT | Trigger::Tag::ClingArea)));
+    m_registry.createEntity<ComponentTrigger>(ComponentTrigger(createTrigger({6, 4}, {6, 10}, Trigger::Tag::LEFT | Trigger::Tag::ClingArea)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{6, 4}, Vector2{1, 7}, 0)));
+    m_registry.createEntity<ComponentTrigger>(ComponentTrigger(createTrigger({6, 4}, {6, 10}, Trigger::Tag::RIGHT | Trigger::Tag::ClingArea)));
 
-    m_registry.addEntity(ComponentStaticCollider(getColliderForTileRange(Vector2{1, 19}, Vector2{1, 1}, 0)));
+    m_registry.createEntity<ComponentStaticCollider>(ComponentStaticCollider(getColliderForTileRange(Vector2{1, 19}, Vector2{1, 1}, 0)));
 
     m_camFocusAreas.emplace_back(getTilePos(Vector2{43, 16}), gamedata::global::tileSize.mulComponents(Vector2{40.0f, 32.0f}), *m_application->getRenderer());
     m_camFocusAreas.back().overrideFocusArea({getTilePos(Vector2{42.5f, 15.0f}), gamedata::global::tileSize.mulComponents(Vector2{7.0f, 30.0f}) / 2.0f});
@@ -90,7 +88,7 @@ void BattleLevel::enter()
 void BattleLevel::update()
 {
     m_inputsys.update();
-    m_playerSystem.update();
+    m_playerSystem.update(m_registry);
     m_physsys.update();
 
     if (updateFocus())
@@ -152,8 +150,8 @@ bool BattleLevel::updateFocus()
     return false;
 }
 
-PlayerSystem::PlayerSystem(ECS::Registry<MyReg> &reg_, Application &app_) :
-    m_query{reg_.getQueryTl(ArchPlayer::WithSM<CharacterState>())},
+PlayerSystem::PlayerSystem(ECS::Registry<Components> &reg_, Application &app_) :
+    m_query{reg_.makeQuery<ComponentPlayerInput, StateMachine>()},
     m_animManager(*app_.getAnimationManager())
 {
     
@@ -161,168 +159,161 @@ PlayerSystem::PlayerSystem(ECS::Registry<MyReg> &reg_, Application &app_) :
 
 void PlayerSystem::setup()
 {
-    static_assert(decltype(m_query)::size() == 1, "Player query should contain only 1 archetype");
-    auto &parch = m_query.get<0>();
-    if (parch.size() != 1)
-        throw std::exception("Player archetype should contain only one entity");
+    m_query.update();
+    m_query.revapply<ComponentTransform, ComponentPhysical, ComponentPlayerInput, ComponentAnimationRenderable, StateMachine>
+    ([&m_animManager = this->m_animManager](const auto &idx_, ComponentTransform &trans, ComponentPhysical &phys, ComponentPlayerInput &inp, ComponentAnimationRenderable &animrnd, StateMachine &sm)
+    {
+        animrnd.m_animations[m_animManager.getAnimID("Char1/idle")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/idle"), LOOPMETHOD::NOLOOP);
+        animrnd.m_animations[m_animManager.getAnimID("Char1/run")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/run"), LOOPMETHOD::JUMP_LOOP);
+        animrnd.m_animations[m_animManager.getAnimID("Char1/prejump")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/prejump"), LOOPMETHOD::JUMP_LOOP);
+        animrnd.m_animations[m_animManager.getAnimID("Char1/float")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/float"), LOOPMETHOD::NOLOOP);
+        animrnd.m_animations[m_animManager.getAnimID("Char1/attack1_1")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/attack1_1"), LOOPMETHOD::NOLOOP);
+        animrnd.m_animations[m_animManager.getAnimID("Char1/attack1_2")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/attack1_2"), LOOPMETHOD::NOLOOP);
+        animrnd.m_animations[m_animManager.getAnimID("Char1/WallCling")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/WallCling"), LOOPMETHOD::NOLOOP);
+        animrnd.m_animations[m_animManager.getAnimID("Char1/FloatCling")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/FloatCling"), LOOPMETHOD::NOLOOP);
 
-    auto &animrnd = parch.get<ComponentAnimationRenderable>()[0];
-
-    animrnd.m_animations[m_animManager.getAnimID("Char1/idle")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/idle"), LOOPMETHOD::NOLOOP);
-    animrnd.m_animations[m_animManager.getAnimID("Char1/run")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/run"), LOOPMETHOD::JUMP_LOOP);
-    animrnd.m_animations[m_animManager.getAnimID("Char1/prejump")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/prejump"), LOOPMETHOD::JUMP_LOOP);
-    animrnd.m_animations[m_animManager.getAnimID("Char1/float")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/float"), LOOPMETHOD::NOLOOP);
-    animrnd.m_animations[m_animManager.getAnimID("Char1/attack1_1")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/attack1_1"), LOOPMETHOD::NOLOOP);
-    animrnd.m_animations[m_animManager.getAnimID("Char1/attack1_2")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/attack1_2"), LOOPMETHOD::NOLOOP);
-    animrnd.m_animations[m_animManager.getAnimID("Char1/WallCling")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/WallCling"), LOOPMETHOD::NOLOOP);
-    animrnd.m_animations[m_animManager.getAnimID("Char1/FloatCling")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/FloatCling"), LOOPMETHOD::NOLOOP);
-
-    animrnd.m_currentAnimation = animrnd.m_animations[m_animManager.getAnimID("Char1/float")].get();
-    animrnd.m_currentAnimation->reset();
-    
-
-    auto &phys = parch.get<ComponentPhysical>()[0];
-    auto &trans = parch.get<ComponentTransform>()[0];
-
-    phys.m_pushbox = {Vector2{0.0f, -30.0f}, Vector2{10.0f, 30.0f}};
-    phys.m_gravity = {0.0f, 0.5f};
+        animrnd.m_currentAnimation = animrnd.m_animations[m_animManager.getAnimID("Char1/float")].get();
+        animrnd.m_currentAnimation->reset();
 
 
-    auto &inp = parch.get<ComponentPlayerInput>()[0];
-    inp.m_inputResolver->subscribePlayer();
-    inp.m_inputResolver->setInputEnabled(true);
+        phys.m_pushbox = {Vector2{0.0f, -30.0f}, Vector2{10.0f, 30.0f}};
+        phys.m_gravity = {0.0f, 0.5f};
 
 
-    auto &sm = parch.get<StateMachine<ArchPlayer::MakeRef, CharacterState>>()[0];
+        inp.m_inputResolver->subscribePlayer();
+        inp.m_inputResolver->setInputEnabled(true);
 
-    sm.addState(std::unique_ptr<GenericState<ArchPlayer::MakeRef, CharacterState>>(
-        &(new PlayerState<false, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, true, InputComparatorIdle, InputComparatorIdle>(
-            CharacterState::PREJUMP_FORWARD, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::RUN}}, m_animManager.getAnimID("Char1/prejump")))
-        ->setAlignedSlopeMax(0.5f)
-        .setGroundedOnSwitch(true)
-        .setGravity({{0.0f, 0.0f}})
-        .setConvertVelocityOnSwitch(true)
-        .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(8.0f))
-        .setUpdateMovementData(
-            TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
-            TimelineProperty<Vector2<float>>(
-                {
-                    {0, {0.0f, 0.0f}},
-                    {3, {3.5f, 0.0f}},
-                }), // Dir vel mul
-            TimelineProperty<Vector2<float>>(
-                {
-                    {0, {0.0f, 0.0f}},
-                    {3, {0.0f, -5.0f}},
-                }), // Raw vel
-            TimelineProperty<Vector2<float>>(
-                {
-                    {0, {1.0f, 1.0f}},
-                    {3, {0.5f, 1.0f}}
-                }), // Inr mul
-            TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
-            TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
-        .setOutdatedTransition(CharacterState::FLOAT, 3)
-        .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
-        .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
-    ));
 
-    sm.addState(std::unique_ptr<GenericState<ArchPlayer::MakeRef, CharacterState>>(
-        &(new PlayerState<false, false, InputComparatorTapUp, InputComparatorTapUp, true, InputComparatorIdle, InputComparatorIdle>(
-            CharacterState::PREJUMP, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::RUN}}, m_animManager.getAnimID("Char1/prejump")))
-        ->setGroundedOnSwitch(true)
-        .setGravity({{0.0f, 0.0f}})
-        .setConvertVelocityOnSwitch(true)
-        .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(8.0f))
-        .setUpdateMovementData(
-            TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
-            TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir vel mul
-            TimelineProperty<Vector2<float>>(
-                {
-                    {0, {0.0f, 0.0f}},
-                    {4, {0.0f, -6.0f}},
-                }), // Raw vel
-            TimelineProperty<Vector2<float>>(
-                {
-                    {0, {1.0f, 1.0f}},
-                    {4, {0.5f, 1.0f}}
-                }), // Inr mul
-            TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
-            TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
-        .setOutdatedTransition(CharacterState::FLOAT, 4)
-        .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
-        .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
-        .setUpdateSpeedLimitData(
-            TimelineProperty<Vector2<float>>(),
-            TimelineProperty<Vector2<float>>({9999.9f, 4.0f}))
-    ));
+        sm.addState(std::unique_ptr<GenericState>(
+            &(new PlayerState<false, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, true, InputComparatorIdle, InputComparatorIdle>(
+                CharacterState::PREJUMP_FORWARD, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::RUN}}, m_animManager.getAnimID("Char1/prejump")))
+            ->setAlignedSlopeMax(0.5f)
+            .setGroundedOnSwitch(true)
+            .setGravity({{0.0f, 0.0f}})
+            .setConvertVelocityOnSwitch(true)
+            .setTransitionOnLostGround(CharacterState::FLOAT)
+            .setMagnetLimit(TimelineProperty<float>(8.0f))
+            .setUpdateMovementData(
+                TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
+                TimelineProperty<Vector2<float>>(
+                    {
+                        {0, {0.0f, 0.0f}},
+                        {3, {3.5f, 0.0f}},
+                    }), // Dir vel mul
+                TimelineProperty<Vector2<float>>(
+                    {
+                        {0, {0.0f, 0.0f}},
+                        {3, {0.0f, -5.0f}},
+                    }), // Raw vel
+                TimelineProperty<Vector2<float>>(
+                    {
+                        {0, {1.0f, 1.0f}},
+                        {3, {0.5f, 1.0f}}
+                    }), // Inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
+            .setOutdatedTransition(CharacterState::FLOAT, 3)
+            .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+            .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+        ));
 
-    sm.addState(std::unique_ptr<GenericState<ArchPlayer::MakeRef, CharacterState>>(
-        &(new PlayerState<false, true, InputComparatorHoldLeft, InputComparatorHoldRight, true, InputComparatorHoldLeft, InputComparatorHoldRight>(
-            CharacterState::RUN, {CharacterState::NONE, {CharacterState::IDLE}}, m_animManager.getAnimID("Char1/run")))
-        ->setGroundedOnSwitch(true)
-        .setGravity({{0.0f, 0.0f}})
-        .setUpdateMovementData(
-            TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
-            TimelineProperty<Vector2<float>>( // Dir vel mul
-                {
-                    {0, {0.3f, 0.0f}},
-                    {5, {0.6f, 0.0f}},
-                }),  
-            TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Raw vel
-            TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Inr mul
-            TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
-            TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
-        .setUpdateSpeedLimitData(
-            TimelineProperty<Vector2<float>>({3.75f, 0.0f}),
-            TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
-        .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(10.0f))
-        .setCanFallThrough(TimelineProperty(true))
-    ));
+        sm.addState(std::unique_ptr<GenericState>(
+            &(new PlayerState<false, false, InputComparatorTapUp, InputComparatorTapUp, true, InputComparatorIdle, InputComparatorIdle>(
+                CharacterState::PREJUMP, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::RUN}}, m_animManager.getAnimID("Char1/prejump")))
+            ->setGroundedOnSwitch(true)
+            .setGravity({{0.0f, 0.0f}})
+            .setConvertVelocityOnSwitch(true)
+            .setTransitionOnLostGround(CharacterState::FLOAT)
+            .setMagnetLimit(TimelineProperty<float>(8.0f))
+            .setUpdateMovementData(
+                TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir vel mul
+                TimelineProperty<Vector2<float>>(
+                    {
+                        {0, {0.0f, 0.0f}},
+                        {4, {0.0f, -6.0f}},
+                    }), // Raw vel
+                TimelineProperty<Vector2<float>>(
+                    {
+                        {0, {1.0f, 1.0f}},
+                        {4, {0.5f, 1.0f}}
+                    }), // Inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
+            .setOutdatedTransition(CharacterState::FLOAT, 4)
+            .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+            .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+            .setUpdateSpeedLimitData(
+                TimelineProperty<Vector2<float>>(),
+                TimelineProperty<Vector2<float>>({9999.9f, 4.0f}))
+        ));
 
-    sm.addState(std::unique_ptr<GenericState<ArchPlayer::MakeRef, CharacterState>>(
-        &(new PlayerState<false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>(
-            CharacterState::IDLE, {CharacterState::NONE, {CharacterState::RUN}}, m_animManager.getAnimID("Char1/idle")))
-        ->setGroundedOnSwitch(true)
-        .setGravity({{0.0f, 0.0f}})
-        .setConvertVelocityOnSwitch(true)
-        .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(8.0f))
-        .setCanFallThrough(TimelineProperty(true))
-        .setUpdateSpeedLimitData(
-            TimelineProperty<Vector2<float>>({9999.9f, 0.0f}),
-            TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
-    ));
+        sm.addState(std::unique_ptr<GenericState>(
+            &(new PlayerState<false, true, InputComparatorHoldLeft, InputComparatorHoldRight, true, InputComparatorHoldLeft, InputComparatorHoldRight>(
+                CharacterState::RUN, {CharacterState::NONE, {CharacterState::IDLE}}, m_animManager.getAnimID("Char1/run")))
+            ->setGroundedOnSwitch(true)
+            .setGravity({{0.0f, 0.0f}})
+            .setUpdateMovementData(
+                TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
+                TimelineProperty<Vector2<float>>( // Dir vel mul
+                    {
+                        {0, {0.3f, 0.0f}},
+                        {5, {0.6f, 0.0f}},
+                    }),  
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Raw vel
+                TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
+            .setUpdateSpeedLimitData(
+                TimelineProperty<Vector2<float>>({3.75f, 0.0f}),
+                TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
+            .setTransitionOnLostGround(CharacterState::FLOAT)
+            .setMagnetLimit(TimelineProperty<float>(10.0f))
+            .setCanFallThrough(TimelineProperty(true))
+        ));
 
-    sm.addState(std::unique_ptr<GenericState<ArchPlayer::MakeRef, CharacterState>>(
-        &(new PlayerState<false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>(
-            CharacterState::FLOAT, {CharacterState::NONE, {}}, m_animManager.getAnimID("Char1/float")))
-        ->setGroundedOnSwitch(false)
-        .setTransitionOnTouchedGround(CharacterState::IDLE)
-        .setGravity({{0.0f, 0.5f}})
-        .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
-        .setNoLanding(TimelineProperty<bool>({{0, true}, {2, false}}))
-    ));
+        sm.addState(std::unique_ptr<GenericState>(
+            &(new PlayerState<false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>(
+                CharacterState::IDLE, {CharacterState::NONE, {CharacterState::RUN}}, m_animManager.getAnimID("Char1/idle")))
+            ->setGroundedOnSwitch(true)
+            .setGravity({{0.0f, 0.0f}})
+            .setConvertVelocityOnSwitch(true)
+            .setTransitionOnLostGround(CharacterState::FLOAT)
+            .setMagnetLimit(TimelineProperty<float>(8.0f))
+            .setCanFallThrough(TimelineProperty(true))
+            .setUpdateSpeedLimitData(
+                TimelineProperty<Vector2<float>>({9999.9f, 0.0f}),
+                TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
+        ));
 
-    sm.setInitialState(CharacterState::FLOAT);
+        sm.addState(std::unique_ptr<GenericState>(
+            &(new PlayerState<false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>(
+                CharacterState::FLOAT, {CharacterState::NONE, {}}, m_animManager.getAnimID("Char1/float")))
+            ->setGroundedOnSwitch(false)
+            .setTransitionOnTouchedGround(CharacterState::IDLE)
+            .setGravity({{0.0f, 0.5f}})
+            .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+            .setNoLanding(TimelineProperty<bool>({{0, true}, {2, false}}))
+        ));
+
+        sm.setInitialState(CharacterState::FLOAT);
+    });
 }
 
-void PlayerSystem::update()
+void PlayerSystem::update(ECS::Registry<Components> &reg_)
 {
-    std::apply([&](auto&&... args) {
-            ((
-                (updateArch(args))
-                ), ...);
-        }, m_query.m_tpl);
+    m_query.update();
+    m_query.applyview([&reg_](const auto &idx_, auto view_){
+        auto &sm = view_.get<StateMachine>();
+        sm.update(view_, 0);
+        std::cout << sm << std::endl;
+    });
 }
 
-RenderSystem::RenderSystem(ECS::Registry<MyReg> &reg_, Application &app_, Camera &camera_) :
-    m_query{reg_.getQuery<ComponentAnimationRenderable>()},
-    m_staticColliderQuery{reg_.getQuery<ComponentStaticCollider>()},
-    m_staticTriggerQuery{reg_.getQuery<ComponentTrigger>()},
+RenderSystem::RenderSystem(ECS::Registry<Components> &reg_, Application &app_, Camera &camera_) :
+    m_query{reg_.makeQuery<ComponentAnimationRenderable>()},
+    m_staticColliderQuery{reg_.makeQuery<ComponentStaticCollider>()},
+    m_staticTriggerQuery{reg_.makeQuery<ComponentTrigger>()},
     m_renderer(*app_.getRenderer()),
     m_camera(camera_)
 {
@@ -330,25 +321,34 @@ RenderSystem::RenderSystem(ECS::Registry<MyReg> &reg_, Application &app_, Camera
 
 void RenderSystem::draw()
 {
-    std::apply([&](auto&&... args) {
-            ((
-                (drawArch(args))
-                ), ...);
-        }, m_staticColliderQuery.m_tpl);
+    m_query.update();
+    m_staticColliderQuery.update();
+    m_staticTriggerQuery.update();
 
-    std::apply([&](auto&&... args) {
-            ((
-                (drawArch(args))
-                ), ...);
-        }, m_staticTriggerQuery.m_tpl);
-    std::apply([&](auto&&... args) {
-            ((
-                (drawArch(args))
-                ), ...);
-        }, m_query.m_tpl);
+    auto distribute = [](RenderSystem *sys_, const ECS::EntityIndex &idx_, ECS::CheapEntityView<Components> view_){
+
+        if (view_.contains<ComponentStaticCollider>() && !view_.contains<ComponentObstacle>())
+            RenderSystem::drawCollider(sys_, view_.get<ComponentStaticCollider>());
+        
+        if (view_.contains<ComponentStaticCollider, ComponentObstacle>())
+            RenderSystem::drawObstacle(sys_, view_.get<ComponentStaticCollider>());
+
+        if (view_.contains<ComponentStaticCollider, ComponentTrigger>())
+            RenderSystem::drawTrigger(sys_, view_.get<ComponentTrigger>());
+
+        if (view_.contains<ComponentTransform, ComponentAnimationRenderable>())
+            RenderSystem::drawInstance(sys_, view_.get<ComponentTransform>(), view_.get<ComponentAnimationRenderable>());
+
+        if (view_.contains<ComponentTransform, ComponentPhysical>())
+            RenderSystem::drawCollider(sys_, view_.get<ComponentTransform>(), view_.get<ComponentPhysical>());
+    };
+
+    m_staticColliderQuery.applyview(distribute, this);
+    m_staticTriggerQuery.applyview(distribute, this);
+    m_query.applyview(distribute, this);
 }
 
-void RenderSystem::drawInstance(ComponentTransform &trans_, ComponentAnimationRenderable &ren_)
+void RenderSystem::drawInstance(RenderSystem *rensys_, ComponentTransform &trans_, ComponentAnimationRenderable &ren_)
 {
     if (ren_.m_currentAnimation != nullptr)
     {
@@ -370,74 +370,80 @@ void RenderSystem::drawInstance(ComponentTransform &trans_, ComponentAnimationRe
         auto spr = ren_.m_currentAnimation->getSprite();
         auto edge = ren_.m_currentAnimation->getBorderSprite();
 
-        m_renderer.renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, m_camera, 0.0f, flip);
+        rensys_->m_renderer.renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, rensys_->m_camera, 0.0f, flip);
     }
 }
 
-void RenderSystem::drawCollider(ComponentTransform &trans_, ComponentPhysical &phys_)
+void RenderSystem::drawCollider(RenderSystem *ren_, ComponentTransform &trans_, ComponentPhysical &phys_)
 {
     if (gamedata::debug::drawColliders)
     {
         auto pb = phys_.m_pushbox + trans_.m_pos;;
-        m_renderer.drawCollider(pb, {238, 195, 154, 50}, 100, m_camera);
+        ren_->m_renderer.drawCollider(pb, {238, 195, 154, 50}, 100, ren_->m_camera);
     }
 }
 
-void RenderSystem::drawCollider(ComponentStaticCollider &cld_)
+void RenderSystem::drawCollider(RenderSystem *ren_, ComponentStaticCollider &cld_)
 {
     if (gamedata::debug::drawColliders)
     {
-        m_renderer.drawCollider(cld_.m_collider, {255, 0, 0, 100}, 255, m_camera);
+        ren_->m_renderer.drawCollider(cld_.m_collider, {255, 0, 0, 100}, 255, ren_->m_camera);
     }
 }
 
-void RenderSystem::drawObstacle(ComponentStaticCollider &cld_)
+void RenderSystem::drawObstacle(RenderSystem *ren_, ComponentStaticCollider &cld_)
 {
     if (gamedata::debug::drawColliders)
     {
-        m_renderer.drawCollider(cld_.m_collider, {50, 50, 255, 100}, 255, m_camera);
+        ren_->m_renderer.drawCollider(cld_.m_collider, {50, 50, 255, 100}, 255, ren_->m_camera);
     }
 }
 
-void RenderSystem::drawTrigger(ComponentTrigger &cld_)
+void RenderSystem::drawTrigger(RenderSystem *ren_, ComponentTrigger &cld_)
 {
     if (gamedata::debug::drawColliders)
     {
-        m_renderer.drawCollider(cld_.m_trigger, {255, 50, 255, 50}, 100, m_camera);
+        ren_->m_renderer.drawCollider(cld_.m_trigger, {255, 50, 255, 50}, 100, ren_->m_camera);
     }
 }
 
-InputHandlingSystem::InputHandlingSystem(ECS::Registry<MyReg> &reg_) :
-    m_query{reg_.getQuery<ComponentPlayerInput>()}
+InputHandlingSystem::InputHandlingSystem(ECS::Registry<Components> &reg_) :
+    m_query{reg_.makeQuery<ComponentPlayerInput>()}
 {
 }
 
 void InputHandlingSystem::update()
 {
-    std::apply([&](auto&&... args) {
-            ((
-                (updateArch(args))
-                ), ...);
-        }, m_query.m_tpl);
+    m_query.update();
+    m_query.apply<ComponentPlayerInput>([](const auto &idx_, ComponentPlayerInput &inp_)
+    {
+        inp_.m_inputResolver->update();
+    });
 }
 
-PhysicsSystem::PhysicsSystem(ECS::Registry<MyReg> &reg_, Vector2<float> levelSize_) :
-    m_physicalQuery{reg_.getQuery<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough>()},
-    m_staticColliderQuery{reg_.getQuery<ComponentStaticCollider>()},
+PhysicsSystem::PhysicsSystem(ECS::Registry<Components> &reg_, Vector2<float> levelSize_) :
+    m_physicalQuery{reg_.makeQuery<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough>()},
+    m_staticColliderQuery{reg_.makeQuery<ComponentStaticCollider>()},
     m_levelSize(levelSize_)
 {
 }
 
 void PhysicsSystem::update()
 {
-    std::apply([&](auto&&... args) {
-            ((
-                (updateArch(args))
-                ), ...);
-        }, m_physicalQuery.m_tpl);
+    m_physicalQuery.update();
+    m_staticColliderQuery.update();
+
+    auto distribute = [](PhysicsSystem *sys_, const ECS::EntityIndex &idx_, ECS::CheapEntityView<Components> view_){
+        if (view_.contains<StateMachine>())
+            sys_->proceedEntity(view_.get<ComponentTransform>(), view_.get<ComponentPhysical>(), view_.get<ComponentObstacleFallthrough>(), &view_.get<StateMachine>(), view_);
+        else
+            sys_->proceedEntity(view_.get<ComponentTransform>(), view_.get<ComponentPhysical>(), view_.get<ComponentObstacleFallthrough>(), nullptr, view_);
+    };
+
+    m_physicalQuery.applyview(distribute, this);
 }
 
-void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, auto *sm_, auto inst_)
+void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, StateMachine *sm_, ECS::CheapEntityView<Components> &inst_)
 {
     // Common stuff
     phys_.m_velocity += phys_.m_gravity;
@@ -632,20 +638,11 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
     };
 
     // Iteration over colliders depending on archetype
-    auto distrbObstacle = [&] <typename T> (T &cld_, const auto &distrib_)
-    { 
-        auto &colliders = cld_.get<ComponentStaticCollider>();
-        if constexpr (T::template contains<ComponentObstacle>())
-        {
-            auto &obstacles = cld_.get<ComponentObstacle>();
-            for (int i = 0; i < cld_.size(); ++i)
-                distrib_(colliders[i], obstacles[i].m_obstacleId);
-        }
+    auto distrbObstacle = [](const auto &distrib_, const ECS::EntityIndex &idx_, ECS::CheapEntityView<Components> view_){
+        if (view_.contains<ComponentObstacle>())
+            distrib_(view_.get<ComponentStaticCollider>(), view_.get<ComponentObstacle>().m_obstacleId);
         else
-        {
-            for (int i = 0; i < cld_.size(); ++i)
-                distrib_(colliders[i], 0);
-        }
+            distrib_(view_.get<ComponentStaticCollider>(), 0);
     };
 
     // X axis movement handling
@@ -654,22 +651,15 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
         pb = phys_.m_pushbox + trans_.m_pos;
 
         // Moving to the right
+
         if (offset.x > 0)
         {
-            std::apply([&](auto&&... args) {
-            ((
-                (distrbObstacle(args, resolveRight))
-                ), ...);
-            }, m_staticColliderQuery.m_tpl);
+            m_staticColliderQuery.applyview(distrbObstacle, resolveRight);
         }
         // Moving to the left
         else if (offset.x < 0)
         {
-            std::apply([&](auto&&... args) {
-            ((
-                (distrbObstacle(args, resolveLeft))
-                ), ...);
-            }, m_staticColliderQuery.m_tpl);
+            m_staticColliderQuery.applyview(distrbObstacle, resolveLeft);
         }
     }
 
@@ -681,11 +671,7 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
         // Falling / staying in place
         if (offset.y >= 0)
         {
-            std::apply([&](auto&&... args) {
-            ((
-                (distrbObstacle(args, resolveFall))
-                ), ...);
-            }, m_staticColliderQuery.m_tpl);
+            m_staticColliderQuery.applyview(distrbObstacle, resolveFall);
         }
         // Rising
         else // TODO: fully reset upward velocity and inertia if hitting the ceiling far from the corner
@@ -696,11 +682,7 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentPhysical 
                 groundCollision = false;
             }
 
-            std::apply([&](auto&&... args) {
-            ((
-                (distrbObstacle(args, resolveRise))
-                ), ...);
-            }, m_staticColliderQuery.m_tpl);
+            m_staticColliderQuery.applyview(distrbObstacle, resolveRise);
         }
     }
 
@@ -747,12 +729,12 @@ bool PhysicsSystem::magnetEntity(ComponentTransform &trans_, ComponentPhysical &
     return false;
 }
 
-bool PhysicsSystem::getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_) const
+bool PhysicsSystem::getHighestVerticalMagnetCoord(const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_)
 {
     float baseCoord = coord_;
     float bot = cld_.getBottomEdge();
     bool isFound = false;
-    auto proceedCollider = [&](const SlopeCollider &areaCld_, int obstacleId_)
+    auto proceedCollider = [&ignoreAllObstacles_, &ignoredObstacles_, &baseCoord, &isFound, &coord_, &cld_](const SlopeCollider &areaCld_, int obstacleId_)
     {
         if (obstacleId_ && (ignoreAllObstacles_ || ignoredObstacles_.contains(obstacleId_)))
             return;
@@ -770,27 +752,20 @@ bool PhysicsSystem::getHighestVerticalMagnetCoord(const Collider &cld_, float &c
     };
 
     // Fall iteration over colliders depending on archetype
-    auto distrbObstacle = [&] <typename T> (T &cld_)
-    { 
-        auto &colliders = cld_.get<ComponentStaticCollider>();
-        if constexpr (T::template contains<ComponentObstacle>())
+    auto distrbObstacle = [&proceedCollider](const ECS::EntityIndex &idx_, ECS::CheapEntityView<Components> cld_)
+    {
+        auto &collider = cld_.get<ComponentStaticCollider>();
+        if (cld_.contains<ComponentObstacle>())
         {
-            auto &obstacles = cld_.get<ComponentObstacle>();
-            for (int i = 0; i < cld_.size(); ++i)
-                proceedCollider(colliders[i].m_collider, obstacles[i].m_obstacleId);
+            proceedCollider(collider.m_collider, cld_.get<ComponentObstacle>().m_obstacleId);
         }
         else
         {
-            for (int i = 0; i < cld_.size(); ++i)
-                proceedCollider(colliders[i].m_collider, 0);
+            proceedCollider(collider.m_collider, 0);
         }
     };
 
-    std::apply([&](auto&&... args) {
-    ((
-        (distrbObstacle(args))
-        ), ...);
-    }, m_staticColliderQuery.m_tpl);
+    m_staticColliderQuery.applyview(distrbObstacle);
 
     return isFound;
 }
@@ -810,7 +785,7 @@ void PhysicsSystem::resetEntityObstacles(ComponentTransform &trans_, ComponentPh
     obsFallthrough_.m_ignoredObstacles = res;
 }
 
-std::set<int> PhysicsSystem::getTouchedObstacles(const Collider &pb_) const
+std::set<int> PhysicsSystem::getTouchedObstacles(const Collider &pb_)
 {
     std::set<int> obstacleIds;
     float dumped = 0.0f;
@@ -823,23 +798,18 @@ std::set<int> PhysicsSystem::getTouchedObstacles(const Collider &pb_) const
         return !!(areaCld_.getFullCollisionWith(pb_, dumped) & utils::OverlapResult::BOTH_OOT);
     };
 
-    auto distrbObstacle = [&] <typename T> (T &cld_)
+    auto distrbObstacle = [&proceedObstacle, &obstacleIds](const ECS::EntityIndex &idx_, ECS::CheapEntityView<Components> cld_)
     { 
-        if constexpr (T::template contains<ComponentObstacle>())
+        if (cld_.contains<ComponentObstacle>())
         {
-            auto &colliders = cld_.get<ComponentStaticCollider>();
-            auto &obstacles = cld_.get<ComponentObstacle>();
-            for (int i = 0; i < cld_.size(); ++i)
-                if (proceedObstacle(colliders[i].m_collider, obstacles[i].m_obstacleId))
-                    obstacleIds.insert(obstacles[i].m_obstacleId);
+            auto &collider = cld_.get<ComponentStaticCollider>();
+            auto &obstacle = cld_.get<ComponentObstacle>();
+            if (proceedObstacle(collider.m_collider, obstacle.m_obstacleId))
+                obstacleIds.insert(obstacle.m_obstacleId);
         }
     };
 
-    std::apply([&](auto&&... args) {
-    ((
-        (distrbObstacle(args))
-        ), ...);
-    }, m_staticColliderQuery.m_tpl);
+    m_staticColliderQuery.applyview(distrbObstacle);
 
     return obstacleIds;
 }

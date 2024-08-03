@@ -2,372 +2,371 @@
 #define YAECS_H_
 #include "Utils.h"
 #include "TypeManip.hpp"
+#include "Archetype.hpp"
 #include <tuple>
 #include <concepts>
 #include <vector>
 #include <string>
 #include <iostream>
-
-template<typename, typename>
-class StateMachine;
+#include <bitset>
+#include <unordered_set>
 
 namespace ECS
 {
-    // The system only indexes entities withing archetypes so its rarely used
-    using Entity = uint32_t;
+    template<typename TReg>
+    class Registry;
 
-    template<typename... Components_t>
-    using EntityRef = std::tuple<Components_t&...>;
-
-    // Utility for debugging
-    template<typename T>
-    constexpr inline void printContainer(std::ostream &os_, const T &con_, int intend_)
+    struct EntityIndex
     {
-        os_ << utils::getIntend(intend_) + utils::normalizeType(typeid(T).name()) << ": ";
-        for (int i = 0; i < con_.size(); ++i)
-            os_ << std::endl << utils::getIntend(intend_ + 4) << con_.at(i);
-        os_ << std::endl;
-    }
-
-    // Utility to erase element from vector by moving last element to it
-    template<typename T>
-    constexpr inline void eraseContainer(std::vector<T> &con_, Entity toErase_)
-    {
-        if (con_.size() > 1 && con_.size() - 1 != toErase_)
-            con_[toErase_] = std::move(con_.back());
-        con_.pop_back();
-    }
+        size_t m_archetypeId;
+        size_t m_entityId;
+    };
 
     /*
-        Archetype class
-        Contains vectors of components in a tuple
-        Entities are only ever indexed by indexes within these vectors
-        Optimally, queries are used to iterate between them, as they cost nothing to create
-        and provide compile-time component checks and very fast iteration
+        Another view for entity
     */
-    template<typename... Args> 
-    class Archetype
+    template<typename TReg>
+    class CheapEntityView
     {
-
-        static_assert(sizeof...(Args) > 0, "Archetype should have at least 1 template parameter");
-        static_assert(is_unique<Args...>, "All parameters in Archetype should be unique");
-
     public:
-
-        // Dump content to std::cout
-        constexpr inline void dump(int intend_) const
+        CheapEntityView(Registry<TReg> &reg_, const EntityIndex &idx_) :
+            m_reg(reg_),
+            m_idx(idx_)
         {
-            std::cout << utils::getIntend(intend_) << utils::normalizeType(typeid(*this).name()) << std::endl;
-            std::apply([intend_](auto&&... complst)
-            {
-                ((printContainer(std::cout, complst, intend_ + 4)), ...);
-            }, m_components);
         }
 
-        // Adds entity to the first free spot
-        constexpr inline uint32_t addEntity(Args&&... args_)
-        {
-            auto pos = 0;
-            ([&]
-            {
-                std::get<std::vector<Args>>(m_components).push_back(std::forward<Args>(args_));
-                pos = std::get<std::vector<Args>>(m_components).size() - 1;
-            } (), ...);
-
-            return pos;
-        }
-
-        // Removes entity from archetype by moving last entity into its place
-        constexpr inline void removeEntity(Entity localEntityId_)
-        {
-            std::apply([&localEntityId_](auto&&... complst)
-            {
-                ((eraseContainer(complst, localEntityId_)), ...);
-            }, m_components);
-        }
-
-        // Checks if an archetype contains a component
         template<typename T>
-        static constexpr bool containsOne()
+        T &get()
         {
-            return (std::is_same_v<T, Args> || ...);
+            return m_reg[m_idx.m_archetypeId].template getComponent<T>(m_idx.m_entityId);
         }
 
-        // Checks if an archetype contains a number of components (in any order)
-        template<typename... T>
-        static constexpr bool contains()
+        template<typename... Ts>
+        bool contains() const
         {
-            static_assert(is_unique<T...>, "All parameters in Archetype::contains should be unique");
-            return (containsOne<T>() && ...);
-        }
-
-        // Checks if an archetype contains a number of components, specified by passed typelist
-        template<typename... T>
-        static constexpr bool contains(TypeManip::Typelist<T...>)
-        {
-            static_assert(is_unique<T...>, "All parameters in Archetype::contains should be unique");
-            return contains<T...>();
-        }
-
-        // Get component array for iteration, indexing, etc
-        template<typename T>
-        constexpr inline std::vector<T> &get()
-        {
-            return std::get<std::vector<T>>(m_components);
-        }
-
-        // Get last component
-        constexpr inline auto &getLast()
-        {
-            return std::get<std::tuple_size_v<decltype(m_components)> - 1>(m_components);
-        }
-
-        inline EntityRef<Args...> getEntity(Entity ent_)
-        {
-            return std::tuple<Args&...>((std::get<std::vector<Args>>(m_components)[ent_]) ...);
-        }
-
-        template<typename... Comps> requires TypeManip::TemplateExists<Comps...>
-        inline EntityRef<Comps...> getEntity(Entity ent_)
-        {
-            return std::tuple<Comps&...>((std::get<std::vector<Comps>>(m_components)[ent_]) ...);
-        }
-
-        inline size_t size() const
-        {
-            return std::get<0>(m_components).size();
-        }
-
-        /*
-            Checks if last component is a specialization of certain type
-        */
-        template<template<typename...> typename Base_t>
-        static constexpr bool isLastSpecialization()
-        {
-            return TypeManip::isLastSpecialization<Base_t, Args...>();
+            return m_reg[m_idx.m_archetypeId].template  containsComponents<Ts...>();
         }
 
     private:
-        std::tuple<std::vector<Args>...> m_components;
+        Registry<TReg> &m_reg;
+        const EntityIndex m_idx;
     };
 
-    template <typename... Ts, typename... Us>
-    auto filter(Archetype<Us...>& c)
+
+    template<typename TReg>
+    class Query
     {
-        if constexpr (Archetype<Us...>::template contains<Ts...>()) {
-            return std::tie(c);
-        } else {
-            return std::tuple<>{};
-        }
-    }
-
-    // Checks that archetype contains components specified by Typelist
-    template<typename ATYPE, typename LST>
-    concept Contained = ATYPE::template contains(LST());
-
-    /*
-        A wrapper for tuple of references to archetypes
-        Query is created by Registry to provide access to specified componenets
-        As its type is deduced at compile time and it only contains references, making and accessing Queries and iterating through them are extremely fast operations
-    */
-    template<typename... Args>
-    struct Query
-    {
-        std::tuple<Args...> m_tpl;
-
-        // Concat Queries, used for unfolding
-        template<typename... TT>
-        constexpr inline auto operator+(const Query<TT...> &rhs_) const
-        {
-            return Query<Args..., TT...>(std::tuple_cat(m_tpl, rhs_.m_tpl));
-        }
-
-        // Get Archetype from Query
-        template<typename... TT>
-        constexpr inline auto &get()
-        {
-            return std::get<Archetype<TT...>&>(m_tpl);
-        }
-
-        template<int ID>
-        constexpr inline auto &get()
-        {
-            return std::get<ID>(m_tpl);
-        }
-
-        static constexpr inline auto size()
-        {
-            return std::tuple_size<std::tuple<Args...>>::value;
-        }
-    };
-
-    // Utility functions to either move a component from archetype or get an empty component, used to convery entities
-    template<typename COMPONENT, typename ARCHETYPE>
-    constexpr inline auto &&getComponentConstructor(ARCHETYPE &arch_, int src_)
-    {
-        return COMPONENT();
-    }
-
-    template<typename COMPONENT, typename ARCHETYPE> requires Contained<ARCHETYPE, TypeManip::Typelist<COMPONENT>>
-    constexpr inline auto &&getComponentConstructor(ARCHETYPE &arch_, int src_)
-    {
-        return std::move(arch_.template get<COMPONENT>()[src_]);
-    }
-
-    // Utility to easily build archetype list
-    template<typename... T>
-    struct ArchList {
-        template<typename... COMPS_T>
-        using add = ArchList<T..., Archetype<COMPS_T...>>;
-
-        template<typename... Ts>
-        static inline constexpr auto AddTypelist(TypeManip::Typelist<Ts...>)
-        {
-            return add<Ts...>();
-        }
-
-        template<typename CompList> requires TypeManip::IsSpecialization<TypeManip::Typelist, CompList>
-        using addTypelist = decltype(AddTypelist<>(CompList()));
-    };
-
-    /*
-        Registry class
-        Contains all archetypes, delegates add, delete operations and manages convertion
-        Also provides Queries by request
-    */
-    template<typename ListArches>
-    class Registry;
-
-    template<typename... Args>
-    class Registry<ArchList<Args...>>
-    {
-        static_assert(is_unique<Args...>, "All parameters in Registry should be unique");
-        static_assert(sizeof...(Args) > 0, "Registry should have at least 1 template parameter");
-
     public:
-
-        // Delegates to respective archetype
-        template<typename... COMP_T>
-        constexpr inline Entity addEntity(COMP_T&&... components_)
+        Query(Registry<TReg> &reg_, const std::bitset<TReg::MaxID> &mask_, size_t lastArchSize_) :
+            m_reg(reg_),
+            m_mask(mask_),
+            m_lastArchSize(lastArchSize_)
         {
-            return std::get<Archetype<COMP_T...>>(m_archetypes).addEntity(std::forward<COMP_T>(components_)...);
         }
 
-        // Delegates to respective archetype
-        template<typename... COMP_T>
-        constexpr inline void removeEntity(Entity localEntityId_)
+        void update()
         {
-            std::get<Archetype<COMP_T...>>(m_archetypes).removeEntity(localEntityId_);
-        }
-
-        // Dump content into std::cout
-        void dump(int intend_) const
-        {
-            std::cout << utils::getIntend(intend_) + "" << utils::normalizeType(typeid(*this).name()) << std::endl;
-            std::apply([&](auto&&... archt)
+            auto newsz = m_reg.size();
+            if (newsz > m_lastArchSize)
             {
-                ((archt.dump(intend_ + 4)), ...);
-            }, m_archetypes);
+                //std::cout << "View " << m_mask << " is outdated, " << m_lastArchSize << " / " << newsz << std::endl;
+                for (;m_lastArchSize < newsz; ++m_lastArchSize) 
+                {
+                    auto archmask = m_reg[m_lastArchSize].getMask();
+                    if ((m_mask & archmask) == m_mask)
+                    {
+                        //std::cout << "Found new viable archetype " << archmask << std::endl;
+                        m_archIds.push_back(m_lastArchSize);
+                    }
+                }
+            }
+            else
+            {
+                //std::cout << "View " << m_mask << " is up to date" << std::endl;
+            }
         }
 
-        // Count archetypes that contain a list of components in any order
-        template<typename... T>
-        static constexpr size_t count()
+        // Iterates forward, from first archetype to last, from first entity to last, passes head, index and required components
+        template<typename... Comps, typename F, typename... Head> 
+        void apply(F f_, Head&&... head_)
         {
-            static_assert(sizeof...(T) > 0, "Registry::count<> should receive at least 1 template parameter");
-
-            size_t res = 0;
-
-            ([&]
+            EntityIndex idx;
+            for (size_t arch = 0; arch < m_archIds.size(); ++arch)
             {
-                if (Args::template contains<T...>())
-                    res++;
+                idx.m_archetypeId = m_archIds[arch];
+                if (!m_reg[idx.m_archetypeId].template containsComponents<Comps...>())
+                    continue;
 
-            } (), ...);
+                for (idx.m_entityId = 0; idx.m_entityId < m_reg[idx.m_archetypeId].size(); ++idx.m_entityId)
+                {
+                    f_(std::forward<Head>(head_)..., idx, m_reg[idx.m_archetypeId].template getComponent<Comps>(idx.m_entityId)...);
+                }
+            }
+        }
+
+        /*
+            Iterates backward, from last archetype to first, from last entity to first, passes head, index and required components
+            Is guaranteed to work well with entity remove / add operations
+            In case of remove, last entity will be pushed to the current position and wont be processed twice
+            In case of add, new entity will be pushed to the end of the list and will not be proceded
+        */
+        template<typename... Comps, typename F>
+        void revapply(F f_)
+        {
+            EntityIndex idx;
+            for (size_t arch = m_archIds.size() - 1; true; --arch)
+            {
+                idx.m_archetypeId = m_archIds[arch];
+                if (!m_reg[idx.m_archetypeId].template containsComponents<Comps...>() || m_reg[idx.m_archetypeId].size() == 0)
+                {
+                    if (arch == 0)
+                        break;
+                    else
+                        continue;
+                }
+
+                for (idx.m_entityId = m_reg[idx.m_archetypeId].size() - 1; true; --idx.m_entityId)
+                {
+                    f_(idx, m_reg[idx.m_archetypeId].template getComponent<Comps>(idx.m_entityId)...);
+
+                    if (idx.m_entityId == 0)
+                        break;
+                }
+
+                if (arch == 0)
+                    break;
+            }
+        }
+
+        // Iterates forward, from first archetype to last, from first entity to last, passes head, index and view
+        template<typename F, typename... Head> 
+        void applyview(F f_, Head&&... head_)
+        {
+            EntityIndex idx;
+            for (size_t arch = 0; arch < m_archIds.size(); ++arch)
+            {
+                idx.m_archetypeId = m_archIds[arch];
+
+                for (idx.m_entityId = 0; idx.m_entityId < m_reg[idx.m_archetypeId].size(); ++idx.m_entityId)
+                {
+                    f_(std::forward<Head>(head_)..., idx, CheapEntityView(m_reg, idx));
+                }
+            }
+        }
+
+        size_t size() const
+        {
+            return m_archIds.size();
+        }
+
+        std::vector<size_t> m_archIds;
+
+    private:
+        Registry<TReg> &m_reg;
+        std::bitset<TReg::MaxID> m_mask;
+        size_t m_lastArchSize;
+    };
+
+    template<typename TReg>
+    class Registry
+    {
+    public:
+        template<typename... Comps, typename... Emplaced> requires TypeManip::TemplateExists<Comps...>
+        EntityIndex createEntity(Emplaced&&... comps_)
+        {
+            auto archid = getEnsureArchetype<Comps...>();
+            EntityIndex newent {archid, m_archetypes[archid].addEntity()};
+            m_archetypes[archid].emplaceComponents(newent.m_entityId, std::forward<Emplaced>(comps_)...);
+            return newent;
+        }
+
+        size_t size() const
+        {
+            return m_archetypes.size();
+        }
+
+        // Components are expected to be unique
+        template<typename... Comps> requires TypeManip::TemplateExists<Comps...>
+        EntityIndex emplaceComponents(const EntityIndex &idx_, Comps&&... comps_)
+        {
+            if (m_archetypes[idx_.m_archetypeId].template containsComponents<Comps...>())
+            {
+                m_archetypes[idx_.m_archetypeId].emplaceComponents(idx_.m_entityId, std::forward<Comps>(comps_)...);
+                return idx_;
+            }
+            else
+            {
+                auto oldmask = m_archetypes[idx_.m_archetypeId].getMask();
+                auto newmask = extendMask<Comps...>(oldmask);
+
+                auto archid = getEnsureCopiedArchetype<Comps...>(idx_.m_archetypeId, newmask);
+                auto entId = m_archetypes[archid].addEntity();
+
+                
+                m_archetypes[archid].emplaceComponents(entId, std::forward<Comps>(comps_)...);
+                recursiveEmplace<1, Comps...>(m_archetypes[idx_.m_archetypeId], m_archetypes[archid], idx_.m_entityId, entId);
+                m_archetypes[idx_.m_archetypeId].removeEntity(idx_.m_entityId);
+
+                return {archid, entId};
+            }
+        }
+
+        // Components are expected to be unique
+        template<typename... Comps> requires TypeManip::TemplateExists<Comps...>
+        EntityIndex removeComponents(const EntityIndex &idx_)
+        {
+            auto newmask = removeFromMask<Comps...>(m_archetypes[idx_.m_archetypeId].getMask());
+            auto newarch = 0;
+
+            // Ensure that archetype with same components except listed exists
+            auto fnd = m_archTypes.find(newmask);
+            if (fnd == m_archTypes.end())
+            {
+                std::cout << "Archetype " << newmask << " doesn't exist, creating new\n";
+                newarch = m_archetypes.size();
+                m_archTypes[newmask] = newarch;
+                m_archetypes.emplace_back();
+                m_archetypes[newarch].template addTypesReduced<Comps...>(m_archetypes[idx_.m_archetypeId], 5);
+            }
+            else
+                newarch = fnd->second;
+
+            auto newent = m_archetypes[newarch].addEntity();
+            recursiveMoveAllRequired<1>(m_archetypes[idx_.m_archetypeId], m_archetypes[newarch], idx_.m_entityId, newent);
+            m_archetypes[idx_.m_archetypeId].removeEntity(idx_.m_entityId);
+
+            return idx_;
+        }
+
+        void removeEntity(const EntityIndex &idx_)
+        {
+            m_archetypes[idx_.m_archetypeId].removeEntity(idx_.m_entityId);
+        }
+
+        void dumpAll()
+        {
+            std::cout << "=== REGISTRY === " << std::endl;
+            for (auto &el : m_archetypes)
+                el.dumpAll();
+        }
+
+        template<typename... Comps>
+        Query<TReg> makeQuery()
+        {
+            constexpr std::bitset<TReg::MaxID> bset(((1ull << (TReg::template Get<Comps>() - 1)) | ...));
+            Query<TReg> res(*this, bset, m_archetypes.size());
+
+            for (size_t archId = 0; archId < m_archetypes.size(); ++archId)
+            {
+                auto &arch = m_archetypes[archId];
+                if (arch.template containsComponents<Comps...>())
+                    res.m_archIds.push_back(archId);
+            }
 
             return res;
         }
 
-        /*
-            Request query with all archetypes that contain all specified components
-            If you want something other that conjunction, feel free to call this as much as you want, this operation really fast
-            Might potentially extend to be able to query archetypes as < INCLUDE<COMPONENT1, COMPONENT2>, EXCLUDE<COMPONENT1, COMPONENT2>>
-        */
-        template<typename... T>
-        constexpr inline auto getQuery()   
+        Archetype<TReg> &operator[](std::size_t rhs_)
         {
-            static_assert(sizeof...(T) > 0, "Registry::getTuples should receive at least 1 template parameter");
-            static_assert(is_unique<T...>, "All parameters in Registry::getTuples should be unique");
-            return Query{std::tuple_cat(filter<T...>(std::get<Args>(m_archetypes))...)};
+            return m_archetypes[rhs_];
         }
 
-        /*
-            Request query with all archetypes that contain all specified components in passed typelist
-            If you want something other that conjunction, feel free to call this as much as you want, this operation really fast
-            Might potentially extend to be able to query archetypes as < INCLUDE<COMPONENT1, COMPONENT2>, EXCLUDE<COMPONENT1, COMPONENT2>>
-        */
-        template<typename... T>
-        constexpr inline auto getQueryTl(const TypeManip::Typelist<T...> &tl)
+        template<typename T>
+        T &getComponent(const EntityIndex &ent_)
         {
-            static_assert(sizeof...(T) > 0, "Registry::getTuples should receive at least 1 template parameter");
-            static_assert(is_unique<T...>, "All parameters in Registry::getTuples should be unique");
-            return Query{std::tuple_cat(filter<T...>(std::get<Args>(m_archetypes))...)};
-        }
-
-
-        /*
-            Get archetype with specified components in this specific order
-        */
-        template<typename... T>
-        constexpr inline Archetype<T...> &get()
-        {
-            static_assert(sizeof...(T) > 0, "Registry::get should receive at least 1 template parameter");
-            static_assert(is_unique<T...>, "All parameters in Registry::get should be unique");
-            return std::get<Archetype<T...>>(m_archetypes);
-        }
-
-        /*
-            Converts entity from specified archetype to another
-        */
-        template<typename ATYPE_SRC, typename ATYPE_DST>
-        constexpr inline void convert(Entity entity_)
-        {
-            convert(std::get<ATYPE_SRC>(m_archetypes), std::get<ATYPE_DST>(m_archetypes), entity_);
-        }
-
-        /*
-            Converts entity from specified archetype to another, only used internally to split archetype into variadic template
-        */
-        template<typename ATYPE_SRC, typename... DST>
-        constexpr inline void convert(ATYPE_SRC &src_, Archetype<DST...> &dst_, Entity entity_)
-        {
-            dst_.addEntity(std::move<DST>(getComponentConstructor<DST>(src_, entity_))...);
-            src_.removeEntity(entity_);
+            return m_archetypes[ent_.m_archetypeId].template getComponent<T>(ent_.m_entityId);
         }
 
     private:
-        std::tuple<Args...> m_archetypes;
+        template<typename... Comps> requires TypeManip::TemplateExists<Comps...>
+        size_t getEnsureArchetype()
+        {
+            constexpr std::bitset<TReg::MaxID> bset(((1ull << (TReg::template Get<Comps>() - 1)) | ...));
+
+            auto fnd = m_archTypes.find(bset);
+
+            if (fnd != m_archTypes.end())
+            {
+                std::cout << "Found archetype " << bset << ", creating entity there" << std::endl;
+                return fnd->second;
+            }
+            else
+            {
+                std::cout << "Couldn't find archetype " << bset << ", creating new" << std::endl;
+                auto newid = m_archetypes.size();
+                m_archTypes[bset] = newid;
+                m_archetypes.emplace_back();
+                m_archetypes[newid].template addTypes<Comps...>(10);
+                return newid;
+            }
+        }
+
+        template<typename... Comps> requires TypeManip::TemplateExists<Comps...>
+        size_t getEnsureCopiedArchetype(size_t oldArchId_, const std::bitset<TReg::MaxID> &newMask_)
+        {
+            auto fnd = m_archTypes.find(newMask_);
+
+            if (fnd != m_archTypes.end())
+            {
+                std::cout << "Found archetype " << newMask_ << " by mask" << std::endl;
+                return fnd->second;
+            }
+            else
+            {
+                std::cout << "Couldn't find archetype " << newMask_ << " by mask" << std::endl;
+                std::size_t newid = m_archetypes.size();
+                m_archTypes[newMask_] = newid;
+                m_archetypes.emplace_back();
+                m_archetypes[newid].template addTypes<Comps...>(m_archetypes.at(oldArchId_), 10);
+                return newid;
+            }
+        }
+
+        template<int CurrentType, typename... Emplaced>
+        void recursiveEmplace(Archetype<TReg> &oldArch_, Archetype<TReg> &newArch_, std::size_t oldId_, std::size_t newId_)
+        {
+            if constexpr(!(TypeManip::template isListed<typename TReg::template GetById<CurrentType>, Emplaced...>()))
+            {
+                if (oldArch_.template containsComponents<typename TReg::template GetById<CurrentType>>())
+                {
+                    newArch_.template emplaceComponents<typename TReg::template GetById<CurrentType>>(newId_, std::move(oldArch_.template getComponent<typename TReg::template GetById<CurrentType>>(oldId_)));
+                }
+            }
+
+            if constexpr (CurrentType < TReg::MaxID)
+                recursiveEmplace<CurrentType + 1, Emplaced...>(oldArch_, newArch_, oldId_, newId_);
+        }
+
+        template<int CurrentType>
+        void recursiveMoveAllRequired(Archetype<TReg> &oldArch_, Archetype<TReg> &newArch_, std::size_t oldId_, std::size_t newId_)
+        {
+            if (newArch_.template containsComponents<typename TReg::template GetById<CurrentType>>())
+            {
+                newArch_.emplaceComponents(newId_, std::move(oldArch_.template getComponent<typename TReg::template GetById<CurrentType>>(oldId_)));
+            }
+
+            if constexpr (CurrentType < TReg::MaxID)
+                recursiveMoveAllRequired<CurrentType + 1>(oldArch_, newArch_, oldId_, newId_);
+        }
+
+        template<typename... Ts>
+        static constexpr std::bitset<TReg::MaxID> extendMask(const std::bitset<TReg::MaxID> &bitset_)
+        {
+            std::bitset<TReg::MaxID> bset2(((1ull << (TReg::template Get<Ts>() - 1)) | ...));
+            return bitset_ | bset2;
+        }
+
+        template<typename... Ts>
+        static constexpr std::bitset<TReg::MaxID> removeFromMask(const std::bitset<TReg::MaxID> &bitset_)
+        {
+            std::bitset<TReg::MaxID> bset2(((~(1ull << (TReg::template Get<Ts>() - 1))) & ...));
+            return bitset_ & bset2;
+        }
+
+        std::vector<Archetype<TReg>> m_archetypes;
+        std::unordered_map<std::bitset<TReg::MaxID>, size_t> m_archTypes;
 
     };
-
-    template<typename... CompList>
-    struct EntityData
-    {
-        using ComponentList = TypeManip::Typelist<CompList...>;
-        using MakeRef = EntityRef<CompList...>;
-
-        template<typename STATES_T>
-        using WithSM = TypeManip::Typelist<CompList..., StateMachine<MakeRef, STATES_T>>;
-    };
-
-}
-
-template<typename... Components_t>
-std::ostream &operator<<(std::ostream &os_, const std::tuple<Components_t...> &rhs_)
-{
-    auto sz = sizeof...(Components_t);
-    ((os_ << std::get<Components_t>(rhs_) << (--sz > 0 ? ", " : "")), ...);
-    return os_;
 }
 
 #endif

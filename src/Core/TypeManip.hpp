@@ -89,6 +89,7 @@ namespace TypeManip
         os_ << "(EMPTY)\n";
     }
 
+    // Structures to statically map ints (or potentially any type) to types
     template<typename T, int ID>
     struct MapField
     {
@@ -109,11 +110,28 @@ namespace TypeManip
             return GetRecursive<T, Rest...>();
         }
     }
+
+    template<int ID, typename Current, typename... Rest>
+    constexpr auto GetRecursiveField()
+    {
+        if constexpr (ID == Current::Value)
+        {
+            return Current();
+        }
+        else
+        {
+            static_assert(sizeof...(Rest) > 0, "ID was not found");
+            return GetRecursiveField<ID, Rest...>();
+        }
+    }
     
-    template<int Next = 0, typename... Ts>
+    
+    template<int Next = 1, typename... Ts>
     struct TypeRegistry
     {
-        using Create = TypeRegistry<0>;
+        static constexpr inline int MaxID = Next - 1;
+
+        using Create = TypeRegistry<1>;
     
         template<typename T>
         using Add = TypeRegistry<Next + 1, Ts..., MapField<T, Next>>;
@@ -123,8 +141,12 @@ namespace TypeManip
         {
             return GetRecursive<T, Ts...>();
         }
+
+        template<int ID>
+        using GetById = typename decltype(GetRecursiveField<ID, Ts...>())::Type;
     };
     
+    // Functions to sort types in typelist according to TypeRegistry
     template<typename TypeRegistry, typename T>
     constexpr bool isSorted()
     {
@@ -178,6 +200,7 @@ namespace TypeManip
         return pushForward<TypeRegistry>(TypeManip::Typelist<T1>() + sort<TypeRegistry>(TypeManip::Typelist<T2, Rest...>()));
     }
 
+    // Is last type in template pack a specialization of certain template
     template<template<typename...> typename Base_t, typename T>
     constexpr bool isLastSpecialization()
     {
@@ -190,18 +213,11 @@ namespace TypeManip
         return isLastSpecialization<Base_t, Rest...>();
     }
 
-    // Вспомогательная структура для создания нового кортежа без последнего элемента
-template<typename Tuple, std::size_t... Is>
-auto tuple_without_last_impl(Tuple&& tup, std::index_sequence<Is...>) {
-    return std::tie(std::get<Is>(std::forward<Tuple>(tup))...);
-}
-
-template<typename Tuple>
-auto tupleWithoutLast(Tuple&& tup) {
-    constexpr std::size_t size = std::tuple_size<std::decay_t<Tuple>>::value;
-    return tuple_without_last_impl(std::forward<Tuple>(tup), std::make_index_sequence<size - 1>());
-}
-
+    template<typename T, typename... Ts>
+    constexpr bool isListed()
+    {
+        return (std::is_same_v<T, Ts> || ...);
+    }
 
 }
 
