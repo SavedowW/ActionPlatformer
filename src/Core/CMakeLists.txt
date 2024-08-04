@@ -19,8 +19,7 @@ TextManager.cpp
 TimelineProperty.cpp
 ResourceCounter.cpp
 EngineAnimation.cpp
-HUD.cpp
-DebugDataWidget.cpp
+ImmediateScreenLog.cpp
 utf8.cpp
 InputState.cpp
 InputComparators.cpp

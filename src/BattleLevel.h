@@ -10,9 +10,11 @@
 #include <SDL_ttf.h>
 #include <ranges>
 #include <set>
-#include "DebugDataWidget.h"
+#include "ImmediateScreenLog.h"
 #include "DecorationBuilder.h"
 #include "PlayableCharacter.h"
+
+// FIXME: when character taps jump under first vertical collider and teleports on top of it
 
 /* 
     TODO: porting:
@@ -42,6 +44,34 @@ struct CameraSystem
     entt::entity m_playerId;
     Camera &m_cam;
     std::optional<entt::entity> m_currentFocusArea;
+};
+
+struct HudSystem
+{
+public:
+    HudSystem(entt::registry &reg_, Application &app_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, Uint32 &frameTime_);
+
+    void draw();
+    void drawCommonDebug();
+    void drawPlayerDebug();
+
+    entt::entity m_playerId;
+
+private:
+    Renderer &m_renderer;
+    TextManager &m_textManager;
+    entt::registry &m_reg;
+
+    Camera &m_cam;
+    int m_lvlId;
+    Vector2<float> m_lvlSize;
+    Uint32 &m_frameTime;
+
+    ImmediateScreenLog m_commonLog;
+    ImmediateScreenLog m_playerLog;
+
+    Texture_t m_arrowIn;
+    Texture_t m_arrowOut;
 };
 
 struct RenderSystem
@@ -103,7 +133,6 @@ protected:
     void update() override;
     void draw() override;
 
-    HUD m_hud;
     Camera m_camera;
 
     std::vector<CameraFocusArea> m_camFocusAreas;
@@ -118,6 +147,7 @@ protected:
     InputHandlingSystem m_inputsys;
     PhysicsSystem m_physsys;
     CameraSystem m_camsys;
+    HudSystem m_hudsys;
 };
 
 #endif

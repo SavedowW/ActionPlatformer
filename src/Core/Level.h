@@ -5,7 +5,6 @@
 #include "InputSystem.h"
 #include "Timer.h"
 #include "Vector2.h"
-#include "HUD.h"
 
 class Application;
 
