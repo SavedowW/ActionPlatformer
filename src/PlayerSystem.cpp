@@ -32,6 +32,16 @@ void PlayerSystem::setup()
         inp.m_inputResolver->subscribePlayer();
         inp.m_inputResolver->setInputEnabled(true);
 
+        sm.addState(std::unique_ptr<GenericState>(
+            &(new PlayerActionWallCling(
+                m_animManager.getAnimID("Char1/prejump"), {CharacterState::NONE, {CharacterState::FLOAT}}))
+            ->setDrag(TimelineProperty<Vector2<float>>({
+                {0, {1.0f, 0.3f}},
+                {1, {1.0f, 0.3f}},
+                }))
+            .setTransitionOnTouchedGround(CharacterState::IDLE)
+        ));
+
 
         sm.addState(std::unique_ptr<GenericState>(
             &(new PlayerState<false, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, true, InputComparatorIdle, InputComparatorIdle>(

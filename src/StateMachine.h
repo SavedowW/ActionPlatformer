@@ -2,14 +2,8 @@
 #define STATE_MACHINE_H_
 #include "Vector2.h"
 #include "StateMarker.hpp"
+#include "World.h"
 #include "CoreComponents.h"
-#include <entt/entt.hpp>
-
-struct EntityAnywhere
-{
-    entt::registry *reg;
-    entt::entity idx;
-};
 
 using CharState = int;
 

@@ -26,6 +26,7 @@ RenderSystem.cpp
 CameraSystem.cpp
 HUDSystem.cpp
 InputHandlingSystem.cpp
+World.cpp
 )
 
 set(INCLUDE_DIRS
