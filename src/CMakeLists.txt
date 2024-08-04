@@ -20,6 +20,12 @@ DecorLayers.cpp
 PlayableCharacter.cpp
 TileMapHelper.cpp
 StateMachine.cpp
+PhysicsSystem.cpp
+PlayerSystem.cpp
+RenderSystem.cpp
+CameraSystem.cpp
+HUDSystem.cpp
+InputHandlingSystem.cpp
 )
 
 set(INCLUDE_DIRS
