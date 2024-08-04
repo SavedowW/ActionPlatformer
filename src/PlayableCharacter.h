@@ -69,24 +69,6 @@ public:
     {
     }
 
-    inline virtual void enter(EntityAnywhere owner_, CharState from_) override
-    {
-        GenericState::enter(owner_, from_);
-
-        /* TODO: realign for input direction
-
-        auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
-        if (m_realignOnSwitchForInput)
-        {
-            auto indir = m_inputResolver.getCurrentInputDir();
-            if (indir.x > 0)
-                ParentClass::m_transform.m_ownOrientation = ORIENTATION::RIGHT;
-            else if (indir.x < 0)
-                ParentClass::m_transform.m_ownOrientation = ORIENTATION::LEFT;
-        }
-        */
-    }
-
     inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_)
     {
         auto res = GenericState::update(owner_, currentFrame_);
@@ -281,7 +263,7 @@ public:
         if (!stillValid)
         {
             if (physical.getPosOffest().y < 0)
-                physical.m_velocity.y -= 5.0f;
+                physical.m_velocity.y -= 3.0f;
             
             m_parent->switchCurrentState(owner_, m_transitionOnLeave);
         }
@@ -331,6 +313,84 @@ public:
 protected:
     using ParentAction = PlayerState<false, true, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail>;
     CharacterState m_transitionOnLeave;
+};
+
+class PlayerActionWallPrejump: public PlayerState<true, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>
+{
+public:
+    PlayerActionWallPrejump(int anim_, StateMarker transitionableFrom_) :
+        PlayerState<true, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>(CharacterState::WALL_CLING_PREJUMP, std::move(transitionableFrom_), anim_)
+    {
+        setGravity(TimelineProperty<Vector2<float>>({0.0f, 0.020f}));
+        setConvertVelocityOnSwitch(true);
+    }
+
+    inline virtual void enter(EntityAnywhere owner_, CharState from_) override
+    {
+        ParentAction::enter(owner_, from_);
+
+        auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
+
+        if (physical.m_inertia.y > 0)
+            physical.m_inertia.y = 0;
+        if (physical.m_velocity.y > 0)
+            physical.m_velocity.y = 0;
+    }
+
+    virtual void onOutdated(EntityAnywhere owner_)
+    {
+        auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
+        auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
+        auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
+        auto &cworld = owner_.reg->get<World>(owner_.idx);
+
+        const auto &inq = compInput.m_inputResolver->getInputQueue();
+
+        Vector2<float> targetSpeed;
+        int orient = static_cast<int>(transform.m_orientation);
+
+        bool upIn = m_u(inq, 0);
+        bool sideIn = (orient > 0 ? m_r(inq, 0) : m_l(inq, 0));
+        bool downIn = m_d(inq, 0);
+
+        bool fall = false;
+
+        if (upIn)
+        {
+            if (sideIn)
+                targetSpeed = {orient * 5.0f, -5.5f};
+            else
+                targetSpeed = {orient * 1.0f, -6.5f};
+        }
+        else if (sideIn)
+        {
+            if (downIn)
+                targetSpeed = {orient * 6.0f, 0.0f};
+            else
+                targetSpeed = {orient * 7.0f, -3.0f};
+        }
+        else
+            fall = true;
+
+        std::cout << targetSpeed << std::endl;
+
+        if (fall)
+        {
+            physical.m_velocity = {0.0f, 0.1f};
+            physical.m_inertia = {0.0f, 0.0f};
+        }
+        else
+            physical.m_velocity += targetSpeed;
+
+        ParentAction::onOutdated(owner_);
+    }
+
+protected:
+    using ParentAction = PlayerState<true, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>;
+    InputComparatorHoldLeft m_l;
+    InputComparatorHoldRight m_r;
+    InputComparatorHoldUp m_u;
+    InputComparatorHoldDown m_d;
 };
 
 #endif

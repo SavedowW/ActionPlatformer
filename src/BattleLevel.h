@@ -14,12 +14,6 @@
 #include "HUDSystem.h"
 #include "InputHandlingSystem.h"
 
-/* 
-    TODO: porting:
-    Rest of the states
-    Triggers, wall clinging
-*/
-
 class BattleLevel : public Level
 {
 public:
