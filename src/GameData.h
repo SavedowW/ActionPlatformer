@@ -7,22 +7,33 @@
 
 namespace gamedata
 {
+    namespace colors
+    {
+        inline constexpr SDL_Color LVL1 = {233, 239, 236, 255};
+        inline constexpr SDL_Color LVL2 = {160, 160, 139, 255};
+        inline constexpr SDL_Color LVL3 = {85, 85, 104, 255};
+        inline constexpr SDL_Color LVL4 = {33, 30, 32, 255};
+    }
+
     namespace debug
     {
-        inline constexpr bool drawColliders = true;
-        inline constexpr bool drawFocusAreas = true;
+        inline constexpr bool drawColliders = false;
+        inline constexpr bool drawFocusAreas = false;
+        inline constexpr bool drawCameraOffset = false;
     }
 
     namespace global
     {
         inline constexpr float framerate = 60.0f;
+        inline constexpr float dbgslowdownfps = 20.0f;
         inline constexpr Vector2<float> tileSize = {16.0f, 16.0f};
         inline constexpr int numberOfLevels = 2;
         inline constexpr int initialLevelId = 1;
         inline constexpr Vector2<int> defaultWindowResolution = {1280, 720};
-        inline constexpr Vector2<float> baseResolution = {640.0f, 360.0f};
+        inline constexpr Vector2<float> baseResolution = {320.0f, 180.0f}; // 320 x 180 или 480 x 270
         inline constexpr Vector2<float> maxCameraSize = {640.0f, 360.0f};
-        inline constexpr Vector2<float> minCameraSize = {416.0f, 234.0f};
+        inline constexpr Vector2<float> minCameraSize = {320.0f, 180.0f};
+        inline constexpr float baseCameraScale = 1.0f;
         inline constexpr float maxCameraScale = maxCameraSize.y / baseResolution.y;
         inline constexpr float minCameraScale = minCameraSize.y / baseResolution.y;
         inline constexpr int inputBufferLength = 4;

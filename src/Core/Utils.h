@@ -111,10 +111,36 @@ namespace utils
     	return val;
     }
 
+    template <typename T>
+    inline T clampMaxPriority(const T& val, const T &min, const T &max)
+    {
+        if (val > max)
+    		return max;
+
+    	if (val < min)
+        {
+            if (max <= min)
+                return max;
+            else
+    		    return min;
+        }
+    
+    	return val;
+    }
+
     template <bool ON_NULLS = true, typename T1, typename T2>
     inline bool sameSign(const T1 &v1, const T2 &v2)
     {
     	return (v1 > 0 && v2 > 0 || v1 < 0 && v2 < 0 || v1 == v2 && ON_NULLS);
+    }
+
+    template <typename T>
+    inline T signof(const T &val_)
+    {
+        if (val_ >= 0)
+            return 1;
+        else
+            return -1;
     }
 
     template <typename T>

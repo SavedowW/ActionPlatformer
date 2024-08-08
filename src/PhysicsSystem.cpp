@@ -24,6 +24,8 @@ void PhysicsSystem::update()
 
 void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, StateMachine *sm_)
 {
+    auto oldPos = trans_.m_pos;
+
     // Common stuff
     phys_.m_velocity += phys_.m_gravity;
 
@@ -97,7 +99,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
             if (obstacleId_ && !obsFallthrough_.touchedObstacleBottom(obstacleId_))
                 return;
 
-            std::cout << "Touched ceiling, teleporting to bottom, offset.y < 0\n";
+            //std::cout << "Touched ceiling, teleporting to bottom, offset.y < 0\n";
 
             auto overlapPortion = utils::getOverlapPortion(pb.getLeftEdge(), pb.getRightEdge(), csc_.m_collider.m_points[0].x, csc_.m_collider.m_points[1].x);
 
@@ -131,7 +133,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
             if (obstacleId_ && !obsFallthrough_.touchedObstacleSlope(obstacleId_))
                 return;
 
-            std::cout << "Touched slope, teleporting on top, offset.x > 0\n";
+            //std::cout << "Touched slope, teleporting on top, offset.x > 0\n";
 
             trans_.m_pos.y = highest;
             if (csc_.m_collider.m_topAngleCoef != 0)
@@ -153,14 +155,14 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
 
             if (overlapPortion >= 0.1 || !phys_.m_onSlopeWithAngle != 0)
             {
-                std::cout << "Touched edge, teleporting to it, offset.x > 0\n";
+                //std::cout << "Touched edge, teleporting to it, offset.x > 0\n";
                 trans_.m_pos.x = csc_.m_collider.m_tlPos.x - pb.m_halfSize.x;
                 pb = phys_.m_pushbox + trans_.m_pos;
             }
 
             if (overlapPortion >= 0.15)
             {
-                std::cout << "Hard collision, limiting speed\n";
+                //std::cout << "Hard collision, limiting speed\n";
                 if (phys_.m_velocity.x > 0)
                     phys_.m_velocity.x = 0;
                 if (phys_.m_inertia.x > 0)
@@ -188,7 +190,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
             if (obstacleId_ && !obsFallthrough_.touchedObstacleSlope(obstacleId_))
                 return;
 
-            std::cout << "Touched slope, teleporting on top, offset.x < 0\n";
+            //std::cout << "Touched slope, teleporting on top, offset.x < 0\n";
 
             trans_.m_pos.y = highest;
             if (csc_.m_collider.m_topAngleCoef != 0)
@@ -210,14 +212,14 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
 
             if (overlapPortion >= 0.1 || !phys_.m_onSlopeWithAngle != 0)
             {
-                std::cout << "Touched edge, teleporting to it, offset.x < 0\n";
+                //std::cout << "Touched edge, teleporting to it, offset.x < 0\n";
                 trans_.m_pos.x = csc_.m_collider.m_tlPos.x + csc_.m_collider.m_size.x + pb.m_halfSize.x;
                 pb = phys_.m_pushbox + trans_.m_pos;
             }
 
             if (overlapPortion >= 0.15)
             {
-                std::cout << "Hard collision, limiting speed\n";
+                //std::cout << "Hard collision, limiting speed\n";
                 if (phys_.m_velocity.x < 0)
                     phys_.m_velocity.x = 0;
                 if (phys_.m_inertia.x < 0)
@@ -298,6 +300,8 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
         }
     }
 
+    phys_.m_appliedOffset = trans_.m_pos - oldPos;
+
     obsFallthrough_.m_isIgnoringObstacles.update();
 }
 
@@ -309,13 +313,15 @@ bool PhysicsSystem::magnetEntity(auto &clds_, ComponentTransform &trans_, Compon
     auto pb = phys_.m_pushbox + trans_.m_pos;
 
     float height = trans_.m_pos.y;
-    if ( getHighestVerticalMagnetCoord(clds_, pb, height, obsFallthrough_.m_ignoredObstacles, obsFallthrough_.m_isIgnoringObstacles.isActive()))
+    const auto [found, pcld] = getHighestVerticalMagnetCoord(clds_, pb, height, obsFallthrough_.m_ignoredObstacles, obsFallthrough_.m_isIgnoringObstacles.isActive());
+    if ( found )
     {
         float magnetRange = height - trans_.m_pos.y;
         if (magnetRange <= phys_.m_magnetLimit)
         {
-            std::cout << "MAGNET: " << magnetRange << std::endl;
+            //std::cout << "MAGNET: " << magnetRange << std::endl;
             trans_.m_pos.y = height;
+            phys_.m_onSlopeWithAngle = pcld->m_topAngleCoef;
             return true;
         }
     }
@@ -323,12 +329,13 @@ bool PhysicsSystem::magnetEntity(auto &clds_, ComponentTransform &trans_, Compon
     return false;
 }
 
-bool PhysicsSystem::getHighestVerticalMagnetCoord(auto &clds_, const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_)
+std::pair<bool, const SlopeCollider*> PhysicsSystem::getHighestVerticalMagnetCoord(auto &clds_, const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_)
 {
     float baseCoord = coord_;
     float bot = cld_.getBottomEdge();
     bool isFound = false;
-    auto proceedCollider = [&ignoreAllObstacles_, &ignoredObstacles_, &baseCoord, &isFound, &coord_, &cld_](const SlopeCollider &areaCld_, int obstacleId_)
+    const SlopeCollider *foundcld = nullptr;
+    auto proceedCollider = [&foundcld, &ignoreAllObstacles_, &ignoredObstacles_, &baseCoord, &isFound, &coord_, &cld_](const SlopeCollider &areaCld_, int obstacleId_)
     {
         if (obstacleId_ && (ignoreAllObstacles_ || ignoredObstacles_.contains(obstacleId_)))
             return;
@@ -341,6 +348,7 @@ bool PhysicsSystem::getHighestVerticalMagnetCoord(auto &clds_, const Collider &c
             {
                 coord_ = height;
                 isFound = true;
+                foundcld = &areaCld_;
             }
         }
     };
@@ -360,7 +368,7 @@ bool PhysicsSystem::getHighestVerticalMagnetCoord(auto &clds_, const Collider &c
 
     clds_.each(distrbObstacle);
 
-    return isFound;
+    return {isFound, foundcld};
 }
 
 void PhysicsSystem::resetEntityObstacles(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_)
@@ -372,8 +380,8 @@ void PhysicsSystem::resetEntityObstacles(ComponentTransform &trans_, ComponentPh
         touched.begin(), touched.end(),
         std::inserter(res, res.begin()));
 
-    if (obsFallthrough_.m_ignoredObstacles.size() != res.size())
-        std::cout << "Reseted obstacles\n";
+    //if (obsFallthrough_.m_ignoredObstacles.size() != res.size())
+    //    std::cout << "Reseted obstacles\n";
 
     obsFallthrough_.m_ignoredObstacles = res;
 }

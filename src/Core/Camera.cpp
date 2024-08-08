@@ -93,6 +93,10 @@ void Camera::smoothMoveTowards(const Vector2<float> &pos_, const Vector2<float> 
     //std::cout << "Move by " << offsetLen << std::endl;
     
     offset *= offsetLen;
+
+    offset.x = utils::signof(offset.x) * utils::clampMaxPriority(abs(offset.x), 0.25f, abs(deltaVec.x));
+    offset.y = utils::signof(offset.y) * utils::clampMaxPriority(abs(offset.y), 0.25f, abs(deltaVec.y));
+
     //m_pos += offset;
     setPos(m_pos + offset);
 

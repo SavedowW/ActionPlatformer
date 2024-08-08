@@ -35,6 +35,7 @@ public:
     //void renderTexture(SDL_Texture* tex_, float x_, float y_, float angle_, SDL_FPoint* center_, SDL_RendererFlip flip_);
 
     //Primitives
+    void drawLine(const Vector2<float> &p1_, const Vector2<float> &p2_, const SDL_Color& col_, const Camera &cam_);
     void drawRectangle(const Vector2<float> &pos_, const Vector2<float> &size_, const SDL_Color& col_, const Camera &cam_);
     void drawRectangle(const Vector2<float> &pos_, const Vector2<float> &size_, const SDL_Color& col_);
     void fillRectangle(const Vector2<float> &pos_, const Vector2<float> &size_, const SDL_Color& col_, const Camera &cam_);

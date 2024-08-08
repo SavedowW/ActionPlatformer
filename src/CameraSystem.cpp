@@ -1,6 +1,7 @@
 #include "CameraSystem.h"
 #include "CameraFocusArea.h"
 #include "CoreComponents.h"
+#include "GameData.h"
 
 CameraSystem::CameraSystem(entt::registry &reg_, Camera &cam_) :
     m_reg(reg_),
@@ -12,19 +13,62 @@ void CameraSystem::update()
 {
     Vector2<float> target;
     auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(m_playerId);
-    if ((phys.m_velocity + phys.m_inertia) != Vector2{0.0f, 0.0f})
-    {
-        auto tarcamoffset = utils::limitVectorLength((phys.m_velocity + phys.m_inertia).mulComponents(Vector2{1.0f, 0.0f}) * 30, 100.0f);
-        auto deltaVec = tarcamoffset - dtar.m_offset;
-        auto dlen = deltaVec.getLen();
-        auto ddir = deltaVec.normalised();
-        float offsetLen = pow(dlen, 2.0f) / 400.0f;
-        offsetLen = utils::clamp(offsetLen, 0.0f, dlen);
 
-        dtar.m_offset += ddir * offsetLen;
+    if (phys.m_appliedOffset.x != 0)
+    {
+        auto targetoffset = utils::signof(phys.m_appliedOffset.x) * std::min(abs(phys.m_appliedOffset.x * 30.0f), 100.0f);
+        auto delta = targetoffset - dtar.m_offset.x;
+        float realOffset = 0.0f;
+        if (abs(delta) <= 1.0f)
+        {
+            realOffset = delta;
+        }
+        else
+        {
+            realOffset = utils::signof(delta) * pow(abs(delta), 2.0f) / 400.0f;
+        }
+        dtar.m_offset.x += realOffset;
+
+        m_hResetDelay.begin(H_DELAY);
+    }
+    else
+    {
+        if (m_hResetDelay.update())
+        {
+            dtar.m_offset.x -= utils::signof(dtar.m_offset.x) * utils::clamp(H_RESET_OFFSET, 0.0f, abs(dtar.m_offset.x));
+        }
     }
 
-    target = trans.m_pos - Vector2{0.0f, 60.0f} + dtar.m_offset;
+    if (phys.m_appliedOffset.y != 0)
+    {
+        float vprio = (phys.m_onSlopeWithAngle == 0.0f ? 0.0f : 1.5f);
+        auto targetoffset = utils::signof(phys.m_appliedOffset.y) * std::min(abs(phys.m_appliedOffset.y * vprio * 20.0f), 100.0f);
+        auto delta = targetoffset - dtar.m_offset.y;
+        float realOffset = 0.0f;
+        if (abs(delta) <= 1.0f)
+        {
+            realOffset = delta;
+        }
+        else
+        {
+            realOffset = utils::signof(delta) * pow(abs(delta), 2.0f) / 400.0f;
+        }
+        dtar.m_offset.y += realOffset;
+
+        m_vResetDelay.begin(V_DELAY);
+    }
+    else
+    {
+        if (m_vResetDelay.update())
+        {
+            dtar.m_offset.y -= utils::signof(dtar.m_offset.y) * utils::clamp(V_RESET_OFFSET, 0.0f, abs(dtar.m_offset.y));
+        }
+    }
+
+    if (phys.m_onSlopeWithAngle == 0.0f)
+        dtar.m_offset.y = utils::signof(dtar.m_offset.y) * utils::clamp(abs(dtar.m_offset.y), 0.0f, 20.0f);
+
+    target = Vector2<int>{trans.m_pos} + BODY_OFFSET + Vector2<int>{dtar.m_offset};
 
     if (updateFocus(phys.m_pushbox + trans.m_pos))
     {
@@ -35,7 +79,7 @@ void CameraSystem::update()
     else
     {
         m_cam.smoothMoveTowards(target, {1.0f, 0.5f}, 5.0f, 1.6f, 80.0f);
-        m_cam.smoothScaleTowards(gamedata::global::maxCameraScale);
+        m_cam.smoothScaleTowards(gamedata::global::baseCameraScale);
     }
 }
 
@@ -62,4 +106,14 @@ bool CameraSystem::updateFocus(const Collider &playerPb_)
     }
 
     return false;
+}
+
+void CameraSystem::debugDraw(Renderer &ren_, Camera &cam_)
+{
+    if (!gamedata::debug::drawCameraOffset)
+        return;
+
+    auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(m_playerId);
+    ren_.drawLine(trans.m_pos, trans.m_pos + dtar.m_offset, {188, 74, 155, 255}, cam_);
+    ren_.drawLine(trans.m_pos + dtar.m_offset, trans.m_pos + dtar.m_offset + BODY_OFFSET, {188, 74, 155, 255}, cam_);
 }

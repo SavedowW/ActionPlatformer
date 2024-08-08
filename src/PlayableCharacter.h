@@ -19,7 +19,7 @@ enum class CharacterState {
 
 inline const std::map<CharacterState, std::string> CharacterStateNames {
     {CharacterState::IDLE, "IDLE"},
-    {CharacterState::FLOAT, "IDLE"},
+    {CharacterState::FLOAT, "FLOAT"},
     {CharacterState::RUN, "RUN"},
     {CharacterState::PREJUMP, "PREJUMP"},
     {CharacterState::PREJUMP_FORWARD, "PREJUMP_FORWARD"},
@@ -181,13 +181,13 @@ public:
 
         if (m_driftLeftInput(inq, 0))
         {
-            if (phys.m_velocity.x > -4.0f)
+            if (phys.m_velocity.x > -2.5f)
                 phys.m_velocity.x -= 0.15f;
         }
 
         if (m_driftRightInput(inq, 0))
         {
-            if (phys.m_velocity.x < 4.0f)
+            if (phys.m_velocity.x < 2.5f)
                 phys.m_velocity.x += 0.15f;
         }
 

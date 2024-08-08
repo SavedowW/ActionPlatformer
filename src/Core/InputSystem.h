@@ -21,6 +21,7 @@ enum class EVENTS
 	FN1,
 	FN2,
 	FN3,
+	FORWARD_DBG,
 	NONE
 };
 

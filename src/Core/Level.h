@@ -43,6 +43,8 @@ protected:
 
     bool m_globalPause = false;
     Uint32 m_lastFrameTimeMS = 0;
+    bool m_allowIter = false;
+    bool m_forcerun = false;
 };
 
 #endif

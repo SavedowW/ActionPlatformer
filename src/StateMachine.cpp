@@ -190,7 +190,7 @@ void GenericState::enter(EntityAnywhere owner_, CharState from_)
     if (m_cooldown)
         m_cooldown->begin(m_cooldownTime);
 
-    physical.m_pushbox = Collider{Vector2{0.0f, -30.0f}, Vector2{10.0f, 30.0f}}; // TODO: to property
+    //physical.m_pushbox = Collider{Vector2{0.0f, -30.0f}, Vector2{10.0f, 30.0f}}; // TODO: to property
 
     physical.m_noUpwardLanding = m_noUpwardLanding[0];
     physical.m_magnetLimit = m_magnetLimit[0];

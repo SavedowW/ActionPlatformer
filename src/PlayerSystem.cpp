@@ -12,7 +12,7 @@ void PlayerSystem::setup()
     auto view = m_reg.view<ComponentTransform, ComponentPhysical, ComponentPlayerInput, ComponentAnimationRenderable, StateMachine>();
     view.each([&m_animManager = this->m_animManager](auto idx_, ComponentTransform &trans, ComponentPhysical &phys, ComponentPlayerInput &inp, ComponentAnimationRenderable &animrnd, StateMachine &sm)
     {
-        animrnd.m_animations[m_animManager.getAnimID("Char1/idle")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/idle"), LOOPMETHOD::NOLOOP);
+        animrnd.m_animations[m_animManager.getAnimID("Char1/idle")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/idle"), LOOPMETHOD::JUMP_LOOP);
         animrnd.m_animations[m_animManager.getAnimID("Char1/run")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/run"), LOOPMETHOD::JUMP_LOOP);
         animrnd.m_animations[m_animManager.getAnimID("Char1/prejump")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/prejump"), LOOPMETHOD::JUMP_LOOP);
         animrnd.m_animations[m_animManager.getAnimID("Char1/float")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/float"), LOOPMETHOD::NOLOOP);
@@ -25,7 +25,7 @@ void PlayerSystem::setup()
         animrnd.m_currentAnimation->reset();
 
 
-        phys.m_pushbox = {Vector2{0.0f, -30.0f}, Vector2{10.0f, 30.0f}};
+        phys.m_pushbox = {Vector2{0.0f, -16.0f}, Vector2{10.0f, 16.0f}};
         phys.m_gravity = {0.0f, 0.5f};
 
 
@@ -65,21 +65,21 @@ void PlayerSystem::setup()
                 TimelineProperty<Vector2<float>>(
                     {
                         {0, {0.0f, 0.0f}},
-                        {3, {3.5f, 0.0f}},
+                        {1, {1.5f, 0.0f}},
                     }), // Dir vel mul
                 TimelineProperty<Vector2<float>>(
                     {
                         {0, {0.0f, 0.0f}},
-                        {3, {0.0f, -5.0f}},
+                        {1, {0.0f, -4.0f}},
                     }), // Raw vel
                 TimelineProperty<Vector2<float>>(
                     {
                         {0, {1.0f, 1.0f}},
-                        {3, {0.5f, 1.0f}}
+                        {1, {0.5f, 1.0f}}
                     }), // Inr mul
                 TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
                 TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
-            .setOutdatedTransition(CharacterState::FLOAT, 3)
+            .setOutdatedTransition(CharacterState::FLOAT, 1)
             .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
             .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
         ));
@@ -98,16 +98,16 @@ void PlayerSystem::setup()
                 TimelineProperty<Vector2<float>>(
                     {
                         {0, {0.0f, 0.0f}},
-                        {4, {0.0f, -6.0f}},
+                        {1, {0.0f, -4.5f}},
                     }), // Raw vel
                 TimelineProperty<Vector2<float>>(
                     {
                         {0, {1.0f, 1.0f}},
-                        {4, {0.5f, 1.0f}}
+                        {1, {0.5f, 1.0f}}
                     }), // Inr mul
                 TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
                 TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
-            .setOutdatedTransition(CharacterState::FLOAT, 4)
+            .setOutdatedTransition(CharacterState::FLOAT, 1)
             .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
             .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
             .setUpdateSpeedLimitData(
@@ -132,7 +132,7 @@ void PlayerSystem::setup()
                 TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
                 TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
             .setUpdateSpeedLimitData(
-                TimelineProperty<Vector2<float>>({3.75f, 0.0f}),
+                TimelineProperty<Vector2<float>>({2.5f, 0.0f}),
                 TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
             .setTransitionOnLostGround(CharacterState::FLOAT)
             .setMagnetLimit(TimelineProperty<float>(10.0f))

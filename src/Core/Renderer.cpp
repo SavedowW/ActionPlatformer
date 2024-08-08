@@ -98,7 +98,7 @@ void Renderer::renderTexture(SDL_Texture* tex_, const SDL_Rect *src_, const SDL_
 
 void Renderer::renderTexture(SDL_Texture *tex_, float x_, float y_, float w_, float h_, const SDL_Rect &src, const Camera &cam_, SDL_RendererFlip flip_)
 {
-    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
+    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2{m_backbuffGameplay.m_w, m_backbuffGameplay.m_h} / 2;
 	Vector2<int> texTL = Vector2{x_, y_} - camTL;
 
     SDL_Rect dst;
@@ -126,7 +126,7 @@ void Renderer::renderTexture(SDL_Texture *tex_, float x_, float y_, float w_, fl
 
 void Renderer::renderTexture(SDL_Texture* tex_, float x_, float y_, float w_, float h_, const Camera &cam_, float angle_, SDL_RendererFlip flip_)
 {
-	Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
+	Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2{m_backbuffGameplay.m_w, m_backbuffGameplay.m_h} / 2;
 	Vector2<int> texTL = Vector2{x_, y_} - camTL;
 
 	SDL_FPoint center;
@@ -163,9 +163,19 @@ void Renderer::renderTexture(SDL_Texture* tex_, float x_, float y_, float w_, fl
     renderTexture(tex_, x_, y_, w, h);
 }*/
 
-void Renderer::drawRectangle(const Vector2<float> &pos_, const Vector2<float> &size_, const SDL_Color& col_, const Camera &cam_)
+void Renderer::drawLine(const Vector2<float> &p1_, const Vector2<float> &p2_, const SDL_Color &col_, const Camera &cam_)
 {
-	Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
+    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2{m_backbuffGameplay.m_w, m_backbuffGameplay.m_h} / 2;
+    Vector2<int> p1 = p1_ - camTL;
+    Vector2<int> p2 = p2_ - camTL;
+
+    SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
+    SDL_RenderDrawLine(m_renderer, p1.x, p1.y, p2.x, p2.y);
+}
+
+void Renderer::drawRectangle(const Vector2<float> &pos_, const Vector2<float> &size_, const SDL_Color &col_, const Camera &cam_)
+{
+	Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2{m_backbuffGameplay.m_w, m_backbuffGameplay.m_h} / 2;
 	Vector2<int> rectTL = pos_ - camTL;
 
 	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
@@ -182,7 +192,7 @@ void Renderer::drawRectangle(const Vector2<float> &pos_, const Vector2<float> &s
 
 void Renderer::fillRectangle(const Vector2<float> &pos_, const Vector2<float> &size_, const SDL_Color& col_, const Camera &cam_)
 {
-	Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
+	Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2{m_backbuffGameplay.m_w, m_backbuffGameplay.m_h} / 2;
 	Vector2<int> rectTL = pos_ - camTL;
 
 	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
@@ -208,7 +218,7 @@ void Renderer::drawGeometry(SDL_Texture *texture, const SDL_Vertex *vertices, in
 
 void Renderer::drawCollider(const Collider &cld_, const SDL_Color &col_, uint8_t borderAlpha_, const Camera &cam_)
 {
-	Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
+	Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2{m_backbuffGameplay.m_w, m_backbuffGameplay.m_h} / 2;
 	Vector2<int> rectTL = Vector2<int>(cld_.getTopLeft()) - camTL;
     Vector2<int> rectSize = cld_.getSize();
 
@@ -226,7 +236,7 @@ void Renderer::drawCollider(const SlopeCollider &cld_, const SDL_Color &col_, ui
     SDL_Vertex vxes[4];
     int idces[6] = {0, 1, 2, 2, 3, 0};
 
-    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
+    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2{m_backbuffGameplay.m_w, m_backbuffGameplay.m_h} / 2;
 
     for (int i = 0; i < 4; ++i)
     {

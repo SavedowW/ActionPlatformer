@@ -10,6 +10,8 @@ Level::Level(Application *application_, const Vector2<float> &size_, int lvlId_)
 {
 	subscribe(EVENTS::QUIT);
 	subscribe(EVENTS::FN3);
+	subscribe(EVENTS::FN2);
+	subscribe(EVENTS::FN1);
 
 	setInputEnabled(false);
 }
@@ -38,10 +40,11 @@ LevelResult Level::proceed()
 		//system("cls");
 		m_input->handleInput();
 
-		if (!m_globalPause)
+		if (!m_globalPause || m_globalPause && m_allowIter || m_forcerun)
 		{
 			update();
 			draw();
+			m_allowIter = false;
 		}
 		//destroyRequested();
 
@@ -73,6 +76,24 @@ void Level::receiveInput(EVENTS event, const float scale_)
 		case (EVENTS::FN3):
 			if (scale_ > 0)
 				m_globalPause = !m_globalPause;
+			break;
+
+		case (EVENTS::FN2):
+			if (scale_ > 0)
+				m_allowIter = true;
+			break;
+
+		case (EVENTS::FN1):
+			if (scale_ > 0)
+			{
+				m_timeForFrame = 1000.0f / gamedata::global::dbgslowdownfps;
+				m_forcerun = true;
+			}
+			else
+			{
+				m_timeForFrame = 1000.0f / gamedata::global::framerate;
+				m_forcerun = false;
+			}
 			break;
 	}
 }

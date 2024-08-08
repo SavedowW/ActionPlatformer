@@ -101,6 +101,9 @@ void BattleLevel::enter()
     addCollider(m_registry, getColliderForTileRange(Vector2{6, 4}, Vector2{1, 7}, 0));
 
     addCollider(m_registry, getColliderForTileRange(Vector2{1, 15}, Vector2{1, 3}, 0));
+    addCollider(m_registry, getColliderForTileRange(Vector2{1, 9}, Vector2{1, 1}, 0));
+
+    //addCollider(m_registry, getColliderForTileRange(Vector2{54, 25}, Vector2{1, 1}, 0));
 
     auto newfocus = m_registry.create();
     m_registry.emplace<CameraFocusArea>(newfocus, getTilePos(Vector2{43, 16}), gamedata::global::tileSize.mulComponents(Vector2{40.0f, 32.0f}), *m_application->getRenderer());
@@ -128,11 +131,14 @@ void BattleLevel::update()
 void BattleLevel::draw()
 {
     auto &renderer = *m_application->getRenderer();
-    renderer.prepareRenderer(SDL_Color{ 31, 24, 51, 255 });
+    renderer.prepareRenderer(gamedata::colors::LVL2);
 
     m_decor.draw(m_camera);
 
     m_rendersys.draw();
+
+    m_camsys.debugDraw(renderer, m_camera);
+
     m_hudsys.draw();
 
     renderer.updateScreen(m_camera);

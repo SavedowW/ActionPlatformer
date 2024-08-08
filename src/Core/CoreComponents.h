@@ -48,6 +48,9 @@ struct ComponentPhysical
     bool m_isGrounded = true;
     bool m_noUpwardLanding = false;
 
+    // Used to calculate camera offset
+    Vector2<float> m_appliedOffset;
+
     void velocityToInertia();
     Vector2<float> getPosOffest() const;
 };
