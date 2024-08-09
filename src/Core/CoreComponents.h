@@ -49,6 +49,9 @@ struct ComponentPhysical
     bool m_isGrounded = true;
     bool m_noUpwardLanding = false;
 
+    // Used to identify offset applied before collision resolution
+    Vector2<float> m_calculatedOffset;
+
     // Used to calculate camera offset
     Vector2<float> m_appliedOffset;
 

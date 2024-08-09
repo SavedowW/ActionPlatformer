@@ -49,6 +49,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
 
     // Prepare vars for collision detection
     auto offset = phys_.getPosOffest();
+    phys_.m_calculatedOffset = offset;
     auto pb = phys_.m_pushbox + trans_.m_pos;
     bool noUpwardLanding = phys_.m_noUpwardLanding;
 

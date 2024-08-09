@@ -12,7 +12,7 @@ Camera::Camera(const Vector2<float> &pos_, const Vector2<float> &cameraBaseSize_
 
 Vector2<float> Camera::getPos() const
 {
-    return m_pos + Vector2{m_thisFrameAmp, 0.0f};
+    return m_pos + m_thisFrameAmp;
 }
 
 void Camera::setPos(const Vector2<float> &pos_)
@@ -141,22 +141,37 @@ void Camera::update()
 {
     if (m_shakeTimer.update())
     {
-        m_thisFrameAmp = 0;
+        m_thisFrameAmp = {0.0f, 0.0f};
         m_xShakeAmp = 0;
+        m_yShakeAmp = 0;
     }
-    else if (m_xShakeAmp)
+    else
     {
-        int realAmp = m_xShakeAmp * (1 - m_shakeTimer.getProgressNormalized());
-        if (realAmp)
-            m_thisFrameAmp = (rand() % realAmp) - (realAmp / 2.0f);
-        else
-            m_thisFrameAmp = 0;
+        if (m_xShakeAmp)
+        {
+            int realAmp = m_xShakeAmp * (1 - m_shakeTimer.getProgressNormalized());
+            if (realAmp)
+                m_thisFrameAmp.x = (rand() % realAmp) - (realAmp / 2.0f);
+            else
+                m_thisFrameAmp.x = 0;
 
+        }
+
+        if (m_yShakeAmp)
+        {
+            int realAmp = m_yShakeAmp * (1 - m_shakeTimer.getProgressNormalized());
+            if (realAmp)
+                m_thisFrameAmp.y = (rand() % realAmp) - (realAmp / 2.0f);
+            else
+                m_thisFrameAmp.y = 0;
+
+        }
     }
 }
 
-void Camera::startShake(int xAmp, int period)
+void Camera::startShake(int xAmp, int yAmp, int period)
 {
     m_xShakeAmp = xAmp;
+    m_yShakeAmp = yAmp;
     m_shakeTimer.begin(period);
 }

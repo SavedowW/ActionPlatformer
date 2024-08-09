@@ -40,7 +40,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_registry.emplace<ComponentAnimationRenderable>(playerId);
     m_registry.emplace<ComponentPlayerInput>(playerId, std::unique_ptr<InputResolver>(new InputResolver(application_->getInputSystem())));
     m_registry.emplace<ComponentDynamicCameraTarget>(playerId);
-    m_registry.emplace<World>(playerId, m_registry);
+    m_registry.emplace<World>(playerId, m_registry, m_camera);
     m_registry.emplace<StateMachine>(playerId);
 
     m_camsys.m_playerId = playerId;

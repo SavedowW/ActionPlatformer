@@ -22,6 +22,7 @@ void PlayerSystem::setup()
         animrnd.m_animations[m_animManager.getAnimID("Char1/FloatCling")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/FloatCling"), LOOPMETHOD::NOLOOP);
         animrnd.m_animations[m_animManager.getAnimID("Char1/prerun")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/prerun"), LOOPMETHOD::NOLOOP);
         animrnd.m_animations[m_animManager.getAnimID("Char1/run_recovery")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/run_recovery"), LOOPMETHOD::NOLOOP);
+        animrnd.m_animations[m_animManager.getAnimID("Char1/landing_recovery")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/landing_recovery"), LOOPMETHOD::NOLOOP);
 
         animrnd.m_currentAnimation = animrnd.m_animations[m_animManager.getAnimID("Char1/float")].get();
         animrnd.m_currentAnimation->reset();
@@ -55,7 +56,7 @@ void PlayerSystem::setup()
 
         sm.addState(std::unique_ptr<GenericState>(
             &(new PlayerState<false, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, true, InputComparatorIdle, InputComparatorIdle>(
-                CharacterState::PREJUMP_FORWARD, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::PRERUN, CharacterState::RUN, CharacterState::RUN_RECOVERY}}, m_animManager.getAnimID("Char1/prejump")))
+                CharacterState::PREJUMP_FORWARD, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::PRERUN, CharacterState::RUN, CharacterState::RUN_RECOVERY, CharacterState::LANDING_RECOVERY}}, m_animManager.getAnimID("Char1/prejump")))
             ->setAlignedSlopeMax(0.5f)
             .setGroundedOnSwitch(true)
             .setGravity({{0.0f, 0.0f}})
@@ -88,7 +89,7 @@ void PlayerSystem::setup()
 
         sm.addState(std::unique_ptr<GenericState>(
             &(new PlayerState<false, false, InputComparatorTapUp, InputComparatorTapUp, true, InputComparatorIdle, InputComparatorIdle>(
-                CharacterState::PREJUMP, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::PRERUN, CharacterState::RUN, CharacterState::RUN_RECOVERY}}, m_animManager.getAnimID("Char1/prejump")))
+                CharacterState::PREJUMP, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::PRERUN, CharacterState::RUN, CharacterState::RUN_RECOVERY, CharacterState::LANDING_RECOVERY}}, m_animManager.getAnimID("Char1/prejump")))
             ->setGroundedOnSwitch(true)
             .setGravity({{0.0f, 0.0f}})
             .setConvertVelocityOnSwitch(true)
@@ -143,7 +144,7 @@ void PlayerSystem::setup()
 
         sm.addState(std::unique_ptr<GenericState>(
             &(new PlayerState<false, true, InputComparatorHoldLeft, InputComparatorHoldRight, true, InputComparatorHoldLeft, InputComparatorHoldRight>(
-                CharacterState::PRERUN, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::RUN}}, m_animManager.getAnimID("Char1/prerun")))
+                CharacterState::PRERUN, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::RUN, CharacterState::LANDING_RECOVERY}}, m_animManager.getAnimID("Char1/prerun")))
             ->setGroundedOnSwitch(true)
             .setGravity({{0.0f, 0.0f}})
             .setConvertVelocityOnSwitch(true)
@@ -204,10 +205,31 @@ void PlayerSystem::setup()
         ));
 
         sm.addState(std::unique_ptr<GenericState>(
+            &(new PlayerState<true, false, InputComparatorFail, InputComparatorFail, false, InputComparatorIdle, InputComparatorIdle>(
+                CharacterState::LANDING_RECOVERY, {CharacterState::NONE, {}}, m_animManager.getAnimID("Char1/landing_recovery")))
+            ->setGroundedOnSwitch(true)
+            .setGravity({{0.0f, 0.0f}})
+            .setConvertVelocityOnSwitch(true)
+            .setTransitionOnLostGround(CharacterState::FLOAT)
+            .setMagnetLimit(TimelineProperty<float>(8.0f))
+            .setOutdatedTransition(CharacterState::IDLE, 14)
+        ));
+
+        sm.addState(std::unique_ptr<GenericState>(
+            &(new PlayerState<true, false, InputComparatorFail, InputComparatorFail, false, InputComparatorIdle, InputComparatorIdle>(
+                CharacterState::HARD_LANDING_RECOVERY, {CharacterState::NONE, {}}, m_animManager.getAnimID("Char1/landing_recovery")))
+            ->setGroundedOnSwitch(true)
+            .setGravity({{0.0f, 0.0f}})
+            .setConvertVelocityOnSwitch(true)
+            .setTransitionOnLostGround(CharacterState::FLOAT)
+            .setMagnetLimit(TimelineProperty<float>(8.0f))
+            .setOutdatedTransition(CharacterState::IDLE, 14)
+        ));
+
+        sm.addState(std::unique_ptr<GenericState>(
             &(new PlayerActionFloat(
                 m_animManager.getAnimID("Char1/float"), {CharacterState::NONE, {}}))
             ->setGroundedOnSwitch(false)
-            .setTransitionOnTouchedGround(CharacterState::IDLE)
             .setGravity({{0.0f, 0.5f}})
             .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
             .setNoLanding(TimelineProperty<bool>({{0, true}, {2, false}}))

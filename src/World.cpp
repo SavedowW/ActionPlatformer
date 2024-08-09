@@ -1,8 +1,9 @@
 #include "World.h"
 #include "CoreComponents.h"
 
-World::World(entt::registry &reg_) :
-    m_registry(reg_)
+World::World(entt::registry &reg_, Camera &cam_) :
+    m_registry(reg_),
+    m_cam(cam_)
 {
 }
 
@@ -74,4 +75,9 @@ bool World::touchingGround(const Collider &cld_, ComponentObstacleFallthrough &f
             return true;
     }
     return false;
+}
+
+Camera &World::getCamera()
+{
+    return m_cam;
 }

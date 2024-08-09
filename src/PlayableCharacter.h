@@ -14,6 +14,8 @@ enum class CharacterState : CharState {
     RUN_RECOVERY,
     PREJUMP,
     PREJUMP_FORWARD,
+    LANDING_RECOVERY,
+    HARD_LANDING_RECOVERY,
     WALL_CLING,
     WALL_CLING_PREJUMP,
     NONE
@@ -27,6 +29,8 @@ inline const std::map<CharacterState, std::string> CharacterStateNames {
     {CharacterState::RUN_RECOVERY, "RUN_RECOVERY"},
     {CharacterState::PREJUMP, "PREJUMP"},
     {CharacterState::PREJUMP_FORWARD, "PREJUMP_FORWARD"},
+    {CharacterState::LANDING_RECOVERY, "LANDING_RECOVERY"},
+    {CharacterState::HARD_LANDING_RECOVERY, "HARD_LANDING_RECOVERY"},
     {CharacterState::WALL_CLING, "WALL_CLING"},
     {CharacterState::WALL_CLING_PREJUMP, "WALL_CLING_PREJUMP"}
 };
@@ -212,6 +216,20 @@ public:
             phys.m_gravity *= 1.3f;
 
         return res;
+    }
+
+    virtual void onTouchedGround(EntityAnywhere owner_) override
+    {
+        auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
+        auto &wrld = owner_.reg->get<World>(owner_.idx);
+
+        if (phys.m_calculatedOffset.y > 20.0f)
+        {
+            m_parent->switchCurrentState(owner_, CharacterState::HARD_LANDING_RECOVERY);
+            wrld.getCamera().startShake(0, 20, 10);
+        }
+        else
+            m_parent->switchCurrentState(owner_, CharacterState::LANDING_RECOVERY);
     }
 
 protected:

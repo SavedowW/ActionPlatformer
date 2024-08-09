@@ -29,7 +29,7 @@ public:
     Vector2<float> getPositionNormalizedValues();
 
     void update();
-    void startShake(int xAmp, int period);
+    void startShake(int xAmp, int yAmp, int period);
 
 private:
     Vector2<float> m_pos;
@@ -39,7 +39,8 @@ private:
 
     FrameTimer<false> m_shakeTimer;
     int m_xShakeAmp = 0;
-    float m_thisFrameAmp = 0;
+    int m_yShakeAmp = 0;
+    Vector2<float> m_thisFrameAmp;
 
     void normalizePosition();
     Vector2<float> getCamPositionInBoundaries(const Vector2<float> &pos_);
