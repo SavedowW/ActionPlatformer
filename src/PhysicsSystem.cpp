@@ -283,6 +283,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
     }
 
     resetEntityObstacles(trans_, phys_, obsFallthrough_);
+    phys_.m_lastSlopeAngle = phys_.m_onSlopeWithAngle;
     phys_.m_onSlopeWithAngle = touchedSlope;
 
     if (sm_)
@@ -321,6 +322,7 @@ bool PhysicsSystem::magnetEntity(auto &clds_, ComponentTransform &trans_, Compon
         {
             //std::cout << "MAGNET: " << magnetRange << std::endl;
             trans_.m_pos.y = height;
+            phys_.m_lastSlopeAngle = phys_.m_onSlopeWithAngle;
             phys_.m_onSlopeWithAngle = pcld->m_topAngleCoef;
             return true;
         }

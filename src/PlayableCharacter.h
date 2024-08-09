@@ -171,8 +171,9 @@ public:
 
         auto &fallthrough = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
         auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
-        if (fallthrough.isIgnoringAllObstacles() && abs(phys.m_velocity.x) > 0.8f)
-            phys.m_velocity.y += 5.0f;
+        std::cout << fallthrough.m_ignoredObstacles.size() << std::endl;
+        if (fallthrough.isIgnoringAllObstacles() && phys.getPosOffest().x * phys.m_lastSlopeAngle > 0.0f)
+            phys.m_velocity.y += 2.0f;
     }
 
     inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
