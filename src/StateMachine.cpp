@@ -192,6 +192,7 @@ void GenericState::enter(EntityAnywhere owner_, CharState from_)
 
     //physical.m_pushbox = Collider{Vector2{0.0f, -30.0f}, Vector2{10.0f, 30.0f}}; // TODO: to property
 
+    physical.m_drag = m_drag[0];
     physical.m_noUpwardLanding = m_noUpwardLanding[0];
     physical.m_magnetLimit = m_magnetLimit[0];
 }

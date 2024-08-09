@@ -20,6 +20,8 @@ void PlayerSystem::setup()
         animrnd.m_animations[m_animManager.getAnimID("Char1/attack1_2")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/attack1_2"), LOOPMETHOD::NOLOOP);
         animrnd.m_animations[m_animManager.getAnimID("Char1/WallCling")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/WallCling"), LOOPMETHOD::NOLOOP);
         animrnd.m_animations[m_animManager.getAnimID("Char1/FloatCling")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/FloatCling"), LOOPMETHOD::NOLOOP);
+        animrnd.m_animations[m_animManager.getAnimID("Char1/prerun")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/prerun"), LOOPMETHOD::NOLOOP);
+        animrnd.m_animations[m_animManager.getAnimID("Char1/run_recovery")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/run_recovery"), LOOPMETHOD::NOLOOP);
 
         animrnd.m_currentAnimation = animrnd.m_animations[m_animManager.getAnimID("Char1/float")].get();
         animrnd.m_currentAnimation->reset();
@@ -53,7 +55,7 @@ void PlayerSystem::setup()
 
         sm.addState(std::unique_ptr<GenericState>(
             &(new PlayerState<false, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, true, InputComparatorIdle, InputComparatorIdle>(
-                CharacterState::PREJUMP_FORWARD, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::RUN}}, m_animManager.getAnimID("Char1/prejump")))
+                CharacterState::PREJUMP_FORWARD, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::PRERUN, CharacterState::RUN, CharacterState::RUN_RECOVERY}}, m_animManager.getAnimID("Char1/prejump")))
             ->setAlignedSlopeMax(0.5f)
             .setGroundedOnSwitch(true)
             .setGravity({{0.0f, 0.0f}})
@@ -86,7 +88,7 @@ void PlayerSystem::setup()
 
         sm.addState(std::unique_ptr<GenericState>(
             &(new PlayerState<false, false, InputComparatorTapUp, InputComparatorTapUp, true, InputComparatorIdle, InputComparatorIdle>(
-                CharacterState::PREJUMP, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::RUN}}, m_animManager.getAnimID("Char1/prejump")))
+                CharacterState::PREJUMP, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::PRERUN, CharacterState::RUN, CharacterState::RUN_RECOVERY}}, m_animManager.getAnimID("Char1/prejump")))
             ->setGroundedOnSwitch(true)
             .setGravity({{0.0f, 0.0f}})
             .setConvertVelocityOnSwitch(true)
@@ -116,17 +118,17 @@ void PlayerSystem::setup()
         ));
 
         sm.addState(std::unique_ptr<GenericState>(
-            &(new PlayerState<false, true, InputComparatorHoldLeft, InputComparatorHoldRight, true, InputComparatorHoldLeft, InputComparatorHoldRight>(
-                CharacterState::RUN, {CharacterState::NONE, {CharacterState::IDLE}}, m_animManager.getAnimID("Char1/run")))
+            &(new PlayerState<true, false, InputComparatorFail, InputComparatorFail, true, InputComparatorHoldLeft, InputComparatorHoldRight>(
+                CharacterState::RUN, {CharacterState::NONE, {}}, m_animManager.getAnimID("Char1/run")))
             ->setGroundedOnSwitch(true)
             .setGravity({{0.0f, 0.0f}})
             .setUpdateMovementData(
                 TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
-                TimelineProperty<Vector2<float>>( // Dir vel mul
+                TimelineProperty<Vector2<float>>( 
                     {
-                        {0, {0.3f, 0.0f}},
+                        {0, {0.4f, 0.0f}},
                         {5, {0.6f, 0.0f}},
-                    }),  
+                    }),  // Dir vel mul
                 TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Raw vel
                 TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Inr mul
                 TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
@@ -140,8 +142,55 @@ void PlayerSystem::setup()
         ));
 
         sm.addState(std::unique_ptr<GenericState>(
+            &(new PlayerState<false, true, InputComparatorHoldLeft, InputComparatorHoldRight, true, InputComparatorHoldLeft, InputComparatorHoldRight>(
+                CharacterState::PRERUN, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::RUN}}, m_animManager.getAnimID("Char1/prerun")))
+            ->setGroundedOnSwitch(true)
+            .setGravity({{0.0f, 0.0f}})
+            .setConvertVelocityOnSwitch(true)
+            .setTransitionOnLostGround(CharacterState::FLOAT)
+            .setMagnetLimit(TimelineProperty<float>(8.0f))
+            .setUpdateMovementData(
+                TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
+                TimelineProperty<Vector2<float>>( 
+                    {
+                        {0, {0.0f, 0.0f}},
+                        {3, {0.3f, 0.0f}},
+                    }),  // Dir vel mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Raw vel
+                TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
+            .setUpdateSpeedLimitData(
+                TimelineProperty<Vector2<float>>({2.5f, 0.0f}),
+                TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
+            .setOutdatedTransition(CharacterState::RUN, 5)
+        ));
+
+        sm.addState(std::unique_ptr<GenericState>(
+            &(new PlayerState<true, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>(
+                CharacterState::RUN_RECOVERY, {CharacterState::NONE, {CharacterState::PRERUN, CharacterState::RUN}}, m_animManager.getAnimID("Char1/run_recovery")))
+            ->setGroundedOnSwitch(true)
+            .setGravity({{0.0f, 0.0f}})
+            .setDrag({{0.5f, 0.0f}})
+            .setConvertVelocityOnSwitch(true)
+            .setTransitionOnLostGround(CharacterState::FLOAT)
+            .setMagnetLimit(TimelineProperty<float>(8.0f))
+            .setUpdateMovementData(
+                TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}),  // Dir vel mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Raw vel
+                TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
+                TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
+            .setUpdateSpeedLimitData(
+                TimelineProperty<Vector2<float>>({2.5f, 0.0f}),
+                TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
+            .setOutdatedTransition(CharacterState::IDLE, 9)
+        ));
+
+        sm.addState(std::unique_ptr<GenericState>(
             &(new PlayerState<false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>(
-                CharacterState::IDLE, {CharacterState::NONE, {CharacterState::RUN}}, m_animManager.getAnimID("Char1/idle")))
+                CharacterState::IDLE, {CharacterState::NONE, {}}, m_animManager.getAnimID("Char1/idle")))
             ->setGroundedOnSwitch(true)
             .setGravity({{0.0f, 0.0f}})
             .setDrag(TimelineProperty<Vector2<float>>({{0, Vector2{0.1f, 0.1f}}, {3, Vector2{0.5f, 0.5f}}}))

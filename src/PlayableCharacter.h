@@ -6,10 +6,12 @@
 #include <map>
 #include <string>
 
-enum class CharacterState {
+enum class CharacterState : CharState {
     IDLE,
     FLOAT,
+    PRERUN,
     RUN,
+    RUN_RECOVERY,
     PREJUMP,
     PREJUMP_FORWARD,
     WALL_CLING,
@@ -20,7 +22,9 @@ enum class CharacterState {
 inline const std::map<CharacterState, std::string> CharacterStateNames {
     {CharacterState::IDLE, "IDLE"},
     {CharacterState::FLOAT, "FLOAT"},
+    {CharacterState::PRERUN, "PRERUN"},
     {CharacterState::RUN, "RUN"},
+    {CharacterState::RUN_RECOVERY, "RUN_RECOVERY"},
     {CharacterState::PREJUMP, "PREJUMP"},
     {CharacterState::PREJUMP_FORWARD, "PREJUMP_FORWARD"},
     {CharacterState::WALL_CLING, "WALL_CLING"},
