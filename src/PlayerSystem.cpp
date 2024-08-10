@@ -16,10 +16,8 @@ void PlayerSystem::setup()
         animrnd.m_animations[m_animManager.getAnimID("Char1/run")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/run"), LOOPMETHOD::JUMP_LOOP);
         animrnd.m_animations[m_animManager.getAnimID("Char1/prejump")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/prejump"), LOOPMETHOD::JUMP_LOOP);
         animrnd.m_animations[m_animManager.getAnimID("Char1/float")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/float"), LOOPMETHOD::NOLOOP);
-        animrnd.m_animations[m_animManager.getAnimID("Char1/attack1_1")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/attack1_1"), LOOPMETHOD::NOLOOP);
-        animrnd.m_animations[m_animManager.getAnimID("Char1/attack1_2")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/attack1_2"), LOOPMETHOD::NOLOOP);
-        animrnd.m_animations[m_animManager.getAnimID("Char1/WallCling")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/WallCling"), LOOPMETHOD::NOLOOP);
-        animrnd.m_animations[m_animManager.getAnimID("Char1/FloatCling")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/FloatCling"), LOOPMETHOD::NOLOOP);
+        animrnd.m_animations[m_animManager.getAnimID("Char1/wall_cling")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/wall_cling"), LOOPMETHOD::NOLOOP);
+        animrnd.m_animations[m_animManager.getAnimID("Char1/wall_prejump")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/wall_prejump"), LOOPMETHOD::NOLOOP);
         animrnd.m_animations[m_animManager.getAnimID("Char1/prerun")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/prerun"), LOOPMETHOD::NOLOOP);
         animrnd.m_animations[m_animManager.getAnimID("Char1/run_recovery")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/run_recovery"), LOOPMETHOD::NOLOOP);
         animrnd.m_animations[m_animManager.getAnimID("Char1/landing_recovery")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/landing_recovery"), LOOPMETHOD::NOLOOP);
@@ -37,7 +35,7 @@ void PlayerSystem::setup()
 
         sm.addState(std::unique_ptr<GenericState>(
             &(new PlayerActionWallPrejump(
-                m_animManager.getAnimID("Char1/prejump"), {CharacterState::NONE, {CharacterState::WALL_CLING}}))
+                m_animManager.getAnimID("Char1/wall_prejump"), {CharacterState::NONE, {CharacterState::WALL_CLING}}))
             ->setTransitionOnTouchedGround(CharacterState::IDLE)
             .setOutdatedTransition(CharacterState::FLOAT, 3)
             .setDrag(TimelineProperty<Vector2<float>>({1.0f, 0.5f}))
@@ -45,7 +43,7 @@ void PlayerSystem::setup()
 
         sm.addState(std::unique_ptr<GenericState>(
             &(new PlayerActionWallCling(
-                m_animManager.getAnimID("Char1/prejump"), {CharacterState::NONE, {CharacterState::FLOAT}}))
+                m_animManager.getAnimID("Char1/wall_cling"), {CharacterState::NONE, {CharacterState::FLOAT}}))
             ->setDrag(TimelineProperty<Vector2<float>>({
                 {0, {1.0f, 0.3f}},
                 {1, {1.0f, 0.3f}},

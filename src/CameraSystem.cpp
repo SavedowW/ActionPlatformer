@@ -42,6 +42,10 @@ void CameraSystem::update()
     if (phys.m_appliedOffset.y != 0)
     {
         float vprio = (phys.m_onSlopeWithAngle == 0.0f ? 0.0f : 1.5f);
+        if (phys.m_appliedOffset.y >= 5.0f)
+            vprio = 3.0f;
+        else if (phys.m_onSlopeWithAngle != 0.0f)
+            vprio = 1.5f;
         auto targetoffset = utils::signof(phys.m_appliedOffset.y) * std::min(abs(phys.m_appliedOffset.y * vprio * 20.0f), 100.0f);
         auto delta = targetoffset - dtar.m_offset.y;
         float realOffset = 0.0f;
@@ -78,7 +82,10 @@ void CameraSystem::update()
     }
     else
     {
-        m_cam.smoothMoveTowards(target, {1.0f, 0.5f}, 5.0f, 1.6f, 80.0f);
+        // 8 => 1.6f
+        // 13.5 => 2.0f
+        float spdpow = utils::clamp(0.03f * phys.m_appliedOffset.getLen() + 1.28f, 1.6f, 3.0f);
+        m_cam.smoothMoveTowards(target, {1.0f, 0.5f}, 5.0f, spdpow, 80.0f);
         m_cam.smoothScaleTowards(gamedata::global::baseCameraScale);
     }
 }
