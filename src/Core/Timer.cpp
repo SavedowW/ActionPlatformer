@@ -9,7 +9,7 @@ void Timer::begin()
 	m_timeBegin = SDL_GetTicks();
 }
 
-Uint32 Timer::getPassedMS()
+uint32_t Timer::getPassedMS()
 {
 	return SDL_GetTicks() - m_timeBegin;
 }

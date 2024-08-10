@@ -63,14 +63,14 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
     float highest = m_levelSize.y;
 
     // Fall collision detection - single collider vs single entity
-    auto resolveFall = [&](const ComponentStaticCollider &csc_, int obstacleId_)
+    auto resolveFall = [&](const ComponentStaticCollider &csc_)
     {
         if (oldTop >= csc_.m_collider.m_points[2].y)
             return;
         auto overlap = csc_.m_collider.getFullCollisionWith(pb, highest);
         if ((overlap & utils::OverlapResult::OVERLAP_X) && (overlap & utils::OverlapResult::OOT_Y))
         {
-            if (obstacleId_ && (!obsFallthrough_.touchedObstacleTop(obstacleId_) || highest < oldHeight))
+            if (csc_.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(csc_.m_obstacleId) || highest < oldHeight))
                 return;
 
             //std::cout << "Touched slope top, teleporting on top, offset.y > 0\n";
@@ -89,7 +89,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
     };
 
     // Rise collision detection
-    auto resolveRise = [&](const ComponentStaticCollider &csc_, int obstacleId_)
+    auto resolveRise = [&](const ComponentStaticCollider &csc_)
     {
         if (csc_.m_collider.m_highestSlopePoint > oldTop)
             return;
@@ -97,7 +97,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
         auto overlap = csc_.m_collider.getFullCollisionWith(pb, highest);
         if ((overlap & utils::OverlapResult::OVERLAP_X) && (overlap & utils::OverlapResult::OOT_Y))
         {
-            if (obstacleId_ && !obsFallthrough_.touchedObstacleBottom(obstacleId_))
+            if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleBottom(csc_.m_obstacleId))
                 return;
 
             //std::cout << "Touched ceiling, teleporting to bottom, offset.y < 0\n";
@@ -116,7 +116,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
     };
     
     // Movement to right collision detection
-    auto resolveRight = [&](const ComponentStaticCollider &csc_, int obstacleId_)
+    auto resolveRight = [&](const ComponentStaticCollider &csc_)
     {
         auto overlap = csc_.m_collider.getFullCollisionWith(pb, highest);
         bool aligned = csc_.m_collider.getOrientationDir() > 0;
@@ -131,7 +131,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
 
         if (aligned && pb.getTopEdge() <= csc_.m_collider.m_lowestSlopePoint && (overlap & utils::OverlapResult::OOT_SLOPE) && (overlap & utils::OverlapResult::OVERLAP_Y)) // Touched slope from right direction
         {
-            if (obstacleId_ && !obsFallthrough_.touchedObstacleSlope(obstacleId_))
+            if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
                 return;
 
             //std::cout << "Touched slope, teleporting on top, offset.x > 0\n";
@@ -149,7 +149,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
         }
         else if ((!aligned || csc_.m_collider.m_hasBox) && (overlap & utils::OverlapResult::OOT_BOX) && (overlap & utils::OverlapResult::OVERLAP_Y) && pb.getBottomEdge() > csc_.m_collider.m_lowestSlopePoint) // Touched inner box
         {
-            if (obstacleId_ && !obsFallthrough_.touchedObstacleSide(obstacleId_))
+            if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSide(csc_.m_obstacleId))
                 return;
 
             auto overlapPortion = utils::getOverlapPortion(pb.getTopEdge(), pb.getBottomEdge(), highest, csc_.m_collider.m_points[2].y);
@@ -173,7 +173,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
     };
 
     // Movement to left collision detection
-    auto resolveLeft = [&](const ComponentStaticCollider &csc_, int obstacleId_)
+    auto resolveLeft = [&](const ComponentStaticCollider &csc_)
     {
         auto overlap = csc_.m_collider.getFullCollisionWith(pb, highest);
         bool aligned = csc_.m_collider.getOrientationDir() < 0;
@@ -188,7 +188,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
 
         if (aligned && pb.getTopEdge() <= csc_.m_collider.m_lowestSlopePoint && (overlap & utils::OverlapResult::OOT_SLOPE) && (overlap & utils::OverlapResult::OVERLAP_Y)) // Touched slope from right direction
         {
-            if (obstacleId_ && !obsFallthrough_.touchedObstacleSlope(obstacleId_))
+            if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
                 return;
 
             //std::cout << "Touched slope, teleporting on top, offset.x < 0\n";
@@ -206,7 +206,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
         }
         else if ((!aligned || csc_.m_collider.m_hasBox) && (overlap & utils::OverlapResult::OOT_BOX) && (overlap & utils::OverlapResult::OVERLAP_Y) && pb.getBottomEdge() > csc_.m_collider.m_lowestSlopePoint) // Touched inner box
         {
-            if (obstacleId_ && !obsFallthrough_.touchedObstacleSide(obstacleId_))
+            if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSide(csc_.m_obstacleId))
                 return;
 
             auto overlapPortion = utils::getOverlapPortion(pb.getTopEdge(), pb.getBottomEdge(), highest, csc_.m_collider.m_points[2].y);
@@ -229,15 +229,6 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
         }
     };
 
-    // Iteration over colliders depending on archetype
-    auto distrbObstacle = [&clds_, &reg = this->m_reg](auto idx, ComponentStaticCollider& cld_, auto &distrib_)
-    {
-        if (reg.all_of<ComponentObstacle>(idx))
-            distrib_(cld_, reg.get<ComponentObstacle>(idx).m_obstacleId);
-        else
-            distrib_(cld_, 0);
-    };
-
     // X axis movement handling
     {
         trans_.m_pos.x += offset.x;
@@ -247,14 +238,12 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
 
         if (offset.x > 0)
         {
-            for (auto [idx, cld] : clds_.each())
-                distrbObstacle(idx, cld, resolveRight);
+            clds_.each(resolveRight); // NOTE: foreach loops are slightly faster, maybe its worth it to move lambdas code here
         }
         // Moving to the left
         else if (offset.x < 0)
         {
-            for (auto [idx, cld] : clds_.each())
-                distrbObstacle(idx, cld, resolveLeft);
+            clds_.each(resolveLeft);
         }
     }
 
@@ -266,8 +255,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
         // Falling / staying in place
         if (offset.y >= 0)
         {
-            for (auto [idx, cld] : clds_.each())
-                distrbObstacle(idx, cld, resolveFall);
+            clds_.each(resolveFall);
         }
         // Rising
         else
@@ -278,8 +266,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
                 groundCollision = false;
             }
 
-            for (auto [idx, cld] : clds_.each())
-                distrbObstacle(idx, cld, resolveRise);
+            clds_.each(resolveRise);
         }
     }
 
@@ -338,38 +325,24 @@ std::pair<bool, const SlopeCollider*> PhysicsSystem::getHighestVerticalMagnetCoo
     float bot = cld_.getBottomEdge();
     bool isFound = false;
     const SlopeCollider *foundcld = nullptr;
-    auto proceedCollider = [&foundcld, &ignoreAllObstacles_, &ignoredObstacles_, &baseCoord, &isFound, &coord_, &cld_](const SlopeCollider &areaCld_, int obstacleId_)
+    
+    for (const auto [idx, areaCld_] : clds_.each())
     {
-        if (obstacleId_ && (ignoreAllObstacles_ || ignoredObstacles_.contains(obstacleId_)))
-            return;
+        if (areaCld_.m_obstacleId && (ignoreAllObstacles_ || ignoredObstacles_.contains(areaCld_.m_obstacleId)))
+            continue;
 
-        auto horOverlap = utils::getOverlap<0>(areaCld_.m_points[0].x, areaCld_.m_points[1].x, cld_.getLeftEdge(), cld_.getRightEdge()); //cld.getHorizontalOverlap(cld_);
+        auto horOverlap = utils::getOverlap<0>(areaCld_.m_collider.m_points[0].x, areaCld_.m_collider.m_points[1].x, cld_.getLeftEdge(), cld_.getRightEdge()); //cld.getHorizontalOverlap(cld_);
         if (!!(horOverlap & utils::OverlapResult::OVERLAP_X))
         {
-            auto height = areaCld_.getTopHeight(cld_, horOverlap);
+            auto height = areaCld_.m_collider.getTopHeight(cld_, horOverlap);
             if (height > baseCoord && (!isFound || height < coord_))
             {
                 coord_ = height;
                 isFound = true;
-                foundcld = &areaCld_;
+                foundcld = &areaCld_.m_collider;
             }
         }
-    };
-
-    // Fall iteration over colliders depending on archetype
-    auto distrbObstacle = [&proceedCollider, &reg = this->m_reg](auto idx, ComponentStaticCollider& cld_)
-    {
-        if (reg.all_of<ComponentObstacle>(idx))
-        {
-            proceedCollider(cld_.m_collider, reg.get<ComponentObstacle>(idx).m_obstacleId);
-        }
-        else
-        {
-            proceedCollider(cld_.m_collider, 0);
-        }
-    };
-
-    clds_.each(distrbObstacle);
+    }
 
     return {isFound, foundcld};
 }
@@ -391,22 +364,17 @@ void PhysicsSystem::resetEntityObstacles(ComponentTransform &trans_, ComponentPh
 
 std::set<int> PhysicsSystem::getTouchedObstacles(const Collider &pb_)
 {
-    auto viewObstacles = m_reg.view<ComponentStaticCollider, ComponentObstacle>();
+    auto viewObstacles = m_reg.view<ComponentStaticCollider>();
     std::set<int> obstacleIds;
     float dumped = 0.0f;
 
-    auto proceedObstacle = [&](const SlopeCollider &areaCld_, int obstacleId_) 
+    for (auto [idx, cld] : viewObstacles.each())
     {
-        if (obstacleIds.contains(obstacleId_))
-            return false;
+        if (obstacleIds.contains(cld.m_obstacleId))
+            continue;
 
-        return !!(areaCld_.getFullCollisionWith(pb_, dumped) & utils::OverlapResult::BOTH_OOT);
-    };
-
-    for (auto [idx, cld, obst] : viewObstacles.each())
-    {
-        if (proceedObstacle(cld.m_collider, obst.m_obstacleId))
-            obstacleIds.insert(obst.m_obstacleId);
+        if (!!(cld.m_collider.getFullCollisionWith(pb_, dumped) & utils::OverlapResult::BOTH_OOT))
+            obstacleIds.insert(cld.m_obstacleId);
     }
 
     return obstacleIds;

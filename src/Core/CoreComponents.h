@@ -62,7 +62,7 @@ struct ComponentPhysical
 struct ComponentStaticCollider
 {
     ComponentStaticCollider() = default;
-    ComponentStaticCollider(const SlopeCollider &collider_);
+    ComponentStaticCollider(const SlopeCollider &collider_, int obstacleId_);
 
     ComponentStaticCollider (const ComponentStaticCollider &rhs_) = delete;
     ComponentStaticCollider (ComponentStaticCollider &&rhs_) = default;
@@ -70,10 +70,6 @@ struct ComponentStaticCollider
     ComponentStaticCollider &operator=(ComponentStaticCollider &&rhs_) = default;
 
     SlopeCollider m_collider;
-};
-
-struct ComponentObstacle
-{
     int m_obstacleId;
 };
 

@@ -5,7 +5,7 @@
 void addCollider(entt::registry &reg_, const SlopeCollider &cld_)
 {
     auto newid = reg_.create();
-    reg_.emplace<ComponentStaticCollider>(newid, cld_);
+    reg_.emplace<ComponentStaticCollider>(newid, cld_, 0);
 }
 
 void addTrigger(entt::registry &reg_, const Trigger &trg_)
@@ -17,8 +17,7 @@ void addTrigger(entt::registry &reg_, const Trigger &trg_)
 void addCollider(entt::registry &reg_, const SlopeCollider &cld_, int id_)
 {
     auto newid = reg_.create();
-    reg_.emplace<ComponentStaticCollider>(newid, cld_);
-    reg_.emplace<ComponentObstacle>(newid, id_);
+    reg_.emplace<ComponentStaticCollider>(newid, cld_, id_);
 }
 
 BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_, int lvlId_) :

@@ -7,10 +7,10 @@ class Timer
 public:
 	Timer();
 	void begin();
-	Uint32 getPassedMS();
+	uint32_t getPassedMS();
 
 private:
-	Uint32 m_timeBegin = 0;
+	uint32_t m_timeBegin = 0;
 };
 
 #endif

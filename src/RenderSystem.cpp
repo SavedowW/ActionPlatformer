@@ -17,7 +17,7 @@ void RenderSystem::draw()
 
     for (auto [idx, scld] : viewColliders.each())
     {
-        if (m_reg.all_of<ComponentObstacle>(idx))
+        if (scld.m_obstacleId)
             drawObstacle(scld);
         else
             drawCollider(scld);
