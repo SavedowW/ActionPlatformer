@@ -26,7 +26,7 @@ void PlayerSystem::setup()
         animrnd.m_currentAnimation->reset();
 
 
-        phys.m_pushbox = {Vector2{0.0f, -16.0f}, Vector2{10.0f, 16.0f}};
+        phys.m_pushbox = {Vector2{0.0f, -16.0f}, Vector2{7.0f, 16.0f}};
         phys.m_gravity = {0.0f, 0.5f};
 
 

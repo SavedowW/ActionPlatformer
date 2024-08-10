@@ -17,9 +17,9 @@ namespace gamedata
 
     namespace debug
     {
-        inline constexpr bool drawColliders = true;
-        inline constexpr bool drawFocusAreas = true;
-        inline constexpr bool drawCameraOffset = true;
+        inline constexpr bool drawColliders = false;
+        inline constexpr bool drawFocusAreas = false;
+        inline constexpr bool drawCameraOffset = false;
     }
 
     namespace global

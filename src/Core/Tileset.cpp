@@ -33,15 +33,13 @@ Tile Tileset::getTile(const Vector2<float> pos_, unsigned gid_)
 
 SDL_RendererFlip Tileset::flagsToFlip(unsigned guid_) const
 {
-    if (guid_ & FLIPPED_DIAGONALLY_FLAG)
-        return SDL_RendererFlip(SDL_FLIP_VERTICAL | SDL_FLIP_HORIZONTAL);
+    SDL_RendererFlip res = SDL_FLIP_NONE;
 
-    else if (guid_ & FLIPPED_HORIZONTALLY_FLAG)
-        return SDL_FLIP_HORIZONTAL;
+    if (guid_ & FLIPPED_HORIZONTALLY_FLAG)
+        res = SDL_RendererFlip(res | SDL_FLIP_HORIZONTAL);
 
-    else if (guid_ & FLIPPED_VERTICALLY_FLAG)
-        return SDL_FLIP_HORIZONTAL;
+    if (guid_ & FLIPPED_VERTICALLY_FLAG)
+        res = SDL_RendererFlip(res | SDL_FLIP_VERTICAL);
 
-    else
-        return SDL_FLIP_NONE;
+    return res;
 }

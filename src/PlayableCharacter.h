@@ -223,6 +223,9 @@ public:
         auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
         auto &wrld = owner_.reg->get<World>(owner_.idx);
 
+        phys.m_velocity.y = 0;
+        phys.m_inertia.y = 0;
+
         if (phys.m_calculatedOffset.y > 20.0f)
         {
             m_parent->switchCurrentState(owner_, CharacterState::HARD_LANDING_RECOVERY);
@@ -286,7 +289,7 @@ public:
         if (!stillValid)
         {
             if (physical.getPosOffest().y < 0)
-                physical.m_velocity.y -= 3.0f;
+                physical.m_velocity.y -= 1.0f;
             
             m_parent->switchCurrentState(owner_, m_transitionOnLeave);
         }
@@ -381,16 +384,16 @@ public:
         if (upIn)
         {
             if (sideIn)
-                targetSpeed = {orient * 5.0f, -5.5f};
+                targetSpeed = {orient * 1.5f, -4.5f};
             else
-                targetSpeed = {orient * 1.0f, -6.5f};
+                targetSpeed = {orient * 0.7f, -5.0f};
         }
         else if (sideIn)
         {
             if (downIn)
-                targetSpeed = {orient * 6.0f, 0.0f};
+                targetSpeed = {orient * 3.5f, 0.0f};
             else
-                targetSpeed = {orient * 7.0f, -3.0f};
+                targetSpeed = {orient * 3.0f, -2.2f};
         }
         else
             fall = true;
