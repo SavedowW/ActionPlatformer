@@ -45,8 +45,8 @@ void PlayerSystem::setup()
             &(new PlayerActionWallCling(
                 m_animManager.getAnimID("Char1/wall_cling"), {CharacterState::NONE, {CharacterState::FLOAT}}))
             ->setDrag(TimelineProperty<Vector2<float>>({
-                {0, {1.0f, 0.3f}},
-                {1, {1.0f, 0.3f}},
+                {0, {1.0f, 0.2f}},
+                {1, {1.0f, 0.4f}},
                 }))
             .setTransitionOnTouchedGround(CharacterState::IDLE)
         ));
@@ -230,7 +230,7 @@ void PlayerSystem::setup()
             ->setGroundedOnSwitch(false)
             .setGravity({{0.0f, 0.5f}})
             .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
-            .setNoLanding(TimelineProperty<bool>({{0, true}, {2, false}}))
+            .setNoLanding(TimelineProperty<bool>({{0, true}, {4, false}}))
         ));
 
         sm.setInitialState(CharacterState::FLOAT);

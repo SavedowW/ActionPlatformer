@@ -316,7 +316,7 @@ public:
         if (cworld.touchingGround(pb, cobs))
             return ORIENTATION::UNSPECIFIED;
 
-        if (orientation == ORIENTATION::RIGHT)
+        if (physical.getPosOffest().x >= -0.5f)
         {
             if (m_cmpLeft(inq, 0))
             {
@@ -324,7 +324,7 @@ public:
                     return ORIENTATION::LEFT;
             }
         }
-        else if (orientation == ORIENTATION::LEFT)
+        if (physical.getPosOffest().x <= 0.5f)
         {
             if (m_cmpRight(inq, 0))
             {
@@ -396,13 +396,16 @@ public:
                 targetSpeed = {orient * 3.0f, -2.2f};
         }
         else
+        {
+            targetSpeed = {orient * 0.7f, 0.1f};
             fall = true;
+        }
 
         std::cout << targetSpeed << std::endl;
 
         if (fall)
         {
-            physical.m_velocity = {0.0f, 0.1f};
+            physical.m_velocity += targetSpeed;
             physical.m_inertia = {0.0f, 0.0f};
         }
         else

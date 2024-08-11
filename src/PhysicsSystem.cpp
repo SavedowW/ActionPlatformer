@@ -70,7 +70,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
         auto overlap = csc_.m_collider.getFullCollisionWith(pb, highest);
         if ((overlap & utils::OverlapResult::OVERLAP_X) && (overlap & utils::OverlapResult::OOT_Y))
         {
-            if (csc_.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(csc_.m_obstacleId) || highest < oldHeight))
+            if (csc_.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(csc_.m_obstacleId) || oldHeight - highest > abs(trans_.m_pos.x - oldPos.x)))
                 return;
 
             //std::cout << "Touched slope top, teleporting on top, offset.y > 0\n";
@@ -120,7 +120,6 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
     {
         auto overlap = csc_.m_collider.getFullCollisionWith(pb, highest);
         bool aligned = csc_.m_collider.getOrientationDir() > 0;
-        auto heightDiff = abs(csc_.m_collider.m_lowestSlopePoint - pb.getBottomEdge());
 
         if ((overlap & utils::OverlapResult::TOUCH_MIN1_MAX2) && (overlap & utils::OverlapResult::BOTH_OOT))
         {
@@ -129,7 +128,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
             groundCollision = true;
         }
 
-        if (aligned && pb.getTopEdge() <= csc_.m_collider.m_lowestSlopePoint && (overlap & utils::OverlapResult::OOT_SLOPE) && (overlap & utils::OverlapResult::OVERLAP_Y)) // Touched slope from right direction
+        if (aligned && (overlap & utils::OverlapResult::OVERLAP_X) && (overlap & utils::OverlapResult::OOT_Y) && abs(highest - oldPos.y) <= 1.3f * abs(trans_.m_pos.x - oldPos.x)) // Touched slope from right direction
         {
             if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
                 return;
@@ -147,7 +146,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
             if (phys_.m_inertia.y > 0)
                 phys_.m_inertia.y = 0;
         }
-        else if ((!aligned || csc_.m_collider.m_hasBox) && (overlap & utils::OverlapResult::OOT_BOX) && (overlap & utils::OverlapResult::OVERLAP_Y) && pb.getBottomEdge() > csc_.m_collider.m_lowestSlopePoint) // Touched inner box
+        else if ((overlap & utils::OverlapResult::OOT_X) && (overlap & utils::OverlapResult::OVERLAP_Y)) // Touched as wall
         {
             if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSide(csc_.m_obstacleId))
                 return;
@@ -177,7 +176,6 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
     {
         auto overlap = csc_.m_collider.getFullCollisionWith(pb, highest);
         bool aligned = csc_.m_collider.getOrientationDir() < 0;
-        auto heightDiff = abs(csc_.m_collider.m_lowestSlopePoint - pb.getBottomEdge());
 
         if ((overlap & utils::OverlapResult::TOUCH_MIN1_MAX2) && (overlap & utils::OverlapResult::BOTH_OOT))
         {
@@ -186,7 +184,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
             groundCollision = true;
         }
 
-        if (aligned && pb.getTopEdge() <= csc_.m_collider.m_lowestSlopePoint && (overlap & utils::OverlapResult::OOT_SLOPE) && (overlap & utils::OverlapResult::OVERLAP_Y)) // Touched slope from right direction
+        if (aligned && (overlap & utils::OverlapResult::OVERLAP_X) && (overlap & utils::OverlapResult::OOT_Y) && abs(highest - oldPos.y) <= 1.3f * abs(trans_.m_pos.x - oldPos.x)) // Touched slope from right direction
         {
             if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
                 return;
@@ -204,7 +202,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
             if (phys_.m_inertia.y > 0)
                 phys_.m_inertia.y = 0;
         }
-        else if ((!aligned || csc_.m_collider.m_hasBox) && (overlap & utils::OverlapResult::OOT_BOX) && (overlap & utils::OverlapResult::OVERLAP_Y) && pb.getBottomEdge() > csc_.m_collider.m_lowestSlopePoint) // Touched inner box
+        else if ((overlap & utils::OverlapResult::OOT_X) && (overlap & utils::OverlapResult::OVERLAP_Y)) // Touched as wall
         {
             if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSide(csc_.m_obstacleId))
                 return;
