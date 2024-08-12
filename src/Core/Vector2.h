@@ -187,6 +187,12 @@ struct Vector2
         return { x * rhs.x, y * rhs.y };
     }
 
+    template<typename TR>
+    constexpr inline auto dot(const Vector2<TR>& rhs) const -> decltype(x * rhs.x)
+    {
+        return x * rhs.x + y * rhs.y;
+    }
+
     template<bool ON_ZEROES = true, typename T2>
     constexpr inline bool areAlignedOnX(const Vector2<T2> &rhs_) const
     {
@@ -335,6 +341,24 @@ namespace utils
         std::stringstream s;
         s << "{" << v_.x << ", " << v_.y << "}";
         return s.str();
+    }
+
+    inline float distToLineSegment(const Vector2<float> &lineP1_, const Vector2<float> &lineP2_, const Vector2<float> &point_)
+    {
+        auto dir1 = lineP2_ - lineP1_;
+        auto p1 = point_ - lineP1_;
+
+        if (dir1.dot(p1) <= 0.0f)
+            return p1.getLen();
+
+        auto dir2 = lineP1_ - lineP2_;
+        auto p2 = point_ - lineP2_;
+
+        if (dir2.dot(p2) <= 0.0f)
+            return p2.getLen();
+
+        Vector2<float> normal = Vector2{dir1.y, -dir1.x}.normalised();
+        return normal.dot(p1);
     }
 }
 

@@ -41,64 +41,6 @@ namespace utils
 
     };
 
-    template<typename T>
-    class OptionalProperty
-    {
-    public:
-        OptionalProperty() = default;
-
-        OptionalProperty(const T &val_) :
-            m_val(val_),
-            m_isSet(true)
-        {
-        }
-
-        OptionalProperty(T &&val_) :
-            m_val(std::move(val_)),
-            m_isSet(true)
-        {
-        }
-
-        OptionalProperty &operator=(const T &val_)
-        {
-            m_val = val_;
-            m_isSet = true;
-            return *this;
-        }
-
-        OptionalProperty &operator=(T &&val_)
-        {
-            m_val = std::move(val_);
-            m_isSet = true;
-            return *this;
-        }
-
-        bool isSet() const
-        {
-            return m_isSet;
-        }
-
-        T &operator*()
-        {
-            if (!m_isSet)
-                throw std::string("Reading unset property");
-
-            return m_val;
-        }
-
-        operator T() const
-        {
-            if (!m_isSet)
-                throw std::string("Reading unset property");
-
-            return m_val;
-        }
-
-    private:
-        T m_val;
-        bool m_isSet = false;
-    };
-
     template <typename T>
     inline T clamp(const T& val, const T &min, const T &max)
     {
@@ -110,7 +52,7 @@ namespace utils
     
     	return val;
     }
-
+    
     template <typename T>
     inline T clampMaxPriority(const T& val, const T &min, const T &max)
     {

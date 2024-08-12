@@ -5,7 +5,7 @@
 #include "Camera.h"
 #include "Application.h"
 #include "ImmediateScreenLog.h"
-#include "DecorationBuilder.h"
+#include "LevelBuilder.h"
 #include "PlayableCharacter.h"
 #include "PhysicsSystem.h"
 #include "PlayerSystem.h"
@@ -13,6 +13,7 @@
 #include "CameraSystem.h"
 #include "HUDSystem.h"
 #include "InputHandlingSystem.h"
+#include "EnemySystem.h"
 
 class BattleLevel : public Level
 {
@@ -38,6 +39,9 @@ protected:
     PhysicsSystem m_physsys;
     CameraSystem m_camsys;
     HudSystem m_hudsys;
+    EnemySystem m_enemysys;
+
+    entt::entity m_playerId;
 };
 
 #endif

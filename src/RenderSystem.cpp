@@ -66,8 +66,15 @@ void RenderSystem::drawCollider(ComponentTransform &trans_, ComponentPhysical &p
 {
     if (gamedata::debug::drawColliders)
     {
-        auto pb = phys_.m_pushbox + trans_.m_pos;;
+        auto pb = phys_.m_pushbox + trans_.m_pos;
         m_renderer.drawCollider(pb, {238, 195, 154, 50}, 100, m_camera);
+
+        auto edgex = (trans_.m_orientation == ORIENTATION::RIGHT ? pb.getRightEdge() - 1 : 
+                        (trans_.m_orientation == ORIENTATION::LEFT ? pb.getLeftEdge() : pb.m_center.x));
+
+        Vector2 TR{edgex, pb.getTopEdge()};
+        Vector2 BR{edgex, pb.getBottomEdge()};
+        m_renderer.drawLine(TR, BR, {0, 255, 0, 100}, m_camera);
     }
 }
 

@@ -8,7 +8,7 @@ struct PlayerSystem
 {
     PlayerSystem(entt::registry &reg_, Application &app_);
 
-    void setup();
+    void setup(entt::entity playerId_);
     void update();
 
     entt::registry &m_reg;

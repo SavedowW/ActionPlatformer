@@ -27,6 +27,11 @@ struct ComponentTransform
     ORIENTATION m_orientation = ORIENTATION::RIGHT;
 };
 
+struct ComponentSpawnLocation
+{
+    Vector2<float> m_location;
+};
+
 struct ComponentPhysical
 {
     ComponentPhysical() = default;
@@ -70,7 +75,7 @@ struct ComponentStaticCollider
     ComponentStaticCollider &operator=(ComponentStaticCollider &&rhs_) = default;
 
     SlopeCollider m_collider;
-    int m_obstacleId;
+    int m_obstacleId = 0;
 };
 
 struct ComponentTrigger

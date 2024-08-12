@@ -10,6 +10,20 @@ SlopeCollider::SlopeCollider(const Vector2<float> &tlPos_, const Vector2<float> 
 
 SlopeCollider::SlopeCollider(const Vector2<float> (&vertices_)[4])
 {
+    set(vertices_);
+}
+
+void SlopeCollider::set(const Vector2<float> &tlPos_, const Vector2<float> &size_, float topAngleCoef_)
+{
+    m_tlPos = tlPos_;
+    m_size = size_;
+    m_topAngleCoef = std::min(topAngleCoef_, 1.0f);
+
+    generatePoints();
+}
+
+void SlopeCollider::set(const Vector2<float> (&vertices_)[4])
+{
     for (int i = 0; i < 4; ++i)
         m_points[i] = vertices_[i];
 

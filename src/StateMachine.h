@@ -135,8 +135,8 @@ protected:
     StateMachine *m_parent = nullptr;
 
     int m_anim;
-    utils::OptionalProperty<CharState> m_transitionOnLand;
-    utils::OptionalProperty<CharState> m_transitionOnLostGround;
+    std::optional<CharState> m_transitionOnLand;
+    std::optional<CharState> m_transitionOnLostGround;
     TimelineProperty<Vector2<float>> m_gravity;
 
     bool m_usingUpdateMovement = false;
@@ -156,11 +156,11 @@ protected:
 
     TimelineProperty<float> m_magnetLimit;
 
-    utils::OptionalProperty<CharState> m_transitionOnOutdated; // TODO: to std::optional
-    utils::OptionalProperty<uint32_t> m_duration;
+    std::optional<CharState> m_transitionOnOutdated;
+    std::optional<uint32_t> m_duration;
 
     TimelineProperty<bool> m_canFallThrough;
-    utils::OptionalProperty<bool> m_setGroundedOnSwitch;
+    std::optional<bool> m_setGroundedOnSwitch;
 
     FrameTimer<true> *m_cooldown = nullptr;
     uint32_t m_cooldownTime = 0;

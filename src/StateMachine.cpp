@@ -183,8 +183,8 @@ void GenericState::enter(EntityAnywhere owner_, CharState from_)
         physical.velocityToInertia();
 
     // Force grounded
-    if (m_setGroundedOnSwitch.isSet())
-        physical.m_isGrounded = m_setGroundedOnSwitch;
+    if (m_setGroundedOnSwitch.has_value())
+        physical.m_isGrounded = *m_setGroundedOnSwitch;
 
     // set cooldown if necessary
     if (m_cooldown)
@@ -232,7 +232,7 @@ bool GenericState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     physical.m_magnetLimit = m_magnetLimit[currentFrame_];
 
     // Handle duration
-    if (m_transitionOnOutdated.isSet())
+    if (m_transitionOnOutdated.has_value())
     {
         if (currentFrame_ >= m_duration)
             onOutdated(owner_);
@@ -253,22 +253,25 @@ std::string GenericState::getName(uint32_t framesInState_) const
 
 void GenericState::onOutdated(EntityAnywhere owner_)
 {
-    m_parent->switchCurrentState(owner_, m_transitionOnOutdated);
+    if (m_transitionOnOutdated.has_value())
+    {
+        m_parent->switchCurrentState(owner_, *m_transitionOnOutdated);
+    }
 }
 
 void GenericState::onTouchedGround(EntityAnywhere owner_)
 {
-    if (m_transitionOnLand.isSet())
+    if (m_transitionOnLand.has_value())
     {
-        m_parent->switchCurrentState(owner_, m_transitionOnLand);
+        m_parent->switchCurrentState(owner_, *m_transitionOnLand);
     }
 }
 
 void GenericState::onLostGround(EntityAnywhere owner_)
 {
-    if (m_transitionOnLostGround.isSet())
+    if (m_transitionOnLostGround.has_value())
     {
-        m_parent->switchCurrentState(owner_, m_transitionOnLostGround);
+        m_parent->switchCurrentState(owner_, *m_transitionOnLostGround);
     }
 }
 

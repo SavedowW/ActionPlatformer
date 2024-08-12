@@ -16,7 +16,11 @@ void PhysicsSystem::update()
     for (auto [idx, trans, phys, obsfall] : viewPhys.each())
     {
         if (m_reg.all_of<StateMachine>(idx))
-            proceedEntity(viewscld, idx, trans, phys, obsfall, &m_reg.get<StateMachine>(idx));
+        {
+            auto &sm = m_reg.get<StateMachine>(idx);
+            sm.update({&m_reg, idx}, 0);
+            proceedEntity(viewscld, idx, trans, phys, obsfall, &sm);
+        }
         else
             proceedEntity(viewscld, idx, trans, phys, obsfall, nullptr);
     }

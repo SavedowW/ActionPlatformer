@@ -15,7 +15,7 @@ main.cpp
 BattleLevel.cpp
 Stage1.cpp
 StaticDecor.cpp
-DecorationBuilder.cpp
+LevelBuilder.cpp
 DecorLayers.cpp
 PlayableCharacter.cpp
 TileMapHelper.cpp
@@ -27,6 +27,8 @@ CameraSystem.cpp
 HUDSystem.cpp
 InputHandlingSystem.cpp
 World.cpp
+EnemySystem.cpp
+Enemy1.cpp
 )
 
 set(INCLUDE_DIRS

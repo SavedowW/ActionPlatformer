@@ -98,8 +98,8 @@ public:
         auto orientation = transform.m_orientation;
         const auto &inq = compInput.m_inputResolver->getInputQueue();
 
-        bool possibleToLeft = (!m_alignedSlopeMax.isSet() || physical.m_onSlopeWithAngle <= 0 || physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
-        bool possibleToRight = (!m_alignedSlopeMax.isSet() || physical.m_onSlopeWithAngle >= 0 || -physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
+        bool possibleToLeft = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle <= 0 || physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
+        bool possibleToRight = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle >= 0 || -physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
 
         InputComparatorFail failin;
 
@@ -124,8 +124,8 @@ public:
         const auto &inq = compInput.m_inputResolver->getInputQueue();
         auto currentState = GenericState::m_parent->m_currentState;
 
-        bool possibleToLeft = (!m_alignedSlopeMax.isSet() || physical.m_onSlopeWithAngle <= 0 || physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
-        bool possibleToRight = (!m_alignedSlopeMax.isSet() || physical.m_onSlopeWithAngle >= 0 || -physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
+        bool possibleToLeft = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle <= 0 || physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
+        bool possibleToRight = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle >= 0 || -physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
 
         InputComparatorFail failin;
 
@@ -156,7 +156,7 @@ protected:
     CMP_PROCEED_LEFT m_cmpProcLeft;
     CMP_PROCEED_RIGHT m_cmpProcRight;
 
-    utils::OptionalProperty<float> m_alignedSlopeMax;
+    std::optional<float> m_alignedSlopeMax;
     bool m_realignOnSwitchForInput = false;
 };
 
