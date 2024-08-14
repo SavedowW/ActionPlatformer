@@ -152,6 +152,8 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
         makeTraitList(TraverseTraits::FALL), 
         makeTraitList(), false, false);
 
+    // TODO: keep active connection while touching it without looking for new one
+
 
     m_playerId = playerId;
     m_camsys.m_playerId = playerId;
@@ -166,7 +168,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_decor = std::move(bld.buildLevel("Resources/Sprites/Tiles/tilemap.json", m_tlmap, playerId));
 
     auto newcld = m_registry.create();
-    m_registry.emplace<ComponentStaticCollider>(newcld, SlopeCollider(getTilePos(Vector2{3.0f, 25.0f}), Vector2{16.0f, 16.0f}, 1), 0);
+    m_registry.emplace<ComponentStaticCollider>(newcld, SlopeCollider(getTilePos(Vector2{25.0f, 19.0f}), Vector2{16.0f, 16.0f * 3}, 0), 0);
     auto &swc = m_registry.emplace<SwitchCollider>(newcld);
     swc.m_durationDisabled = 120.0f;
     swc.m_durationEnabled = 120.0f;

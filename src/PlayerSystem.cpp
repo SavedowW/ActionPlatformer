@@ -66,7 +66,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true)
         .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(8.0f))
+        .setMagnetLimit(TimelineProperty<float>(4.0f))
         .setUpdateMovementData(
             TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
             TimelineProperty<Vector2<float>>(
@@ -98,7 +98,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true)
         .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(8.0f))
+        .setMagnetLimit(TimelineProperty<float>(4.0f))
         .setUpdateMovementData(
             TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
             TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir vel mul
@@ -142,7 +142,7 @@ void PlayerSystem::setup(entt::entity playerId_)
             TimelineProperty<Vector2<float>>({2.5f, 0.0f}),
             TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
         .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(10.0f))
+        .setMagnetLimit(TimelineProperty<float>(4.0f))
         .setCanFallThrough(TimelineProperty(true))
     ));
 
@@ -153,7 +153,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true)
         .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(8.0f))
+        .setMagnetLimit(TimelineProperty<float>(4.0f))
         .setUpdateMovementData(
             TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
             TimelineProperty<Vector2<float>>( 
@@ -179,7 +179,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setDrag({{0.5f, 0.0f}})
         .setConvertVelocityOnSwitch(true)
         .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(8.0f))
+        .setMagnetLimit(TimelineProperty<float>(4.0f))
         .setUpdateMovementData(
             TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
             TimelineProperty<Vector2<float>>({0.0f, 0.0f}),  // Dir vel mul
@@ -201,7 +201,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setDrag(TimelineProperty<Vector2<float>>({{0, Vector2{0.1f, 0.1f}}, {3, Vector2{0.5f, 0.5f}}}))
         .setConvertVelocityOnSwitch(true)
         .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(8.0f))
+        .setMagnetLimit(TimelineProperty<float>(4.0f))
         .setCanFallThrough(TimelineProperty(true))
         .setUpdateSpeedLimitData(
             TimelineProperty<Vector2<float>>({9999.9f, 0.0f}),
@@ -215,7 +215,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true)
         .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(8.0f))
+        .setMagnetLimit(TimelineProperty<float>(4.0f))
         .setOutdatedTransition(CharacterState::IDLE, 14)
     ));
 
@@ -226,7 +226,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true)
         .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(8.0f))
+        .setMagnetLimit(TimelineProperty<float>(4.0f))
         .setOutdatedTransition(CharacterState::IDLE, 14)
     ));
 
