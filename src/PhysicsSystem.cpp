@@ -69,7 +69,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
     // Fall collision detection - single collider vs single entity
     auto resolveFall = [&](const ComponentStaticCollider &csc_)
     {
-        if (oldTop >= csc_.m_collider.m_points[2].y)
+        if (!csc_.m_isEnabled || oldTop >= csc_.m_collider.m_points[2].y)
             return;
         auto overlap = csc_.m_collider.getFullCollisionWith(pb, highest);
         if ((overlap & utils::OverlapResult::OVERLAP_X) && (overlap & utils::OverlapResult::OOT_Y))
@@ -95,7 +95,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
     // Rise collision detection
     auto resolveRise = [&](const ComponentStaticCollider &csc_)
     {
-        if (csc_.m_collider.m_highestSlopePoint > oldTop)
+        if (!csc_.m_isEnabled || csc_.m_collider.m_highestSlopePoint > oldTop)
             return;
 
         auto overlap = csc_.m_collider.getFullCollisionWith(pb, highest);
@@ -122,6 +122,9 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
     // Movement to right collision detection
     auto resolveRight = [&](const ComponentStaticCollider &csc_)
     {
+        if (!csc_.m_isEnabled)
+            return;
+
         auto overlap = csc_.m_collider.getFullCollisionWith(pb, highest);
         bool aligned = csc_.m_collider.getOrientationDir() > 0;
 
@@ -178,6 +181,9 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
     // Movement to left collision detection
     auto resolveLeft = [&](const ComponentStaticCollider &csc_)
     {
+        if (!csc_.m_isEnabled)
+            return;
+
         auto overlap = csc_.m_collider.getFullCollisionWith(pb, highest);
         bool aligned = csc_.m_collider.getOrientationDir() < 0;
 
@@ -330,7 +336,7 @@ std::pair<bool, const SlopeCollider*> PhysicsSystem::getHighestVerticalMagnetCoo
     
     for (const auto [idx, areaCld_] : clds_.each())
     {
-        if (areaCld_.m_obstacleId && (ignoreAllObstacles_ || ignoredObstacles_.contains(areaCld_.m_obstacleId)))
+        if (!areaCld_.m_isEnabled || areaCld_.m_obstacleId && (ignoreAllObstacles_ || ignoredObstacles_.contains(areaCld_.m_obstacleId)))
             continue;
 
         auto horOverlap = utils::getOverlap<0>(areaCld_.m_collider.m_points[0].x, areaCld_.m_collider.m_points[1].x, cld_.getLeftEdge(), cld_.getRightEdge()); //cld.getHorizontalOverlap(cld_);

@@ -9,6 +9,12 @@ using CharState = int;
 
 class GenericState;
 
+enum class TraverseTraits : TraverseTraitT {
+    WALK,
+    JUMP,
+    FALL
+};
+
 class StateMachine
 {
 public:

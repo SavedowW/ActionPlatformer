@@ -57,7 +57,8 @@ TextManager::TextManager(Renderer *renderer_, const std::string &basePath_) :
     m_charChunks(basePath_ + "/Resources/GeneralCharacterList.txt"),
     m_renderer(renderer_),
     m_fonts{fonts::Font(generateSimpleShadedSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  24, SDL_Color{255, 255, 255, 255}, SDL_Color{100, 100, 100, 255}),
-    fonts::Font(generateSimpleSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  18, SDL_Color{255, 255, 255, 255})}
+    fonts::Font(generateSimpleSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  18, SDL_Color{255, 255, 255, 255}),
+    fonts::Font(generateSimpleSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  8, SDL_Color{255, 255, 255, 255})}
     //m_fonts{fonts::Font(generateOutlinedSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  24, 2, SDL_Color{0, 0, 0, 255}, SDL_Color{0, 100, 0, 255})}
     //m_fonts{fonts::Font(generateOutlinedTexturedSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf", "/Resources/Fonts/fontBack.png",  24, 2, SDL_Color{0, 0, 0, 255})}
 {
@@ -425,7 +426,7 @@ void TextManager::generateSimpleShadedSymbols(std::vector<std::array<fonts::Symb
     std::cout << generated << " characters generated out of " << charsTotal << ", " << notProvided << " characters not provided\n";
 }
 
-void TextManager::renderText(const std::string &text_, int fontid_, Vector2<float> pos_, fonts::HOR_ALIGN horAlign_)
+void TextManager::renderText(const std::string &text_, int fontid_, Vector2<float> pos_, fonts::HOR_ALIGN horAlign_, Camera *cam_)
 {
     U8Wrapper wrp(text_);
     auto begin = wrp.begin();
@@ -453,7 +454,10 @@ void TextManager::renderText(const std::string &text_, int fontid_, Vector2<floa
     for (auto &ch : wrp)
     {
         auto &sym = m_fonts[fontid_][ch.getu8()];
-        m_renderer->renderTexture(sym.m_tex, pos_.x, pos_.y + sym.m_miny, sym.m_w, sym.m_h);
+        if (cam_)
+            m_renderer->renderTexture(sym.m_tex, pos_.x, pos_.y + sym.m_miny, sym.m_w, sym.m_h, *cam_, 0, SDL_FLIP_NONE);
+        else
+            m_renderer->renderTexture(sym.m_tex, pos_.x, pos_.y + sym.m_miny, sym.m_w, sym.m_h);
         pos_.x += sym.m_advance;
     }
 }

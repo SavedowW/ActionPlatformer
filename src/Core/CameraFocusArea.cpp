@@ -20,8 +20,8 @@ float CameraFocusArea::getScale() const
 
 void CameraFocusArea::draw(const Camera &cam_)
 {
-    m_renderer->drawCollider(*this, {0, 255, 0, 0}, 255, cam_);
-    m_renderer->drawCollider(m_useFocusArea, {0, 255, 0, 0}, 50, cam_);
+    m_renderer->drawCollider(*this, {0, 255, 0, 0}, {0, 255, 0, 255}, cam_);
+    m_renderer->drawCollider(m_useFocusArea, {0, 255, 0, 0}, {0, 255, 0, 50}, cam_);
 }
 
 void CameraFocusArea::overrideFocusArea(const Collider &area_)

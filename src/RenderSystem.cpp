@@ -67,7 +67,7 @@ void RenderSystem::drawCollider(ComponentTransform &trans_, ComponentPhysical &p
     if (gamedata::debug::drawColliders)
     {
         auto pb = phys_.m_pushbox + trans_.m_pos;
-        m_renderer.drawCollider(pb, {238, 195, 154, 50}, 100, m_camera);
+        m_renderer.drawCollider(pb, {238, 195, 154, 50}, {238, 195, 154, 100}, m_camera);
 
         auto edgex = (trans_.m_orientation == ORIENTATION::RIGHT ? pb.getRightEdge() - 1 : 
                         (trans_.m_orientation == ORIENTATION::LEFT ? pb.getLeftEdge() : pb.m_center.x));
@@ -82,7 +82,7 @@ void RenderSystem::drawCollider(ComponentStaticCollider &cld_)
 {
     if (gamedata::debug::drawColliders)
     {
-        m_renderer.drawCollider(cld_.m_collider, {255, 0, 0, 100}, 255, m_camera);
+        m_renderer.drawCollider(cld_.m_collider, {255, 0, 0, Uint8(cld_.m_isEnabled ? 100 : 0)}, {255, 0, 0, 255}, m_camera);
     }
 }
 
@@ -90,7 +90,7 @@ void RenderSystem::drawObstacle(ComponentStaticCollider &cld_)
 {
     if (gamedata::debug::drawColliders)
     {
-        m_renderer.drawCollider(cld_.m_collider, {50, 50, 255, 100}, 255, m_camera);
+        m_renderer.drawCollider(cld_.m_collider, {50, 50, 255, Uint8(cld_.m_isEnabled ? 100 : 0)}, {50, 50, 255, 255}, m_camera);
     }
 }
 
@@ -98,7 +98,7 @@ void RenderSystem::drawTrigger(ComponentTrigger &cld_)
 {
     if (gamedata::debug::drawColliders)
     {
-        m_renderer.drawCollider(cld_.m_trigger, {255, 50, 255, 50}, 100, m_camera);
+        m_renderer.drawCollider(cld_.m_trigger, {255, 50, 255, 50}, {255, 50, 255, 100}, m_camera);
     }
 }
 

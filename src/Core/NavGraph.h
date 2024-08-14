@@ -1,7 +1,7 @@
 #ifndef NAV_GRAPH_H_
 #define NAV_GRAPH_H_
 #include "Vector2.h"
-#include "Renderer.h"
+#include "Application.h"
 #include "Camera.h"
 #include <cstdint>
 #include <set>
@@ -13,11 +13,22 @@ using TraverseTraitT = uint32_t;
 using NodeID = size_t;
 using ConnectionID = size_t;
 
+template<typename... TraitsT>
+std::set<TraverseTraitT> makeTraitList(TraitsT... traits_)
+{
+    std::set<TraverseTraitT> retval;
+    (retval.insert(static_cast<TraverseTraitT>(traits_)), ...);
+
+    return retval;
+}
+
 struct Connection
 {
-    Connection(NodeID node1_, NodeID node2_, const std::set<TraverseTraitT> &traverseTo2_, const std::set<TraverseTraitT> &traverseTo1_);
+    Connection(NodeID node1_, NodeID node2_, const std::set<TraverseTraitT> &traverseTo2_, const std::set<TraverseTraitT> &traverseTo1_, bool requireFallthroughTo2_, bool requireFallthroughTo1_, float cost_);
     NodeID m_nodes[2];
     std::set<TraverseTraitT> m_traverses[2];
+    bool m_requireFallthrough[2] = {false, false};
+    float m_cost = 0.0f;
 };
 
 struct Node
@@ -29,15 +40,25 @@ struct Node
 class NavGraph
 {
 public:
-    NodeID makeNode(const Vector2<float> &pos_);
-    ConnectionID makeConnection(NodeID node1_, NodeID node2_, const std::set<TraverseTraitT> &traverseTo2_, const std::set<TraverseTraitT> &traverseTo1_);
-    Connection *findClosestConnection(const Vector2<float> &pos_, const std::set<TraverseTraitT> &options_);
+    NavGraph(Application &app_);
 
-    void draw(Renderer &ren_, Camera &cam_);
+    NodeID makeNode(const Vector2<float> &pos_);
+    ConnectionID makeConnection(NodeID node1_, NodeID node2_, const std::set<TraverseTraitT> &traverseTo2_, const std::set<TraverseTraitT> &traverseTo1_,
+        bool requireFallthroughTo2_, bool requireFallthroughTo1_);
+    std::pair<Connection *, float> findClosestConnection(const Vector2<float> &pos_, const std::set<TraverseTraitT> &options_);
+
+    void draw(Camera &cam_);
+    Vector2<float> getConnectionCenter(const Connection *con_) const;
+    float getDistToConnection(const Connection *con_, const Vector2<float> &pos_);
 
 private:
     std::vector<Node> m_nodes;
     std::vector<Connection> m_connections;
+
+    Renderer &m_ren;
+    TextManager &m_textman;
+
+    friend class NavPath;
 
 };
 

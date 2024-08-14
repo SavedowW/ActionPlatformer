@@ -55,7 +55,7 @@ class TextManager
 public:
     TextManager(Renderer *renderer_, const std::string &basePath_);
 
-    void renderText(const std::string &text_, int fontid_, Vector2<float> pos_, fonts::HOR_ALIGN horAlign_ = fonts::HOR_ALIGN::LEFT);
+    void renderText(const std::string &text_, int fontid_, Vector2<float> pos_, fonts::HOR_ALIGN horAlign_ = fonts::HOR_ALIGN::LEFT, Camera *cam_ = nullptr);
 
 private:
     static void generateOutlinedTexturedSymbols(std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, Renderer &renderer_, const std::string &basePath_, const std::string &font_, const std::string &texture_, int size_, int outlineWidth_, const SDL_Color &outlineColor_);
@@ -65,7 +65,7 @@ private:
 
     fonts::CharChunkDistribution m_charChunks;
     Renderer *m_renderer;
-    std::array<fonts::Font, 2> m_fonts;
+    std::array<fonts::Font, 3> m_fonts;
 
 };
 

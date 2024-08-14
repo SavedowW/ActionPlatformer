@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "Collider.h"
 #include "AnimationManager.h"
+#include "NavGraph.h"
 #include "Trigger.h"
 #include <set>
 #include <map>
@@ -76,6 +77,17 @@ struct ComponentStaticCollider
 
     SlopeCollider m_collider;
     int m_obstacleId = 0;
+    bool m_isEnabled = true;
+};
+
+struct SwitchCollider
+{
+    uint32_t m_durationEnabled;
+    uint32_t m_durationDisabled;
+    FrameTimer<true> m_timer;
+    bool m_isEnabled = true;
+
+    bool updateTimer();
 };
 
 struct ComponentTrigger
@@ -98,6 +110,7 @@ struct ComponentObstacleFallthrough
     bool touchedObstacleBottom(int obstacleId_);
     bool touchedObstacleSlope(int obstacleId_);
     bool touchedObstacleSide(int obstacleId_);
+    bool setIgnoreObstacle(int obstacleId_);
     bool checkIgnoringObstacle(int obstacleId_) const;
 
     FrameTimer<false> m_isIgnoringObstacles;
@@ -140,6 +153,14 @@ struct ComponentDynamicCameraTarget
     ComponentDynamicCameraTarget &operator=(ComponentDynamicCameraTarget &&rhs_) = default;
 
     Vector2<float> m_offset;
+};
+
+struct Navigatable
+{
+    Connection *m_currentOwnConnection = nullptr;
+    bool m_isFallthroughOk;
+    std::set<TraverseTraitT> m_validTraitsOwnLocation;
+    float m_maxRange = 0.0f;
 };
 
 #endif

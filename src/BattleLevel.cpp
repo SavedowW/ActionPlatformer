@@ -14,7 +14,10 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_camsys(m_registry, m_camera),
     m_hudsys(m_registry, *application_, m_camera, lvlId_, size_, m_lastFrameTimeMS),
     m_enemysys(m_registry, *application_),
-    m_aisys(m_registry)
+    m_aisys(m_registry),
+    m_navsys(m_registry, *application_, m_graph),
+    m_colsys(m_registry),
+    m_graph(*application_)
 {
     auto playerId = m_registry.create();
     m_registry.emplace<ComponentTransform>(playerId, Vector2{100.0f, 300.0f}, ORIENTATION::RIGHT);
@@ -25,10 +28,129 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_registry.emplace<ComponentDynamicCameraTarget>(playerId);
     m_registry.emplace<World>(playerId, m_registry, m_camera);
     m_registry.emplace<StateMachine>(playerId);
+    m_registry.emplace<Navigatable>(playerId);
 
-    auto nd1 = m_graph.makeNode({8.0f, 300.0f});
-    auto nd2 = m_graph.makeNode({72.0f, 300.0f});
-    m_graph.makeConnection(nd1, nd2, {0}, {0});
+    auto nd1 = m_graph.makeNode(Vector2{0, 25}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd2 = m_graph.makeNode(Vector2{6, 25}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd3 = m_graph.makeNode(Vector2{10, 21}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd4 = m_graph.makeNode(Vector2{21, 21}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd5 = m_graph.makeNode(Vector2{25, 25}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd6 = m_graph.makeNode(Vector2{22, 27}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd7 = m_graph.makeNode(Vector2{21, 27}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd8 = m_graph.makeNode(Vector2{19, 29}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd9 = m_graph.makeNode(Vector2{10, 29}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+
+    auto nd10 = m_graph.makeNode(Vector2{29, 25}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd11 = m_graph.makeNode(Vector2{33, 29}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd12 = m_graph.makeNode(Vector2{35, 29}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd13 = m_graph.makeNode(Vector2{36, 25}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd14 = m_graph.makeNode(Vector2{37, 25}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd15 = m_graph.makeNode(Vector2{39, 22}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd16 = m_graph.makeNode(Vector2{40, 22}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd17 = m_graph.makeNode(Vector2{40, 19}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd18 = m_graph.makeNode(Vector2{41, 19}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd19 = m_graph.makeNode(Vector2{42, 19}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd20 = m_graph.makeNode(Vector2{47, 19}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+
+    auto nd21 = m_graph.makeNode(Vector2{38, 29}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd22 = m_graph.makeNode(Vector2{49, 29}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    auto nd23 = m_graph.makeNode(Vector2{53, 29}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+
+    m_graph.makeConnection(nd1, nd2, 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd2, nd3, 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP),
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd3, nd4, 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd4, nd5, 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd2, nd9, 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), true, false);
+
+    m_graph.makeConnection(nd8, nd9, 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd7, nd8, 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd6, nd7, 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd5, nd6, 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), true, false);
+
+    m_graph.makeConnection(nd5, nd10, 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd10, nd11, 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd11, nd12, 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd12, nd13, 
+        makeTraitList(TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::FALL), false, false);
+
+    m_graph.makeConnection(nd13, nd14, 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd14, nd21,
+        makeTraitList(TraverseTraits::FALL), 
+        makeTraitList(TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd21, nd22,
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd22, nd23,
+        makeTraitList(TraverseTraits::WALK), 
+        makeTraitList(TraverseTraits::WALK), false, false);
+
+    m_graph.makeConnection(nd14, nd15,
+        makeTraitList(TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd15, nd16,
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd15, nd17,
+        makeTraitList(TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::FALL), false, false);
+
+    m_graph.makeConnection(nd17, nd18,
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd18, nd19,
+        makeTraitList(TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd19, nd20,
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+
+    m_graph.makeConnection(nd20, nd22,
+        makeTraitList(TraverseTraits::FALL), 
+        makeTraitList(), false, false);
 
 
     m_playerId = playerId;
@@ -42,6 +164,12 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
 
     LevelBuilder bld(*application_, m_registry);
     m_decor = std::move(bld.buildLevel("Resources/Sprites/Tiles/tilemap.json", m_tlmap, playerId));
+
+    auto newcld = m_registry.create();
+    m_registry.emplace<ComponentStaticCollider>(newcld, SlopeCollider(getTilePos(Vector2{3.0f, 25.0f}), Vector2{16.0f, 16.0f}, 1), 0);
+    auto &swc = m_registry.emplace<SwitchCollider>(newcld);
+    swc.m_durationDisabled = 120.0f;
+    swc.m_durationEnabled = 120.0f;
 }
 
 void BattleLevel::enter()
@@ -60,11 +188,13 @@ void BattleLevel::enter()
 
 void BattleLevel::update()
 {
+    m_colsys.update();
     m_inputsys.update();
     m_playerSystem.update();
     m_aisys.update();
     m_physsys.update();
     m_camsys.update();
+    m_navsys.update();
 
     m_camera.update();
 }
@@ -78,7 +208,8 @@ void BattleLevel::draw()
 
     m_rendersys.draw();
 
-    m_graph.draw(renderer, m_camera);
+    m_graph.draw(m_camera);
+    m_navsys.draw(m_camera);
 
     m_camsys.debugDraw(renderer, m_camera);
 

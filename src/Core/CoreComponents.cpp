@@ -65,6 +65,12 @@ bool ComponentObstacleFallthrough::touchedObstacleSide(int obstacleId_)
     return false;
 }
 
+bool ComponentObstacleFallthrough::setIgnoreObstacle(int obstacleId_)
+{
+    m_ignoredObstacles.insert(obstacleId_);
+    return false;
+}
+
 ComponentPlayerInput::ComponentPlayerInput(std::unique_ptr<InputResolver> &&inputResolver_) :
     m_inputResolver(std::move(inputResolver_))
 {
@@ -75,4 +81,19 @@ ComponentStaticCollider::ComponentStaticCollider(const SlopeCollider &collider_,
     m_obstacleId(obstacleId_)
 {
 
+}
+
+bool SwitchCollider::updateTimer()
+{
+    if (m_timer.update())
+    {
+        if (m_isEnabled)
+            m_timer.begin(m_durationDisabled);
+        else
+            m_timer.begin(m_durationEnabled);
+
+        m_isEnabled = !m_isEnabled;
+    }
+
+    return m_isEnabled;
 }

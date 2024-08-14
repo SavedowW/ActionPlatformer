@@ -216,22 +216,22 @@ void Renderer::drawGeometry(SDL_Texture *texture, const SDL_Vertex *vertices, in
     }
 }
 
-void Renderer::drawCollider(const Collider &cld_, const SDL_Color &col_, uint8_t borderAlpha_, const Camera &cam_)
+void Renderer::drawCollider(const Collider &cld_, const SDL_Color &fillCol_, const SDL_Color &borderCol_, const Camera &cam_)
 {
 	Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2{m_backbuffGameplay.m_w, m_backbuffGameplay.m_h} / 2;
 	Vector2<int> rectTL = Vector2<int>(cld_.getTopLeft()) - camTL;
     Vector2<int> rectSize = cld_.getSize();
 
 	SDL_Rect rect = { rectTL.x, rectTL.y, rectSize.x, rectSize.y };
-	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
+	SDL_SetRenderDrawColor(m_renderer, fillCol_.r, fillCol_.g, fillCol_.b, fillCol_.a);
 	SDL_RenderFillRect(m_renderer, &rect);
-	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, borderAlpha_);
+	SDL_SetRenderDrawColor(m_renderer, borderCol_.r, borderCol_.g, borderCol_.b, borderCol_.a);
 	SDL_RenderDrawRect(m_renderer, &rect);
 }
 
-void Renderer::drawCollider(const SlopeCollider &cld_, const SDL_Color &col_, uint8_t borderAlpha_, const Camera &cam_)
+void Renderer::drawCollider(const SlopeCollider &cld_, const SDL_Color &fillCol_, const SDL_Color &borderCol_, const Camera &cam_)
 {
-    SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
+    SDL_SetRenderDrawColor(m_renderer, fillCol_.r, fillCol_.g, fillCol_.b, fillCol_.a);
     
     SDL_Vertex vxes[4];
     int idces[6] = {0, 1, 2, 2, 3, 0};
@@ -243,7 +243,7 @@ void Renderer::drawCollider(const SlopeCollider &cld_, const SDL_Color &col_, ui
         Vector2<int> pos = cld_.m_points[i] - camTL;
         vxes[i].position.x = pos.x;
         vxes[i].position.y = pos.y;
-        vxes[i].color = col_;
+        vxes[i].color = fillCol_;
     }
 
     if (SDL_RenderGeometry(m_renderer, nullptr, vxes, 4, idces, 6))
@@ -251,7 +251,7 @@ void Renderer::drawCollider(const SlopeCollider &cld_, const SDL_Color &col_, ui
         std::cout << "Failed to render geometry: " << SDL_GetError() << std::endl;
     }
 
-    SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b,  borderAlpha_);
+    SDL_SetRenderDrawColor(m_renderer, borderCol_.r, borderCol_.g, borderCol_.b, borderCol_.a);
 
     SDL_RenderDrawLine(m_renderer, vxes[0].position.x, vxes[0].position.y, vxes[1].position.x, vxes[1].position.y);
     SDL_RenderDrawLine(m_renderer, vxes[1].position.x, vxes[1].position.y, vxes[2].position.x, vxes[2].position.y);

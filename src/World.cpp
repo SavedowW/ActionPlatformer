@@ -14,7 +14,7 @@ bool World::isAreaFree(const Collider &cld_, bool considerObstacles_)
 
     for (auto [idx, cld] : cldview.each())
     {
-        if (cld.m_obstacleId && !considerObstacles_)
+        if (!cld.m_isEnabled || cld.m_obstacleId && !considerObstacles_)
             continue;
 
         auto colres = cld.m_collider.getFullCollisionWith(cld_, dumped);
@@ -43,7 +43,7 @@ bool World::touchingWallAt(ORIENTATION checkSide_, const Vector2<float> &pos_)
     auto cldview = m_registry.view<ComponentStaticCollider>();
     for (auto [idx, cld] : cldview.each())
     {
-        if (cld.m_obstacleId)
+        if (!cld.m_isEnabled || cld.m_obstacleId)
             continue;
 
         if (checkSide_ == ORIENTATION::LEFT)
@@ -66,7 +66,7 @@ bool World::touchingGround(const Collider &cld_, ComponentObstacleFallthrough &f
     auto cldview = m_registry.view<ComponentStaticCollider>();
     for (auto [idx, cld] : cldview.each())
     {
-        if (cld.m_obstacleId && fallthrough_.checkIgnoringObstacle(cld.m_obstacleId))
+        if (!cld.m_isEnabled || cld.m_obstacleId && fallthrough_.checkIgnoringObstacle(cld.m_obstacleId))
             continue;
 
         float dump = 0;

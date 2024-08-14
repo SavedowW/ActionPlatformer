@@ -358,7 +358,7 @@ namespace utils
             return p2.getLen();
 
         Vector2<float> normal = Vector2{dir1.y, -dir1.x}.normalised();
-        return normal.dot(p1);
+        return abs(normal.dot(p1));
     }
 }
 
