@@ -10,23 +10,17 @@ void PhysicsSystem::update()
 {
     //m_physicalQuery{reg_.makeQuery<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough>()},
     //m_staticColliderQuery{reg_.makeQuery<ComponentStaticCollider>()},
-    auto viewPhys = m_reg.view<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough>();
+    auto viewPhys = m_reg.view<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, StateMachine>();
     auto viewscld = m_reg.view<ComponentStaticCollider>();
 
-    for (auto [idx, trans, phys, obsfall] : viewPhys.each())
+    for (auto [idx, trans, phys, obsfall, sm] : viewPhys.each())
     {
-        if (m_reg.all_of<StateMachine>(idx))
-        {
-            auto &sm = m_reg.get<StateMachine>(idx);
-            sm.update({&m_reg, idx}, 0);
-            proceedEntity(viewscld, idx, trans, phys, obsfall, &sm);
-        }
-        else
-            proceedEntity(viewscld, idx, trans, phys, obsfall, nullptr);
+        sm.update({&m_reg, idx}, 0); // TODO: takes a big part of physics duration, probably should replace or remove get()
+        proceedEntity(viewscld, idx, trans, phys, obsfall, sm);
     }
 }
 
-void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, StateMachine *sm_)
+void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, StateMachine &sm_)
 {
     auto oldPos = trans_.m_pos;
 
@@ -278,23 +272,21 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
         }
     }
 
+    // TODO: Takes around 60% of a function, maybe its better to add a "marker" component for obstacles
     resetEntityObstacles(trans_, phys_, obsFallthrough_);
     phys_.m_lastSlopeAngle = phys_.m_onSlopeWithAngle;
     phys_.m_onSlopeWithAngle = touchedSlope;
 
-    if (sm_)
-    {
-        auto *currentState = static_cast<PhysicalState*>(sm_->getRealCurrentState());
+    auto *currentState = static_cast<PhysicalState*>(sm_.getRealCurrentState());
 
-        if (groundCollision)
-        {
-            currentState->onTouchedGround({&m_reg, idx_});
-        }
-        else
-        {
-            if (!magnetEntity(clds_, trans_, phys_, obsFallthrough_))
-                currentState->onLostGround({&m_reg, idx_});
-        }
+    if (groundCollision)
+    {
+        currentState->onTouchedGround({&m_reg, idx_});
+    }
+    else
+    {
+        if (!magnetEntity(clds_, trans_, phys_, obsFallthrough_))
+            currentState->onLostGround({&m_reg, idx_});
     }
 
     phys_.m_appliedOffset = trans_.m_pos - oldPos;

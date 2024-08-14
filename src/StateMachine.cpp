@@ -224,6 +224,7 @@ bool PhysicalState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
     auto &animrnd = owner_.reg->get<ComponentAnimationRenderable>(owner_.idx);
 
+    // TODO: for whatever reason takes a big part of update duration, maybe move to another system?
     animrnd.m_currentAnimation->update();
 
     // Handle velocity and inertia changes

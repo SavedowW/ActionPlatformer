@@ -14,7 +14,7 @@ using NodeID = size_t;
 using ConnectionID = size_t;
 
 template<typename... TraitsT>
-std::set<TraverseTraitT> makeTraitList(TraitsT... traits_)
+constexpr std::set<TraverseTraitT> makeTraitList(TraitsT... traits_)
 {
     std::set<TraverseTraitT> retval;
     (retval.insert(static_cast<TraverseTraitT>(traits_)), ...);
