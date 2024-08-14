@@ -13,7 +13,8 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_physsys(m_registry, size_),
     m_camsys(m_registry, m_camera),
     m_hudsys(m_registry, *application_, m_camera, lvlId_, size_, m_lastFrameTimeMS),
-    m_enemysys(m_registry, *application_)
+    m_enemysys(m_registry, *application_),
+    m_aisys(m_registry)
 {
     auto playerId = m_registry.create();
     m_registry.emplace<ComponentTransform>(playerId, Vector2{100.0f, 300.0f}, ORIENTATION::RIGHT);
@@ -25,11 +26,17 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_registry.emplace<World>(playerId, m_registry, m_camera);
     m_registry.emplace<StateMachine>(playerId);
 
-    m_enemysys.makeEnemy();
+    auto nd1 = m_graph.makeNode({8.0f, 300.0f});
+    auto nd2 = m_graph.makeNode({72.0f, 300.0f});
+    m_graph.makeConnection(nd1, nd2, {0}, {0});
+
 
     m_playerId = playerId;
     m_camsys.m_playerId = playerId;
     m_hudsys.m_playerId = playerId;
+    m_enemysys.m_playerId = playerId;
+
+    m_enemysys.makeEnemy();
 
     m_tlmap.load("Tiles/tiles");
 
@@ -55,6 +62,7 @@ void BattleLevel::update()
 {
     m_inputsys.update();
     m_playerSystem.update();
+    m_aisys.update();
     m_physsys.update();
     m_camsys.update();
 
@@ -69,6 +77,8 @@ void BattleLevel::draw()
     m_decor.draw(m_camera);
 
     m_rendersys.draw();
+
+    m_graph.draw(renderer, m_camera);
 
     m_camsys.debugDraw(renderer, m_camera);
 

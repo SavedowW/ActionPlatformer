@@ -11,6 +11,7 @@ struct EnemySystem
     void update();
 
     entt::registry &m_reg;
+    entt::entity m_playerId;
     AnimationManager &m_animManager;
 };
 

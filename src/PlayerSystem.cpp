@@ -43,8 +43,8 @@ void PlayerSystem::setup(entt::entity playerId_)
         &(new PlayerActionWallPrejump(
             m_animManager.getAnimID("Char1/wall_prejump"), {CharacterState::NONE, {CharacterState::WALL_CLING}}))
         ->setTransitionOnTouchedGround(CharacterState::IDLE)
-        .setOutdatedTransition(CharacterState::FLOAT, 3)
         .setDrag(TimelineProperty<Vector2<float>>({1.0f, 0.5f}))
+        .setOutdatedTransition(CharacterState::FLOAT, 3)
     ));
 
     sm.addState(std::unique_ptr<GenericState>(
@@ -86,9 +86,9 @@ void PlayerSystem::setup(entt::entity playerId_)
                 }), // Inr mul
             TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
             TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
-        .setOutdatedTransition(CharacterState::FLOAT, 1)
         .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
         .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+        .setOutdatedTransition(CharacterState::FLOAT, 1)
     ));
 
     sm.addState(std::unique_ptr<GenericState>(
@@ -114,12 +114,12 @@ void PlayerSystem::setup(entt::entity playerId_)
                 }), // Inr mul
             TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
             TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
-        .setOutdatedTransition(CharacterState::FLOAT, 1)
         .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
         .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
         .setUpdateSpeedLimitData(
             TimelineProperty<Vector2<float>>(),
             TimelineProperty<Vector2<float>>({9999.9f, 4.0f}))
+        .setOutdatedTransition(CharacterState::FLOAT, 1)
     ));
 
     sm.addState(std::unique_ptr<GenericState>(

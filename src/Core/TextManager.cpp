@@ -56,8 +56,8 @@ const fonts::Symbol &fonts::Font::operator[](uint32_t ch_)
 TextManager::TextManager(Renderer *renderer_, const std::string &basePath_) :
     m_charChunks(basePath_ + "/Resources/GeneralCharacterList.txt"),
     m_renderer(renderer_),
-    m_fonts{fonts::Font(generateSimpleShadedSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  24, SDL_Color{255, 255, 255, 255}, SDL_Color{100, 100, 100, 255})}
-    //m_fonts{fonts::Font(generateSimpleSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  24, SDL_Color{255, 255, 255, 255})}
+    m_fonts{fonts::Font(generateSimpleShadedSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  24, SDL_Color{255, 255, 255, 255}, SDL_Color{100, 100, 100, 255}),
+    fonts::Font(generateSimpleSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  18, SDL_Color{255, 255, 255, 255})}
     //m_fonts{fonts::Font(generateOutlinedSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  24, 2, SDL_Color{0, 0, 0, 255}, SDL_Color{0, 100, 0, 255})}
     //m_fonts{fonts::Font(generateOutlinedTexturedSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf", "/Resources/Fonts/fontBack.png",  24, 2, SDL_Color{0, 0, 0, 255})}
 {

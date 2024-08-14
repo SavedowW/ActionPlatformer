@@ -65,7 +65,7 @@ private:
 
     fonts::CharChunkDistribution m_charChunks;
     Renderer *m_renderer;
-    std::array<fonts::Font, 1> m_fonts;
+    std::array<fonts::Font, 2> m_fonts;
 
 };
 

@@ -2,6 +2,7 @@
 #define HUD_SYSTEM_H_
 #include "Application.h"
 #include "ImmediateScreenLog.h"
+#include "CommonAI.h"
 #include <entt/entt.hpp>
 
 struct HudSystem
@@ -12,6 +13,7 @@ public:
     void draw();
     void drawCommonDebug();
     void drawPlayerDebug();
+    void drawNPCDebug(ComponentTransform &trans_, ComponentPhysical &phys_, StateMachine &sm_, ComponentAI &ai_);
 
     entt::entity m_playerId;
 

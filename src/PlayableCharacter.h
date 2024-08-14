@@ -69,17 +69,17 @@ inline ORIENTATION attemptInput(const InputComparator &cmpL_, const InputCompara
 template<bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN,
     typename CMP_LEFT, typename CMP_RIGHT,
     bool ATTEMPT_PROCEED, typename CMP_PROCEED_LEFT, typename CMP_PROCEED_RIGHT>
-class PlayerState : public GenericState
+class PlayerState : public PhysicalState
 {
 public:
     PlayerState(CharacterState actionState_, StateMarker &&transitionableFrom_, int anim_) :
-        GenericState(actionState_, CharacterStateNames.at(actionState_), std::move(transitionableFrom_), anim_)
+        PhysicalState(actionState_, CharacterStateNames.at(actionState_), std::move(transitionableFrom_), anim_)
     {
     }
 
     inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_)
     {
-        auto res = GenericState::update(owner_, currentFrame_);
+        auto res = PhysicalState::update(owner_, currentFrame_);
 
         auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
         auto &compFallthrough = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
@@ -113,7 +113,7 @@ public:
 
     inline virtual ORIENTATION isPossible(EntityAnywhere owner_) const override
     {
-        if (GenericState::isPossible(owner_) == ORIENTATION::UNSPECIFIED)
+        if (PhysicalState::isPossible(owner_) == ORIENTATION::UNSPECIFIED)
             return ORIENTATION::UNSPECIFIED;
 
         auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
@@ -122,7 +122,7 @@ public:
 
         auto orientation = transform.m_orientation;
         const auto &inq = compInput.m_inputResolver->getInputQueue();
-        auto currentState = GenericState::m_parent->m_currentState;
+        auto currentState = PhysicalState::m_parent->m_currentState;
 
         bool possibleToLeft = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle <= 0 || physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
         bool possibleToRight = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle >= 0 || -physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
@@ -299,7 +299,7 @@ public:
 
     inline virtual ORIENTATION isPossible(EntityAnywhere owner_) const override
     {
-        if (GenericState::isPossible(owner_) == ORIENTATION::UNSPECIFIED)
+        if (PhysicalState::isPossible(owner_) == ORIENTATION::UNSPECIFIED)
             return ORIENTATION::UNSPECIFIED;
 
         auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
@@ -310,7 +310,7 @@ public:
 
         auto orientation = transform.m_orientation;
         const auto &inq = compInput.m_inputResolver->getInputQueue();
-        auto currentState = GenericState::m_parent->m_currentState;
+        auto currentState = PhysicalState::m_parent->m_currentState;
         auto pb = physical.m_pushbox + transform.m_pos;
 
         if (cworld.touchingGround(pb, cobs))

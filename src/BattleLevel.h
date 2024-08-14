@@ -14,6 +14,8 @@
 #include "HUDSystem.h"
 #include "InputHandlingSystem.h"
 #include "EnemySystem.h"
+#include "NavGraph.h"
+#include "AISystem.h"
 
 class BattleLevel : public Level
 {
@@ -40,6 +42,9 @@ protected:
     CameraSystem m_camsys;
     HudSystem m_hudsys;
     EnemySystem m_enemysys;
+    AISystem m_aisys;
+
+    NavGraph m_graph;
 
     entt::entity m_playerId;
 };

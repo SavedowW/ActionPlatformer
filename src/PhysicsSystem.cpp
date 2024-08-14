@@ -278,7 +278,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
 
     if (sm_)
     {
-        auto *currentState = sm_->getRealCurrentState();
+        auto *currentState = static_cast<PhysicalState*>(sm_->getRealCurrentState());
 
         if (groundCollision)
         {

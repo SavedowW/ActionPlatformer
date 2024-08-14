@@ -54,32 +54,15 @@ class GenericState
 {
 public:
     template<typename PLAYER_STATE_T>
-    GenericState(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_, int anim_) :
+    GenericState(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_) :
         m_stateId(static_cast<CharState>(stateId_)),
         m_stateName(stateName_),
-        m_transitionableFrom(std::move(transitionableFrom_)),
-        m_anim(anim_),
-        m_drag({1.0f, 0.0f}),
-        m_appliedInertiaMultiplier({1.0f, 1.0f})
+        m_transitionableFrom(std::move(transitionableFrom_))
     {}
 
     void setParent(StateMachine *parent_);
 
     virtual GenericState *getRealCurrentState();
-
-    template<typename PLAYER_STATE_T>
-    GenericState &setTransitionOnTouchedGround(PLAYER_STATE_T state_)
-    {
-        m_transitionOnLand = static_cast<CharState>(state_);
-        return *this;
-    }
-
-    template<typename PLAYER_STATE_T>
-    inline GenericState &setTransitionOnLostGround(PLAYER_STATE_T state_)
-    {
-        m_transitionOnLostGround = static_cast<CharState>(state_);
-        return *this;
-    }
 
     template<typename PLAYER_STATE_T>
     GenericState &setOutdatedTransition(PLAYER_STATE_T state_, uint32_t duration_)
@@ -88,28 +71,6 @@ public:
         m_duration = duration_;
         return *this;
     }
-
-    template<typename PLAYER_STATE_T>
-    GenericState &addTransitionAnim(PLAYER_STATE_T oldState_, int anim_)
-    {
-        m_uniqueTransitionAnims[static_cast<CharState>(oldState_)] = anim_;
-        return *this;
-    }
-
-    GenericState &setGravity(TimelineProperty<Vector2<float>> &&gravity_);
-    GenericState &setDrag(TimelineProperty<Vector2<float>> &&drag_);
-    GenericState &setCanFallThrough(TimelineProperty<bool> &&fallThrough_);
-    GenericState &setNoLanding(TimelineProperty<bool> &&noLanding_);
-    GenericState &setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>> &&inerMul_);
-    GenericState &setConvertVelocityOnSwitch(bool convertVelocity_);
-    GenericState &setUpdateMovementData(
-        TimelineProperty<Vector2<float>> &&mulOwnVelUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirVelUpd_, TimelineProperty<Vector2<float>> &&rawAddVelUpd_,
-        TimelineProperty<Vector2<float>> &&mulOwnInrUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirInrUpd_, TimelineProperty<Vector2<float>> &&rawAddInrUpd_);
-    GenericState &setMagnetLimit(TimelineProperty<float> &&magnetLimit_);
-    GenericState &setUpdateSpeedLimitData(TimelineProperty<Vector2<float>> &&ownVelLimitUpd_, TimelineProperty<Vector2<float>> &&ownInrLimitUpd_);
-    GenericState &setGroundedOnSwitch(bool isGrounded_);
-    GenericState &setCooldown(FrameTimer<true> *cooldown_, int cooldownTime_);
-    GenericState &setRecoveryFrames(TimelineProperty<StateMarker> &&recoveryFrames_);
 
     virtual void enter(EntityAnywhere owner_, CharState from_);
     virtual void leave(EntityAnywhere owner_, CharState to_);
@@ -124,8 +85,6 @@ public:
     }
 
     virtual void onOutdated(EntityAnywhere owner_);
-    virtual void onTouchedGround(EntityAnywhere owner_);
-    virtual void onLostGround(EntityAnywhere owner_);
 
     const CharState m_stateId;
 
@@ -134,6 +93,64 @@ protected:
     std::string m_stateName;
     StateMachine *m_parent = nullptr;
 
+    std::optional<CharState> m_transitionOnOutdated;
+    std::optional<uint32_t> m_duration;
+};
+
+class PhysicalState: public GenericState
+{
+public:
+    template<typename PLAYER_STATE_T>
+    PhysicalState(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_, int anim_) :
+        GenericState(stateId_, stateName_, std::move(transitionableFrom_)),
+        m_anim(anim_),
+        m_drag({1.0f, 0.0f}),
+        m_appliedInertiaMultiplier({1.0f, 1.0f})
+    {}
+
+    template<typename PLAYER_STATE_T>
+    PhysicalState &setTransitionOnTouchedGround(PLAYER_STATE_T state_)
+    {
+        m_transitionOnLand = static_cast<CharState>(state_);
+        return *this;
+    }
+
+    virtual void enter(EntityAnywhere owner_, CharState from_) override;
+    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+
+    template<typename PLAYER_STATE_T>
+    inline PhysicalState &setTransitionOnLostGround(PLAYER_STATE_T state_)
+    {
+        m_transitionOnLostGround = static_cast<CharState>(state_);
+        return *this;
+    }
+
+    template<typename PLAYER_STATE_T>
+    PhysicalState &addTransitionAnim(PLAYER_STATE_T oldState_, int anim_)
+    {
+        m_uniqueTransitionAnims[static_cast<CharState>(oldState_)] = anim_;
+        return *this;
+    }
+
+    PhysicalState &setGravity(TimelineProperty<Vector2<float>> &&gravity_);
+    PhysicalState &setDrag(TimelineProperty<Vector2<float>> &&drag_);
+    PhysicalState &setCanFallThrough(TimelineProperty<bool> &&fallThrough_);
+    PhysicalState &setNoLanding(TimelineProperty<bool> &&noLanding_);
+    PhysicalState &setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>> &&inerMul_);
+    PhysicalState &setConvertVelocityOnSwitch(bool convertVelocity_);
+    PhysicalState &setUpdateMovementData(
+        TimelineProperty<Vector2<float>> &&mulOwnVelUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirVelUpd_, TimelineProperty<Vector2<float>> &&rawAddVelUpd_,
+        TimelineProperty<Vector2<float>> &&mulOwnInrUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirInrUpd_, TimelineProperty<Vector2<float>> &&rawAddInrUpd_);
+    PhysicalState &setMagnetLimit(TimelineProperty<float> &&magnetLimit_);
+    PhysicalState &setUpdateSpeedLimitData(TimelineProperty<Vector2<float>> &&ownVelLimitUpd_, TimelineProperty<Vector2<float>> &&ownInrLimitUpd_);
+    PhysicalState &setGroundedOnSwitch(bool isGrounded_);
+    PhysicalState &setCooldown(FrameTimer<true> *cooldown_, int cooldownTime_);
+    PhysicalState &setRecoveryFrames(TimelineProperty<StateMarker> &&recoveryFrames_);
+
+    virtual void onTouchedGround(EntityAnywhere owner_);
+    virtual void onLostGround(EntityAnywhere owner_);
+
+protected:
     int m_anim;
     std::optional<CharState> m_transitionOnLand;
     std::optional<CharState> m_transitionOnLostGround;
@@ -155,9 +172,6 @@ protected:
     TimelineProperty<Vector2<float>> m_ownInrLimitUpd;
 
     TimelineProperty<float> m_magnetLimit;
-
-    std::optional<CharState> m_transitionOnOutdated;
-    std::optional<uint32_t> m_duration;
 
     TimelineProperty<bool> m_canFallThrough;
     std::optional<bool> m_setGroundedOnSwitch;

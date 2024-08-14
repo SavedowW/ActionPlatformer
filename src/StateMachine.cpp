@@ -80,43 +80,43 @@ GenericState *GenericState::getRealCurrentState()
     return this;
 }
 
-GenericState &GenericState::setGravity(TimelineProperty<Vector2<float>> &&gravity_)
+PhysicalState &PhysicalState::setGravity(TimelineProperty<Vector2<float>> &&gravity_)
 {
     m_gravity = std::move(gravity_);
     return *this;
 }
 
-GenericState &GenericState::setDrag(TimelineProperty<Vector2<float>> &&drag_)
+PhysicalState &PhysicalState::setDrag(TimelineProperty<Vector2<float>> &&drag_)
 {
     m_drag = std::move(drag_);
     return *this;
 }
 
-GenericState &GenericState::setCanFallThrough(TimelineProperty<bool> &&fallThrough_)
+PhysicalState &PhysicalState::setCanFallThrough(TimelineProperty<bool> &&fallThrough_)
 {
     m_canFallThrough = std::move(fallThrough_);
     return *this;
 }
 
-GenericState &GenericState::setNoLanding(TimelineProperty<bool> &&noLanding_)
+PhysicalState &PhysicalState::setNoLanding(TimelineProperty<bool> &&noLanding_)
 {
     m_noUpwardLanding = std::move(noLanding_);
     return *this;
 }
 
-GenericState &GenericState::setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>> &&inerMul_)
+PhysicalState &PhysicalState::setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>> &&inerMul_)
 {
     m_appliedInertiaMultiplier = std::move(inerMul_);
     return *this;
 }
 
-GenericState &GenericState::setConvertVelocityOnSwitch(bool convertVelocity_)
+PhysicalState &PhysicalState::setConvertVelocityOnSwitch(bool convertVelocity_)
 {
     m_convertVelocityOnSwitch = convertVelocity_;
     return *this;
 }
 
-GenericState &GenericState::setUpdateMovementData(TimelineProperty<Vector2<float>> &&mulOwnVelUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirVelUpd_, TimelineProperty<Vector2<float>> &&rawAddVelUpd_, TimelineProperty<Vector2<float>> &&mulOwnInrUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirInrUpd_, TimelineProperty<Vector2<float>> &&rawAddInrUpd_)
+PhysicalState &PhysicalState::setUpdateMovementData(TimelineProperty<Vector2<float>> &&mulOwnVelUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirVelUpd_, TimelineProperty<Vector2<float>> &&rawAddVelUpd_, TimelineProperty<Vector2<float>> &&mulOwnInrUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirInrUpd_, TimelineProperty<Vector2<float>> &&rawAddInrUpd_)
 {
     m_mulOwnVelUpd = std::move(mulOwnVelUpd_);
     m_mulOwnDirVelUpd = std::move(mulOwnDirVelUpd_);
@@ -131,13 +131,13 @@ GenericState &GenericState::setUpdateMovementData(TimelineProperty<Vector2<float
     return *this;
 }
 
-GenericState &GenericState::setMagnetLimit(TimelineProperty<float> &&magnetLimit_)
+PhysicalState &PhysicalState::setMagnetLimit(TimelineProperty<float> &&magnetLimit_)
 {
     m_magnetLimit = std::move(magnetLimit_);
     return *this;
 }
 
-GenericState &GenericState::setUpdateSpeedLimitData(TimelineProperty<Vector2<float>> &&ownVelLimitUpd_, TimelineProperty<Vector2<float>> &&ownInrLimitUpd_)
+PhysicalState &PhysicalState::setUpdateSpeedLimitData(TimelineProperty<Vector2<float>> &&ownVelLimitUpd_, TimelineProperty<Vector2<float>> &&ownInrLimitUpd_)
 {
     m_ownVelLimitUpd = std::move(ownVelLimitUpd_);
     m_ownInrLimitUpd = std::move(ownInrLimitUpd_);
@@ -145,20 +145,20 @@ GenericState &GenericState::setUpdateSpeedLimitData(TimelineProperty<Vector2<flo
     return *this;
 }
 
-GenericState &GenericState::setGroundedOnSwitch(bool isGrounded_)
+PhysicalState &PhysicalState::setGroundedOnSwitch(bool isGrounded_)
 {
     m_setGroundedOnSwitch = isGrounded_;
     return *this;
 }
 
-GenericState &GenericState::setCooldown(FrameTimer<true> *cooldown_, int cooldownTime_)
+PhysicalState &PhysicalState::setCooldown(FrameTimer<true> *cooldown_, int cooldownTime_)
 {
     m_cooldown = cooldown_;
     m_cooldownTime = cooldownTime_;
     return *this;
 }
 
-GenericState &GenericState::setRecoveryFrames(TimelineProperty<StateMarker> &&recoveryFrames_)
+PhysicalState &PhysicalState::setRecoveryFrames(TimelineProperty<StateMarker> &&recoveryFrames_)
 {
     m_recoveryFrames = std::move(recoveryFrames_);
     return *this;
@@ -167,6 +167,11 @@ GenericState &GenericState::setRecoveryFrames(TimelineProperty<StateMarker> &&re
 void GenericState::enter(EntityAnywhere owner_, CharState from_)
 {
     std::cout << "Switched to " << m_stateName << std::endl;
+}
+
+void PhysicalState::enter(EntityAnywhere owner_, CharState from_)
+{
+    GenericState::enter(owner_, from_);
 
     auto &renderable = owner_.reg->get<ComponentAnimationRenderable>(owner_.idx);
     auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
@@ -203,6 +208,18 @@ void GenericState::leave(EntityAnywhere owner_, CharState to_)
 
 bool GenericState::update(EntityAnywhere owner_, uint32_t currentFrame_)
 {
+    // Handle duration
+    if (m_transitionOnOutdated.has_value())
+    {
+        if (currentFrame_ >= m_duration)
+            onOutdated(owner_);
+    }
+
+    return true;
+}
+
+bool PhysicalState::update(EntityAnywhere owner_, uint32_t currentFrame_)
+{
     auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
     auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
     auto &animrnd = owner_.reg->get<ComponentAnimationRenderable>(owner_.idx);
@@ -231,14 +248,7 @@ bool GenericState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     physical.m_noUpwardLanding = m_noUpwardLanding[currentFrame_];
     physical.m_magnetLimit = m_magnetLimit[currentFrame_];
 
-    // Handle duration
-    if (m_transitionOnOutdated.has_value())
-    {
-        if (currentFrame_ >= m_duration)
-            onOutdated(owner_);
-    }
-
-    return true;
+    return GenericState::update(owner_, currentFrame_);
 }
 
 ORIENTATION GenericState::isPossible(EntityAnywhere owner_) const
@@ -259,7 +269,7 @@ void GenericState::onOutdated(EntityAnywhere owner_)
     }
 }
 
-void GenericState::onTouchedGround(EntityAnywhere owner_)
+void PhysicalState::onTouchedGround(EntityAnywhere owner_)
 {
     if (m_transitionOnLand.has_value())
     {
@@ -267,7 +277,7 @@ void GenericState::onTouchedGround(EntityAnywhere owner_)
     }
 }
 
-void GenericState::onLostGround(EntityAnywhere owner_)
+void PhysicalState::onLostGround(EntityAnywhere owner_)
 {
     if (m_transitionOnLostGround.has_value())
     {

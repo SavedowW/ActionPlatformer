@@ -21,9 +21,16 @@ HudSystem::HudSystem(entt::registry &reg_, Application &app_, Camera &cam_, int 
 
 void HudSystem::draw()
 {
+    auto npcs = m_reg.view<ComponentTransform, ComponentPhysical, StateMachine, ComponentAI>();
+
     m_renderer.switchToHUD({0, 0, 0, 0});
     drawCommonDebug();
     drawPlayerDebug();
+
+    for (auto [idx, trans, phys, sm, ai] : npcs.each())
+    {
+        drawNPCDebug(trans, phys, sm, ai);
+    }
 }
 
 void HudSystem::drawCommonDebug()
@@ -94,4 +101,20 @@ void HudSystem::drawPlayerDebug()
         m_renderer.renderTexture(spr->getSprite(),
         arrowPos[i].x, arrowPos[i].y, spr->m_w, spr->m_h, angles[i], &sdlcenter, SDL_FLIP_NONE);
     }
+}
+
+void HudSystem::drawNPCDebug(ComponentTransform &trans_, ComponentPhysical &phys_, StateMachine &sm_, ComponentAI &ai_)
+{
+    auto txt1 = sm_.getName();
+    auto txt2 = ai_.m_sm.getName();
+    Vector2<float> worldOrigin = trans_.m_pos + phys_.m_pushbox.m_center + Vector2{phys_.m_pushbox.m_halfSize.x, -phys_.m_pushbox.m_halfSize.y};
+
+    Vector2<int> camSize = m_cam.getSize();
+    Vector2<int> camTL = m_cam.getTopLeft();
+    auto screenRelPos = (worldOrigin - camTL).mulComponents(Vector2{1.0f / camSize.x, 1.0f / camSize.y});
+    
+	Vector2<int> screenOrigin = screenRelPos.mulComponents(gamedata::global::defaultWindowResolution);
+
+    m_textManager.renderText(txt1, 1, screenOrigin);
+    m_textManager.renderText(txt2, 1, screenOrigin + Vector2{0.0f, 18.0f});
 }

@@ -29,6 +29,8 @@ InputHandlingSystem.cpp
 World.cpp
 EnemySystem.cpp
 Enemy1.cpp
+CommonAI.cpp
+AISystem.cpp
 )
 
 set(INCLUDE_DIRS
