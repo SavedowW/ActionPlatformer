@@ -33,14 +33,14 @@ bool RandomRoamState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     {
         if (m_isWalking)
         {
-            std::cout << "Switching to idle\n";
+            //std::cout << "Switching to idle\n";
             m_timer.begin((rand() % (m_idleDuration.second - m_idleDuration.first)) + m_idleDuration.first);
             switchCurrentState(owner_, m_idle);
             m_isWalking = false;
         }
         else
         {
-            std::cout << "Switching to walking\n";
+            //std::cout << "Switching to walking\n";
 
             m_timer.begin((rand() % (m_walkDuration.second - m_walkDuration.first)) + m_walkDuration.first);
             static_cast<AIState*>(m_states[m_stateIds[static_cast<CharState>(m_walk)]].get())->setEnterRequestedOrientation((

@@ -166,7 +166,7 @@ PhysicalState &PhysicalState::setRecoveryFrames(TimelineProperty<StateMarker> &&
 
 void GenericState::enter(EntityAnywhere owner_, CharState from_)
 {
-    std::cout << "Switched to " << m_stateName << std::endl;
+    //std::cout << "Switched to " << m_stateName << std::endl;
 }
 
 void PhysicalState::enter(EntityAnywhere owner_, CharState from_)

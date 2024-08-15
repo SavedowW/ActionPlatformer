@@ -16,9 +16,9 @@ NodeID NavGraph::makeNode(const Vector2<float> &pos_)
 ConnectionID NavGraph::makeConnection(NodeID node1_, NodeID node2_, const std::set<TraverseTraitT> &traverseTo2_, const std::set<TraverseTraitT> &traverseTo1_,
     bool requireFallthroughTo2_, bool requireFallthroughTo1_)
 {
-    m_connections.emplace_back(node1_, node2_, traverseTo2_, traverseTo1_, requireFallthroughTo2_, requireFallthroughTo1_, (m_nodes[node1_].m_position - m_nodes[node1_].m_position).getLen());
-    m_nodes[node1_].connections.push_back(&m_connections.back());
-    m_nodes[node2_].connections.push_back(&m_connections.back());
+    m_connections.emplace_back(node1_, node2_, traverseTo2_, traverseTo1_, requireFallthroughTo2_, requireFallthroughTo1_, (m_nodes[node1_].m_position - m_nodes[node2_].m_position).getLen(), m_connections.size());
+    m_nodes[node1_].connections.push_back(m_connections.size() - 1);
+    m_nodes[node2_].connections.push_back(m_connections.size() - 1);
 
     return m_connections.size() - 1;
 }
@@ -74,10 +74,21 @@ float NavGraph::getDistToConnection(const Connection *con_, const Vector2<float>
     return utils::distToLineSegment(m_nodes[con_->m_nodes[0]].m_position, m_nodes[con_->m_nodes[1]].m_position, pos_);
 }
 
-Connection::Connection(NodeID node1_, NodeID node2_, const std::set<TraverseTraitT> &traverseTo2_, const std::set<TraverseTraitT> &traverseTo1_, bool requireFallthroughTo2_, bool requireFallthroughTo1_, float cost_) :
+void NavGraph::setcost(ConnectionID id_, float cost_) // TODO: remove
+{
+    m_connections[id_].m_cost = cost_;
+}
+
+Connection::Connection(NodeID node1_, NodeID node2_, const std::set<TraverseTraitT> &traverseTo2_, const std::set<TraverseTraitT> &traverseTo1_, bool requireFallthroughTo2_, bool requireFallthroughTo1_, float cost_, ConnectionID ownId_) :
     m_nodes{node1_, node2_},
     m_traverses{traverseTo2_, traverseTo1_},
     m_requireFallthrough{requireFallthroughTo2_, requireFallthroughTo1_},
-    m_cost(cost_)
+    m_cost(cost_),
+    m_ownId{ownId_}
 {
+}
+
+bool Connection::isOnNodes(NodeID nd1_, NodeID nd2_) const
+{
+    return (m_nodes[0] == nd1_ && m_nodes[1] == nd2_) || (m_nodes[0] == nd2_ && m_nodes[1] == nd1_);
 }

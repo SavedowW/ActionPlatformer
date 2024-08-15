@@ -24,17 +24,20 @@ constexpr std::set<TraverseTraitT> makeTraitList(TraitsT... traits_)
 
 struct Connection
 {
-    Connection(NodeID node1_, NodeID node2_, const std::set<TraverseTraitT> &traverseTo2_, const std::set<TraverseTraitT> &traverseTo1_, bool requireFallthroughTo2_, bool requireFallthroughTo1_, float cost_);
+    Connection(NodeID node1_, NodeID node2_, const std::set<TraverseTraitT> &traverseTo2_, const std::set<TraverseTraitT> &traverseTo1_, bool requireFallthroughTo2_, bool requireFallthroughTo1_, float cost_, ConnectionID ownId_);
     NodeID m_nodes[2];
     std::set<TraverseTraitT> m_traverses[2];
     bool m_requireFallthrough[2] = {false, false};
     float m_cost = 0.0f;
+    ConnectionID m_ownId;
+
+    bool isOnNodes(NodeID nd1_, NodeID nd2_) const;
 };
 
 struct Node
 {
     Vector2<float> m_position;
-    std::vector<Connection*> connections;
+    std::vector<ConnectionID> connections;
 };
 
 class NavGraph
@@ -50,6 +53,8 @@ public:
     void draw(Camera &cam_);
     Vector2<float> getConnectionCenter(const Connection *con_) const;
     float getDistToConnection(const Connection *con_, const Vector2<float> &pos_);
+
+    void setcost(ConnectionID id_, float cost_);
 
 private:
     std::vector<Node> m_nodes;

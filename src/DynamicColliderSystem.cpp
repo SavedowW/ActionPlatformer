@@ -17,7 +17,7 @@ void DynamicColliderSystem::update()
             std::cout << "";
         if (res != cld.m_isEnabled)
         {
-            std::cout << "Trying to switch...\n";
+            //std::cout << "Trying to switch...\n";
             bool overlapping = (cld.m_obstacleId ? isObstacleOverlappingWithDynamic(cld.m_collider, cld.m_obstacleId) : isOverlappingWithDynamic(cld.m_collider));
             if (!overlapping)
                 cld.m_isEnabled = res;
