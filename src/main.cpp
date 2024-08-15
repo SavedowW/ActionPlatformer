@@ -81,7 +81,9 @@ int main(int argc, char* args[])
         makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
         makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
 
-
+    m_graph.makeConnection(nd11, nd12, 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
+        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
 
     m_graph.makeConnection(nd12, nd13, 
         makeTraitList(TraverseTraits::JUMP), 
