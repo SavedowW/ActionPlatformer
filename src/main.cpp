@@ -38,102 +38,102 @@ int main(int argc, char* args[])
     auto nd23 = m_graph.makeNode(Vector2{53, 29}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
 
     m_graph.makeConnection(nd1, nd2, 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd2, nd3, 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP),
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP),
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd3, nd4, 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd4, nd5, 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd2, nd9, 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), true, false);
+        Traverse::makeSignature(true, TraverseTraits::WALK, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd8, nd9, 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd7, nd8, 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd6, nd7, 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP),
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd5, nd6, 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), true, false);
+        Traverse::makeSignature(true, TraverseTraits::WALK, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd5, nd10, 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd10, nd11, 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd11, nd12, 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd12, nd13, 
-        makeTraitList(TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::FALL), false, false);
+        Traverse::makeSignature(false, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::FALL));
 
     m_graph.makeConnection(nd13, nd14, 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd14, nd21,
-        makeTraitList(TraverseTraits::FALL), 
-        makeTraitList(TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::FALL), 
+        Traverse::makeSignature(false, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd21, nd22,
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd22, nd23,
-        makeTraitList(TraverseTraits::WALK), 
-        makeTraitList(TraverseTraits::WALK), false, false);
+        Traverse::makeSignature(false, TraverseTraits::WALK), 
+        Traverse::makeSignature(false, TraverseTraits::WALK));
 
     m_graph.makeConnection(nd14, nd15,
-        makeTraitList(TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd15, nd16,
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd15, nd17,
-        makeTraitList(TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::FALL), false, false);
+        Traverse::makeSignature(false, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::FALL));
 
     m_graph.makeConnection(nd17, nd18,
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd18, nd19,
-        makeTraitList(TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd19, nd20,
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), 
-        makeTraitList(TraverseTraits::WALK, TraverseTraits::JUMP), false, false);
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP), 
+        Traverse::makeSignature(false, TraverseTraits::WALK, TraverseTraits::JUMP));
 
     m_graph.makeConnection(nd20, nd22,
-        makeTraitList(TraverseTraits::FALL), 
-        makeTraitList(), false, false);
+        Traverse::makeSignature(false, TraverseTraits::FALL), 
+        Traverse::makeSignature(false));
 
-    NavPath path(&m_graph, entt::null);
+    NavPath path(&m_graph, entt::null, Traverse::makeSignature(true, TraverseTraits::WALK, TraverseTraits::JUMP,  TraverseTraits::FALL));
     path.m_currentTarget = 22;
 
     std::cout << std::boolalpha << path.buildUntil(path.m_fullGraph[0].m_con) << std::endl;

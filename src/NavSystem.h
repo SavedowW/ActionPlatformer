@@ -17,7 +17,7 @@ struct ConnectionDescr
 class NavPath
 {
 public:
-    NavPath(NavGraph *graph_, entt::entity target_);
+    NavPath(NavGraph *graph_, entt::entity target_, Traverse::TraitT traits_);
 
     bool buildUntil(Connection *con_);
 
@@ -31,6 +31,8 @@ public:
     std::vector<ConnectionDescr> m_fullGraph;
 
     size_t m_currentTarget;
+
+    const Traverse::TraitT m_traverseTraits;
 };
 
 struct NavSystem

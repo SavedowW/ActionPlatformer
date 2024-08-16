@@ -9,25 +9,47 @@
 
 class Node;
 
-using TraverseTraitT = uint32_t;
 using NodeID = size_t;
 using ConnectionID = size_t;
 
-template<typename... TraitsT>
-constexpr std::set<TraverseTraitT> makeTraitList(TraitsT... traits_)
+namespace Traverse
 {
-    std::set<TraverseTraitT> retval;
-    (retval.insert(static_cast<TraverseTraitT>(traits_)), ...);
+    using TraitT = uint32_t;
+    inline constexpr TraitT ReservedBits = 1;
+    inline constexpr TraitT FallthroughBitID = 0;
+    inline constexpr TraitT ReservedMask = 1;
+    inline constexpr TraitT FreeMask = ~ReservedMask;
 
-    return retval;
+    template<typename... TraitsT>
+    constexpr TraitT makeSignature(bool allowFallthrough_, TraitsT... traits_)
+    {
+        TraitT signature{0};
+        signature |= (static_cast<TraitT>(allowFallthrough_ << FallthroughBitID));
+
+        if constexpr (sizeof...(TraitsT) > 0)
+            return signature | ((static_cast<TraitT>(traits_) | ...) << ReservedBits);
+        else
+            return signature;
+    }
+
+    constexpr bool canTraverseByPath(const TraitT &traverse_, const TraitT &path_)
+    {
+        auto required = path_ & ReservedMask;
+        return ((traverse_ & required) == required) &&
+            (traverse_ & path_ & FreeMask);
+    }
+
+    constexpr bool compareSignaturesOnlyFree(const TraitT &t1_, const TraitT &t2_)
+    {
+        return (t1_ & t2_ & FreeMask);
+    }
 }
 
 struct Connection
 {
-    Connection(NodeID node1_, NodeID node2_, const std::set<TraverseTraitT> &traverseTo2_, const std::set<TraverseTraitT> &traverseTo1_, bool requireFallthroughTo2_, bool requireFallthroughTo1_, float cost_, ConnectionID ownId_);
+    Connection(NodeID node1_, NodeID node2_, Traverse::TraitT traverseTo2_, Traverse::TraitT traverseTo1_, float cost_, ConnectionID ownId_);
     NodeID m_nodes[2];
-    std::set<TraverseTraitT> m_traverses[2];
-    bool m_requireFallthrough[2] = {false, false};
+    Traverse::TraitT m_traverses[2];
     float m_cost = 0.0f;
     ConnectionID m_ownId;
 
@@ -46,9 +68,8 @@ public:
     NavGraph(Application &app_);
 
     NodeID makeNode(const Vector2<float> &pos_);
-    ConnectionID makeConnection(NodeID node1_, NodeID node2_, const std::set<TraverseTraitT> &traverseTo2_, const std::set<TraverseTraitT> &traverseTo1_,
-        bool requireFallthroughTo2_, bool requireFallthroughTo1_);
-    std::pair<Connection *, float> findClosestConnection(const Vector2<float> &pos_, const std::set<TraverseTraitT> &options_);
+    ConnectionID makeConnection(NodeID node1_, NodeID node2_, Traverse::TraitT traverseTo2_, Traverse::TraitT traverseTo1_);
+    std::pair<Connection *, float> findClosestConnection(const Vector2<float> &pos_, Traverse::TraitT options_);
 
     void draw(Camera &cam_);
     Vector2<float> getConnectionCenter(const Connection *con_) const;

@@ -244,7 +244,7 @@ void PlayerSystem::setup(entt::entity playerId_)
     nav.m_currentOwnConnection = nullptr;
     nav.m_isFallthroughOk = true;
     nav.m_maxRange = 60.0f;
-    nav.m_validTraitsOwnLocation = makeTraitList(TraverseTraits::WALK);
+    nav.m_validTraitsOwnLocation = Traverse::makeSignature(true, TraverseTraits::WALK);
 }
 
 void PlayerSystem::update()

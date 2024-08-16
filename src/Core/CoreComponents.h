@@ -159,7 +159,7 @@ struct Navigatable
 {
     Connection *m_currentOwnConnection = nullptr;
     bool m_isFallthroughOk;
-    std::set<TraverseTraitT> m_validTraitsOwnLocation;
+    Traverse::TraitT m_validTraitsOwnLocation;
     float m_maxRange = 0.0f;
 };
 

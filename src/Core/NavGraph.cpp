@@ -13,24 +13,23 @@ NodeID NavGraph::makeNode(const Vector2<float> &pos_)
     return m_nodes.size() - 1;
 }
 
-ConnectionID NavGraph::makeConnection(NodeID node1_, NodeID node2_, const std::set<TraverseTraitT> &traverseTo2_, const std::set<TraverseTraitT> &traverseTo1_,
-    bool requireFallthroughTo2_, bool requireFallthroughTo1_)
+ConnectionID NavGraph::makeConnection(NodeID node1_, NodeID node2_, Traverse::TraitT traverseTo2_, Traverse::TraitT traverseTo1_)
 {
-    m_connections.emplace_back(node1_, node2_, traverseTo2_, traverseTo1_, requireFallthroughTo2_, requireFallthroughTo1_, (m_nodes[node1_].m_position - m_nodes[node2_].m_position).getLen(), m_connections.size());
+    m_connections.emplace_back(node1_, node2_, traverseTo2_, traverseTo1_, (m_nodes[node1_].m_position - m_nodes[node2_].m_position).getLen(), m_connections.size());
     m_nodes[node1_].connections.push_back(m_connections.size() - 1);
     m_nodes[node2_].connections.push_back(m_connections.size() - 1);
 
     return m_connections.size() - 1;
 }
 
-std::pair<Connection *, float> NavGraph::findClosestConnection(const Vector2<float> &pos_, const std::set<TraverseTraitT> &options_)
+std::pair<Connection *, float> NavGraph::findClosestConnection(const Vector2<float> &pos_, Traverse::TraitT options_)
 {
     Connection *mincon = nullptr;
     float mindst = 0.0f;
 
     for (auto &con : m_connections)
     {
-        bool hasOverlap = std::any_of(options_.begin(), options_.end(), [&traverses = con.m_traverses](auto &elem){return traverses[0].contains(elem) && traverses[1].contains(elem);});
+        bool hasOverlap = options_ & con.m_traverses[0] & options_ & con.m_traverses[1] & Traverse::FreeMask;
         if (hasOverlap)
         {
             auto res = utils::distToLineSegment(m_nodes[con.m_nodes[0]].m_position, m_nodes[con.m_nodes[1]].m_position, pos_);
@@ -59,6 +58,9 @@ void NavGraph::draw(Camera &cam_)
     for (auto &con : m_connections)
     {
         m_ren.drawLine(m_nodes[con.m_nodes[0]].m_position - Vector2{1.0f, 1.0f}, m_nodes[con.m_nodes[1]].m_position - Vector2{1.0f, 1.0f}, {255, 127, 39, 200}, cam_);
+
+        auto center = (m_nodes[con.m_nodes[0]].m_position + m_nodes[con.m_nodes[1]].m_position) / 2.0f;
+        m_textman.renderText(std::to_string(con.m_ownId), 2, center - Vector2{0.0f, 12.0f}, fonts::HOR_ALIGN::CENTER, &cam_);
     }
 }
 
@@ -79,10 +81,9 @@ void NavGraph::setcost(ConnectionID id_, float cost_) // TODO: remove
     m_connections[id_].m_cost = cost_;
 }
 
-Connection::Connection(NodeID node1_, NodeID node2_, const std::set<TraverseTraitT> &traverseTo2_, const std::set<TraverseTraitT> &traverseTo1_, bool requireFallthroughTo2_, bool requireFallthroughTo1_, float cost_, ConnectionID ownId_) :
+Connection::Connection(NodeID node1_, NodeID node2_, Traverse::TraitT traverseTo2_, Traverse::TraitT traverseTo1_, float cost_, ConnectionID ownId_) :
     m_nodes{node1_, node2_},
     m_traverses{traverseTo2_, traverseTo1_},
-    m_requireFallthrough{requireFallthroughTo2_, requireFallthroughTo1_},
     m_cost(cost_),
     m_ownId{ownId_}
 {

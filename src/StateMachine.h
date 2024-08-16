@@ -9,10 +9,10 @@ using CharState = int;
 
 class GenericState;
 
-enum class TraverseTraits : TraverseTraitT {
-    WALK,
-    JUMP,
-    FALL
+enum class TraverseTraits : Traverse::TraitT {
+    WALK = 0b001,
+    JUMP = 0b010,
+    FALL = 0b100
 };
 
 class StateMachine
