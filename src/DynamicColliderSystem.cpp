@@ -13,11 +13,8 @@ void DynamicColliderSystem::update()
     for (auto [idx, cld, swc] : clds.each())
     {
         auto res = swc.updateTimer();
-        if (res == true)
-            std::cout << "";
         if (res != cld.m_isEnabled)
         {
-            //std::cout << "Trying to switch...\n";
             bool overlapping = (cld.m_obstacleId ? isObstacleOverlappingWithDynamic(cld.m_collider, cld.m_obstacleId) : isOverlappingWithDynamic(cld.m_collider));
             if (!overlapping)
                 cld.m_isEnabled = res;

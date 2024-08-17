@@ -83,7 +83,7 @@ bool ProxySelectionState::update(EntityAnywhere owner_, uint32_t currentFrame_)
 {
     NodeState::update(owner_, currentFrame_);
     auto &ownTrans = owner_.reg->get<ComponentTransform>(owner_.idx);
-    auto &tarTrans = owner_.reg->get<ComponentTransform>(m_target.idx);
+    auto &tarTrans = m_target.reg->get<ComponentTransform>(m_target.idx);
     auto range = (tarTrans.m_pos - ownTrans.m_pos).getLen();
 
     for (int i = 0; i < m_rangeLimits.size(); ++i)

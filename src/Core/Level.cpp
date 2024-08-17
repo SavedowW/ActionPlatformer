@@ -52,17 +52,17 @@ LevelResult Level::proceed()
 			m_allowIter = false;
 		}
 
-		m_lastFrameTimeMS = m_frameTimer.getPassedNano();
+		m_lastFrameTimeMS = m_frameTimer.getPassed<nanoseconds>();
 		if (m_lastFrameTimeMS < m_timeForFrame + compensate)
 		{
 			nanoseconds nanoToSleep = m_timeForFrame - m_lastFrameTimeMS + compensate;
 			m_frameTimer.begin();
 			std::this_thread::sleep_for(nanoToSleep);
-			compensate = nanoToSleep - m_frameTimer.getPassedNano();
+			compensate = nanoToSleep - m_frameTimer.getPassed<nanoseconds>();
 		}
 		m_frameTimer.begin();
 
-		m_lastFullFrameTime = fullFrameTime.getPassedNano();
+		m_lastFullFrameTime = fullFrameTime.getPassed<nanoseconds>();
 	}
 
 	leave();

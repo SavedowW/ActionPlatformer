@@ -10,7 +10,8 @@ void Timer::begin()
 	m_timeBegin = std::chrono::high_resolution_clock::now();
 }
 
-nanoseconds Timer::getPassedNano()
+void Timer::profileDumpAndBegin(const std::string &msg_)
 {
-	return std::chrono::duration_cast<nanoseconds>(std::chrono::high_resolution_clock::now() - m_timeBegin);
+	std::cout << msg_ << getPassed<milliseconds>() << std::endl;
+	begin();
 }

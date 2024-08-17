@@ -65,6 +65,12 @@ struct ComponentPhysical
     Vector2<float> getPosOffest() const;
 };
 
+struct PhysicalEvents
+{
+    bool m_touchedGround = false;
+    bool m_lostGround = false;
+};
+
 struct ComponentStaticCollider
 {
     ComponentStaticCollider() = default;

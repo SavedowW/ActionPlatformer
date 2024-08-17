@@ -6,21 +6,49 @@ PhysicsSystem::PhysicsSystem(entt::registry &reg_, Vector2<float> levelSize_) :
 {
 }
 
-void PhysicsSystem::update()
+void PhysicsSystem::updateSMs()
 {
-    //m_physicalQuery{reg_.makeQuery<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough>()},
-    //m_staticColliderQuery{reg_.makeQuery<ComponentStaticCollider>()},
-    auto viewPhys = m_reg.view<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, StateMachine>();
-    auto viewscld = m_reg.view<ComponentStaticCollider>();
+    auto viewSM = m_reg.view<StateMachine>();
 
-    for (auto [idx, trans, phys, obsfall, sm] : viewPhys.each())
+    for (auto [idx, sm] : viewSM.each())
     {
         sm.update({&m_reg, idx}, 0); // TODO: takes a big part of physics duration, probably should replace or remove get()
-        proceedEntity(viewscld, idx, trans, phys, obsfall, sm);
     }
 }
 
-void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, StateMachine &sm_)
+void PhysicsSystem::updatePhysics()
+{
+    auto viewPhys = m_reg.view<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, PhysicalEvents>();
+    auto viewscld = m_reg.view<ComponentStaticCollider>();
+
+    for (auto [idx, trans, phys, obsfall, ev] : viewPhys.each())
+    {
+        proceedEntity(viewscld, idx, trans, phys, obsfall, ev);
+    }
+}
+
+void PhysicsSystem::updatePhysicalEvents()
+{
+    auto viewPhysEvent = m_reg.view<PhysicalEvents, StateMachine>();
+
+    for (auto [idx, physev, sm] : viewPhysEvent.each())
+    {
+        auto *currentState = static_cast<PhysicalState*>(sm.getRealCurrentState());
+        if (physev.m_lostGround)
+        {
+            currentState->onLostGround({&m_reg, idx});
+            physev.m_lostGround = false;
+        }
+
+        if (physev.m_touchedGround)
+        {
+            currentState->onTouchedGround({&m_reg, idx});
+            physev.m_touchedGround = false;
+        }
+    }
+}
+
+void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_)
 {
     auto oldPos = trans_.m_pos;
 
@@ -277,16 +305,14 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
     phys_.m_lastSlopeAngle = phys_.m_onSlopeWithAngle;
     phys_.m_onSlopeWithAngle = touchedSlope;
 
-    auto *currentState = static_cast<PhysicalState*>(sm_.getRealCurrentState());
-
     if (groundCollision)
     {
-        currentState->onTouchedGround({&m_reg, idx_});
+        ev_.m_touchedGround = true;
     }
     else
     {
         if (!magnetEntity(clds_, trans_, phys_, obsFallthrough_))
-            currentState->onLostGround({&m_reg, idx_});
+            ev_.m_lostGround = true;
     }
 
     phys_.m_appliedOffset = trans_.m_pos - oldPos;

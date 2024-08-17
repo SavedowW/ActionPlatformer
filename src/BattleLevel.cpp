@@ -29,6 +29,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_registry.emplace<World>(playerId, m_registry, m_camera);
     m_registry.emplace<StateMachine>(playerId);
     m_registry.emplace<Navigatable>(playerId);
+    m_registry.emplace<PhysicalEvents>(playerId);
 
     auto nd1 = m_graph.makeNode(Vector2{0, 25}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
     auto nd2 = m_graph.makeNode(Vector2{6, 25}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
@@ -160,7 +161,8 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_hudsys.m_playerId = playerId;
     m_enemysys.m_playerId = playerId;
 
-    m_enemysys.makeEnemy();
+    for (int i = 0; i < 1000; ++i)
+        m_enemysys.makeEnemy();
 
     m_tlmap.load("Tiles/tiles");
 
@@ -190,15 +192,80 @@ void BattleLevel::enter()
 
 void BattleLevel::update()
 {
-    m_colsys.update();
-    m_inputsys.update();
-    m_playerSystem.update();
-    m_aisys.update();
-    m_physsys.update();
-    m_camsys.update();
-    m_navsys.update();
+    Timer profile;
+    profile.begin();
 
+    /*
+        ComponentStaticCollider - read and write
+        SwitchCollider - read and write
+    */
+    m_colsys.update();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("m_colsys.update(); ");
+
+    /*
+        ComponentPlayerInput - read and write
+    */
+    m_inputsys.update();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("m_inputsys.update(); ");
+    
+    /*
+        ComponentAI, ComponentTransform (own) - read and write
+        Player's transform, physics, possibly state machine - read
+    */
+    m_aisys.update();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("m_aisys.update(); ");
+
+    /*
+        StateMachine - read / write
+        StateMachine represents physical state of a character and can potentially access almost everyting related to all entites
+    */
+    m_physsys.updateSMs();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("m_physsys.updateSMs(); ");
+
+    /*
+        ComponentStaticCollider - read
+        Transform, physics, fallthrough, PhysicalEvents - read / write
+    */
+    m_physsys.updatePhysics();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("m_physsys.updatePhysics(); ");
+
+    /*
+        StateMachine, PhysicalEvents - read / write
+    */
+    m_physsys.updatePhysicalEvents();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("m_physsys.updatePhysicalEvents(); ");
+
+    /*
+        ComponentDynamicCameraTarget (player) - read / write
+        ComponentTransform, ComponentPhysical (player) - read
+        CameraFocusArea - read
+    */
+    m_camsys.update();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("m_camsys.update(); ");
+
+    /*
+        ComponentTransform - read
+        Navigatable - read / write
+    */
+    m_navsys.update();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("m_navsys.update(); ");
+
+    /*
+        Just updates camera shake logic, but many systems can cause shake
+    */
     m_camera.update();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("m_camera.update(); ");
+
+    std::cout << std::endl << std::endl << std::endl;
 }
 
 void BattleLevel::draw()

@@ -10,7 +10,14 @@ class Timer
 public:
 	Timer();
 	void begin();
-	nanoseconds getPassedNano();
+
+	template<typename T>
+	T getPassed() const
+	{
+		return std::chrono::duration_cast<T>(std::chrono::high_resolution_clock::now() - m_timeBegin);
+	}
+
+	void profileDumpAndBegin(const std::string &msg_);
 
 private:
 	std::chrono::time_point<std::chrono::high_resolution_clock> m_timeBegin;
