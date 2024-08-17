@@ -6,7 +6,7 @@
 #include <nlohmann/json.hpp>
 
 class BattleLevel;
-class ComponentStaticCollider;
+struct ComponentStaticCollider;
 
 class LevelBuilder
 {

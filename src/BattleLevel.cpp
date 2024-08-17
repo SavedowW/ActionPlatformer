@@ -161,8 +161,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_hudsys.m_playerId = playerId;
     m_enemysys.m_playerId = playerId;
 
-    for (int i = 0; i < 1000; ++i)
-        m_enemysys.makeEnemy();
+    m_enemysys.makeEnemy();
 
     m_tlmap.load("Tiles/tiles");
 
@@ -172,8 +171,8 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     auto newcld = m_registry.create();
     m_registry.emplace<ComponentStaticCollider>(newcld, SlopeCollider(getTilePos(Vector2{25.0f, 19.0f}), Vector2{16.0f, 16.0f * 3}, 0), 0);
     auto &swc = m_registry.emplace<SwitchCollider>(newcld);
-    swc.m_durationDisabled = 120.0f;
-    swc.m_durationEnabled = 120.0f;
+    swc.m_durationDisabled = 120;
+    swc.m_durationEnabled = 120;
 }
 
 void BattleLevel::enter()

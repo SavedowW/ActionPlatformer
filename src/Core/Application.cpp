@@ -50,22 +50,6 @@ Application::~Application()
 	SDL_Quit();
 }
 
-Application& Application::operator=(Application &&rhs)
-{
-    // TODO:
-
-    throw std::runtime_error("Not implemented yet");
-
-    return *this;
-}
-
-Application::Application(Application &&rhs)
-{
-    // TODO:
-
-    throw std::runtime_error("Not implemented yet");
-}
-
 void Application::run()
 {
     while (m_levelResult.nextLvl != -1)

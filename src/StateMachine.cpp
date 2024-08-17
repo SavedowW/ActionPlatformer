@@ -224,8 +224,9 @@ bool PhysicalState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
     auto &animrnd = owner_.reg->get<ComponentAnimationRenderable>(owner_.idx);
 
-    // TODO: for whatever reason takes a big part of update duration, maybe move to another system?
     animrnd.m_currentAnimation->update();
+
+    // TODO: might move elsewhere and parallelize
 
     // Handle velocity and inertia changes
     if (m_usingUpdateMovement)
@@ -234,11 +235,6 @@ bool PhysicalState::update(EntityAnywhere owner_, uint32_t currentFrame_)
         physical.m_inertia = physical.m_inertia.mulComponents(m_mulOwnInrUpd[currentFrame_]) + Vector2<int>(transform.m_orientation).mulComponents(m_mulOwnDirInrUpd[currentFrame_]) + m_rawAddInrUpd[currentFrame_];
     }
 
-    // Handle gravity
-    physical.m_gravity = m_gravity[currentFrame_];
-    physical.m_drag = m_drag[currentFrame_];
-    physical.m_inertiaMultiplier = m_appliedInertiaMultiplier[currentFrame_];
-
     // Handle velocity and inertia limits
     if (!m_ownVelLimitUpd.isEmpty())
         physical.m_velocity = utils::clamp(physical.m_velocity, -m_ownVelLimitUpd[currentFrame_], m_ownVelLimitUpd[currentFrame_]);
@@ -246,6 +242,10 @@ bool PhysicalState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     if (!m_ownInrLimitUpd.isEmpty())
         physical.m_inertia = utils::clamp(physical.m_inertia, -m_ownInrLimitUpd[currentFrame_], m_ownInrLimitUpd[currentFrame_]);
 
+    // Handle gravity
+    physical.m_gravity = m_gravity[currentFrame_];
+    physical.m_drag = m_drag[currentFrame_];
+    physical.m_inertiaMultiplier = m_appliedInertiaMultiplier[currentFrame_];
     physical.m_noUpwardLanding = m_noUpwardLanding[currentFrame_];
     physical.m_magnetLimit = m_magnetLimit[currentFrame_];
 

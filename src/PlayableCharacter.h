@@ -122,7 +122,6 @@ public:
 
         auto orientation = transform.m_orientation;
         const auto &inq = compInput.m_inputResolver->getInputQueue();
-        auto currentState = PhysicalState::m_parent->m_currentState;
 
         bool possibleToLeft = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle <= 0 || physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
         bool possibleToRight = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle >= 0 || -physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
@@ -258,7 +257,6 @@ public:
     {
         ParentAction::enter(owner_, from_);
 
-        auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
         auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
 
         if (physical.m_inertia.y > 0)
@@ -272,11 +270,10 @@ public:
 
     inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
     {
-        auto res = ParentAction::update(owner_, currentFrame_);
+        ParentAction::update(owner_, currentFrame_);
 
         auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
         auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
-        auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
         auto &cworld = owner_.reg->get<World>(owner_.idx);
         auto pb = physical.m_pushbox + transform.m_pos;
 
@@ -308,9 +305,7 @@ public:
         auto &cworld = owner_.reg->get<World>(owner_.idx);
         auto &cobs = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
 
-        auto orientation = transform.m_orientation;
         const auto &inq = compInput.m_inputResolver->getInputQueue();
-        auto currentState = PhysicalState::m_parent->m_currentState;
         auto pb = physical.m_pushbox + transform.m_pos;
 
         if (cworld.touchingGround(pb, cobs))
@@ -368,7 +363,6 @@ public:
         auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
         auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
         auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
-        auto &cworld = owner_.reg->get<World>(owner_.idx);
 
         const auto &inq = compInput.m_inputResolver->getInputQueue();
 

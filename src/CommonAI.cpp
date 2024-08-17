@@ -86,7 +86,7 @@ bool ProxySelectionState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     auto &tarTrans = m_target.reg->get<ComponentTransform>(m_target.idx);
     auto range = (tarTrans.m_pos - ownTrans.m_pos).getLen();
 
-    for (int i = 0; i < m_rangeLimits.size(); ++i)
+    for (size_t i = 0; i < m_rangeLimits.size(); ++i)
     {
         if (range <= m_rangeLimits[i])
         {

@@ -7,7 +7,7 @@ World::World(entt::registry &reg_, Camera &cam_) :
 {
 }
 
-bool World::isAreaFree(const Collider &cld_, bool considerObstacles_)
+bool World::isAreaFree(const Collider &cld_, bool considerObstacles_) const
 {
     auto cldview = m_registry.view<ComponentStaticCollider>();
     float dumped = 0;
@@ -38,7 +38,7 @@ EntityAnywhere World::getOverlappedTrigger(const Collider &cld_, Trigger::Tag ta
     return {nullptr};
 }
 
-bool World::touchingWallAt(ORIENTATION checkSide_, const Vector2<float> &pos_)
+bool World::touchingWallAt(ORIENTATION checkSide_, const Vector2<float> &pos_) const
 {
     auto cldview = m_registry.view<ComponentStaticCollider>();
     for (auto [idx, cld] : cldview.each())
@@ -61,7 +61,7 @@ bool World::touchingWallAt(ORIENTATION checkSide_, const Vector2<float> &pos_)
     return false;
 }
 
-bool World::touchingGround(const Collider &cld_, ComponentObstacleFallthrough &fallthrough_)
+bool World::touchingGround(const Collider &cld_, ComponentObstacleFallthrough &fallthrough_) const
 {
     auto cldview = m_registry.view<ComponentStaticCollider>();
     for (auto [idx, cld] : cldview.each())

@@ -7,7 +7,7 @@
 #include <set>
 #include <vector>
 
-class Node;
+struct Node;
 
 using NodeID = size_t;
 using ConnectionID = size_t;

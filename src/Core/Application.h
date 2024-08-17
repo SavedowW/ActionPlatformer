@@ -20,12 +20,6 @@ public:
     Application();
     ~Application();
 
-    Application& operator=(const Application &rhs) = delete;
-    Application(const Application &rhs) = delete;
-
-    Application& operator=(Application &&rhs);
-    Application(Application &&rhs);
-
     void run();
 
     void setLevel(int levelId_, Level *level_);

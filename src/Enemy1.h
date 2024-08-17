@@ -47,11 +47,11 @@ public:
             if (ai.m_requestedState.has_value() && m_stateId == ai.m_requestedState && 
                 (ai.m_requestedOrientation == ORIENTATION::UNSPECIFIED || ai.m_requestedOrientation == trans.m_orientation))
                 return false;
+            else
+                return res;
         }
         else
-            return true;
-
-        return true;
+            return res;
     }
 
     inline virtual ORIENTATION isPossible(EntityAnywhere owner_) const override

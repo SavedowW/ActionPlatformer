@@ -23,7 +23,7 @@ void PhysicsSystem::updatePhysics()
 
     for (auto [idx, trans, phys, obsfall, ev] : viewPhys.each())
     {
-        proceedEntity(viewscld, idx, trans, phys, obsfall, ev);
+        proceedEntity(viewscld, trans, phys, obsfall, ev);
     }
 }
 
@@ -48,7 +48,7 @@ void PhysicsSystem::updatePhysicalEvents()
     }
 }
 
-void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_)
+void PhysicsSystem::proceedEntity(auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_)
 {
     auto oldPos = trans_.m_pos;
 
@@ -58,7 +58,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
     if (phys_.m_inertia.x != 0)
     {
         auto absInertia = abs(phys_.m_inertia.x);
-        auto m_inertiaSign = phys_.m_inertia.x / abs(phys_.m_inertia.x);
+        auto m_inertiaSign = utils::signof(phys_.m_inertia.x / abs(phys_.m_inertia.x));
         absInertia = std::max(absInertia - phys_.m_drag.x, 0.0f);
         phys_.m_inertia.x = m_inertiaSign * absInertia;
     }
@@ -66,7 +66,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, entt::entity idx_, ComponentTrans
     if (phys_.m_inertia.y != 0)
     {
         auto absInertia = abs(phys_.m_inertia.y);
-        auto m_inertiaSign = phys_.m_inertia.y / abs(phys_.m_inertia.y);
+        auto m_inertiaSign = utils::signof(phys_.m_inertia.y / abs(phys_.m_inertia.y));
         absInertia = std::max(absInertia - phys_.m_drag.y, 0.0f);
         phys_.m_inertia.y = m_inertiaSign * absInertia;
     }
