@@ -1,4 +1,5 @@
 #include "Timer.h"
+#include <iostream>
 
 Timer::Timer()
 {
@@ -6,10 +7,10 @@ Timer::Timer()
 
 void Timer::begin()
 {
-	m_timeBegin = SDL_GetTicks();
+	m_timeBegin = std::chrono::high_resolution_clock::now();
 }
 
-uint32_t Timer::getPassedMS()
+nanoseconds Timer::getPassedNano()
 {
-	return SDL_GetTicks() - m_timeBegin;
+	return std::chrono::duration_cast<nanoseconds>(std::chrono::high_resolution_clock::now() - m_timeBegin);
 }

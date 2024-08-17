@@ -2,7 +2,7 @@
 #include "CoreComponents.h"
 #include "StateMachine.h"
 
-HudSystem::HudSystem(entt::registry &reg_, Application &app_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, Uint32 &frameTime_) :
+HudSystem::HudSystem(entt::registry &reg_, Application &app_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, nanoseconds &frameTime_) :
     m_renderer(*app_.getRenderer()),
     m_textManager(*app_.getTextManager()),
     m_reg(reg_),
@@ -39,7 +39,8 @@ void HudSystem::drawCommonDebug()
     m_commonLog.addRecord("Camera pos: " + utils::toString(m_cam.getPos()));
     m_commonLog.addRecord("Camera size: " + utils::toString(m_cam.getSize()));
     m_commonLog.addRecord("Camera scale: " + std::to_string(m_cam.getScale()));
-    m_commonLog.addRecord("Real frame time (MS): " + std::to_string(m_frameTime));
+    m_commonLog.addRecord("Real frame time (ns): " + std::to_string(m_frameTime.count()));
+    m_commonLog.addRecord("Framerate: " + std::to_string( 1000000000.0f / m_frameTime.count()));
     m_commonLog.addRecord("UTF-8: Кириллица работает");
 
     m_commonLog.dump({1.0f, 1.0f});

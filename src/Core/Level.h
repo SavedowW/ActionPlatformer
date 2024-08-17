@@ -39,10 +39,11 @@ protected:
     enum class STATE {ENTER, RUNNING, LEAVE} m_state;
     Timer m_frameTimer;
     Application *m_application;
-    float m_timeForFrame;
 
+    nanoseconds m_timeForFrame;
+    nanoseconds m_lastFrameTimeMS;
+    nanoseconds m_lastFullFrameTime;
     bool m_globalPause = false;
-    Uint32 m_lastFrameTimeMS = 0;
     bool m_allowIter = false;
     bool m_forcerun = false;
 };

@@ -1,16 +1,19 @@
 #ifndef TIMER_H_
 #define TIMER_H_
-#include <SDL.h>
+#include <chrono>
+
+using std::chrono::nanoseconds;
+using std::chrono::milliseconds;
 
 class Timer
 {
 public:
 	Timer();
 	void begin();
-	uint32_t getPassedMS();
+	nanoseconds getPassedNano();
 
 private:
-	uint32_t m_timeBegin = 0;
+	std::chrono::time_point<std::chrono::high_resolution_clock> m_timeBegin;
 };
 
 #endif
