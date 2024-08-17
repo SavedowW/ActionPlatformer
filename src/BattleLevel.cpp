@@ -201,14 +201,14 @@ void BattleLevel::update()
     */
     m_colsys.update();
     if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("m_colsys.update(); ");
+        profile.profileDumpAndBegin("Dynamic colliders update: ");
 
     /*
         ComponentPlayerInput - read and write
     */
     m_inputsys.update();
     if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("m_inputsys.update(); ");
+        profile.profileDumpAndBegin("Input system update: ");
     
     /*
         ComponentAI, ComponentTransform (own) - read and write
@@ -216,7 +216,7 @@ void BattleLevel::update()
     */
     m_aisys.update();
     if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("m_aisys.update(); ");
+        profile.profileDumpAndBegin("AI update: ");
 
     /*
         StateMachine - read / write
@@ -224,7 +224,7 @@ void BattleLevel::update()
     */
     m_physsys.updateSMs();
     if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("m_physsys.updateSMs(); ");
+        profile.profileDumpAndBegin("Physics - update SMs: ");
 
     /*
         ComponentStaticCollider - read

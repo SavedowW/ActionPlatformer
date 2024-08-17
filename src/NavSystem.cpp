@@ -25,17 +25,20 @@ void NavSystem::update()
 
 void NavSystem::draw(Camera &cam_)
 {
-    auto view = m_reg.view<ComponentTransform, Navigatable>();
-    for (auto [idx, trans, nav] : view.each())
+    if constexpr (gamedata::debug::drawCurrentConnection)
     {
-        if (nav.m_currentOwnConnection)
+        auto view = m_reg.view<ComponentTransform, Navigatable>();
+        for (auto [idx, trans, nav] : view.each())
         {
-            auto p1 = trans.m_pos;
-            auto p2 = m_graph.getConnectionCenter(nav.m_currentOwnConnection);
-            m_ren.drawLine(p1, p2, {255, 150, 100, 255}, cam_);
-
-            auto range = m_graph.getDistToConnection(nav.m_currentOwnConnection, trans.m_pos);
-            m_textman.renderText(std::to_string(range), 2, (p1 + p2) / 2.0f - Vector2{0.0f, 12.0f}, fonts::HOR_ALIGN::CENTER, &cam_);
+            if (nav.m_currentOwnConnection)
+            {
+                auto p1 = trans.m_pos;
+                auto p2 = m_graph.getConnectionCenter(nav.m_currentOwnConnection);
+                m_ren.drawLine(p1, p2, {255, 150, 100, 255}, cam_);
+    
+                auto range = m_graph.getDistToConnection(nav.m_currentOwnConnection, trans.m_pos);
+                m_textman.renderText(std::to_string(range), 2, (p1 + p2) / 2.0f - Vector2{0.0f, 12.0f}, fonts::HOR_ALIGN::CENTER, &cam_);
+            }
         }
     }
 }

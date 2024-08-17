@@ -117,10 +117,10 @@ bool CameraSystem::updateFocus(const Collider &playerPb_)
 
 void CameraSystem::debugDraw(Renderer &ren_, Camera &cam_)
 {
-    if (!gamedata::debug::drawCameraOffset)
-        return;
-
-    auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(m_playerId);
-    ren_.drawLine(trans.m_pos, trans.m_pos + dtar.m_offset, {188, 74, 155, 255}, cam_);
-    ren_.drawLine(trans.m_pos + dtar.m_offset, trans.m_pos + dtar.m_offset + BODY_OFFSET, {188, 74, 155, 255}, cam_);
+    if constexpr (gamedata::debug::drawCameraOffset)
+    {
+        auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(m_playerId);
+        ren_.drawLine(trans.m_pos, trans.m_pos + dtar.m_offset, {188, 74, 155, 255}, cam_);
+        ren_.drawLine(trans.m_pos + dtar.m_offset, trans.m_pos + dtar.m_offset + BODY_OFFSET, {188, 74, 155, 255}, cam_);
+    }
 }

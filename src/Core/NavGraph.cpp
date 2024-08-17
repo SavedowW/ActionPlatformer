@@ -47,20 +47,23 @@ std::pair<Connection *, float> NavGraph::findClosestConnection(const Vector2<flo
 
 void NavGraph::draw(Camera &cam_)
 {
-    const Vector2<float> nodeSize{5.0f, 5.0f};
-    for (int i = 0; i < m_nodes.size(); ++i)
+    if constexpr (gamedata::debug::drawNavGraph)
     {
-        auto &node = m_nodes[i];
-        m_ren.drawRectangle(node.m_position - nodeSize / 2.0f, nodeSize, {255, 127, 39, 255}, cam_);
-        m_textman.renderText(std::to_string(i), 2, node.m_position - Vector2{0.0f, 12.0f}, fonts::HOR_ALIGN::CENTER, &cam_);
-    }
-
-    for (auto &con : m_connections)
-    {
-        m_ren.drawLine(m_nodes[con.m_nodes[0]].m_position - Vector2{1.0f, 1.0f}, m_nodes[con.m_nodes[1]].m_position - Vector2{1.0f, 1.0f}, {255, 127, 39, 200}, cam_);
-
-        auto center = (m_nodes[con.m_nodes[0]].m_position + m_nodes[con.m_nodes[1]].m_position) / 2.0f;
-        m_textman.renderText(std::to_string(con.m_ownId), 2, center - Vector2{0.0f, 12.0f}, fonts::HOR_ALIGN::CENTER, &cam_);
+        const Vector2<float> nodeSize{5.0f, 5.0f};
+        for (int i = 0; i < m_nodes.size(); ++i)
+        {
+            auto &node = m_nodes[i];
+            m_ren.drawRectangle(node.m_position - nodeSize / 2.0f, nodeSize, {255, 127, 39, 255}, cam_);
+            m_textman.renderText(std::to_string(i), 2, node.m_position - Vector2{0.0f, 12.0f}, fonts::HOR_ALIGN::CENTER, &cam_);
+        }
+    
+        for (auto &con : m_connections)
+        {
+            m_ren.drawLine(m_nodes[con.m_nodes[0]].m_position - Vector2{1.0f, 1.0f}, m_nodes[con.m_nodes[1]].m_position - Vector2{1.0f, 1.0f}, {255, 127, 39, 200}, cam_);
+    
+            auto center = (m_nodes[con.m_nodes[0]].m_position + m_nodes[con.m_nodes[1]].m_position) / 2.0f;
+            m_textman.renderText(std::to_string(con.m_ownId), 2, center - Vector2{0.0f, 12.0f}, fonts::HOR_ALIGN::CENTER, &cam_);
+        }
     }
 }
 
