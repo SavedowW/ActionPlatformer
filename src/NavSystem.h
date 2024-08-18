@@ -7,7 +7,7 @@
 
 struct ConnectionDescr
 {
-    Connection *m_con;
+    const Connection *m_con;
     float m_ownCost;
     float m_calculatedCost;
     std::vector<ConnectionDescr *> m_neighbourConnections;
@@ -19,11 +19,9 @@ class NavPath
 public:
     NavPath(NavGraph *graph_, entt::entity target_, Traverse::TraitT traits_);
 
-    bool buildUntil(Connection *con_);
+    bool buildUntil(const Connection * const con_);
 
     void dump() const;
-
-    bool m_found = true;
 
     NavGraph *m_graph;
     entt::entity m_target = entt::null;

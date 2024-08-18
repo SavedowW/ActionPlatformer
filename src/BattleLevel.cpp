@@ -264,7 +264,8 @@ void BattleLevel::update()
     if constexpr (gamedata::debug::dumpSystemDuration)
         profile.profileDumpAndBegin("m_camera.update(); ");
 
-    std::cout << std::endl << std::endl << std::endl;
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        std::cout << std::endl << std::endl << std::endl;
 }
 
 void BattleLevel::draw()

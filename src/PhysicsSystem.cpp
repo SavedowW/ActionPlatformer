@@ -12,8 +12,17 @@ void PhysicsSystem::updateSMs()
 
     for (auto [idx, sm] : viewSM.each())
     {
-        sm.update({&m_reg, idx}, 0); // TODO: takes a big part of physics duration, probably should replace or remove get()
+        sm.update({&m_reg, idx}, 0);
     }
+
+    /* TODO: notably faster in release build, but harder to debug even with seq, might add debug flags to enable parallel execution
+    auto iteratable = viewSM.each();
+    std::for_each(std::execution::par, iteratable.begin(), iteratable.end(), [&](auto inp)
+    {
+        auto [idx, sm] = inp;
+        sm.update({&m_reg, idx}, 0);
+    });
+   */
 }
 
 void PhysicsSystem::updatePhysics()
@@ -25,6 +34,15 @@ void PhysicsSystem::updatePhysics()
     {
         proceedEntity(viewscld, trans, phys, obsfall, ev);
     }
+
+    /* TODO: notably faster in release build, but harder to debug even with seq, might add debug flags to enable parallel execution
+    auto iteratable = viewPhys.each();
+    std::for_each(std::execution::par, iteratable.begin(), iteratable.end(), [this, &viewscld](auto inp)
+    {
+        auto [idx, trans, phys, obsfall, ev] = inp;
+        proceedEntity(viewscld, trans, phys, obsfall, ev);
+    });
+    */
 }
 
 void PhysicsSystem::updatePhysicalEvents()

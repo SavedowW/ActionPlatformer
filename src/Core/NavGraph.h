@@ -48,10 +48,10 @@ namespace Traverse
 struct Connection
 {
     Connection(NodeID node1_, NodeID node2_, Traverse::TraitT traverseTo2_, Traverse::TraitT traverseTo1_, float cost_, ConnectionID ownId_);
-    NodeID m_nodes[2];
-    Traverse::TraitT m_traverses[2];
-    float m_cost = 0.0f;
-    ConnectionID m_ownId;
+    const NodeID m_nodes[2];
+    const Traverse::TraitT m_traverses[2];
+    const float m_cost = 0.0f;
+    const ConnectionID m_ownId;
 
     bool isOnNodes(NodeID nd1_, NodeID nd2_) const;
 };
@@ -73,9 +73,7 @@ public:
 
     void draw(Camera &cam_);
     Vector2<float> getConnectionCenter(const Connection *con_) const;
-    float getDistToConnection(const Connection *con_, const Vector2<float> &pos_);
-
-    void setcost(ConnectionID id_, float cost_);
+    float getDistToConnection(const Connection *con_, const Vector2<float> &pos_) const;
 
 private:
     std::vector<Node> m_nodes;

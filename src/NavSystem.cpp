@@ -70,7 +70,7 @@ NavPath::NavPath(NavGraph *graph_, entt::entity target_, Traverse::TraitT traits
     }
 }
 
-bool NavPath::buildUntil(Connection *con_)
+bool NavPath::buildUntil(const Connection * const con_)
 {
     m_fullGraph[m_currentTarget].m_calculatedCost = m_fullGraph[m_currentTarget].m_ownCost;
     std::vector<ConnectionDescr *> front{&m_fullGraph[m_currentTarget]};
@@ -84,8 +84,8 @@ bool NavPath::buildUntil(Connection *con_)
         for (auto *con : used->m_neighbourConnections)
         {
             auto newcost = con->m_ownCost + used->m_calculatedCost;
-            size_t orientation = (used->m_con->m_nodes[1] == con->m_con->m_nodes[0] || used->m_con->m_nodes[1] == con->m_con->m_nodes[1] ? 0 : 1);
-            if (newcost < con->m_calculatedCost && Traverse::canTraverseByPath(m_traverseTraits, used->m_con->m_traverses[orientation]))
+            size_t orientation = (con->m_con->m_nodes[1] == used->m_con->m_nodes[0] || con->m_con->m_nodes[1] == used->m_con->m_nodes[1] ? 0 : 1);
+            if (newcost < con->m_calculatedCost && Traverse::canTraverseByPath(m_traverseTraits, con->m_con->m_traverses[orientation]))
             {
                 std::cout << "Editing " << con->m_con->m_ownId << ": " << con->m_calculatedCost << " => " << newcost << std::endl;
                 front.push_back(con);

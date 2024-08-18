@@ -13,4 +13,13 @@ void AISystem::update()
     {
         ai.m_sm.update({&m_reg, idx}, 0);
     }
+
+    /* TODO: notably faster in release build, but harder to debug even with seq, might add debug flags to enable parallel execution
+    auto iteratable = view.each();
+    std::for_each(std::execution::par, iteratable.begin(), iteratable.end(), [&](auto inp)
+    {
+        auto [idx, ai] = inp;
+        ai.m_sm.update({&m_reg, idx}, 0);
+    });
+    */
 }
