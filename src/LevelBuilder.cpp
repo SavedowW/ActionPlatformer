@@ -154,6 +154,14 @@ DecorLayers LevelBuilder::buildLevel(const std::string &mapDescr_, Tileset &used
                     addCollider(std::move(compcld));
                 }
             }
+            else if (layer["name"] == "Navigation")
+            {
+                std::cout << "WARNING: Navigation parsing is not implemented yet" << std::endl;
+            }
+            else if (layer["name"] == "Focus areas")
+            {
+                std::cout << "WARNING: Focus areas parsing is not implemented yet" << std::endl;
+            }
         }
     }
 
