@@ -33,6 +33,7 @@ CommonAI.cpp
 AISystem.cpp
 NavSystem.cpp
 DynamicColliderSystem.cpp
+ParticleSystem.cpp
 )
 
 set(INCLUDE_DIRS

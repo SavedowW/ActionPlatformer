@@ -8,6 +8,7 @@
 #include "AnimationManager.h"
 #include "NavGraph.h"
 #include "Trigger.h"
+#include "FrameTimer.h"
 #include <set>
 #include <map>
 #include <memory>
@@ -28,9 +29,27 @@ struct ComponentTransform
     ORIENTATION m_orientation = ORIENTATION::RIGHT;
 };
 
+struct ComponentParticlePrimitive
+{
+    SDL_RendererFlip m_flip;
+    FrameTimer<false> m_lifetime;
+};
+
 struct ComponentSpawnLocation
 {
     Vector2<float> m_location;
+};
+
+struct ComponentParticlePhysics
+{
+    Vector2<float> m_velocity;
+    Vector2<float> m_inertia;
+    Vector2<float> m_drag; 
+    Vector2<float> m_gravity;
+    Vector2<float> m_inertiaMultiplier;
+
+    Vector2<float> getPosOffest() const;
+    void applyDrag();
 };
 
 struct ComponentPhysical

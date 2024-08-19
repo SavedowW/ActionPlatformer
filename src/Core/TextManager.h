@@ -7,7 +7,7 @@
 #include <array>
 #include <SDL_ttf.h>
 #include "Vector2.h"
-#include "TimelineProperty.h"
+#include "TimelineProperty.hpp"
 #include <set>
 
 namespace fonts

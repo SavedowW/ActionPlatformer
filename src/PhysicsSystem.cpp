@@ -28,12 +28,14 @@ void PhysicsSystem::updateSMs()
 void PhysicsSystem::updatePhysics()
 {
     auto viewPhys = m_reg.view<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, PhysicalEvents>();
+    auto viewPhysSimplified = m_reg.view<ComponentTransform, ComponentParticlePhysics>();
     auto viewscld = m_reg.view<ComponentStaticCollider>();
 
     for (auto [idx, trans, phys, obsfall, ev] : viewPhys.each())
-    {
         proceedEntity(viewscld, trans, phys, obsfall, ev);
-    }
+
+    for (auto [idx, trans, phys] : viewPhysSimplified.each())
+        proceedEntity(viewscld, trans, phys);
 
     /* TODO: notably faster in release build, but harder to debug even with seq, might add debug flags to enable parallel execution
     auto iteratable = viewPhys.each();
@@ -336,6 +338,18 @@ void PhysicsSystem::proceedEntity(auto &clds_, ComponentTransform &trans_, Compo
     phys_.m_appliedOffset = trans_.m_pos - oldPos;
 
     obsFallthrough_.m_isIgnoringObstacles.update();
+}
+
+void PhysicsSystem::proceedEntity(auto &clds_, ComponentTransform &trans_, ComponentParticlePhysics &phys_)
+{
+    // Common stuff
+    phys_.m_velocity += phys_.m_gravity;
+
+    phys_.applyDrag();
+
+    // Prepare vars for collision detection
+    auto offset = phys_.getPosOffest();
+    trans_.m_pos += offset;
 }
 
 bool PhysicsSystem::magnetEntity(auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_)

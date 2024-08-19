@@ -97,3 +97,27 @@ bool SwitchCollider::updateTimer()
 
     return m_isEnabled;
 }
+
+Vector2<float> ComponentParticlePhysics::getPosOffest() const
+{
+    return m_velocity + m_inertia.mulComponents(m_inertiaMultiplier);
+}
+
+void ComponentParticlePhysics::applyDrag()
+{
+    if (m_inertia.x != 0)
+    {
+        auto absInertia = abs(m_inertia.x);
+        auto m_inertiaSign = utils::signof(m_inertia.x / abs(m_inertia.x));
+        absInertia = std::max(absInertia - m_drag.x, 0.0f);
+        m_inertia.x = m_inertiaSign * absInertia;
+    }
+
+    if (m_inertia.y != 0)
+    {
+        auto absInertia = abs(m_inertia.y);
+        auto m_inertiaSign = utils::signof(m_inertia.y / abs(m_inertia.y));
+        absInertia = std::max(absInertia - m_drag.y, 0.0f);
+        m_inertia.y = m_inertiaSign * absInertia;
+    }
+}

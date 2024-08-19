@@ -31,6 +31,13 @@ void PlayerSystem::setup(entt::entity playerId_)
     animrnd.m_currentAnimation = animrnd.m_animations[m_animManager.getAnimID("Char1/float")].get();
     animrnd.m_currentAnimation->reset();
 
+    m_animManager.preload("Char1/particles/particle_jump");
+    m_animManager.preload("Char1/particles/particle_land");
+    m_animManager.preload("Char1/particles/particle_run");
+    m_animManager.preload("Char1/particles/particle_run_loop");
+    m_animManager.preload("Char1/particles/particle_wall_jump");
+    m_animManager.preload("Char1/particles/particle_wall_slide");
+
 
     phys.m_pushbox = {Vector2{0.0f, -16.0f}, Vector2{7.0f, 16.0f}};
     phys.m_gravity = {0.0f, 0.5f};
@@ -45,6 +52,12 @@ void PlayerSystem::setup(entt::entity playerId_)
         ->setTransitionOnTouchedGround(CharacterState::IDLE)
         .setDrag(TimelineProperty<Vector2<float>>({1.0f, 0.5f}))
         .setOutdatedTransition(CharacterState::FLOAT, 3)
+        .setParticlesSingle(TimelineProperty<ParticleTemplate>({
+            {0, {}}, // TODO: move vertical flip condition to class logic, add run_loop and wall_slide
+            {3, ParticleTemplate{1, Vector2<float>{-8.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_jump"), 21,
+                utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
+            {4, {}},
+            }))
     ));
 
     sm.addState(std::unique_ptr<GenericState>(
@@ -89,6 +102,12 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
         .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
         .setOutdatedTransition(CharacterState::FLOAT, 1)
+        .setParticlesSingle(TimelineProperty<ParticleTemplate>({
+            {0, {}},
+            {1, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_jump"), 22,
+                utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
+            {2, {}},
+            }))
     ));
 
     sm.addState(std::unique_ptr<GenericState>(
@@ -120,6 +139,12 @@ void PlayerSystem::setup(entt::entity playerId_)
             TimelineProperty<Vector2<float>>(),
             TimelineProperty<Vector2<float>>({9999.9f, 4.0f}))
         .setOutdatedTransition(CharacterState::FLOAT, 1)
+        .setParticlesSingle(TimelineProperty<ParticleTemplate>({
+            {0, {}},
+            {1, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_jump"), 22,
+                utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
+            {2, {}},
+            }))
     ));
 
     sm.addState(std::unique_ptr<GenericState>(
@@ -144,6 +169,12 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setTransitionOnLostGround(CharacterState::FLOAT)
         .setMagnetLimit(TimelineProperty<float>(4.0f))
         .setCanFallThrough(TimelineProperty(true))
+        .setParticlesSingle(TimelineProperty<ParticleTemplate>({
+            {0, {}},
+            {1, ParticleTemplate{1, Vector2<float>{-10.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_run"), 26,
+                utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
+            {2, {}},
+            }))
     ));
 
     sm.addState(std::unique_ptr<GenericState>(
@@ -217,6 +248,11 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setTransitionOnLostGround(CharacterState::FLOAT)
         .setMagnetLimit(TimelineProperty<float>(4.0f))
         .setOutdatedTransition(CharacterState::IDLE, 14)
+        .setParticlesSingle(TimelineProperty<ParticleTemplate>({
+            {0, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_land"), 36,
+                utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
+            {1, {}},
+            }))
     ));
 
     sm.addState(std::unique_ptr<GenericState>(
@@ -228,6 +264,11 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setTransitionOnLostGround(CharacterState::FLOAT)
         .setMagnetLimit(TimelineProperty<float>(4.0f))
         .setOutdatedTransition(CharacterState::IDLE, 14)
+        .setParticlesSingle(TimelineProperty<ParticleTemplate>({
+            {0, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_land"), 36,
+                utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
+            {1, {}},
+            }))
     ));
 
     sm.addState(std::unique_ptr<GenericState>(

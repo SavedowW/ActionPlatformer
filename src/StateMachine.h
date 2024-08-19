@@ -78,6 +78,8 @@ public:
         return *this;
     }
 
+    GenericState &setParticlesSingle(TimelineProperty<ParticleTemplate> &&particlesSingle_);
+
     virtual void enter(EntityAnywhere owner_, CharState from_);
     virtual void leave(EntityAnywhere owner_, CharState to_);
     virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_);
@@ -95,12 +97,16 @@ public:
     const CharState m_stateId;
 
 protected:
+    void spawnParticle(const ParticleTemplate &partemplate_, const ComponentTransform &trans_, World &world_, const Vector2<float> &offset_);
+
     const StateMarker m_transitionableFrom;
     std::string m_stateName;
     StateMachine *m_parent = nullptr;
 
     std::optional<CharState> m_transitionOnOutdated;
     std::optional<uint32_t> m_duration;
+
+    TimelineProperty<ParticleTemplate> m_particlesSingle;
 };
 
 class PhysicalState: public GenericState

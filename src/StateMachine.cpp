@@ -64,6 +64,33 @@ std::string StateMachine::getName() const
     return std::string("root") + " -> " + m_currentState->getName(m_framesInState);
 }
 
+void GenericState::spawnParticle(const ParticleTemplate &partemplate_, const ComponentTransform &trans_, World &world_, const Vector2<float> &offset_)
+{
+    ParticleRecipe rp;
+    rp.count = partemplate_.count;
+    rp.anim = partemplate_.anim;
+    rp.pos = trans_.m_pos;
+    rp.lifetime = partemplate_.lifetime;
+    //if (partemplate_.horizontalFlipGate.fits(offset.x))
+    if (trans_.m_orientation == ORIENTATION::LEFT)
+    {
+        rp.flip = SDL_RendererFlip(rp.flip | SDL_FLIP_HORIZONTAL);
+        rp.pos.x -= partemplate_.offset.x;
+    }
+    else
+        rp.pos.x += partemplate_.offset.x;
+
+    if (partemplate_.verticalFlipGate.fits(offset_.y))
+    {
+        rp.flip = SDL_RendererFlip(rp.flip | SDL_FLIP_VERTICAL);
+        rp.pos.y -= partemplate_.offset.y;
+    }
+    else
+        rp.pos.y += partemplate_.offset.y;
+
+    world_.getParticleSys().makeParticle(rp);
+}
+
 std::ostream &operator<<(std::ostream &os_, const StateMachine &rhs_)
 {
     os_ << rhs_.getName();
@@ -164,6 +191,12 @@ PhysicalState &PhysicalState::setRecoveryFrames(TimelineProperty<StateMarker> &&
     return *this;
 }
 
+GenericState &GenericState::setParticlesSingle(TimelineProperty<ParticleTemplate> &&particlesSingle_)
+{
+    m_particlesSingle = std::move(particlesSingle_);
+    return *this;
+}
+
 void GenericState::enter(EntityAnywhere owner_, CharState from_)
 {
     //std::cout << "Switched to " << m_stateName << std::endl;
@@ -208,6 +241,17 @@ void GenericState::leave(EntityAnywhere owner_, CharState to_)
 
 bool GenericState::update(EntityAnywhere owner_, uint32_t currentFrame_)
 {
+    const auto &partemplate = m_particlesSingle[currentFrame_];
+    if (partemplate.count)
+    {
+        auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
+        auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
+        auto &world = owner_.reg->get<World>(owner_.idx);
+        auto offset = phys.m_velocity + phys.m_inertia;
+
+        spawnParticle(partemplate, transform, world, offset);
+    }
+
     // Handle duration
     if (m_transitionOnOutdated.has_value())
     {
@@ -223,8 +267,6 @@ bool PhysicalState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
     auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
     auto &animrnd = owner_.reg->get<ComponentAnimationRenderable>(owner_.idx);
-
-    animrnd.m_currentAnimation->update();
 
     // TODO: might move elsewhere and parallelize
 

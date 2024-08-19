@@ -2,6 +2,7 @@
 #define WORLD
 #include "Trigger.h"
 #include "CoreComponents.h"
+#include "ParticleSystem.h"
 #include "Camera.h"
 #include <entt/entt.hpp>
 
@@ -14,16 +15,18 @@ struct EntityAnywhere
 class World
 {
 public:
-    World(entt::registry &reg_, Camera &cam_);
+    World(entt::registry &reg_, Camera &cam_, ParticleSystem &partsys_);
     bool isAreaFree(const Collider &cld_, bool considerObstacles_) const;
     EntityAnywhere getOverlappedTrigger(const Collider &cld_, Trigger::Tag tag_) const;
     bool touchingWallAt(ORIENTATION checkSide_, const Vector2<float> &pos_) const;
     bool touchingGround(const Collider &cld_, ComponentObstacleFallthrough &fallthrough_) const;
     Camera &getCamera();
+    ParticleSystem &getParticleSys();
 
 private:
     entt::registry &m_registry;
     Camera &m_cam;
+    ParticleSystem &m_partsys;
 
 };
 

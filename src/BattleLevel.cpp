@@ -17,7 +17,8 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_aisys(m_registry),
     m_navsys(m_registry, *application_, m_graph),
     m_colsys(m_registry),
-    m_graph(*application_)
+    m_graph(*application_),
+    m_partsys(m_registry, *application_)
 {
     auto playerId = m_registry.create();
     m_registry.emplace<ComponentTransform>(playerId, Vector2{100.0f, 300.0f}, ORIENTATION::RIGHT);
@@ -26,7 +27,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_registry.emplace<ComponentAnimationRenderable>(playerId);
     m_registry.emplace<ComponentPlayerInput>(playerId, std::unique_ptr<InputResolver>(new InputResolver(application_->getInputSystem())));
     m_registry.emplace<ComponentDynamicCameraTarget>(playerId);
-    m_registry.emplace<World>(playerId, m_registry, m_camera);
+    m_registry.emplace<World>(playerId, m_registry, m_camera, m_partsys);
     m_registry.emplace<StateMachine>(playerId);
     m_registry.emplace<Navigatable>(playerId);
     m_registry.emplace<PhysicalEvents>(playerId);
@@ -208,6 +209,20 @@ void BattleLevel::update()
     m_inputsys.update();
     if constexpr (gamedata::debug::dumpSystemDuration)
         profile.profileDumpAndBegin("Input system update: ");
+
+    /*
+        ComponentAnimationRenderable - read and write
+    */
+    m_rendersys.update();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("Render system update: ");
+
+    /*
+        ComponentParticlePrimitive - read / write
+    */
+    m_partsys.update();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("Particle system update: ");
     
     /*
         ComponentAI, ComponentTransform (own) - read and write

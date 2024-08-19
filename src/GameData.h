@@ -23,6 +23,8 @@ namespace gamedata
         inline constexpr bool drawNpsDebug = true;
         inline constexpr bool drawCurrentConnection = true;
         inline constexpr bool drawNavGraph = true;
+        inline constexpr bool drawTransforms = false;
+        inline constexpr bool drawDebugTextures = false;
 
         inline constexpr bool dumpSystemDuration = true;
     }
@@ -34,7 +36,7 @@ namespace gamedata
         inline constexpr Vector2<float> tileSize = {16.0f, 16.0f};
         inline constexpr int numberOfLevels = 2;
         inline constexpr int initialLevelId = 1;
-        inline constexpr Vector2<int> defaultWindowResolution = {1920, 1080};
+        inline constexpr Vector2<int> defaultWindowResolution = {1280, 720};
         inline constexpr Vector2<float> baseResolution = {320.0f, 180.0f}; // 320 x 180 или 480 x 270
         inline constexpr Vector2<float> maxCameraSize = {640.0f, 360.0f};
         inline constexpr Vector2<float> minCameraSize = {320.0f, 180.0f};

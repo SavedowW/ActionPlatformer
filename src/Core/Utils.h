@@ -7,6 +7,56 @@
 
 namespace utils
 {
+    // Way faster than dynamic implementation with base class, operator() and inheritors comparing value under interface
+    template<typename T>
+    class Gate
+    {
+    public:
+        bool fits(const T &val_) const
+        {
+            if (m_min <= m_max)
+                return val_ >= m_min && val_ <= m_max;
+            else
+                return val_ >= m_min || val_ <= m_max;
+        }
+
+        static Gate<T> makeMin(T &&rhs_)
+        {
+            Gate<T> gate;
+            gate.m_min = std::forward<T>(rhs_);
+            gate.m_max = std::numeric_limits<T>::infinity();
+            return gate;
+        }
+
+        static Gate<T> makeMax(T &&rhs_)
+        {
+            Gate<T> gate;
+            gate.m_min = -std::numeric_limits<T>::infinity();
+            gate.m_max = std::forward<T>(rhs_);
+            return gate;
+        }
+
+        static Gate<T> makeMinMax(T &&min_, T &&max_)
+        {
+            Gate<T> gate;
+            gate.m_min = std::forward<T>(min_);
+            gate.m_max = std::forward<T>(max_);
+            return gate;
+        }
+
+        static Gate<T> makeNever()
+        {
+            Gate<T> gate;
+            gate.m_min = std::numeric_limits<T>::infinity();
+            gate.m_max = -std::numeric_limits<T>::infinity();
+            return gate;
+        }
+
+    private:
+        T m_min;
+        T m_max;
+    };
+
     template<typename T>
     class Average
     {

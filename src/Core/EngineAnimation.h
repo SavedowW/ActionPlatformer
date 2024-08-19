@@ -2,7 +2,7 @@
 #define ENGINE_ANIMATION_H_
 
 #include "Renderer.h"
-#include "TimelineProperty.h"
+#include "TimelineProperty.hpp"
 #include "lz4.h"
 #include "lz4frame.h"
 #include "lz4hc.h"

@@ -1,9 +1,10 @@
 #include "World.h"
 #include "CoreComponents.h"
 
-World::World(entt::registry &reg_, Camera &cam_) :
+World::World(entt::registry &reg_, Camera &cam_, ParticleSystem &partsys_) :
     m_registry(reg_),
-    m_cam(cam_)
+    m_cam(cam_),
+    m_partsys(partsys_)
 {
 }
 
@@ -80,4 +81,9 @@ bool World::touchingGround(const Collider &cld_, ComponentObstacleFallthrough &f
 Camera &World::getCamera()
 {
     return m_cam;
+}
+
+ParticleSystem &World::getParticleSys()
+{
+    return m_partsys;
 }

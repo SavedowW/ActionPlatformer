@@ -9,14 +9,17 @@ struct RenderSystem
 {
     RenderSystem(entt::registry &reg_, Application &app_, Camera &camera_);
 
+    void update();
     void draw();
 
     void drawInstance(ComponentTransform &trans_, ComponentAnimationRenderable &ren_);
+    void drawParticle(ComponentTransform &trans_, ComponentParticlePrimitive &partcl_, ComponentAnimationRenderable &ren_);
     void drawCollider(ComponentTransform &trans_, ComponentPhysical &phys_);
     void drawCollider(ComponentStaticCollider &cld_);
     void drawObstacle(ComponentStaticCollider &cld_);
     void drawTrigger(ComponentTrigger &cld_);
     void drawFocusArea(CameraFocusArea &cfa_);
+    void drawTransform(ComponentTransform &cfa_);
 
 
     entt::registry &m_reg;
