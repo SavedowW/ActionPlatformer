@@ -22,6 +22,8 @@ void ParticleSystem::makeParticle(const ParticleRecipe &particle_)
 
         if (particle_.lifetime)
             pprim.m_lifetime.begin(particle_.lifetime);
+        
+        pprim.angle = particle_.angle;
     }
 }
 

@@ -29,6 +29,7 @@ public:
     //void renderTexture(SDL_Texture* tex_, float x_, float y_, const Camera &cam_, SDL_RendererFlip flip_ = SDL_FLIP_NONE);
     //void renderTexture(SDL_Texture* tex_, float x_, float y_);
     void renderTexture(SDL_Texture* tex_, float x_, float y_, float w_, float h_, float angle_, SDL_FPoint* center_, SDL_RendererFlip flip_);
+    void renderTexture(SDL_Texture* tex_, float x_, float y_, float w_, float h_, const Camera &cam_, float angle_, const Vector2<float> &center_, SDL_RendererFlip flip_);
     void renderTexture(SDL_Texture* tex_, float x_, float y_, float w_, float h_, const Camera &cam_, float angle_, SDL_RendererFlip flip_);
     void renderTexture(SDL_Texture* tex_, const SDL_Rect *src, const SDL_Rect *dst, float angle_, SDL_Point* center_, SDL_RendererFlip flip_);
     void renderTexture(SDL_Texture* tex_, float x_, float y_, float w_, float h_, const SDL_Rect &src, const Camera &cam_, SDL_RendererFlip flip_);

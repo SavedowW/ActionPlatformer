@@ -64,13 +64,16 @@ std::string StateMachine::getName() const
     return std::string("root") + " -> " + m_currentState->getName(m_framesInState);
 }
 
-void GenericState::spawnParticle(const ParticleTemplate &partemplate_, const ComponentTransform &trans_, World &world_, const Vector2<float> &offset_)
+void GenericState::spawnParticle(const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_)
 {
+    auto offset = phys_.m_velocity + phys_.m_inertia;
+
     ParticleRecipe rp;
     rp.count = partemplate_.count;
     rp.anim = partemplate_.anim;
     rp.pos = trans_.m_pos;
     rp.lifetime = partemplate_.lifetime;
+
     //if (partemplate_.horizontalFlipGate.fits(offset.x))
     if (trans_.m_orientation == ORIENTATION::LEFT)
     {
@@ -80,13 +83,15 @@ void GenericState::spawnParticle(const ParticleTemplate &partemplate_, const Com
     else
         rp.pos.x += partemplate_.offset.x;
 
-    if (partemplate_.verticalFlipGate.fits(offset_.y))
+    if (partemplate_.verticalFlipGate.fits(offset.y))
     {
         rp.flip = SDL_RendererFlip(rp.flip | SDL_FLIP_VERTICAL);
         rp.pos.y -= partemplate_.offset.y;
     }
     else
         rp.pos.y += partemplate_.offset.y;
+
+    rp.angle = atan(phys_.m_onSlopeWithAngle) * 180 / 3.1415;
 
     world_.getParticleSys().makeParticle(rp);
 }
@@ -247,9 +252,8 @@ bool GenericState::update(EntityAnywhere owner_, uint32_t currentFrame_)
         auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
         auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
         auto &world = owner_.reg->get<World>(owner_.idx);
-        auto offset = phys.m_velocity + phys.m_inertia;
 
-        spawnParticle(partemplate, transform, world, offset);
+        spawnParticle(partemplate, transform, phys, world);
     }
 
     // Handle duration

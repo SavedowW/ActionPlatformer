@@ -123,7 +123,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, ComponentTransform &trans_, Compo
 
             trans_.m_pos.y = highest;
             if (csc_.m_collider.m_topAngleCoef != 0)
-                touchedSlope = csc_.m_collider.m_topAngleCoef;
+                touchedSlope = (pb.getBottomEdge() > csc_.m_collider.m_highestSlopePoint ? csc_.m_collider.m_topAngleCoef : 0.0f);
             groundCollision = true;
             pb = phys_.m_pushbox + trans_.m_pos;
 
@@ -173,7 +173,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, ComponentTransform &trans_, Compo
         if ((overlap & utils::OverlapResult::TOUCH_MIN1_MAX2) && (overlap & utils::OverlapResult::BOTH_OOT))
         {
             if (csc_.m_collider.m_topAngleCoef != 0)
-                touchedSlope = csc_.m_collider.m_topAngleCoef;
+                touchedSlope = (pb.getBottomEdge() > csc_.m_collider.m_highestSlopePoint ? csc_.m_collider.m_topAngleCoef : 0.0f);
             groundCollision = true;
         }
 
@@ -185,9 +185,9 @@ void PhysicsSystem::proceedEntity(auto &clds_, ComponentTransform &trans_, Compo
             //std::cout << "Touched slope, teleporting on top, offset.x > 0\n";
 
             trans_.m_pos.y = highest;
-            if (csc_.m_collider.m_topAngleCoef != 0)
-                touchedSlope = csc_.m_collider.m_topAngleCoef;
             pb = phys_.m_pushbox + trans_.m_pos;
+            if (csc_.m_collider.m_topAngleCoef != 0)
+                touchedSlope = (pb.getBottomEdge() > csc_.m_collider.m_highestSlopePoint ? csc_.m_collider.m_topAngleCoef : 0.0f);
             groundCollision = true;
 
             if (phys_.m_velocity.y > 0)
@@ -232,7 +232,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, ComponentTransform &trans_, Compo
         if ((overlap & utils::OverlapResult::TOUCH_MIN1_MAX2) && (overlap & utils::OverlapResult::BOTH_OOT))
         {
             if (csc_.m_collider.m_topAngleCoef != 0)
-                touchedSlope = csc_.m_collider.m_topAngleCoef;
+                touchedSlope = (pb.getBottomEdge() > csc_.m_collider.m_highestSlopePoint ? csc_.m_collider.m_topAngleCoef : 0.0f);
             groundCollision = true;
         }
 
@@ -244,9 +244,9 @@ void PhysicsSystem::proceedEntity(auto &clds_, ComponentTransform &trans_, Compo
             //std::cout << "Touched slope, teleporting on top, offset.x < 0\n";
 
             trans_.m_pos.y = highest;
-            if (csc_.m_collider.m_topAngleCoef != 0)
-                touchedSlope = csc_.m_collider.m_topAngleCoef;
             pb = phys_.m_pushbox + trans_.m_pos;
+            if (csc_.m_collider.m_topAngleCoef != 0)
+                touchedSlope = (pb.getBottomEdge() > csc_.m_collider.m_highestSlopePoint ? csc_.m_collider.m_topAngleCoef : 0.0f);
             groundCollision = true;
 
             if (phys_.m_velocity.y > 0)
@@ -358,6 +358,7 @@ bool PhysicsSystem::magnetEntity(auto &clds_, ComponentTransform &trans_, Compon
         return false;
 
     auto pb = phys_.m_pushbox + trans_.m_pos;
+    auto bot = pb.getBottomEdge();
 
     float height = trans_.m_pos.y;
     const auto [found, pcld] = getHighestVerticalMagnetCoord(clds_, pb, height, obsFallthrough_.m_ignoredObstacles, obsFallthrough_.m_isIgnoringObstacles.isActive());
@@ -369,7 +370,7 @@ bool PhysicsSystem::magnetEntity(auto &clds_, ComponentTransform &trans_, Compon
             //std::cout << "MAGNET: " << magnetRange << std::endl;
             trans_.m_pos.y = height;
             phys_.m_lastSlopeAngle = phys_.m_onSlopeWithAngle;
-            phys_.m_onSlopeWithAngle = pcld->m_topAngleCoef;
+            phys_.m_onSlopeWithAngle = (bot > pcld->m_highestSlopePoint ? pcld->m_topAngleCoef : 0.0f);
             return true;
         }
     }

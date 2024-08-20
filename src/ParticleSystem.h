@@ -21,6 +21,7 @@ struct ParticleRecipe
     int anim;
     SDL_RendererFlip flip = SDL_FLIP_NONE;
     uint32_t lifetime;
+    float angle;
 };
 
 class ParticleSystem

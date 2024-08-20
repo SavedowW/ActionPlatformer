@@ -91,6 +91,18 @@ void Renderer::renderTexture(SDL_Texture* tex_, float x_, float y_, float w_, fl
     SDL_RenderCopyExF(m_renderer, tex_, NULL, &dst, angle_, center_, flip_);
 }
 
+void Renderer::renderTexture(SDL_Texture *tex_, float x_, float y_, float w_, float h_, const Camera &cam_, float angle_, const Vector2<float> &center_, SDL_RendererFlip flip_)
+{
+    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2{m_backbuffGameplay.m_w, m_backbuffGameplay.m_h} / 2;
+	Vector2<int> texTL = Vector2{x_, y_} - camTL;
+
+	SDL_FPoint center;
+	center.x = center_.x;
+	center.y = center_.y;
+	
+	renderTexture(tex_, texTL.x, texTL.y, w_, h_, angle_, &center, flip_);
+}
+
 void Renderer::renderTexture(SDL_Texture* tex_, const SDL_Rect *src_, const SDL_Rect *dst_, float angle_, SDL_Point* center_, SDL_RendererFlip flip_)
 {
     SDL_RenderCopyEx(m_renderer, tex_, src_, dst_, angle_, center_, flip_);
@@ -135,6 +147,8 @@ void Renderer::renderTexture(SDL_Texture* tex_, float x_, float y_, float w_, fl
 	
 	renderTexture(tex_, texTL.x, texTL.y, w_, h_, angle_, &center, flip_);
 }
+
+
 
 /*void Renderer::renderTexture(SDL_Texture* tex_, float x_, float y_, float angle_, SDL_FPoint* center_, SDL_RendererFlip flip_)
 {

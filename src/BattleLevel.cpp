@@ -162,7 +162,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_hudsys.m_playerId = playerId;
     m_enemysys.m_playerId = playerId;
 
-    m_enemysys.makeEnemy();
+    //m_enemysys.makeEnemy();
 
     m_tlmap.load("Tiles/tiles");
 

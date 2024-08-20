@@ -33,6 +33,7 @@ struct ComponentParticlePrimitive
 {
     SDL_RendererFlip m_flip;
     FrameTimer<false> m_lifetime;
+    float angle = 0.0f;
 };
 
 struct ComponentSpawnLocation

@@ -117,7 +117,7 @@ void RenderSystem::drawParticle(ComponentTransform &trans_, ComponentParticlePri
         auto spr = ren_.m_currentAnimation->getSprite();
         auto edge = ren_.m_currentAnimation->getBorderSprite();
 
-        m_renderer.renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, m_camera, 0.0f, partcl_.m_flip);
+        m_renderer.renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, m_camera, partcl_.angle, animorigin, partcl_.m_flip);
 
         if constexpr (gamedata::debug::drawDebugTextures)
         {

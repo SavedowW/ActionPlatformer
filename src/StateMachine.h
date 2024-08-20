@@ -97,7 +97,7 @@ public:
     const CharState m_stateId;
 
 protected:
-    void spawnParticle(const ParticleTemplate &partemplate_, const ComponentTransform &trans_, World &world_, const Vector2<float> &offset_);
+    void spawnParticle(const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_);
 
     const StateMarker m_transitionableFrom;
     std::string m_stateName;
