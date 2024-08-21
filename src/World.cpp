@@ -1,10 +1,11 @@
 #include "World.h"
 #include "CoreComponents.h"
 
-World::World(entt::registry &reg_, Camera &cam_, ParticleSystem &partsys_) :
+World::World(entt::registry &reg_, Camera &cam_, ParticleSystem &partsys_, NavSystem &navsys_) :
     m_registry(reg_),
     m_cam(cam_),
-    m_partsys(partsys_)
+    m_partsys(partsys_),
+    m_navsys(navsys_)
 {
 }
 
@@ -86,4 +87,9 @@ Camera &World::getCamera()
 ParticleSystem &World::getParticleSys()
 {
     return m_partsys;
+}
+
+NavSystem &World::getNavsys()
+{
+    return m_navsys;
 }

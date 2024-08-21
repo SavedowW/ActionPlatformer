@@ -2,10 +2,14 @@
 #include "CoreComponents.h"
 #include "StateMachine.h"
 #include "Enemy1.h"
+#include "NavGraph.h"
 
-EnemySystem::EnemySystem(entt::registry &reg_, Application &app_) :
+EnemySystem::EnemySystem(entt::registry &reg_, Application &app_, NavSystem &navsys_, Camera &cam_, ParticleSystem &partsys_) :
     m_reg(reg_),
-    m_animManager(*app_.getAnimationManager())
+    m_animManager(*app_.getAnimationManager()),
+    m_navsys(navsys_),
+    m_cam(cam_),
+    m_partsys(partsys_)
 {
 }
 
@@ -14,6 +18,15 @@ void EnemySystem::makeEnemy()
     auto enemyId = m_reg.create();
     m_reg.emplace<ComponentTransform>(enemyId, Vector2{170.0f, 300.0f}, ORIENTATION::RIGHT);
     m_reg.emplace<PhysicalEvents>(enemyId);
+
+    auto &nav = m_reg.emplace<Navigatable>(enemyId);
+    nav.m_validTraitsOwnLocation = Traverse::makeSignature(true, TraverseTraits::WALK);
+    nav.m_traverseTraits = Traverse::makeSignature(true, TraverseTraits::WALK, TraverseTraits::JUMP,  TraverseTraits::FALL);
+    nav.m_currentOwnConnection = nullptr;
+    nav.m_isFallthroughOk = true;
+    nav.m_maxRange = 60.0f;
+
+    m_reg.emplace<World>(enemyId, m_reg, m_cam, m_partsys, m_navsys);
     m_reg.emplace<ComponentObstacleFallthrough>(enemyId);
 
 

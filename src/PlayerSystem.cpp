@@ -48,21 +48,19 @@ void PlayerSystem::setup(entt::entity playerId_)
 
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerActionWallPrejump(
-            m_animManager.getAnimID("Char1/wall_prejump"), {CharacterState::NONE, {CharacterState::WALL_CLING}}))
+            m_animManager.getAnimID("Char1/wall_prejump"), {CharacterState::NONE, {CharacterState::WALL_CLING}},
+            ParticleTemplate{1, Vector2<float>{-8.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_jump"), 21,
+                utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}))
         ->setTransitionOnTouchedGround(CharacterState::IDLE)
         .setDrag(TimelineProperty<Vector2<float>>({1.0f, 0.5f}))
         .setOutdatedTransition(CharacterState::FLOAT, 3)
-        .setParticlesSingle(TimelineProperty<ParticleTemplate>({
-            {0, {}}, // TODO: move vertical flip condition to class logic, add run_loop and wall_slide
-            {3, ParticleTemplate{1, Vector2<float>{-8.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_jump"), 21,
-                utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
-            {4, {}},
-            }))
     ));
 
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerActionWallCling(
-            m_animManager.getAnimID("Char1/wall_cling"), {CharacterState::NONE, {CharacterState::FLOAT}}))
+            m_animManager.getAnimID("Char1/wall_cling"), {CharacterState::NONE, {CharacterState::FLOAT}},
+        ParticleTemplate{1, Vector2<float>{0.0f, 25.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_slide"), 21,
+                utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}))
         ->setDrag(TimelineProperty<Vector2<float>>({
             {0, {1.0f, 0.2f}},
             {1, {1.0f, 0.4f}},
@@ -175,6 +173,15 @@ void PlayerSystem::setup(entt::entity playerId_)
                 utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
             {2, {}},
             }))
+        .setParticlesLoopable(TimelineProperty<ParticleTemplate>({
+            {0, {}},
+            {5, ParticleTemplate{1, Vector2<float>{-13.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_run_loop"), 21,
+                utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
+            {6, {}},
+            {30, ParticleTemplate{1, Vector2<float>{-13.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_run_loop"), 21,
+                utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
+            {31, {}},
+            }), 50)
     ));
 
     sm.addState(std::unique_ptr<GenericState>(

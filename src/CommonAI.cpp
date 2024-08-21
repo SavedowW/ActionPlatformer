@@ -1,4 +1,5 @@
 #include "CommonAI.h"
+#include "NavSystem.h"
 
 void AIState::enter(EntityAnywhere owner_, CharState from_)
 {
@@ -85,6 +86,16 @@ bool ProxySelectionState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     auto &ownTrans = owner_.reg->get<ComponentTransform>(owner_.idx);
     auto &tarTrans = m_target.reg->get<ComponentTransform>(m_target.idx);
     auto range = (tarTrans.m_pos - ownTrans.m_pos).getLen();
+
+    auto &nav = owner_.reg->get<Navigatable>(owner_.idx);
+
+    if (!nav.m_currentPath)
+    {
+        nav.m_currentPath = owner_.reg->get<World>(m_target.idx).getNavsys().makePath(nav.m_traverseTraits, m_target.idx);
+    }
+
+    if (nav.m_currentOwnConnection)
+        nav.m_currentPath->buildUntil(nav.m_currentOwnConnection);
 
     for (size_t i = 0; i < m_rangeLimits.size(); ++i)
     {

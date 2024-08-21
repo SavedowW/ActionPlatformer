@@ -25,6 +25,7 @@ namespace gamedata
         inline constexpr bool drawNavGraph = true;
         inline constexpr bool drawTransforms = false;
         inline constexpr bool drawDebugTextures = false;
+        inline constexpr uint32_t debugPathDisplay = 15;
 
         inline constexpr bool dumpSystemDuration = true;
     }

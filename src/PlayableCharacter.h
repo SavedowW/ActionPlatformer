@@ -174,7 +174,7 @@ public:
 
         auto &fallthrough = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
         auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
-        std::cout << fallthrough.m_ignoredObstacles.size() << std::endl;
+        //std::cout << fallthrough.m_ignoredObstacles.size() << std::endl;
         if (fallthrough.isIgnoringAllObstacles() && phys.getPosOffest().x * phys.m_lastSlopeAngle > 0.0f)
             phys.m_velocity.y += 2.0f;
     }
@@ -245,9 +245,10 @@ protected:
 class PlayerActionWallCling: public PlayerState<false, true, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail>
 {
 public:
-    PlayerActionWallCling(int anim_, StateMarker transitionableFrom_) :
+    PlayerActionWallCling(int anim_, StateMarker transitionableFrom_, ParticleTemplate &&slideParticle_) :
         PlayerState<false, true, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail>(CharacterState::WALL_CLING, std::move(transitionableFrom_), anim_),
-        m_transitionOnLeave(CharacterState::FLOAT)
+        m_transitionOnLeave(CharacterState::FLOAT),
+        m_slideParticle(std::move(slideParticle_))
     {
         setGravity(TimelineProperty<Vector2<float>>({0.0f, 0.020f}));
         setConvertVelocityOnSwitch(true);
@@ -266,6 +267,8 @@ public:
 
         physical.m_velocity.x = 0;
         physical.m_inertia.x = 0;
+
+        m_particleTimer.begin(0);
     }
 
     inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
@@ -289,6 +292,20 @@ public:
                 physical.m_velocity.y -= 1.0f;
             
             m_parent->switchCurrentState(owner_, m_transitionOnLeave);
+        }
+
+        if (m_particleTimer.update())
+        {
+            m_particleTimer.begin(8);
+            auto yspd = physical.m_appliedOffset.y;
+            if (yspd > 0.5f)
+                spawnParticle(m_slideParticle, transform, physical, cworld, SDL_FLIP_VERTICAL);
+            else if (yspd < -0.5f)
+            {
+                m_slideParticle.offset.y -= 30.0f;
+                spawnParticle(m_slideParticle, transform, physical, cworld, SDL_FLIP_NONE);
+                m_slideParticle.offset.y += 30.0f;
+            }
         }
 
         return false;
@@ -334,13 +351,17 @@ public:
 protected:
     using ParentAction = PlayerState<false, true, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail>;
     CharacterState m_transitionOnLeave;
+
+    ParticleTemplate m_slideParticle;
+    FrameTimer<true> m_particleTimer;
 };
 
 class PlayerActionWallPrejump: public PlayerState<true, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>
 {
 public:
-    PlayerActionWallPrejump(int anim_, StateMarker transitionableFrom_) :
-        PlayerState<true, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>(CharacterState::WALL_CLING_PREJUMP, std::move(transitionableFrom_), anim_)
+    PlayerActionWallPrejump(int anim_, StateMarker transitionableFrom_, ParticleTemplate &&jumpParticle_) :
+        PlayerState<true, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>(CharacterState::WALL_CLING_PREJUMP, std::move(transitionableFrom_), anim_),
+        m_jumpParticle(std::move(jumpParticle_))
     {
         setGravity(TimelineProperty<Vector2<float>>({0.0f, 0.020f}));
         setConvertVelocityOnSwitch(true);
@@ -363,6 +384,7 @@ public:
         auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
         auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
         auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
+        auto &world = owner_.reg->get<World>(owner_.idx);
 
         const auto &inq = compInput.m_inputResolver->getInputQueue();
 
@@ -395,7 +417,12 @@ public:
             fall = true;
         }
 
-        std::cout << targetSpeed << std::endl;
+        //std::cout << targetSpeed << std::endl;
+
+        if (targetSpeed.y >= 0)
+            spawnParticle(m_jumpParticle, transform, physical, world, SDL_FLIP_VERTICAL);
+        else
+            spawnParticle(m_jumpParticle, transform, physical, world, SDL_FLIP_NONE);
 
         if (fall)
         {
@@ -414,6 +441,8 @@ protected:
     InputComparatorHoldRight m_r;
     InputComparatorHoldUp m_u;
     InputComparatorHoldDown m_d;
+
+    ParticleTemplate m_jumpParticle;
 };
 
 #endif

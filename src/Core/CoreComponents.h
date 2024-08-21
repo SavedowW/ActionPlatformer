@@ -183,10 +183,23 @@ struct ComponentDynamicCameraTarget
 
 struct Navigatable
 {
+    Navigatable()
+    {
+        std::cout << "Nav created\n";
+    }
+
     Connection *m_currentOwnConnection = nullptr;
-    bool m_isFallthroughOk;
+    bool m_isFallthroughOk = true;
     Traverse::TraitT m_validTraitsOwnLocation;
+    Traverse::TraitT m_traverseTraits;
     float m_maxRange = 0.0f;
+
+    std::shared_ptr<NavPath> m_currentPath;
+
+    ~Navigatable()
+    {
+        std::cout << "Nav destroyed\n";
+    }
 };
 
 #endif

@@ -21,6 +21,12 @@ void NavSystem::update()
         else
             nav.m_currentOwnConnection = nullptr;
     }
+
+    for (auto &path : m_paths)
+    {
+        if (!path.second.expired())
+            path.second.lock()->update();
+    }
 }
 
 void NavSystem::draw(Camera &cam_)
@@ -41,13 +47,76 @@ void NavSystem::draw(Camera &cam_)
             }
         }
     }
+
+    if constexpr (gamedata::debug::debugPathDisplay)
+    {
+        auto ipath = m_paths.find(gamedata::debug::debugPathDisplay);
+        if (ipath != m_paths.end() && !ipath->second.expired())
+        {
+            auto path = ipath->second.lock().get();
+            for (const auto &con : path->m_fullGraph)
+            {
+                if (path->m_currentTarget == con.m_con)
+                {
+                    auto origin = m_graph.getNodePos(con.m_con->m_nodes[0]) - Vector2{1.0f, 1.0f};
+                    auto tar = m_graph.getNodePos(con.m_con->m_nodes[1]) - Vector2{1.0f, 1.0f};
+                    m_ren.drawLine(origin, tar, {0, 255, 50, 200}, cam_);
+                }
+                else if (con.m_nextNode.has_value())
+                {
+
+                    auto oriented = con.getOrientedNodes();
+                    if (*con.m_nextNode)
+                    {
+                        auto origin = m_graph.getNodePos(oriented.first) - Vector2{1.0f, 1.0f};
+                        auto tar = m_graph.getNodePos(oriented.second) - Vector2{1.0f, 1.0f};
+                        auto delta = tar - origin;
+                        auto center = tar - delta  / 4.0f;
+                        m_ren.drawLine(center, tar, {0, 255, 0, 200}, cam_);
+                    }
+                    else
+                    {
+                        m_ren.drawLine(
+                            m_graph.getNodePos(oriented.first) - Vector2{1.0f, 1.0f}, 
+                            m_graph.getNodePos(oriented.second) - Vector2{1.0f, 1.0f}, 
+                            {255, 0, 0, 200}, cam_);
+                    }
+                }
+            }
+        }
+    }
 }
 
-NavPath::NavPath(NavGraph *graph_, entt::entity target_, Traverse::TraitT traits_) :
+std::shared_ptr<NavPath> NavSystem::makePath(Traverse::TraitT traverseTraits_, entt::entity goal_)
+{
+    auto found = m_paths.find(traverseTraits_);
+    if (found == m_paths.end())
+    {
+        auto newpath = std::shared_ptr<NavPath>(new NavPath(&m_graph, goal_, m_reg, traverseTraits_));
+        m_paths[traverseTraits_] = newpath;
+        return newpath;
+    }
+    else
+    {
+        if (found->second.expired())
+        {
+            auto newpath = std::shared_ptr<NavPath>(new NavPath(&m_graph, goal_, m_reg, traverseTraits_));
+            found->second = newpath;
+            return newpath;
+        }
+        else
+        {
+            return found->second.lock();
+        }
+    }
+}
+
+NavPath::NavPath(NavGraph *graph_, entt::entity target_, entt::registry &reg_, Traverse::TraitT traits_) :
     m_graph(graph_),
     m_target(target_),
     m_fullGraph(graph_->m_connections.size()),
-    m_traverseTraits(traits_)
+    m_traverseTraits(traits_),
+    m_reg(reg_)
 {
     for (int i = 0 ; i < m_fullGraph.size(); ++i)
     {
@@ -68,12 +137,25 @@ NavPath::NavPath(NavGraph *graph_, entt::entity target_, Traverse::TraitT traits
         }
         
     }
+
+    m_currentTarget = reg_.get<Navigatable>(target_).m_currentOwnConnection;
 }
 
 bool NavPath::buildUntil(const Connection * const con_)
 {
-    m_fullGraph[m_currentTarget].m_calculatedCost = m_fullGraph[m_currentTarget].m_ownCost;
-    std::vector<ConnectionDescr *> front{&m_fullGraph[m_currentTarget]};
+    if (m_fullGraph[con_->m_ownId].m_nextNode.has_value())
+        return *m_fullGraph[con_->m_ownId].m_nextNode;
+
+    if (!m_currentTarget)
+    {
+        m_fullGraph[con_->m_ownId].m_nextNode = nullptr;
+        return false;
+    }
+
+    if (con_ == m_currentTarget)
+        return true;
+
+    m_fullGraph[m_currentTarget->m_ownId].m_calculatedCost = m_fullGraph[m_currentTarget->m_ownId].m_ownCost;
 
     while (!front.empty())
     {
@@ -87,7 +169,7 @@ bool NavPath::buildUntil(const Connection * const con_)
             size_t orientation = (con->m_con->m_nodes[1] == used->m_con->m_nodes[0] || con->m_con->m_nodes[1] == used->m_con->m_nodes[1] ? 0 : 1);
             if (newcost < con->m_calculatedCost && Traverse::canTraverseByPath(m_traverseTraits, con->m_con->m_traverses[orientation]))
             {
-                std::cout << "Editing " << con->m_con->m_ownId << ": " << con->m_calculatedCost << " => " << newcost << std::endl;
+                //std::cout << "Editing " << con->m_con->m_ownId << ": " << con->m_calculatedCost << " => " << newcost << std::endl;
                 front.push_back(con);
                 con->m_calculatedCost = newcost;
                 con->m_nextNode = used;
@@ -106,6 +188,24 @@ bool NavPath::buildUntil(const Connection * const con_)
     return false;
 }
 
+void NavPath::update()
+{
+    auto newtar = m_reg.get<Navigatable>(m_target).m_currentOwnConnection;
+    if (newtar != m_currentTarget)
+    {
+        for (auto &el : m_fullGraph)
+        {
+            el.m_calculatedCost = std::numeric_limits<float>::max();
+            el.m_nextNode.reset();
+        }
+        m_currentTarget = newtar;
+        if (m_currentTarget)
+            front = {&m_fullGraph[m_currentTarget->m_ownId]};
+        else
+            front.clear();
+    }
+}
+
 void NavPath::dump() const
 {
     for (const auto &el : m_fullGraph)
@@ -120,4 +220,15 @@ void NavPath::dump() const
         }
         std::cout << std::endl;
     }
+}
+
+std::pair<NodeID, NodeID> ConnectionDescr::getOrientedNodes() const
+{
+    if (!m_nextNode.has_value() || !(*m_nextNode))
+        return {m_con->m_nodes[0], m_con->m_nodes[1]};
+
+    if (m_con->m_nodes[1] == (*m_nextNode)->m_con->m_nodes[0] || m_con->m_nodes[1] == (*m_nextNode)->m_con->m_nodes[1])
+        return {m_con->m_nodes[0], m_con->m_nodes[1]};
+    else
+        return {m_con->m_nodes[1], m_con->m_nodes[0]};
 }

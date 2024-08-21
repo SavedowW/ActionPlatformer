@@ -75,6 +75,9 @@ public:
     Vector2<float> getConnectionCenter(const Connection *con_) const;
     float getDistToConnection(const Connection *con_, const Vector2<float> &pos_) const;
 
+    const Connection *getConnection(ConnectionID con_) const;
+    Vector2<float> getNodePos(NodeID nd_) const;
+
 private:
     std::vector<Node> m_nodes;
     std::vector<Connection> m_connections;

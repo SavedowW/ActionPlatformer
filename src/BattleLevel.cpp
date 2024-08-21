@@ -13,7 +13,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_physsys(m_registry, size_),
     m_camsys(m_registry, m_camera),
     m_hudsys(m_registry, *application_, m_camera, lvlId_, size_, m_lastFullFrameTime),
-    m_enemysys(m_registry, *application_),
+    m_enemysys(m_registry, *application_, m_navsys, m_camera, m_partsys),
     m_aisys(m_registry),
     m_navsys(m_registry, *application_, m_graph),
     m_colsys(m_registry),
@@ -27,7 +27,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_registry.emplace<ComponentAnimationRenderable>(playerId);
     m_registry.emplace<ComponentPlayerInput>(playerId, std::unique_ptr<InputResolver>(new InputResolver(application_->getInputSystem())));
     m_registry.emplace<ComponentDynamicCameraTarget>(playerId);
-    m_registry.emplace<World>(playerId, m_registry, m_camera, m_partsys);
+    m_registry.emplace<World>(playerId, m_registry, m_camera, m_partsys, m_navsys);
     m_registry.emplace<StateMachine>(playerId);
     m_registry.emplace<Navigatable>(playerId);
     m_registry.emplace<PhysicalEvents>(playerId);
@@ -162,7 +162,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_hudsys.m_playerId = playerId;
     m_enemysys.m_playerId = playerId;
 
-    //m_enemysys.makeEnemy();
+    m_enemysys.makeEnemy();
 
     m_tlmap.load("Tiles/tiles");
 

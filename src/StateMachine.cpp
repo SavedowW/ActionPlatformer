@@ -79,15 +79,50 @@ void GenericState::spawnParticle(const ParticleTemplate &partemplate_, const Com
     {
         rp.flip = SDL_RendererFlip(rp.flip | SDL_FLIP_HORIZONTAL);
         rp.pos.x -= partemplate_.offset.x;
+        rp.pos.y -= partemplate_.offset.x * phys_.m_onSlopeWithAngle;
     }
     else
+    {
         rp.pos.x += partemplate_.offset.x;
+        rp.pos.y += partemplate_.offset.x * phys_.m_onSlopeWithAngle;
+    }
 
     if (partemplate_.verticalFlipGate.fits(offset.y))
     {
         rp.flip = SDL_RendererFlip(rp.flip | SDL_FLIP_VERTICAL);
         rp.pos.y -= partemplate_.offset.y;
     }
+    else
+        rp.pos.y += partemplate_.offset.y;
+
+    rp.angle = atan(phys_.m_onSlopeWithAngle) * 180 / 3.1415;
+
+    world_.getParticleSys().makeParticle(rp);
+}
+
+void GenericState::spawnParticle(const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_, SDL_RendererFlip verFlip_)
+{
+    auto offset = phys_.m_velocity + phys_.m_inertia;
+
+    ParticleRecipe rp;
+    rp.count = partemplate_.count;
+    rp.anim = partemplate_.anim;
+    rp.pos = trans_.m_pos;
+    rp.lifetime = partemplate_.lifetime;
+
+    rp.flip = verFlip_;
+
+    //if (partemplate_.horizontalFlipGate.fits(offset.x))
+    if (trans_.m_orientation == ORIENTATION::LEFT || (verFlip_ & SDL_FLIP_HORIZONTAL))
+    {
+        rp.flip = SDL_RendererFlip(rp.flip | SDL_FLIP_HORIZONTAL);
+        rp.pos.x -= partemplate_.offset.x;
+    }
+    else
+        rp.pos.x += partemplate_.offset.x;
+
+    if (verFlip_ & SDL_FLIP_VERTICAL)
+        rp.pos.y -= partemplate_.offset.y;
     else
         rp.pos.y += partemplate_.offset.y;
 
@@ -202,6 +237,13 @@ GenericState &GenericState::setParticlesSingle(TimelineProperty<ParticleTemplate
     return *this;
 }
 
+GenericState &GenericState::setParticlesLoopable(TimelineProperty<ParticleTemplate> &&particlesLoopable_, uint32_t loopDuration_)
+{
+    m_particlesLoopable = std::move(particlesLoopable_);
+    m_loopDuration = loopDuration_;
+    return *this;
+}
+
 void GenericState::enter(EntityAnywhere owner_, CharState from_)
 {
     //std::cout << "Switched to " << m_stateName << std::endl;
@@ -247,13 +289,18 @@ void GenericState::leave(EntityAnywhere owner_, CharState to_)
 bool GenericState::update(EntityAnywhere owner_, uint32_t currentFrame_)
 {
     const auto &partemplate = m_particlesSingle[currentFrame_];
-    if (partemplate.count)
+    const auto &partemplateLoop = m_particlesLoopable[currentFrame_ % m_loopDuration];
+    if (partemplate.count || partemplateLoop.count)
     {
         auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
         auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
         auto &world = owner_.reg->get<World>(owner_.idx);
 
-        spawnParticle(partemplate, transform, phys, world);
+        if (partemplate.count)
+            spawnParticle(partemplate, transform, phys, world);
+
+        if (partemplateLoop.count)
+            spawnParticle(partemplateLoop, transform, phys, world);
     }
 
     // Handle duration
@@ -271,8 +318,6 @@ bool PhysicalState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
     auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
     auto &animrnd = owner_.reg->get<ComponentAnimationRenderable>(owner_.idx);
-
-    // TODO: might move elsewhere and parallelize
 
     // Handle velocity and inertia changes
     if (m_usingUpdateMovement)

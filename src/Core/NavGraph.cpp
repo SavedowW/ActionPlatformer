@@ -79,6 +79,16 @@ float NavGraph::getDistToConnection(const Connection *con_, const Vector2<float>
     return utils::distToLineSegment(m_nodes[con_->m_nodes[0]].m_position, m_nodes[con_->m_nodes[1]].m_position, pos_);
 }
 
+const Connection *NavGraph::getConnection(ConnectionID con_) const
+{
+    return &m_connections[con_];
+}
+
+Vector2<float> NavGraph::getNodePos(NodeID nd_) const
+{
+    return m_nodes[nd_].m_position;
+}
+
 Connection::Connection(NodeID node1_, NodeID node2_, Traverse::TraitT traverseTo2_, Traverse::TraitT traverseTo1_, float cost_, ConnectionID ownId_) :
     m_nodes{node1_, node2_},
     m_traverses{traverseTo2_, traverseTo1_},

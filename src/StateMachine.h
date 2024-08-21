@@ -79,6 +79,7 @@ public:
     }
 
     GenericState &setParticlesSingle(TimelineProperty<ParticleTemplate> &&particlesSingle_);
+    GenericState &setParticlesLoopable(TimelineProperty<ParticleTemplate> &&particlesLoopable_, uint32_t loopDuration_);
 
     virtual void enter(EntityAnywhere owner_, CharState from_);
     virtual void leave(EntityAnywhere owner_, CharState to_);
@@ -98,6 +99,7 @@ public:
 
 protected:
     void spawnParticle(const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_);
+    void spawnParticle(const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_, SDL_RendererFlip verFlip_);
 
     const StateMarker m_transitionableFrom;
     std::string m_stateName;
@@ -107,6 +109,8 @@ protected:
     std::optional<uint32_t> m_duration;
 
     TimelineProperty<ParticleTemplate> m_particlesSingle;
+    TimelineProperty<ParticleTemplate> m_particlesLoopable;
+    uint32_t m_loopDuration = 1;
 };
 
 class PhysicalState: public GenericState
