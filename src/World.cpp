@@ -27,6 +27,24 @@ bool World::isAreaFree(const Collider &cld_, bool considerObstacles_) const
     return true;
 }
 
+bool World::isOverlappingObstacle(const Collider &cld_) const
+{
+    auto cldview = m_registry.view<ComponentStaticCollider>();
+    float dumped = 0;
+
+    for (auto [idx, cld] : cldview.each())
+    {
+        if (cld.m_isEnabled && cld.m_obstacleId)
+        {
+            auto colres = cld.m_collider.getFullCollisionWith(cld_, dumped);
+            if (colres & utils::OverlapResult::OVERLAP_X && colres & utils::OverlapResult::OVERLAP_Y)
+                return true;
+        }
+    }
+
+    return false;
+}
+
 EntityAnywhere World::getOverlappedTrigger(const Collider &cld_, Trigger::Tag tag_) const
 {
     auto trgview = m_registry.view<ComponentTrigger>();

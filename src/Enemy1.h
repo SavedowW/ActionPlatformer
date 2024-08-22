@@ -10,8 +10,11 @@ enum class Enemy1State : CharState
     META_ROAM,
     META_BLIND_CHASE,
     META_PROXY_SWITCH,
+    META_MOVE_TOWARDS,
+    META_NAVIGATE_GRAPH_CHASE,
     IDLE,
     FLOAT,
+    PREJUMP,
     RUN,
     NONE
 };
@@ -20,8 +23,11 @@ inline const std::map<Enemy1State, std::string> Enemy1StateNames {
     {Enemy1State::META_ROAM, "META_ROAM"},
     {Enemy1State::META_BLIND_CHASE, "META_BLIND_CHASE"},
     {Enemy1State::META_PROXY_SWITCH, "META_PROXY_SWITCH"},
+    {Enemy1State::META_MOVE_TOWARDS, "META_MOVE_TOWARDS"},
+    {Enemy1State::META_NAVIGATE_GRAPH_CHASE, "META_NAVIGATE_GRAPH_CHASE"},
     {Enemy1State::IDLE, "IDLE"},
     {Enemy1State::FLOAT, "FLOAT"},
+    {Enemy1State::PREJUMP, "PREJUMP"},
     {Enemy1State::RUN, "RUN"},
 };
 
@@ -83,6 +89,21 @@ public:
     }
 
 protected:
+
+
+};
+
+class AimedPrejump : public NPCState<true, false>
+{
+public:
+    template<typename PLAYER_STATE_T>
+    AimedPrejump(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_, int anim_) :
+        NPCState<true, false>(stateId_, stateName_, std::move(transitionableFrom_), anim_)
+    {}
+
+    virtual void onOutdated(EntityAnywhere owner_) override;
+
+private:
 
 
 };

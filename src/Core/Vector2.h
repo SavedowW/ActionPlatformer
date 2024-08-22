@@ -300,6 +300,12 @@ struct Collider
 
         return (size.x * size.y) / getSquare();
     }
+
+    constexpr inline bool includesPoint(const Vector2<float> point_)
+    {
+        auto delta = (point_ - m_center).abs();
+        return delta.x <= m_halfSize.x && delta.y <= m_halfSize.y;
+    }
     
 };
 

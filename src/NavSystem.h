@@ -11,7 +11,8 @@ struct ConnectionDescr
     float m_ownCost;
     float m_calculatedCost;
     std::vector<ConnectionDescr *> m_neighbourConnections;
-    std::optional<ConnectionDescr *> m_nextNode;
+    std::optional<ConnectionDescr *> m_nextConnection;
+    int m_nextNode = -1;
     std::pair<NodeID, NodeID> getOrientedNodes() const;
 };
 
