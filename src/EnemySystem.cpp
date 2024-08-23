@@ -20,11 +20,11 @@ void EnemySystem::makeEnemy()
     m_reg.emplace<PhysicalEvents>(enemyId);
 
     auto &nav = m_reg.emplace<Navigatable>(enemyId);
-    nav.m_validTraitsOwnLocation = Traverse::makeSignature(true, TraverseTraits::WALK);
+    nav.m_validTraitsOwnLocation = Traverse::makeSignature(true, TraverseTraits::WALK, TraverseTraits::JUMP,  TraverseTraits::FALL);
     nav.m_traverseTraits = Traverse::makeSignature(true, TraverseTraits::WALK, TraverseTraits::JUMP,  TraverseTraits::FALL);
     nav.m_currentOwnConnection = nullptr;
-    nav.m_isFallthroughOk = true;
     nav.m_maxRange = 60.0f;
+    nav.m_checkIfGrounded = true;
 
     m_reg.emplace<World>(enemyId, m_reg, m_cam, m_partsys, m_navsys);
     m_reg.emplace<ComponentObstacleFallthrough>(enemyId);
@@ -57,7 +57,7 @@ void EnemySystem::makeEnemy()
 
     auto *navigateChase = new NavigateGraphChase(
         Enemy1State::META_NAVIGATE_GRAPH_CHASE, Enemy1StateNames.at(Enemy1State::META_NAVIGATE_GRAPH_CHASE), {Enemy1State::NONE, {}},
-        Enemy1State::META_MOVE_TOWARDS, Enemy1State::PREJUMP, Enemy1State::IDLE);
+        Enemy1State::META_MOVE_TOWARDS, Enemy1State::PREJUMP, Enemy1State::IDLE, Enemy1State::META_BLIND_CHASE);
 
     navigateChase->addState(std::unique_ptr<GenericState>(
         new MoveTowards(
@@ -72,9 +72,14 @@ void EnemySystem::makeEnemy()
     ));
 
     navigateChase->addState(std::unique_ptr<GenericState>(
-        &(new AIState(
-        Enemy1State::IDLE, Enemy1StateNames.at(Enemy1State::IDLE), {Enemy1State::NONE, {}}))
-        ->setEnterRequestedState(static_cast<CharState>(Enemy1State::IDLE))
+        new AIStateNull(
+        Enemy1State::IDLE, Enemy1StateNames.at(Enemy1State::IDLE), {Enemy1State::NONE, {}})
+    ));
+
+    navigateChase->addState(std::unique_ptr<GenericState>(
+        new BlindChaseState(
+            Enemy1State::META_BLIND_CHASE, Enemy1StateNames.at(Enemy1State::META_BLIND_CHASE), {Enemy1State::NONE, {}},
+            Enemy1State::IDLE, Enemy1State::RUN, 20.0f)
     ));
 
     navigateChase->setInitialState(Enemy1State::IDLE);
@@ -130,7 +135,8 @@ void EnemySystem::makeEnemy()
 
     sm.addState(std::unique_ptr<GenericState>(
         &(new AimedPrejump(
-            Enemy1State::PREJUMP, Enemy1StateNames.at(Enemy1State::PREJUMP), {Enemy1State::NONE, {Enemy1State::IDLE, Enemy1State::RUN}}, m_animManager.getAnimID("Enemy1/prejump")))
+            Enemy1State::PREJUMP, Enemy1StateNames.at(Enemy1State::PREJUMP), {Enemy1State::NONE, {Enemy1State::IDLE, Enemy1State::RUN}}, m_animManager.getAnimID("Enemy1/prejump"),
+            0.3f, 1.5f))
         ->setGroundedOnSwitch(true)
         .setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true)
@@ -163,8 +169,8 @@ void EnemySystem::makeEnemy()
     ));
 
     sm.addState(std::unique_ptr<GenericState>(
-        &(new NPCState<false, false>(
-            Enemy1State::FLOAT, Enemy1StateNames.at(Enemy1State::FLOAT), {Enemy1State::NONE, {Enemy1State::FLOAT}}, m_animManager.getAnimID("Enemy1/float")))
+        &(new AimedFloat(
+            Enemy1State::FLOAT, Enemy1StateNames.at(Enemy1State::FLOAT), {Enemy1State::NONE, {}}, m_animManager.getAnimID("Enemy1/float")))
         ->setGroundedOnSwitch(false)
         .setGravity({{0.0f, 0.3f}})
         .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))

@@ -97,15 +97,30 @@ class AimedPrejump : public NPCState<true, false>
 {
 public:
     template<typename PLAYER_STATE_T>
-    AimedPrejump(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_, int anim_) :
-        NPCState<true, false>(stateId_, stateName_, std::move(transitionableFrom_), anim_)
+    AimedPrejump(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_, int anim_, float gravity_, float maxInitialHorSpd_) :
+        NPCState<true, false>(stateId_, stateName_, std::move(transitionableFrom_), anim_),
+        m_gravity(gravity_),
+        m_maxInitialHorSpd(maxInitialHorSpd_)
     {}
 
     virtual void onOutdated(EntityAnywhere owner_) override;
 
 private:
+    float m_gravity = 0.0f;
+    float m_maxInitialHorSpd = 0.0f;
 
+};
 
+class AimedFloat : public NPCState<false, false>
+{
+public:
+    template<typename PLAYER_STATE_T>
+    AimedFloat(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_, int anim_) :
+        NPCState<false, false>(stateId_, stateName_, std::move(transitionableFrom_), anim_)
+    {}
+
+    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+    virtual void leave(EntityAnywhere owner_, CharState to_) override;
 };
 
 #endif

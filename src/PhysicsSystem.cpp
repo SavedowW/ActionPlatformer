@@ -170,8 +170,8 @@ void PhysicsSystem::proceedEntity(auto &clds_, ComponentTransform &trans_, Compo
         auto overlap = csc_.m_collider.getFullCollisionWith(pb, highest);
         bool aligned = csc_.m_collider.getOrientationDir() > 0;
 
-        if ((overlap & utils::OverlapResult::TOUCH_MIN1_MAX2) && (overlap & utils::OverlapResult::BOTH_OOT))
-        {
+        if ((overlap & (utils::OverlapResult::TOUCH_MIN1_MAX2 << 6)) && (overlap & utils::OverlapResult::BOTH_OOT))
+        { // 1111 0101 00 0000 01
             if (csc_.m_collider.m_topAngleCoef != 0)
                 touchedSlope = (pb.getBottomEdge() > csc_.m_collider.m_highestSlopePoint ? csc_.m_collider.m_topAngleCoef : 0.0f);
             groundCollision = true;
@@ -229,7 +229,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, ComponentTransform &trans_, Compo
         auto overlap = csc_.m_collider.getFullCollisionWith(pb, highest);
         bool aligned = csc_.m_collider.getOrientationDir() < 0;
 
-        if ((overlap & utils::OverlapResult::TOUCH_MIN1_MAX2) && (overlap & utils::OverlapResult::BOTH_OOT))
+        if ((overlap & (utils::OverlapResult::TOUCH_MIN1_MAX2 << 6)) && (overlap & utils::OverlapResult::BOTH_OOT))
         {
             if (csc_.m_collider.m_topAngleCoef != 0)
                 touchedSlope = (pb.getBottomEdge() > csc_.m_collider.m_highestSlopePoint ? csc_.m_collider.m_topAngleCoef : 0.0f);

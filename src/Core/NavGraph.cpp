@@ -29,7 +29,7 @@ std::pair<Connection *, float> NavGraph::findClosestConnection(const Vector2<flo
 
     for (auto &con : m_connections)
     {
-        bool hasOverlap = options_ & con.m_traverses[0] & options_ & con.m_traverses[1] & Traverse::FreeMask;
+        bool hasOverlap = (options_ & con.m_traverses[0] & Traverse::FreeMask) && (options_ & con.m_traverses[1] & Traverse::FreeMask);
         if (hasOverlap)
         {
             auto res = utils::distToLineSegment(m_nodes[con.m_nodes[0]].m_position, m_nodes[con.m_nodes[1]].m_position, pos_);

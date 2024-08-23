@@ -154,9 +154,6 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
         Traverse::makeSignature(false, TraverseTraits::FALL), 
         Traverse::makeSignature(false));
 
-    // TODO: keep active connection while touching it without looking for new one
-
-
     m_playerId = playerId;
     m_camsys.m_playerId = playerId;
     m_hudsys.m_playerId = playerId;

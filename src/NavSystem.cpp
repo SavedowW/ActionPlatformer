@@ -15,6 +15,10 @@ void NavSystem::update()
     auto view = m_reg.view<ComponentTransform, Navigatable>();
     for (auto [idx, trans, nav] : view.each())
     {
+        if (nav.m_checkIfGrounded)
+            if (!m_reg.get<ComponentPhysical>(idx).m_isGrounded)
+                return;
+
         auto newCon = m_graph.findClosestConnection(trans.m_pos, nav.m_validTraitsOwnLocation);
         if (newCon.second <= nav.m_maxRange)
             nav.m_currentOwnConnection = newCon.first;

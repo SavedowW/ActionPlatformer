@@ -12,6 +12,14 @@ void AIState::enter(EntityAnywhere owner_, CharState from_)
         ai.m_requestedOrientation = *m_enterRequestedOrientation;
 }
 
+void AIStateNull::enter(EntityAnywhere owner_, CharState from_)
+{
+    GenericState::enter(owner_, from_);
+    auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
+    ai.m_requestedState.reset();
+    ai.m_requestedOrientation = ORIENTATION::UNSPECIFIED;
+}
+
 AIState &AIState::setEnterRequestedState(std::optional<CharState> enterRequestedState_)
 {
     m_enterRequestedState = enterRequestedState_;
@@ -61,8 +69,12 @@ bool BlindChaseState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     AIState::update(owner_, currentFrame_); 
 
     auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
+    auto &nav = owner_.reg->get<Navigatable>(owner_.idx);
     auto &ownTrans = owner_.reg->get<ComponentTransform>(owner_.idx);
-    auto &tarTrans = owner_.reg->get<ComponentTransform>(m_target.idx);
+    auto &tarTrans = owner_.reg->get<ComponentTransform>(ai.m_chaseTarget);
+
+    if ((nav.m_currentOwnConnection->m_traverses[0] & (1 << Traverse::FallthroughBitID)) || (nav.m_currentOwnConnection->m_traverses[1] & (1 << Traverse::FallthroughBitID)))
+        owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx).setIgnoringObstacles();
 
     auto delta = tarTrans.m_pos - ownTrans.m_pos;
     float range = delta.getLen();
@@ -78,6 +90,33 @@ bool BlindChaseState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     }
 
     return true;
+}
+
+void BlindChaseState::enter(EntityAnywhere owner_, CharState from_)
+{
+    AIState::enter(owner_, from_); 
+
+    auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
+    auto &nav = owner_.reg->get<Navigatable>(owner_.idx);
+    auto &ownTrans = owner_.reg->get<ComponentTransform>(owner_.idx);
+    auto &tarTrans = owner_.reg->get<ComponentTransform>(ai.m_chaseTarget);
+
+    if ((nav.m_currentOwnConnection->m_traverses[0] & (1 << Traverse::FallthroughBitID)) || (nav.m_currentOwnConnection->m_traverses[1] & (1 << Traverse::FallthroughBitID)))
+        owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx).setIgnoringObstacles();
+
+    auto delta = tarTrans.m_pos - ownTrans.m_pos;
+    float range = delta.getLen();
+
+    if (range <= m_idleRange)
+    {
+        ai.m_requestedState = m_idle;
+    }
+    else
+    {
+        ai.m_requestedState = m_walk;
+        ai.m_requestedOrientation = ValueToOrientation(delta.x);
+    }
+
 }
 
 bool ProxySelectionState::update(EntityAnywhere owner_, uint32_t currentFrame_)
@@ -104,22 +143,52 @@ bool ProxySelectionState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     return true;
 }
 
+void MoveTowards::enter(EntityAnywhere owner_, CharState from_)
+{
+    AIState::enter(owner_, from_);
+    m_lastPos = {0.0f, 0.0f};
+
+    auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
+    auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
+    auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
+
+    m_lastPos = ai.m_navigationTarget;
+    auto pb = phys.m_pushbox + trans.m_pos;
+
+    if (!owner_.reg->get<World>(owner_.idx).isOverlappingObstacle(pb))
+        ai.m_requestedOrientation = ValueToOrientation(ai.m_navigationTarget.x - trans.m_pos.x);
+
+    ai.m_requestedState = m_walk;
+}
+
 bool MoveTowards::update(EntityAnywhere owner_, uint32_t currentFrame_)
 {
     AIState::update(owner_, currentFrame_); 
 
     auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
     auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
+    auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
+    auto delta = ai.m_navigationTarget - trans.m_pos;
 
+    ai.m_allowLeaveState = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx).m_ignoredObstacles.empty();
     ai.m_requestedState = m_walk;
+    std::cout << "m_lastPos: " << m_lastPos << std::endl;
     if (m_lastPos != ai.m_navigationTarget)
     {
+        std::cout << "Pos differs\n";
         m_lastPos = ai.m_navigationTarget;
-        auto pb = owner_.reg->get<ComponentPhysical>(owner_.idx).m_pushbox + trans.m_pos;
+        auto pb = phys.m_pushbox + trans.m_pos;
 
-        if (!owner_.reg->get<World>(owner_.idx).isOverlappingObstacle(pb))
+        // TODO: reverse lastpos vs navtarget comparison and obstacle overlap check
+        if (!owner_.reg->get<World>(owner_.idx).isOverlappingObstacle(pb)) // TODO: to component and external system
+        {
+            std::cout << "Overlapping with obstracle\n";
+            ai.m_allowLeaveState = false;
             ai.m_requestedOrientation = ValueToOrientation(ai.m_navigationTarget.x - trans.m_pos.x);
+        }
     }
+
+    std::cout << "d(" << delta << ") " << phys.m_velocity << std::endl;
 
     return true;
 }
@@ -130,7 +199,8 @@ bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
 
     auto &nav = owner_.reg->get<Navigatable>(owner_.idx);
     auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
-    auto pb = owner_.reg->get<ComponentPhysical>(owner_.idx).m_pushbox + trans.m_pos;
+    auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
+    auto pb = phys.m_pushbox + trans.m_pos;
 
     if (!nav.m_currentPath)
     {
@@ -145,33 +215,37 @@ bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
 
     auto *currentcon = &nav.m_currentPath->m_fullGraph[nav.m_currentOwnConnection->m_ownId];
     
-    if (*currentcon->m_nextConnection && currentcon->m_nextConnection != currentcon && pb.includesPoint(nav.m_currentPath->m_graph->getNodePos(currentcon->m_con->m_nodes[currentcon->m_nextNode])))
-        currentcon = *currentcon->m_nextConnection;
-
-    if (currentcon->m_nextConnection == currentcon)
+    if ((!nav.m_checkIfGrounded || phys.m_isGrounded) && *currentcon->m_nextConnection && currentcon->m_nextConnection != currentcon && pb.includesPoint(nav.m_currentPath->m_graph->getNodePos(currentcon->m_con->m_nodes[currentcon->m_nextNode])))
     {
-        if (m_currentState->m_stateId != m_noConnection)
-            switchCurrentState(owner_, m_noConnection);
+        currentcon = *currentcon->m_nextConnection;
+        nav.m_currentOwnConnection = currentcon->m_con;
+    }
+
+    auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
+    std::cout << ai.m_allowLeaveState << std::endl;
+    if (ai.m_allowLeaveState && currentcon->m_nextConnection == currentcon)
+    {
+        if (m_currentState->m_stateId != m_onSuccess)
+            switchCurrentState(owner_, m_onSuccess);
         return true;
     }
 
     if (currentcon->m_nextConnection == nullptr)
     {
-        if (m_currentState->m_stateId != m_noConnection)
+        if (ai.m_allowLeaveState && m_currentState->m_stateId != m_noConnection)
             switchCurrentState(owner_, m_noConnection);
         return true;
     }
 
     auto nextNodePos = nav.m_currentPath->m_graph->getNodePos(currentcon->m_con->m_nodes[currentcon->m_nextNode]);
-    auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
     ai.m_navigationTarget = nextNodePos;
     if (currentcon->m_con->m_traverses[1 - currentcon->m_nextNode] & (1 << Traverse::FallthroughBitID))
         owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx).setIgnoringObstacles();
 
     auto &traverse = currentcon->m_con->m_traverses[1 - currentcon->m_nextNode];
 
-    if (((traverse >> Traverse::ReservedBits) & static_cast<Traverse::TraitT>(TraverseTraits::FALL)) ||
-         ((traverse >> Traverse::ReservedBits) & static_cast<Traverse::TraitT>(TraverseTraits::WALK)))
+    if (phys.m_isGrounded && (((traverse >> Traverse::ReservedBits) & static_cast<Traverse::TraitT>(TraverseTraits::FALL)) ||
+         ((traverse >> Traverse::ReservedBits) & static_cast<Traverse::TraitT>(TraverseTraits::WALK))))
     {
         if (m_currentState->m_stateId != m_moveTowards)
             switchCurrentState(owner_, m_moveTowards);
@@ -183,7 +257,7 @@ bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
     }
     else
     {
-        if (m_currentState->m_stateId != m_noConnection)
+        if (ai.m_allowLeaveState && m_currentState->m_stateId != m_noConnection)
             switchCurrentState(owner_, m_noConnection);
     }
 

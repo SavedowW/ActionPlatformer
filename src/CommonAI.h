@@ -8,7 +8,10 @@ struct ComponentAI
     std::optional<CharState> m_requestedState;
     ORIENTATION m_requestedOrientation = ORIENTATION::UNSPECIFIED;
     Vector2<float> m_navigationTarget;
+    bool m_isNavigating = false;
+    float m_additionalAccel = 0.0f;
     entt::entity m_chaseTarget;
+    bool m_allowLeaveState = true;
 };
 
 class AIState: public GenericState
@@ -23,6 +26,21 @@ public:
 
     AIState &setEnterRequestedState(std::optional<CharState> m_enterRequestedState_);
     AIState &setEnterRequestedOrientation(std::optional<ORIENTATION> enterRequestedOrientation_);
+
+protected:
+    std::optional<CharState> m_enterRequestedState;
+    std::optional<ORIENTATION> m_enterRequestedOrientation;
+};
+
+class AIStateNull: public GenericState
+{
+public:
+    template<typename PLAYER_STATE_T>
+    AIStateNull(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_) :
+        GenericState(stateId_, stateName_, std::move(transitionableFrom_))
+    {}
+
+    virtual void enter(EntityAnywhere owner_, CharState from_) override;
 
 protected:
     std::optional<CharState> m_enterRequestedState;
@@ -60,20 +78,19 @@ class BlindChaseState: public AIState
 public:
     template<typename PLAYER_STATE_T>
     BlindChaseState(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_,
-    PLAYER_STATE_T idle_, PLAYER_STATE_T walk_, EntityAnywhere target_, float idleRange_) :
+    PLAYER_STATE_T idle_, PLAYER_STATE_T walk_, float idleRange_) :
         AIState(stateId_, stateName_, std::move(transitionableFrom_)),
         m_idle(static_cast<CharState>(idle_)),
         m_walk(static_cast<CharState>(walk_)),
-        m_target(target_),
         m_idleRange(idleRange_)
     {}
 
+    virtual void enter(EntityAnywhere owner_, CharState from_) override;
     virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
 
 protected:
     CharState m_idle;
     CharState m_walk;
-    EntityAnywhere m_target;
     float m_idleRange;
 };
 
@@ -111,11 +128,11 @@ public:
         m_walk(static_cast<CharState>(walk_))
     {}
 
+    virtual void enter(EntityAnywhere owner_, CharState from_) override;
     virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
 
 private:
     Vector2<float> m_lastPos;
-    ORIENTATION m_continuedOrientation = ORIENTATION::UNSPECIFIED;
     CharState m_walk;
 };
 
@@ -140,11 +157,12 @@ class NavigateGraphChase : public NodeState
 public:
     template<typename PLAYER_STATE_T>
     NavigateGraphChase(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_,
-        PLAYER_STATE_T moveTowards_, PLAYER_STATE_T jumpTowards, PLAYER_STATE_T noConnection_) :
+        PLAYER_STATE_T moveTowards_, PLAYER_STATE_T jumpTowards, PLAYER_STATE_T noConnection_, PLAYER_STATE_T onSuccess_) :
         NodeState(stateId_, stateName_, std::move(transitionableFrom_)),
         m_moveTowards(static_cast<CharState>(moveTowards_)),
         m_jumpTowards(static_cast<CharState>(jumpTowards)),
-        m_noConnection(static_cast<CharState>(noConnection_))
+        m_noConnection(static_cast<CharState>(noConnection_)),
+        m_onSuccess(static_cast<CharState>(onSuccess_))
     {}
     
     virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
@@ -153,6 +171,7 @@ private:
     CharState m_noConnection;
     CharState m_moveTowards;
     CharState m_jumpTowards;
+    CharState m_onSuccess;
 };
 
 #endif

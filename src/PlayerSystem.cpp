@@ -290,7 +290,6 @@ void PlayerSystem::setup(entt::entity playerId_)
     sm.setInitialState(CharacterState::FLOAT);
 
     nav.m_currentOwnConnection = nullptr;
-    nav.m_isFallthroughOk = true;
     nav.m_maxRange = 60.0f;
     nav.m_validTraitsOwnLocation = Traverse::makeSignature(true, TraverseTraits::WALK);
 }

@@ -188,8 +188,8 @@ struct Navigatable
         std::cout << "Nav created\n";
     }
 
-    Connection *m_currentOwnConnection = nullptr;
-    bool m_isFallthroughOk = true;
+    const Connection *m_currentOwnConnection = nullptr;
+    bool m_checkIfGrounded = false;
     Traverse::TraitT m_validTraitsOwnLocation;
     Traverse::TraitT m_traverseTraits;
     float m_maxRange = 0.0f;
