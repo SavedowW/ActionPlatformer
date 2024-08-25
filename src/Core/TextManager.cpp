@@ -455,9 +455,9 @@ void TextManager::renderText(const std::string &text_, int fontid_, Vector2<floa
     {
         auto &sym = m_fonts[fontid_][ch.getu8()];
         if (cam_)
-            m_renderer->renderTexture(sym.m_tex, pos_.x, pos_.y + sym.m_miny, sym.m_w, sym.m_h, *cam_, 0, SDL_FLIP_NONE);
+            m_renderer->renderTexture(sym.m_tex, pos_.x, pos_.y, sym.m_w, sym.m_h, *cam_, 0, SDL_FLIP_NONE);
         else
-            m_renderer->renderTexture(sym.m_tex, pos_.x, pos_.y + sym.m_miny, sym.m_w, sym.m_h);
+            m_renderer->renderTexture(sym.m_tex, pos_.x, pos_.y, (float)sym.m_w, (float)sym.m_h);
         pos_.x += sym.m_advance;
     }
 }
