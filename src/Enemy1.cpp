@@ -3,7 +3,7 @@
 void AimedPrejump::onOutdated(EntityAnywhere owner_)
 {
     auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
-    auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
+    const auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
     auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
 
     ai.m_isNavigating = true;
@@ -36,18 +36,18 @@ void AimedPrejump::onOutdated(EntityAnywhere owner_)
 
     phys.m_velocity += initialImpulse;
 
-    std::cout << "New velocity: " << phys.m_velocity << " (" << ai.m_additionalAccel << ")" << std::endl;
+    //std::cout << "New velocity: " << phys.m_velocity << " (" << ai.m_additionalAccel << ")" << std::endl;
 
     NPCState::onOutdated(owner_);
 }
 
 bool AimedFloat::update(EntityAnywhere owner_, uint32_t currentFrame_)
 {
-    auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
+    const auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
 
     if (ai.m_isNavigating)
     {
-        auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
+        const auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
         auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
         //auto pb = phys.m_pushbox + trans.m_pos;
         auto delta = ai.m_navigationTarget - trans.m_pos;
@@ -56,7 +56,7 @@ bool AimedFloat::update(EntityAnywhere owner_, uint32_t currentFrame_)
         if (delta.x != 0.0f)
             phys.m_velocity.x += utils::signof(delta.x) * ai.m_additionalAccel;
 
-        std::cout << "d(" << delta << ") " << phys.m_velocity << std::endl;
+        //std::cout << "d(" << delta << ") vel:{" << phys.m_velocity << "} inr:{" << phys.m_inertia << "} pos:{" << trans.m_pos << "}" << std::endl;
     }
 
     return NPCState::update(owner_, currentFrame_);

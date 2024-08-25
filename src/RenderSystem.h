@@ -12,14 +12,14 @@ struct RenderSystem
     void update();
     void draw();
 
-    void drawInstance(ComponentTransform &trans_, ComponentAnimationRenderable &ren_);
-    void drawParticle(ComponentTransform &trans_, ComponentParticlePrimitive &partcl_, ComponentAnimationRenderable &ren_);
-    void drawCollider(ComponentTransform &trans_, ComponentPhysical &phys_);
-    void drawCollider(ComponentStaticCollider &cld_);
-    void drawObstacle(ComponentStaticCollider &cld_);
-    void drawTrigger(ComponentTrigger &cld_);
+    void drawInstance(const ComponentTransform &trans_, const ComponentAnimationRenderable &ren_);
+    void drawParticle(const ComponentTransform &trans_, const ComponentParticlePrimitive &partcl_, const ComponentAnimationRenderable &ren_);
+    void drawCollider(const ComponentTransform &trans_, const ComponentPhysical &phys_);
+    void drawCollider(const ComponentStaticCollider &cld_);
+    void drawObstacle(const ComponentStaticCollider &cld_);
+    void drawTrigger(const ComponentTrigger &cld_);
     void drawFocusArea(CameraFocusArea &cfa_);
-    void drawTransform(ComponentTransform &cfa_);
+    void drawTransform(const ComponentTransform &cfa_);
 
 
     entt::registry &m_reg;

@@ -30,6 +30,23 @@ namespace utf8
         return res;
     }
 
+    template <typename T>
+    inline std::string numericToString(T value_, const std::string &chunkSeparator_)
+    {
+        std::string res = "";
+        const uint8_t *ptr = reinterpret_cast<const uint8_t*>(&value_);
+        int8_t sz = sizeof(T);
+        while (--sz >= 0)
+        {
+            std::bitset<8> bs(ptr[sz]);
+            res += bs.to_string();
+            if (sz > 0)
+                res += chunkSeparator_;
+        }
+
+        return res;
+    }
+
     /*
      Take pointer to bytes with UTF-8 character sequence, read size of current byte
      Does not check whether or not it points at size, returns 1 if its not size at all

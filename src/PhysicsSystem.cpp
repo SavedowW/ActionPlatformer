@@ -29,7 +29,7 @@ void PhysicsSystem::updatePhysics()
 {
     auto viewPhys = m_reg.view<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, PhysicalEvents>();
     auto viewPhysSimplified = m_reg.view<ComponentTransform, ComponentParticlePhysics>();
-    auto viewscld = m_reg.view<ComponentStaticCollider>();
+    const auto viewscld = m_reg.view<ComponentStaticCollider>();
 
     for (auto [idx, trans, phys, obsfall, ev] : viewPhys.each())
         proceedEntity(viewscld, trans, phys, obsfall, ev);
@@ -68,7 +68,18 @@ void PhysicsSystem::updatePhysicalEvents()
     }
 }
 
-void PhysicsSystem::proceedEntity(auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_)
+void PhysicsSystem::updateOverlappedObstacles()
+{
+    auto viewTransPhysObs = m_reg.view<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough>();
+    auto viewColliders = m_reg.view<ComponentStaticCollider>();
+    for (auto [idx, trans, phys, obsfallthrough] : viewTransPhysObs.each())
+    {
+        resetEntityObstacles(trans, phys, obsfallthrough, viewColliders);
+        obsfallthrough.m_isIgnoringObstacles.update();
+    }
+}
+
+void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_)
 {
     auto oldPos = trans_.m_pos;
 
@@ -212,10 +223,11 @@ void PhysicsSystem::proceedEntity(auto &clds_, ComponentTransform &trans_, Compo
             if (overlapPortion >= 0.15)
             {
                 //std::cout << "Hard collision, limiting speed\n";
-                if (phys_.m_velocity.x > 0)
+                if (phys_.m_velocity.x + phys_.m_inertia.x > 0)
+                {
                     phys_.m_velocity.x = 0;
-                if (phys_.m_inertia.x > 0)
                     phys_.m_inertia.x = 0;
+                }
             }
         }
     };
@@ -271,10 +283,11 @@ void PhysicsSystem::proceedEntity(auto &clds_, ComponentTransform &trans_, Compo
             if (overlapPortion >= 0.15)
             {
                 //std::cout << "Hard collision, limiting speed\n";
-                if (phys_.m_velocity.x < 0)
+                if (phys_.m_velocity.x + phys_.m_inertia.x < 0)
+                {
                     phys_.m_velocity.x = 0;
-                if (phys_.m_inertia.x < 0)
                     phys_.m_inertia.x = 0;
+                }
             }
         }
     };
@@ -320,8 +333,6 @@ void PhysicsSystem::proceedEntity(auto &clds_, ComponentTransform &trans_, Compo
         }
     }
 
-    // TODO: Takes around 60% of a function, maybe its better to add a "marker" component for obstacles
-    resetEntityObstacles(trans_, phys_, obsFallthrough_);
     phys_.m_lastSlopeAngle = phys_.m_onSlopeWithAngle;
     phys_.m_onSlopeWithAngle = touchedSlope;
 
@@ -336,11 +347,9 @@ void PhysicsSystem::proceedEntity(auto &clds_, ComponentTransform &trans_, Compo
     }
 
     phys_.m_appliedOffset = trans_.m_pos - oldPos;
-
-    obsFallthrough_.m_isIgnoringObstacles.update();
 }
 
-void PhysicsSystem::proceedEntity(auto &clds_, ComponentTransform &trans_, ComponentParticlePhysics &phys_)
+void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_, ComponentParticlePhysics &phys_)
 {
     // Common stuff
     phys_.m_velocity += phys_.m_gravity;
@@ -352,7 +361,7 @@ void PhysicsSystem::proceedEntity(auto &clds_, ComponentTransform &trans_, Compo
     trans_.m_pos += offset;
 }
 
-bool PhysicsSystem::magnetEntity(auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_)
+bool PhysicsSystem::magnetEntity(const auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, const ComponentObstacleFallthrough &obsFallthrough_)
 {
     if (phys_.m_magnetLimit <= 0.0f)
         return false;
@@ -378,7 +387,7 @@ bool PhysicsSystem::magnetEntity(auto &clds_, ComponentTransform &trans_, Compon
     return false;
 }
 
-std::pair<bool, const SlopeCollider*> PhysicsSystem::getHighestVerticalMagnetCoord(auto &clds_, const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_)
+std::pair<bool, const SlopeCollider*> PhysicsSystem::getHighestVerticalMagnetCoord(const auto &clds_, const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_)
 {
     float baseCoord = coord_;
     float bot = cld_.getBottomEdge();
@@ -406,13 +415,13 @@ std::pair<bool, const SlopeCollider*> PhysicsSystem::getHighestVerticalMagnetCoo
     return {isFound, foundcld};
 }
 
-void PhysicsSystem::resetEntityObstacles(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_)
+void PhysicsSystem::resetEntityObstacles(const ComponentTransform &trans_, const ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, const auto &clds_)
 {
-    auto touched = getTouchedObstacles(phys_.m_pushbox + trans_.m_pos);
+    updateTouchedObstacles(phys_.m_pushbox + trans_.m_pos, obsFallthrough_, clds_);
     std::set<int> res;
     std::set_intersection(
         obsFallthrough_.m_ignoredObstacles.begin(), obsFallthrough_.m_ignoredObstacles.end(),
-        touched.begin(), touched.end(),
+        obsFallthrough_.m_overlappedObstacles.begin(), obsFallthrough_.m_overlappedObstacles.end(),
         std::inserter(res, res.begin()));
 
     //if (obsFallthrough_.m_ignoredObstacles.size() != res.size())
@@ -421,20 +430,18 @@ void PhysicsSystem::resetEntityObstacles(ComponentTransform &trans_, ComponentPh
     obsFallthrough_.m_ignoredObstacles = res;
 }
 
-std::set<int> PhysicsSystem::getTouchedObstacles(const Collider &pb_)
+void PhysicsSystem::updateTouchedObstacles(const Collider &pb_, ComponentObstacleFallthrough &obsFallthrough_, const auto &clds_)
 {
-    auto viewObstacles = m_reg.view<ComponentStaticCollider>();
-    std::set<int> obstacleIds;
+    obsFallthrough_.m_overlappedObstacles.clear();
+
     float dumped = 0.0f;
 
-    for (auto [idx, cld] : viewObstacles.each())
+    for (auto [idx, cld] : clds_.each())
     {
-        if (obstacleIds.contains(cld.m_obstacleId))
+        if (obsFallthrough_.m_overlappedObstacles.contains(cld.m_obstacleId))
             continue;
 
         if (!!(cld.m_collider.getFullCollisionWith(pb_, dumped) & utils::OverlapResult::BOTH_OOT))
-            obstacleIds.insert(cld.m_obstacleId);
+            obsFallthrough_.m_overlappedObstacles.insert(cld.m_obstacleId);
     }
-
-    return obstacleIds;
 }

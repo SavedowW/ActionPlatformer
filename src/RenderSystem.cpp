@@ -20,13 +20,13 @@ void RenderSystem::update()
 
 void RenderSystem::draw()
 {
-    auto viewColliders = m_reg.view<ComponentStaticCollider>();
-    auto viewTriggers = m_reg.view<ComponentTrigger>();
-    auto viewInstances = m_reg.view<ComponentTransform, ComponentPhysical, ComponentAnimationRenderable>();
-    auto viewParticles = m_reg.view<ComponentTransform, ComponentParticlePhysics, ComponentParticlePrimitive, ComponentAnimationRenderable>();
-    auto viewPhysical = m_reg.view<ComponentTransform, ComponentPhysical>();
+    const auto viewColliders = m_reg.view<ComponentStaticCollider>();
+    const auto viewTriggers = m_reg.view<ComponentTrigger>();
+    const auto viewInstances = m_reg.view<ComponentTransform, ComponentPhysical, ComponentAnimationRenderable>();
+    const auto viewParticles = m_reg.view<ComponentTransform, ComponentParticlePhysics, ComponentParticlePrimitive, ComponentAnimationRenderable>();
+    const auto viewPhysical = m_reg.view<ComponentTransform, ComponentPhysical>();
     auto viewFocuses = m_reg.view<CameraFocusArea>();
-    auto viewTransforms = m_reg.view<ComponentTransform>();
+    const auto viewTransforms = m_reg.view<ComponentTransform>();
 
     if constexpr (gamedata::debug::drawColliders)
     {
@@ -70,7 +70,7 @@ void RenderSystem::draw()
     }
 }
 
-void RenderSystem::drawInstance(ComponentTransform &trans_, ComponentAnimationRenderable &ren_)
+void RenderSystem::drawInstance(const ComponentTransform &trans_, const ComponentAnimationRenderable &ren_)
 {
     if (ren_.m_currentAnimation != nullptr)
     {
@@ -96,7 +96,7 @@ void RenderSystem::drawInstance(ComponentTransform &trans_, ComponentAnimationRe
     }
 }
 
-void RenderSystem::drawParticle(ComponentTransform &trans_, ComponentParticlePrimitive &partcl_, ComponentAnimationRenderable &ren_)
+void RenderSystem::drawParticle(const ComponentTransform &trans_, const ComponentParticlePrimitive &partcl_, const ComponentAnimationRenderable &ren_)
 {
     if (ren_.m_currentAnimation != nullptr)
     {
@@ -127,7 +127,7 @@ void RenderSystem::drawParticle(ComponentTransform &trans_, ComponentParticlePri
     }
 }
 
-void RenderSystem::drawCollider(ComponentTransform &trans_, ComponentPhysical &phys_)
+void RenderSystem::drawCollider(const ComponentTransform &trans_, const ComponentPhysical &phys_)
 {
     auto pb = phys_.m_pushbox + trans_.m_pos;
     m_renderer.drawCollider(pb, {238, 195, 154, 50}, {238, 195, 154, 100}, m_camera);
@@ -140,17 +140,17 @@ void RenderSystem::drawCollider(ComponentTransform &trans_, ComponentPhysical &p
     m_renderer.drawLine(TR, BR, {0, 255, 0, 100}, m_camera);
 }
 
-void RenderSystem::drawCollider(ComponentStaticCollider &cld_)
+void RenderSystem::drawCollider(const ComponentStaticCollider &cld_)
 {
     m_renderer.drawCollider(cld_.m_collider, {255, 0, 0, Uint8(cld_.m_isEnabled ? 100 : 0)}, {255, 0, 0, 255}, m_camera);
 }
 
-void RenderSystem::drawObstacle(ComponentStaticCollider &cld_)
+void RenderSystem::drawObstacle(const ComponentStaticCollider &cld_)
 {
     m_renderer.drawCollider(cld_.m_collider, {50, 50, 255, Uint8(cld_.m_isEnabled ? 100 : 0)}, {50, 50, 255, 255}, m_camera);
 }
 
-void RenderSystem::drawTrigger(ComponentTrigger &cld_)
+void RenderSystem::drawTrigger(const ComponentTrigger &cld_)
 {
     m_renderer.drawCollider(cld_.m_trigger, {255, 50, 255, 50}, {255, 50, 255, 100}, m_camera);
 }
@@ -160,7 +160,7 @@ void RenderSystem::drawFocusArea(CameraFocusArea &cfa_)
     cfa_.draw(m_camera);
 }
 
-void RenderSystem::drawTransform(ComponentTransform &cfa_)
+void RenderSystem::drawTransform(const ComponentTransform &cfa_)
 {
     m_renderer.drawLine(cfa_.m_pos - Vector2<float>{0.0f, 5.0f}, cfa_.m_pos + Vector2<float>{0.0f, 5.0f}, {0, 0, 0, 255}, m_camera);
     m_renderer.drawLine(cfa_.m_pos - Vector2<float>{5.0f, 0.0f}, cfa_.m_pos + Vector2<float>{5.0f, 0.0f}, {0, 0, 0, 255}, m_camera);

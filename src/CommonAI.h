@@ -132,7 +132,6 @@ public:
     virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
 
 private:
-    Vector2<float> m_lastPos;
     CharState m_walk;
 };
 

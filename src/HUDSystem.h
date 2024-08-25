@@ -13,7 +13,7 @@ public:
     void draw();
     void drawCommonDebug();
     void drawPlayerDebug();
-    void drawNPCDebug(ComponentTransform &trans_, ComponentPhysical &phys_, StateMachine &sm_, ComponentAI &ai_);
+    void drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_, const StateMachine &sm_, const ComponentAI &ai_);
 
     entt::entity m_playerId;
 

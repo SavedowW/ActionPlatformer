@@ -24,8 +24,8 @@ void DynamicColliderSystem::update()
 
 bool DynamicColliderSystem::isOverlappingWithDynamic(const SlopeCollider &cld_)
 {
-    auto dynamics = m_reg.view<ComponentTransform, ComponentPhysical>();
-    for (auto [idx, trans, phys] : dynamics.each())
+    const auto dynamics = m_reg.view<ComponentTransform, ComponentPhysical>();
+    for (const auto [idx, trans, phys] : dynamics.each())
     {
         auto pb = phys.m_pushbox + trans.m_pos;
         float dump = 0.0f;
@@ -39,8 +39,8 @@ bool DynamicColliderSystem::isOverlappingWithDynamic(const SlopeCollider &cld_)
 
 bool DynamicColliderSystem::isObstacleOverlappingWithDynamic(const SlopeCollider &cld_, int obstacleId_)
 {
-    auto dynamics = m_reg.view<ComponentTransform, ComponentPhysical>();
-    for (auto [idx, trans, phys] : dynamics.each())
+    const auto dynamics = m_reg.view<ComponentTransform, ComponentPhysical>();
+    for (const auto [idx, trans, phys] : dynamics.each())
     {
         auto pb = phys.m_pushbox + trans.m_pos;
         float dump = 0.0f;

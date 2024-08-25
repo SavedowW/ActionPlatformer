@@ -12,8 +12,8 @@ NavSystem::NavSystem(entt::registry &reg_, Application &app_, NavGraph &graph_) 
 
 void NavSystem::update()
 {
-    auto view = m_reg.view<ComponentTransform, Navigatable>();
-    for (auto [idx, trans, nav] : view.each())
+    const auto view = m_reg.view<ComponentTransform, Navigatable>();
+    for (const auto [idx, trans, nav] : view.each())
     {
         if (nav.m_checkIfGrounded)
             if (!m_reg.get<ComponentPhysical>(idx).m_isGrounded)
@@ -37,8 +37,8 @@ void NavSystem::draw(Camera &cam_)
 {
     if constexpr (gamedata::debug::drawCurrentConnection)
     {
-        auto view = m_reg.view<ComponentTransform, Navigatable>();
-        for (auto [idx, trans, nav] : view.each())
+        const auto view = m_reg.view<ComponentTransform, Navigatable>();
+        for (const auto [idx, trans, nav] : view.each())
         {
             if (nav.m_currentOwnConnection)
             {

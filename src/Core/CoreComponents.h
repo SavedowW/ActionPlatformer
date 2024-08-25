@@ -141,6 +141,7 @@ struct ComponentObstacleFallthrough
 
     FrameTimer<false> m_isIgnoringObstacles;
     std::set<int> m_ignoredObstacles;
+    std::set<int> m_overlappedObstacles;
 };
 
 struct ComponentAnimationRenderable

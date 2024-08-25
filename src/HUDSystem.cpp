@@ -21,7 +21,7 @@ HudSystem::HudSystem(entt::registry &reg_, Application &app_, Camera &cam_, int 
 
 void HudSystem::draw()
 {
-    auto npcs = m_reg.view<ComponentTransform, ComponentPhysical, StateMachine, ComponentAI>();
+    const auto npcs = m_reg.view<ComponentTransform, ComponentPhysical, StateMachine, ComponentAI>();
 
     m_renderer.switchToHUD({0, 0, 0, 0});
     drawCommonDebug();
@@ -29,7 +29,7 @@ void HudSystem::draw()
 
     if constexpr (gamedata::debug::drawNpsDebug)
     {
-        for (auto [idx, trans, phys, sm, ai] : npcs.each())
+        for (const auto [idx, trans, phys, sm, ai] : npcs.each())
         {
             drawNPCDebug(trans, phys, sm, ai);
         }
@@ -51,11 +51,11 @@ void HudSystem::drawCommonDebug()
 
 void HudSystem::drawPlayerDebug()
 {
-    auto &obsfall = m_reg.get<ComponentObstacleFallthrough>(m_playerId);
-    auto &ptransform = m_reg.get<ComponentTransform>(m_playerId);
-    auto &pphysical = m_reg.get<ComponentPhysical>(m_playerId);
-    auto &psm = m_reg.get<StateMachine>(m_playerId);
-    auto &pinp = m_reg.get<ComponentPlayerInput>(m_playerId);
+    const auto &obsfall = m_reg.get<ComponentObstacleFallthrough>(m_playerId);
+    const auto &ptransform = m_reg.get<ComponentTransform>(m_playerId);
+    const auto &pphysical = m_reg.get<ComponentPhysical>(m_playerId);
+    const auto &psm = m_reg.get<StateMachine>(m_playerId);
+    const auto &pinp = m_reg.get<ComponentPlayerInput>(m_playerId);
 
     std::string ignoredObstacles = "";
     for (const auto &el : obsfall.m_ignoredObstacles)
@@ -107,7 +107,7 @@ void HudSystem::drawPlayerDebug()
     }
 }
 
-void HudSystem::drawNPCDebug(ComponentTransform &trans_, ComponentPhysical &phys_, StateMachine &sm_, ComponentAI &ai_)
+void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_, const StateMachine &sm_, const ComponentAI &ai_)
 {
     auto txt1 = sm_.getName();
     auto txt2 = ai_.m_sm.getName();

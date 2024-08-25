@@ -48,7 +48,7 @@ public:
         if constexpr (HOLD_WHILE_REQUESTED)
         {
             auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
-            auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
+            const auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
 
             if (ai.m_requestedState.has_value() && m_stateId == ai.m_requestedState && 
                 (ai.m_requestedOrientation == ORIENTATION::UNSPECIFIED || ai.m_requestedOrientation == trans.m_orientation))

@@ -21,7 +21,7 @@ public:
     bool isOverlappingObstacle(const Collider &cld_) const;
     EntityAnywhere getOverlappedTrigger(const Collider &cld_, Trigger::Tag tag_) const;
     bool touchingWallAt(ORIENTATION checkSide_, const Vector2<float> &pos_) const;
-    bool touchingGround(const Collider &cld_, ComponentObstacleFallthrough &fallthrough_) const;
+    bool touchingGround(const Collider &cld_, const ComponentObstacleFallthrough &fallthrough_) const;
     Camera &getCamera();
     ParticleSystem &getParticleSys();
     NavSystem &getNavsys();

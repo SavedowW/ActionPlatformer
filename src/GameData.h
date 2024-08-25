@@ -27,7 +27,7 @@ namespace gamedata
         inline constexpr bool drawDebugTextures = false;
         inline constexpr uint32_t debugPathDisplay = 15;
 
-        inline constexpr bool dumpSystemDuration = false;
+        inline constexpr bool dumpSystemDuration = true;
     }
 
     namespace global
@@ -38,7 +38,7 @@ namespace gamedata
         inline constexpr int numberOfLevels = 2;
         inline constexpr int initialLevelId = 1;
         inline constexpr Vector2<int> defaultWindowResolution = {1280, 720};
-        inline constexpr Vector2<float> baseResolution = {640.0f, 360.0f}; // 320 x 180 или 480 x 270
+        inline constexpr Vector2<float> baseResolution = {320.0f, 180.0f}; // 320 x 180 or 480 x 270
         inline constexpr Vector2<float> maxCameraSize = {640.0f, 360.0f};
         inline constexpr Vector2<float> minCameraSize = {320.0f, 180.0f};
         inline constexpr float baseCameraScale = 1.0f;

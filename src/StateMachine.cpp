@@ -292,8 +292,8 @@ bool GenericState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     const auto &partemplateLoop = m_particlesLoopable[currentFrame_ % m_loopDuration];
     if (partemplate.count || partemplateLoop.count)
     {
-        auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
-        auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
+        const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
+        const auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
         auto &world = owner_.reg->get<World>(owner_.idx);
 
         if (partemplate.count)
@@ -315,9 +315,8 @@ bool GenericState::update(EntityAnywhere owner_, uint32_t currentFrame_)
 
 bool PhysicalState::update(EntityAnywhere owner_, uint32_t currentFrame_)
 {
-    auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
+    const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
     auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
-    auto &animrnd = owner_.reg->get<ComponentAnimationRenderable>(owner_.idx);
 
     // Handle velocity and inertia changes
     if (m_usingUpdateMovement)

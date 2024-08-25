@@ -81,7 +81,7 @@ public:
     {
         auto res = PhysicalState::update(owner_, currentFrame_);
 
-        auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
+        const auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
         auto &compFallthrough = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
         if (compInput.m_inputResolver->getInputQueue()[0].m_inputs.at(INPUT_BUTTON::DOWN) == INPUT_BUTTON_STATE::PRESSED)
             compFallthrough.setIgnoringObstacles();
@@ -92,8 +92,8 @@ public:
         if (!ATTEMPT_PROCEED)
             return true;
 
-        auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
-        auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
+        const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
+        const auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
 
         auto orientation = transform.m_orientation;
         const auto &inq = compInput.m_inputResolver->getInputQueue();
@@ -116,9 +116,9 @@ public:
         if (PhysicalState::isPossible(owner_) == ORIENTATION::UNSPECIFIED)
             return ORIENTATION::UNSPECIFIED;
 
-        auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
-        auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
-        auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
+        const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
+        const auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
+        const auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
 
         auto orientation = transform.m_orientation;
         const auto &inq = compInput.m_inputResolver->getInputQueue();
@@ -172,7 +172,7 @@ public:
     {
         ParentAction::enter(owner_, from_);
 
-        auto &fallthrough = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
+        const auto &fallthrough = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
         auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
         //std::cout << fallthrough.m_ignoredObstacles.size() << std::endl;
         if (fallthrough.isIgnoringAllObstacles() && phys.getPosOffest().x * phys.m_lastSlopeAngle > 0.0f)
@@ -275,7 +275,7 @@ public:
     {
         ParentAction::update(owner_, currentFrame_);
 
-        auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
+        const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
         auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
         auto &cworld = owner_.reg->get<World>(owner_.idx);
         auto pb = physical.m_pushbox + transform.m_pos;
@@ -316,11 +316,11 @@ public:
         if (PhysicalState::isPossible(owner_) == ORIENTATION::UNSPECIFIED)
             return ORIENTATION::UNSPECIFIED;
 
-        auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
-        auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
-        auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
-        auto &cworld = owner_.reg->get<World>(owner_.idx);
-        auto &cobs = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
+        const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
+        const auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
+        const auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
+        const auto &cworld = owner_.reg->get<World>(owner_.idx);
+        const auto &cobs = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
 
         const auto &inq = compInput.m_inputResolver->getInputQueue();
         auto pb = physical.m_pushbox + transform.m_pos;
@@ -381,7 +381,7 @@ public:
 
     virtual void onOutdated(EntityAnywhere owner_)
     {
-        auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
+        const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
         auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
         auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
         auto &world = owner_.reg->get<World>(owner_.idx);

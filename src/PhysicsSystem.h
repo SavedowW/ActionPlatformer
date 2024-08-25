@@ -11,15 +11,16 @@ struct PhysicsSystem
     void updateSMs();
     void updatePhysics();
     void updatePhysicalEvents();
+    void updateOverlappedObstacles();
 
-    void proceedEntity(auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_);
-    void proceedEntity(auto &clds_, ComponentTransform &trans_, ComponentParticlePhysics &phys_);
+    void proceedEntity(const auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_);
+    void proceedEntity(const auto &clds_, ComponentTransform &trans_, ComponentParticlePhysics &phys_);
     
-    bool magnetEntity(auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_);
-    std::pair<bool, const SlopeCollider*> getHighestVerticalMagnetCoord(auto &clds_, const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_);
+    bool magnetEntity(const auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, const ComponentObstacleFallthrough &obsFallthrough_);
+    std::pair<bool, const SlopeCollider*> getHighestVerticalMagnetCoord(const auto &clds_, const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_);
 
-    void resetEntityObstacles(ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_);
-    std::set<int> getTouchedObstacles(const Collider &pb_);
+    void resetEntityObstacles(const ComponentTransform &trans_, const ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, const auto &clds_);
+    void updateTouchedObstacles(const Collider &pb_, ComponentObstacleFallthrough &obsFallthrough_, const auto &clds_);
 
     entt::registry &m_reg;
     Vector2<float> m_levelSize;

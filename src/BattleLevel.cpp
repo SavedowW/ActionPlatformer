@@ -239,9 +239,17 @@ void BattleLevel::update()
 
     /*
         ComponentStaticCollider - read
-        Transform, physics, fallthrough, PhysicalEvents - read / write
+        Transform, physics, fallthrough, PhysicalEvents, ComponentParticlePhysics - read / write
     */
     m_physsys.updatePhysics();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("m_physsys.updatePhysics(); ");
+    
+    /*
+        ComponentStaticCollider, transform, physics - read
+        fallthrough - read / write
+    */
+    m_physsys.updateOverlappedObstacles();
     if constexpr (gamedata::debug::dumpSystemDuration)
         profile.profileDumpAndBegin("m_physsys.updatePhysics(); ");
 

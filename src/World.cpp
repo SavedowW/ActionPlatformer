@@ -81,7 +81,7 @@ bool World::touchingWallAt(ORIENTATION checkSide_, const Vector2<float> &pos_) c
     return false;
 }
 
-bool World::touchingGround(const Collider &cld_, ComponentObstacleFallthrough &fallthrough_) const
+bool World::touchingGround(const Collider &cld_, const ComponentObstacleFallthrough &fallthrough_) const
 {
     auto cldview = m_registry.view<ComponentStaticCollider>();
     for (auto [idx, cld] : cldview.each())
