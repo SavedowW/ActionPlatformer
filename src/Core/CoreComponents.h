@@ -81,6 +81,9 @@ struct ComponentPhysical
     // Used to calculate camera offset
     Vector2<float> m_appliedOffset;
 
+    // Offset enforced by dynamic colliders, used for things like inertia
+    Vector2<float> m_enforcedOffset;
+
     void velocityToInertia();
     Vector2<float> getPosOffest() const;
 };
@@ -201,6 +204,23 @@ struct Navigatable
     {
         std::cout << "Nav destroyed\n";
     }
+};
+
+template<size_t LAYER>
+struct RenderLayer
+{
+    static_assert(LAYER < gamedata::global::renderLayerCount, "Layer does not exist");
+};
+
+struct MoveCollider2Points
+{
+    MoveCollider2Points(const Vector2<float> &point1_, const Vector2<float> &point2_, float duration_);
+
+    Vector2<float> m_point1;
+    Vector2<float> m_point2;
+    float m_duration;
+    FrameTimer<true> m_timer;
+    bool m_toSecond;
 };
 
 #endif

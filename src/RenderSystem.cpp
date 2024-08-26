@@ -20,10 +20,10 @@ void RenderSystem::update()
 
 void RenderSystem::draw()
 {
+    EXPECTED_RENDER_LAYERS(3);
+
     const auto viewColliders = m_reg.view<ComponentStaticCollider>();
     const auto viewTriggers = m_reg.view<ComponentTrigger>();
-    const auto viewInstances = m_reg.view<ComponentTransform, ComponentPhysical, ComponentAnimationRenderable>();
-    const auto viewParticles = m_reg.view<ComponentTransform, ComponentParticlePhysics, ComponentParticlePrimitive, ComponentAnimationRenderable>();
     const auto viewPhysical = m_reg.view<ComponentTransform, ComponentPhysical>();
     auto viewFocuses = m_reg.view<CameraFocusArea>();
     const auto viewTransforms = m_reg.view<ComponentTransform>();
@@ -45,11 +45,9 @@ void RenderSystem::draw()
             drawTrigger(trg);
     }
 
-    for (auto [idx, trans, phys, partcl, ren] : viewParticles.each())
-        drawParticle(trans, partcl, ren);
-
-    for (auto [idx, trans, phys, inst] : viewInstances.each())
-        drawInstance(trans, inst);
+    handleLayer<0>();
+    handleLayer<1>();
+    handleLayer<2>();
 
     if constexpr (gamedata::debug::drawColliders)
     {
@@ -125,6 +123,19 @@ void RenderSystem::drawParticle(const ComponentTransform &trans_, const Componen
             m_renderer.fillRectangle(texPos + animorigin - Vector2{2.0f, 2.0f}, {5.0f, 5.0f}, {100, 0, 100, 255}, m_camera);
         }
     }
+}
+
+template <size_t LAYER>
+void RenderSystem::handleLayer()
+{
+    const auto viewInstances = m_reg.view<ComponentTransform, ComponentPhysical, ComponentAnimationRenderable, RenderLayer<LAYER>>();
+    const auto viewParticles = m_reg.view<ComponentTransform, ComponentParticlePhysics, ComponentParticlePrimitive, ComponentAnimationRenderable, RenderLayer<LAYER>>();
+
+    for (auto [idx, trans, phys, partcl, ren] : viewParticles.each())
+        drawParticle(trans, partcl, ren);
+
+    for (auto [idx, trans, phys, inst] : viewInstances.each())
+        drawInstance(trans, inst);
 }
 
 void RenderSystem::drawCollider(const ComponentTransform &trans_, const ComponentPhysical &phys_)

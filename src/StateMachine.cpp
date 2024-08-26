@@ -68,11 +68,8 @@ void GenericState::spawnParticle(const ParticleTemplate &partemplate_, const Com
 {
     auto offset = phys_.m_velocity + phys_.m_inertia;
 
-    ParticleRecipe rp;
-    rp.count = partemplate_.count;
-    rp.anim = partemplate_.anim;
+    ParticleRecipe rp(partemplate_);
     rp.pos = trans_.m_pos;
-    rp.lifetime = partemplate_.lifetime;
 
     //if (partemplate_.horizontalFlipGate.fits(offset.x))
     if (trans_.m_orientation == ORIENTATION::LEFT)
@@ -104,11 +101,8 @@ void GenericState::spawnParticle(const ParticleTemplate &partemplate_, const Com
 {
     auto offset = phys_.m_velocity + phys_.m_inertia;
 
-    ParticleRecipe rp;
-    rp.count = partemplate_.count;
-    rp.anim = partemplate_.anim;
+    ParticleRecipe rp(partemplate_);
     rp.pos = trans_.m_pos;
-    rp.lifetime = partemplate_.lifetime;
 
     rp.flip = verFlip_;
 

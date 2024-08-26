@@ -25,6 +25,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_registry.emplace<ComponentPhysical>(playerId);
     m_registry.emplace<ComponentObstacleFallthrough>(playerId);
     m_registry.emplace<ComponentAnimationRenderable>(playerId);
+    m_registry.emplace<RenderLayer<1>>(playerId);
     m_registry.emplace<ComponentPlayerInput>(playerId, std::unique_ptr<InputResolver>(new InputResolver(application_->getInputSystem())));
     m_registry.emplace<ComponentDynamicCameraTarget>(playerId);
     m_registry.emplace<World>(playerId, m_registry, m_camera, m_partsys, m_navsys);
@@ -167,10 +168,8 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_decor = std::move(bld.buildLevel("Resources/Sprites/Tiles/tilemap.json", m_tlmap, playerId));
 
     auto newcld = m_registry.create();
-    m_registry.emplace<ComponentStaticCollider>(newcld, SlopeCollider(getTilePos(Vector2{25.0f, 19.0f}), Vector2{16.0f, 16.0f * 3}, 0), 0);
-    auto &swc = m_registry.emplace<SwitchCollider>(newcld);
-    swc.m_durationDisabled = 120;
-    swc.m_durationEnabled = 120;
+    m_registry.emplace<ComponentStaticCollider>(newcld, SlopeCollider(getTilePos(Vector2{20.0f, 19.5f}), Vector2{16.0f * 3, 16.0f}, 0), 0);
+    auto &swc = m_registry.emplace<MoveCollider2Points>(newcld, getTilePos(Vector2{20.0f, 19.5f}), getTilePos(Vector2{20.0f, 16.0f}), 60.0f);
 }
 
 void BattleLevel::enter()
@@ -196,9 +195,17 @@ void BattleLevel::update()
         ComponentStaticCollider - read and write
         SwitchCollider - read and write
     */
-    m_colsys.update();
+    m_colsys.updateSwitchingColliders();
     if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("Dynamic colliders update: ");
+        profile.profileDumpAndBegin("Switching colliders update: ");
+
+    /*
+        ComponentStaticCollider - read and write
+        MoveCollider2Points - read and write
+    */
+    m_colsys.updateMovingColliders();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("Moving colliders update: ");
 
     /*
         ComponentPlayerInput - read and write

@@ -7,7 +7,10 @@ struct DynamicColliderSystem
 {
     DynamicColliderSystem(entt::registry &reg_);
 
-    void update();
+    void updateSwitchingColliders();
+    void updateMovingColliders();
+
+    void proceedMovingCollider(ComponentStaticCollider &scld_, MoveCollider2Points &twop_);
 
     bool isOverlappingWithDynamic(const SlopeCollider &cld_);
     bool isObstacleOverlappingWithDynamic(const SlopeCollider &cld_, int obstacleId_);

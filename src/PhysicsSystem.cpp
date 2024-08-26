@@ -79,6 +79,11 @@ void PhysicsSystem::updateOverlappedObstacles()
     }
 }
 
+// TODO: Revisit collision detection
+// Current collision system would make sense if the game used ints to describe colliders
+// However, as it is now, we cant meaningfully compare edges, plus there is a lot of edge cases
+// Its better to have a simple overlap check and instead use delta (was above on previous frame and now is below, etc)
+
 void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_)
 {
     auto oldPos = trans_.m_pos;
@@ -127,7 +132,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
         auto overlap = csc_.m_collider.getFullCollisionWith(pb, highest);
         if ((overlap & utils::OverlapResult::OVERLAP_X) && (overlap & utils::OverlapResult::OOT_Y))
         {
-            if (csc_.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(csc_.m_obstacleId) || oldHeight - highest > abs(trans_.m_pos.x - oldPos.x)))
+            if (csc_.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(csc_.m_obstacleId) || oldHeight - highest > abs(trans_.m_pos.x - oldPos.x)) || oldHeight - highest >= 0.1f )
                 return;
 
             //std::cout << "Touched slope top, teleporting on top, offset.y > 0\n";
@@ -347,6 +352,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
     }
 
     phys_.m_appliedOffset = trans_.m_pos - oldPos;
+    phys_.m_enforcedOffset = {0.0f, 0.0f};
 }
 
 void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_, ComponentParticlePhysics &phys_)

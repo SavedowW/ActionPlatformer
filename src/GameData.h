@@ -5,6 +5,8 @@
 #include "Vector2.h"
 #include <array>
 
+// TODO: move properties to config file
+
 namespace gamedata
 {
     namespace colors
@@ -45,6 +47,7 @@ namespace gamedata
         inline constexpr float maxCameraScale = maxCameraSize.y / baseResolution.y;
         inline constexpr float minCameraScale = minCameraSize.y / baseResolution.y;
         inline constexpr int inputBufferLength = 4;
+        inline constexpr size_t renderLayerCount = 3;
     }
 
     namespace characters
@@ -54,5 +57,7 @@ namespace gamedata
         inline constexpr SDL_Color hurtboxColor = {0, 255, 0, 100};
     }
 }
+
+#define EXPECTED_RENDER_LAYERS(cnt) if constexpr (gamedata::global::renderLayerCount != cnt) throw std::string("Unexpected layer count: ") + std::to_string(cnt) + " vs " + std::to_string(gamedata::global::renderLayerCount);
 
 #endif

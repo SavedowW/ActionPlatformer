@@ -13,7 +13,12 @@ struct RenderSystem
     void draw();
 
     void drawInstance(const ComponentTransform &trans_, const ComponentAnimationRenderable &ren_);
+
     void drawParticle(const ComponentTransform &trans_, const ComponentParticlePrimitive &partcl_, const ComponentAnimationRenderable &ren_);
+
+    template<size_t LAYER>
+    void handleLayer();
+
     void drawCollider(const ComponentTransform &trans_, const ComponentPhysical &phys_);
     void drawCollider(const ComponentStaticCollider &cld_);
     void drawObstacle(const ComponentStaticCollider &cld_);
