@@ -64,10 +64,13 @@ struct ComponentPhysical
 
     Vector2<float> m_velocity;
     Vector2<float> m_inertia;
+    Vector2<float> m_extraoffset;
     Vector2<float> m_drag; 
     Vector2<float> m_gravity;
     Vector2<float> m_inertiaMultiplier;
     Collider m_pushbox;
+    bool m_isAttached = false;
+    bool m_onMovingPlatform = false;
     float m_magnetLimit = 0.0f;
     float m_onSlopeWithAngle = 0.0f;
     float m_lastSlopeAngle = 0.0f;
@@ -84,7 +87,7 @@ struct ComponentPhysical
     // Offset enforced by dynamic colliders, used for things like inertia
     Vector2<float> m_enforcedOffset;
 
-    void velocityToInertia();
+    void convertToInertia(bool convertVelocity_, bool includeEnforced_);
     Vector2<float> getPosOffest() const;
 };
 

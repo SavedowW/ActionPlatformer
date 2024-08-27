@@ -54,55 +54,129 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
     for (auto [idx, trans, phys] : dynamics.each())
     {
         Vector2<float> oldpos = trans.m_pos;
-        auto oldpb = phys.m_pushbox + trans.m_pos;
-        auto oldTop = oldpb.getTopEdge();
-        auto oldRightEdge = oldpb.getRightEdge();
-        auto oldLeftEdge = oldpb.getLeftEdge();
+        auto pb = phys.m_pushbox + trans.m_pos;
+        auto oldTop = pb.getTopEdge();
+        auto oldRightEdge = pb.getRightEdge();
+        auto oldLeftEdge = pb.getLeftEdge();
         float oldHighest = 0.0f;
         float newHighest = 0.0f;
 
-        auto oldColres = scld_.m_collider.getFullCollisionWith(oldpb, oldHighest);
-        auto newColres = newcld.getFullCollisionWith(oldpb, newHighest);
+        bool attachedLeft = phys.m_isAttached && trans.m_orientation == ORIENTATION::LEFT && abs(oldRightEdge - scld_.m_collider.m_points[0].x) <= 1.0f
+                        && pb.m_center.y >= scld_.m_collider.m_points[0].y && pb.m_center.y <= scld_.m_collider.m_points[3].y;
+        bool attachedRight = phys.m_isAttached && trans.m_orientation == ORIENTATION::RIGHT && abs(oldLeftEdge - scld_.m_collider.m_points[1].x) <= 1.0f
+                        && pb.m_center.y >= scld_.m_collider.m_points[1].y && pb.m_center.y <= scld_.m_collider.m_points[2].y;
+        
 
-        // If nothing happened
-        if (!oldColres && !newColres)
-            continue;
+        auto oldColres = scld_.m_collider.getFullCollisionWith(pb, oldHighest);
 
-        // If moving up
-        if (offset.y < 0)
+        // If platform moved vertically
+        if (offset.y != 0)
         {
-            // If was above and now below
-            if (oldpos.y <= oldHighest && oldpos.y > newHighest)
+            auto newColres = newcld.getFullCollisionWith(pb, newHighest);
+            bool collision = (oldColres || newColres);
+
+            // If moving up
+            if (offset.y < 0)
             {
-                std::cout << "Teleporting on top\n";
-                // Teleport on top
-                trans.m_pos.y = newHighest;
+                // If was above and now below
+                if (collision && oldpos.y <= oldHighest && oldpos.y > newHighest)
+                {
+                    std::cout << "Teleporting on top\n";
+                    // Teleport on top
+                    trans.m_pos.y = newHighest;
+                    pb = phys.m_pushbox + trans.m_pos;
+                    phys.m_onMovingPlatform = true;
+                }
+            }
+            // If moving down
+            else if (offset.y > 0)
+            {
+                auto heightdiff = abs(oldpos.y - oldHighest);
+
+                // If close enough to top to be considered standing
+                if (collision && heightdiff <= 0.01f)
+                {
+                    std::cout << "Teleporting on top\n";
+                    // Teleport on top
+                    newHighest = newcld.getTopHeight(pb, newColres);
+                    trans.m_pos.y = newHighest;
+                    pb = phys.m_pushbox + trans.m_pos;
+                }
+
+                // If was below and now overlaps
+                else if (collision && scld_.m_obstacleId && oldTop >= scld_.m_collider.m_points[2].y && oldTop < newcld.m_points[2].y)
+                {
+                    std::cout << "Teleporting to bottom\n";
+                    // Teleport to bottom
+                    trans.m_pos.y = newcld.m_points[2].y + 2 * pb.m_halfSize.y;
+                    pb = phys.m_pushbox + trans.m_pos;
+                }
+            }
+
+            // Pull if the character is clinging to it
+            if (attachedLeft || attachedRight)
+            {
+                if (trans.m_orientation == ORIENTATION::LEFT && abs(oldRightEdge - scld_.m_collider.m_points[0].x) <= 1.0f
+                        && pb.m_center.y >= scld_.m_collider.m_points[0].y && pb.m_center.y <= scld_.m_collider.m_points[3].y ||
+                    trans.m_orientation == ORIENTATION::RIGHT && abs(oldLeftEdge - scld_.m_collider.m_points[1].x) <= 1.0f
+                        && pb.m_center.y >= scld_.m_collider.m_points[1].y && pb.m_center.y <= scld_.m_collider.m_points[2].y)
+                {
+                    phys.m_extraoffset.y += offset.y;
+                }
             }
         }
-        // If moving down
-        else if (offset.y > 0)
-        {
-            auto heightdiff = abs(oldpos.y - oldHighest);
 
-            // If close enough to top to be considered standing
-            if (heightdiff <= 0.01f)
+        // If platform moved horizontally
+        if (offset.x != 0)
+        {
+            auto newColres = newcld.getFullCollisionWith(pb, newHighest);
+            bool collision = (oldColres & utils::OverlapResult::BOTH_OVERLAP) || (newColres & utils::OverlapResult::BOTH_OVERLAP);
+
+            // If it moved to the right
+            if (offset.x > 0)
             {
-                std::cout << "Teleporting on top\n";
-                // Teleport on top
-                newHighest = newcld.getTopHeight(oldpb, newColres);
-                trans.m_pos.y = newHighest;
+                // FIXME: when moving at a diagonal, this section is affected by the result of vertical offset
+                
+                // If didnt collide and now does
+                if (!((oldColres & utils::OverlapResult::OVERLAP_X) && (oldColres & utils::OverlapResult::OVERLAP_Y)) && ((newColres & utils::OverlapResult::OVERLAP_X) && (newColres & utils::OverlapResult::OVERLAP_Y)))
+                {
+                    std::cout << "Teleporting to right\n";
+                    // Teleport to right edge
+                    trans.m_pos.x = newcld.getMostRightAt(pb) + pb.m_halfSize.x;
+                    pb = phys.m_pushbox + trans.m_pos;
+                }
+
+                // If attached from left side, pull
+                if (attachedLeft)
+                    phys.m_extraoffset.x += offset.x;
             }
 
-            // If was below and now overlaps
-            if (scld_.m_obstacleId && oldTop >= scld_.m_collider.m_points[2].y && oldTop < newcld.m_points[2].y)
+            // If it moved to the left
+            else if (offset.x < 0)
             {
-                std::cout << "Teleporting to bottom\n";
-                // Teleport to bottom
-                trans.m_pos.y = newcld.m_points[2].y + 2 * oldpb.m_halfSize.y;
+                // If didnt collide and now does
+                if (!((oldColres & utils::OverlapResult::OVERLAP_X) && (oldColres & utils::OverlapResult::OVERLAP_Y)) && ((newColres & utils::OverlapResult::OVERLAP_X) && (newColres & utils::OverlapResult::OVERLAP_Y)))
+                {
+                    std::cout << "Teleporting to left\n";
+                    // Teleport to right edge
+                    trans.m_pos.x = newcld.getMostLeftAt(pb) - pb.m_halfSize.x;
+                    pb = phys.m_pushbox + trans.m_pos;
+                }
+
+                // If attached from right side, pull
+                if (attachedRight)
+                    phys.m_extraoffset.x += offset.x;
+            }
+
+            // If stands on it
+            if (phys.m_isGrounded && (oldColres & utils::OverlapResult::OVERLAP_X) && abs(oldpos.y - oldHighest) <= 1.0f)
+            {
+                trans.m_pos.x += offset.x;
+                phys.m_onMovingPlatform = true;
             }
         }
 
-        phys.m_enforcedOffset += (trans.m_pos - oldpos);
+        phys.m_enforcedOffset = (trans.m_pos - oldpos) + phys.m_extraoffset;
     }
 
     scld_.m_collider = newcld;

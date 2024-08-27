@@ -153,7 +153,7 @@ public:
     PhysicalState &setCanFallThrough(TimelineProperty<bool> &&fallThrough_);
     PhysicalState &setNoLanding(TimelineProperty<bool> &&noLanding_);
     PhysicalState &setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>> &&inerMul_);
-    PhysicalState &setConvertVelocityOnSwitch(bool convertVelocity_);
+    PhysicalState &setConvertVelocityOnSwitch(bool convertVelocity_, bool convertEnforced_);
     PhysicalState &setUpdateMovementData(
         TimelineProperty<Vector2<float>> &&mulOwnVelUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirVelUpd_, TimelineProperty<Vector2<float>> &&rawAddVelUpd_,
         TimelineProperty<Vector2<float>> &&mulOwnInrUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirInrUpd_, TimelineProperty<Vector2<float>> &&rawAddInrUpd_);
@@ -200,6 +200,7 @@ protected:
     std::map<CharState, int> m_uniqueTransitionAnims;
 
     TimelineProperty<bool> m_noUpwardLanding;
+    bool m_convertEnforcedVelocity = false;
 };
 
 /*

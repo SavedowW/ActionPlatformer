@@ -5,15 +5,24 @@ ComponentTransform::ComponentTransform(const Vector2<float> &pos_, ORIENTATION o
 {
 }
 
-void ComponentPhysical::velocityToInertia()
+void ComponentPhysical::convertToInertia(bool convertVelocity_, bool includeEnforced_)
 {
-    m_inertia += m_velocity;
-    m_velocity = {0.0f, 0.0f};
+    if (convertVelocity_)
+    {
+        m_inertia += m_velocity;
+        m_velocity = {0.0f, 0.0f};
+    }
+    
+    if (includeEnforced_ || !m_onMovingPlatform)
+    {
+        std::cout << "Adding enforced velocity: " << m_enforcedOffset << std::endl;
+        m_inertia += m_enforcedOffset;
+    }
 }
 
 Vector2<float> ComponentPhysical::getPosOffest() const
 {
-    return m_velocity + m_inertia.mulComponents(m_inertiaMultiplier);
+    return m_velocity + m_inertia.mulComponents(m_inertiaMultiplier) + m_extraoffset;
 }
 
 void ComponentObstacleFallthrough::setIgnoringObstacles()

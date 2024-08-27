@@ -6,6 +6,15 @@ PhysicsSystem::PhysicsSystem(entt::registry &reg_, Vector2<float> levelSize_) :
 {
 }
 
+void PhysicsSystem::prepEntities()
+{
+    auto viewPhys = m_reg.view<ComponentPhysical>();
+    for (auto [idx, phys] : viewPhys.each())
+    {
+        phys.m_onMovingPlatform = false;
+    }
+}
+
 void PhysicsSystem::updateSMs()
 {
     auto viewSM = m_reg.view<StateMachine>();
@@ -132,7 +141,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
         auto overlap = csc_.m_collider.getFullCollisionWith(pb, highest);
         if ((overlap & utils::OverlapResult::OVERLAP_X) && (overlap & utils::OverlapResult::OOT_Y))
         {
-            if (csc_.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(csc_.m_obstacleId) || oldHeight - highest > abs(trans_.m_pos.x - oldPos.x)) || oldHeight - highest >= 0.1f )
+            if (csc_.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(csc_.m_obstacleId) || oldHeight - highest > abs(trans_.m_pos.x - oldPos.x)) || oldHeight - highest >= 0.1f + abs(csc_.m_collider.m_topAngleCoef * (trans_.m_pos.x - oldPos.x)))
                 return;
 
             //std::cout << "Touched slope top, teleporting on top, offset.y > 0\n";
@@ -187,7 +196,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
         bool aligned = csc_.m_collider.getOrientationDir() > 0;
 
         if ((overlap & (utils::OverlapResult::TOUCH_MIN1_MAX2 << 6)) && (overlap & utils::OverlapResult::BOTH_OOT))
-        { // 1111 0101 00 0000 01
+        {
             if (csc_.m_collider.m_topAngleCoef != 0)
                 touchedSlope = (pb.getBottomEdge() > csc_.m_collider.m_highestSlopePoint ? csc_.m_collider.m_topAngleCoef : 0.0f);
             groundCollision = true;
@@ -352,7 +361,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
     }
 
     phys_.m_appliedOffset = trans_.m_pos - oldPos;
-    phys_.m_enforcedOffset = {0.0f, 0.0f};
+    phys_.m_extraoffset = {0.0f, 0.0f};
 }
 
 void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_, ComponentParticlePhysics &phys_)

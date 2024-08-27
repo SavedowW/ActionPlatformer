@@ -251,7 +251,7 @@ public:
         m_slideParticle(std::move(slideParticle_))
     {
         setGravity(TimelineProperty<Vector2<float>>({0.0f, 0.020f}));
-        setConvertVelocityOnSwitch(true);
+        setConvertVelocityOnSwitch(true, false);
     }
 
     inline virtual void enter(EntityAnywhere owner_, CharState from_) override
@@ -269,7 +269,11 @@ public:
         physical.m_inertia.x = 0;
 
         m_particleTimer.begin(0);
+
+        physical.m_isAttached = true;
     }
+
+    virtual void leave(EntityAnywhere owner_, CharState to_) override;
 
     inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
     {
@@ -364,7 +368,7 @@ public:
         m_jumpParticle(std::move(jumpParticle_))
     {
         setGravity(TimelineProperty<Vector2<float>>({0.0f, 0.020f}));
-        setConvertVelocityOnSwitch(true);
+        setConvertVelocityOnSwitch(true, true);
     }
 
     inline virtual void enter(EntityAnywhere owner_, CharState from_) override
@@ -377,6 +381,8 @@ public:
             physical.m_inertia.y = 0;
         if (physical.m_velocity.y > 0)
             physical.m_velocity.y = 0;
+
+        physical.m_isAttached = true;
     }
 
     virtual void onOutdated(EntityAnywhere owner_)
@@ -431,6 +437,8 @@ public:
         }
         else
             physical.m_velocity += targetSpeed;
+
+        physical.m_isAttached = false;
 
         ParentAction::onOutdated(owner_);
     }

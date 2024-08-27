@@ -68,12 +68,12 @@ bool World::touchingWallAt(ORIENTATION checkSide_, const Vector2<float> &pos_) c
 
         if (checkSide_ == ORIENTATION::LEFT)
         {
-            if (cld.m_collider.m_points[0].x == pos_.x && cld.m_collider.m_points[0].y < pos_.y && cld.m_collider.m_points[3].y > pos_.y)
+            if (abs(cld.m_collider.m_points[0].x - pos_.x) <= 1.0f && cld.m_collider.m_points[0].y < pos_.y && cld.m_collider.m_points[3].y > pos_.y)
                 return true;
         }
         else if (checkSide_ == ORIENTATION::RIGHT)
         {
-            if (cld.m_collider.m_points[1].x == pos_.x && cld.m_collider.m_points[1].y < pos_.y && cld.m_collider.m_points[2].y > pos_.y)
+            if (abs(cld.m_collider.m_points[1].x - pos_.x) <= 1.0f && cld.m_collider.m_points[1].y < pos_.y && cld.m_collider.m_points[2].y > pos_.y)
                 return true;
         }
     }

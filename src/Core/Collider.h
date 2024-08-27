@@ -100,6 +100,9 @@ struct SlopeCollider
     float getTopHeight(const Collider &cld_, utils::OverlapResult horOverlapType_) const;
 
     float getHeightAt(float x) const;
+
+    float getMostRightAt(const Collider &cld_);
+    float getMostLeftAt(const Collider &cld_);
 };
 
 

@@ -160,7 +160,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_hudsys.m_playerId = playerId;
     m_enemysys.m_playerId = playerId;
 
-    m_enemysys.makeEnemy();
+    //m_enemysys.makeEnemy();
 
     m_tlmap.load("Tiles/tiles");
 
@@ -168,8 +168,8 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_decor = std::move(bld.buildLevel("Resources/Sprites/Tiles/tilemap.json", m_tlmap, playerId));
 
     auto newcld = m_registry.create();
-    m_registry.emplace<ComponentStaticCollider>(newcld, SlopeCollider(getTilePos(Vector2{20.0f, 19.5f}), Vector2{16.0f * 3, 16.0f}, 0), 0);
-    auto &swc = m_registry.emplace<MoveCollider2Points>(newcld, getTilePos(Vector2{20.0f, 19.5f}), getTilePos(Vector2{20.0f, 16.0f}), 60.0f);
+    m_registry.emplace<ComponentStaticCollider>(newcld, SlopeCollider(getTilePos(Vector2{20.0f, 21.0f}), Vector2{16.0f * 3, 16.0f}, 0), 0);
+    auto &swc = m_registry.emplace<MoveCollider2Points>(newcld, getTilePos(Vector2{16.0f, 21.0f}), getTilePos(Vector2{20.0f, 17.0f}), 60.0f);
 }
 
 void BattleLevel::enter()
@@ -192,6 +192,43 @@ void BattleLevel::update()
     profile.begin();
 
     /*
+        ComponentPlayerInput - read and write
+    */
+    m_inputsys.update();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("Input system update: ");
+
+    /*
+        ComponentAnimationRenderable - read and write
+    */
+    m_rendersys.update();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("Render system update: ");
+
+    /*
+        ComponentAI, ComponentTransform (own) - read and write
+        Player's transform, physics, possibly state machine - read
+    */
+    m_aisys.update();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("AI update: ");
+
+    /*
+        StateMachine - read / write
+        StateMachine represents physical state of a character and can potentially access almost everyting related to all entites
+    */
+    m_physsys.updateSMs();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("Physics - update SMs: ");
+
+    /*
+        Physics - write
+    */
+    m_physsys.prepEntities();
+    if constexpr (gamedata::debug::dumpSystemDuration)
+        profile.profileDumpAndBegin("Physics - prepEntities: ");
+
+    /*
         ComponentStaticCollider - read and write
         SwitchCollider - read and write
     */
@@ -208,41 +245,11 @@ void BattleLevel::update()
         profile.profileDumpAndBegin("Moving colliders update: ");
 
     /*
-        ComponentPlayerInput - read and write
-    */
-    m_inputsys.update();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("Input system update: ");
-
-    /*
-        ComponentAnimationRenderable - read and write
-    */
-    m_rendersys.update();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("Render system update: ");
-
-    /*
         ComponentParticlePrimitive - read / write
     */
     m_partsys.update();
     if constexpr (gamedata::debug::dumpSystemDuration)
         profile.profileDumpAndBegin("Particle system update: ");
-    
-    /*
-        ComponentAI, ComponentTransform (own) - read and write
-        Player's transform, physics, possibly state machine - read
-    */
-    m_aisys.update();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("AI update: ");
-
-    /*
-        StateMachine - read / write
-        StateMachine represents physical state of a character and can potentially access almost everyting related to all entites
-    */
-    m_physsys.updateSMs();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("Physics - update SMs: ");
 
     /*
         ComponentStaticCollider - read

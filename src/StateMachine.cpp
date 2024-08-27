@@ -171,9 +171,10 @@ PhysicalState &PhysicalState::setAppliedInertiaMultiplier(TimelineProperty<Vecto
     return *this;
 }
 
-PhysicalState &PhysicalState::setConvertVelocityOnSwitch(bool convertVelocity_)
+PhysicalState &PhysicalState::setConvertVelocityOnSwitch(bool convertVelocity_, bool convertEnforced_)
 {
     m_convertVelocityOnSwitch = convertVelocity_;
+    m_convertEnforcedVelocity = convertEnforced_;
     return *this;
 }
 
@@ -258,8 +259,8 @@ void PhysicalState::enter(EntityAnywhere owner_, CharState from_)
     renderable.m_currentAnimation->reset();
 
     // Convert velocity
-    if (m_convertVelocityOnSwitch)
-        physical.velocityToInertia();
+    if (m_convertVelocityOnSwitch || m_convertEnforcedVelocity)
+        physical.convertToInertia(m_convertVelocityOnSwitch, m_convertEnforcedVelocity);
 
     // Force grounded
     if (m_setGroundedOnSwitch.has_value())
@@ -364,6 +365,8 @@ void PhysicalState::onTouchedGround(EntityAnywhere owner_)
 
 void PhysicalState::onLostGround(EntityAnywhere owner_)
 {
+    owner_.reg->get<ComponentPhysical>(owner_.idx).m_onMovingPlatform = false;
+
     if (m_transitionOnLostGround.has_value())
     {
         m_parent->switchCurrentState(owner_, *m_transitionOnLostGround);
