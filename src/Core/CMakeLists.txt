@@ -30,6 +30,8 @@ Tileset.cpp
 Trigger.cpp
 CoreComponents.cpp
 NavGraph.cpp
+Logger.cpp
+Profile.cpp
 )
 
 add_library (Core ${CORE_SRC_FILES})

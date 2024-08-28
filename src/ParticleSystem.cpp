@@ -1,5 +1,6 @@
 #include "ParticleSystem.h"
 #include "CoreComponents.h"
+#include "Profile.h"
 
 ParticleSystem::ParticleSystem(entt::registry &reg_, Application &app_) :
     m_registry(reg_),
@@ -54,6 +55,8 @@ void ParticleSystem::makeParticle(const ParticleRecipe &particle_)
 
 void ParticleSystem::update()
 {
+    PROFILE_FUNCTION;
+
     auto viewParticles = m_registry.view<ComponentParticlePrimitive>();
 
     for (auto [idx, pprim] : viewParticles.each())

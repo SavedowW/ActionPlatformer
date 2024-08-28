@@ -1,4 +1,5 @@
 #include "PhysicsSystem.h"
+#include "Profile.h"
 
 PhysicsSystem::PhysicsSystem(entt::registry &reg_, Vector2<float> levelSize_) :
     m_reg(reg_),
@@ -8,6 +9,8 @@ PhysicsSystem::PhysicsSystem(entt::registry &reg_, Vector2<float> levelSize_) :
 
 void PhysicsSystem::prepEntities()
 {
+    PROFILE_FUNCTION;
+
     auto viewPhys = m_reg.view<ComponentPhysical>();
     for (auto [idx, phys] : viewPhys.each())
     {
@@ -17,6 +20,8 @@ void PhysicsSystem::prepEntities()
 
 void PhysicsSystem::updateSMs()
 {
+    PROFILE_FUNCTION;
+
     auto viewSM = m_reg.view<StateMachine>();
 
     for (auto [idx, sm] : viewSM.each())
@@ -36,6 +41,8 @@ void PhysicsSystem::updateSMs()
 
 void PhysicsSystem::updatePhysics()
 {
+    PROFILE_FUNCTION;
+
     auto viewPhys = m_reg.view<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, PhysicalEvents>();
     auto viewPhysSimplified = m_reg.view<ComponentTransform, ComponentParticlePhysics>();
     const auto viewscld = m_reg.view<ComponentStaticCollider>();
@@ -58,6 +65,8 @@ void PhysicsSystem::updatePhysics()
 
 void PhysicsSystem::updatePhysicalEvents()
 {
+    PROFILE_FUNCTION;
+    
     auto viewPhysEvent = m_reg.view<PhysicalEvents, StateMachine>();
 
     for (auto [idx, physev, sm] : viewPhysEvent.each())
@@ -79,6 +88,8 @@ void PhysicsSystem::updatePhysicalEvents()
 
 void PhysicsSystem::updateOverlappedObstacles()
 {
+    PROFILE_FUNCTION;
+
     auto viewTransPhysObs = m_reg.view<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough>();
     auto viewColliders = m_reg.view<ComponentStaticCollider>();
     for (auto [idx, trans, phys, obsfallthrough] : viewTransPhysObs.each())

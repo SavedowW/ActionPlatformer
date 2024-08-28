@@ -1,4 +1,5 @@
 #include "AISystem.h"
+#include "Profile.h"
 
 AISystem::AISystem(entt::registry &reg_) :
     m_reg(reg_)
@@ -7,6 +8,8 @@ AISystem::AISystem(entt::registry &reg_) :
 
 void AISystem::update()
 {
+    PROFILE_FUNCTION;
+
     auto view = m_reg.view<ComponentAI>();
 
     for (auto [idx, ai] : view.each())

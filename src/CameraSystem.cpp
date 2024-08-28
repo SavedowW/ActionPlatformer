@@ -2,6 +2,7 @@
 #include "CameraFocusArea.h"
 #include "CoreComponents.h"
 #include "GameData.h"
+#include "Profile.h"
 
 CameraSystem::CameraSystem(entt::registry &reg_, Camera &cam_) :
     m_reg(reg_),
@@ -11,6 +12,8 @@ CameraSystem::CameraSystem(entt::registry &reg_, Camera &cam_) :
 
 void CameraSystem::update()
 {
+    PROFILE_FUNCTION;
+
     Vector2<float> target;
     auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(m_playerId);
 

@@ -1,4 +1,5 @@
 #include "RenderSystem.h"
+#include "Profile.h"
 
 RenderSystem::RenderSystem(entt::registry &reg_, Application &app_, Camera &camera_) :
     m_reg(reg_),
@@ -9,6 +10,7 @@ RenderSystem::RenderSystem(entt::registry &reg_, Application &app_, Camera &came
 
 void RenderSystem::update()
 {
+    PROFILE_FUNCTION;
     auto rens = m_reg.view<ComponentAnimationRenderable>();
 
     for (auto [idx, ren] : rens.each())

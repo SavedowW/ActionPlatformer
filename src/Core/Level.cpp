@@ -1,5 +1,6 @@
 #include "Level.h"
 #include "Application.h"
+#include "Profile.h"
 #include <thread>
 
 Level::Level(Application *application_, const Vector2<float> &size_, int lvlId_) :
@@ -38,9 +39,11 @@ LevelResult Level::proceed()
 	nanoseconds compensate = nanoseconds(0);
 
 	Timer fullFrameTime;
+	auto &profiler = Profiler::instance();
 
 	while (m_state == STATE::RUNNING)
 	{
+		profiler.cleanFrame();
 		fullFrameTime.begin();
 
 		m_input->handleInput();
@@ -50,6 +53,11 @@ LevelResult Level::proceed()
 			update();
 			draw();
 			m_allowIter = false;
+
+			#ifdef DUMP_PROFILE_CONSOLE
+				profiler.dump();
+				std::cout << std::endl;
+			#endif
 		}
 
 		m_lastFrameTimeMS = m_frameTimer.getPassed<nanoseconds>();

@@ -1,6 +1,7 @@
 #include "BattleLevel.h"
 #include "TileMapHelper.hpp"
 #include "World.h"
+#include "Profile.h"
 
 BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_, int lvlId_) :
     Level(application_, size_, lvlId_),
@@ -188,91 +189,68 @@ void BattleLevel::enter()
 
 void BattleLevel::update()
 {
-    Timer profile;
-    profile.begin();
+    PROFILE_FUNCTION;
 
     /*
         ComponentPlayerInput - read and write
     */
     m_inputsys.update();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("Input system update: ");
 
     /*
         ComponentAnimationRenderable - read and write
     */
     m_rendersys.update();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("Render system update: ");
 
     /*
         ComponentAI, ComponentTransform (own) - read and write
         Player's transform, physics, possibly state machine - read
     */
     m_aisys.update();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("AI update: ");
 
     /*
         StateMachine - read / write
         StateMachine represents physical state of a character and can potentially access almost everyting related to all entites
     */
     m_physsys.updateSMs();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("Physics - update SMs: ");
 
     /*
         Physics - write
     */
     m_physsys.prepEntities();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("Physics - prepEntities: ");
 
     /*
         ComponentStaticCollider - read and write
         SwitchCollider - read and write
     */
     m_colsys.updateSwitchingColliders();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("Switching colliders update: ");
 
     /*
         ComponentStaticCollider - read and write
         MoveCollider2Points - read and write
     */
     m_colsys.updateMovingColliders();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("Moving colliders update: ");
 
     /*
         ComponentParticlePrimitive - read / write
     */
     m_partsys.update();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("Particle system update: ");
 
     /*
         ComponentStaticCollider - read
         Transform, physics, fallthrough, PhysicalEvents, ComponentParticlePhysics - read / write
     */
     m_physsys.updatePhysics();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("m_physsys.updatePhysics(); ");
     
     /*
         ComponentStaticCollider, transform, physics - read
         fallthrough - read / write
     */
     m_physsys.updateOverlappedObstacles();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("m_physsys.updatePhysics(); ");
 
     /*
         StateMachine, PhysicalEvents - read / write
     */
     m_physsys.updatePhysicalEvents();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("m_physsys.updatePhysicalEvents(); ");
 
     /*
         ComponentDynamicCameraTarget (player) - read / write
@@ -280,30 +258,23 @@ void BattleLevel::update()
         CameraFocusArea - read
     */
     m_camsys.update();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("m_camsys.update(); ");
 
     /*
         ComponentTransform - read
         Navigatable - read / write
     */
     m_navsys.update();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("m_navsys.update(); ");
 
     /*
         Just updates camera shake logic, but many systems can cause shake
     */
     m_camera.update();
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        profile.profileDumpAndBegin("m_camera.update(); ");
-
-    if constexpr (gamedata::debug::dumpSystemDuration)
-        std::cout << std::endl << std::endl << std::endl;
 }
 
 void BattleLevel::draw()
 {
+    PROFILE_FUNCTION;
+
     auto &renderer = *m_application->getRenderer();
     renderer.prepareRenderer(gamedata::colors::LVL2);
 

@@ -1,5 +1,6 @@
 #include "DynamicColliderSystem.h"
 #include "CoreComponents.h"
+#include "Profile.h"
 
 DynamicColliderSystem::DynamicColliderSystem(entt::registry &reg_) :
     m_reg(reg_)
@@ -8,6 +9,8 @@ DynamicColliderSystem::DynamicColliderSystem(entt::registry &reg_) :
 
 void DynamicColliderSystem::updateSwitchingColliders()
 {
+    PROFILE_FUNCTION;
+
     auto clds = m_reg.view<ComponentStaticCollider, SwitchCollider>();
 
     for (auto [idx, cld, swc] : clds.each())
@@ -24,6 +27,8 @@ void DynamicColliderSystem::updateSwitchingColliders()
 
 void DynamicColliderSystem::updateMovingColliders()
 {
+    PROFILE_FUNCTION;
+    
     auto dynamics = m_reg.view<ComponentStaticCollider, MoveCollider2Points>();
 
     for (auto [idx, scld, mvmnt] : dynamics.each())
@@ -96,7 +101,7 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                 {
                     if (fallthrough && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
                         continue;
-                    std::cout << "Teleporting on top while moving up" << std::endl;
+                    //std::cout << "Teleporting on top while moving up" << std::endl;
                     // Teleport on top
                     trans.m_pos.y = newHighest;
                     pb = phys.m_pushbox + trans.m_pos;
@@ -114,7 +119,7 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                     if (fallthrough && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
                         continue;
 
-                    std::cout << "Teleporting on top while moving down" << std::endl;
+                    //std::cout << "Teleporting on top while moving down" << std::endl;
                     // Teleport on top
                     newHighest = newcld.getTopHeight(pb, newColres);
                     trans.m_pos.y = newHighest;
@@ -127,7 +132,7 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                     if (fallthrough && !fallthrough->touchedObstacleBottom(scld_.m_obstacleId))
                         continue;
 
-                    std::cout << "Teleporting to bottom while moving down" << std::endl;
+                    //std::cout << "Teleporting to bottom while moving down" << std::endl;
                     // Teleport to bottom
                     trans.m_pos.y = newcld.m_points[2].y + 2 * pb.m_halfSize.y;
                     pb = phys.m_pushbox + trans.m_pos;
@@ -172,7 +177,7 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                     else if (fallthrough && !onSlope && !fallthrough->touchedObstacleSide(scld_.m_obstacleId))
                         continue;
 
-                    std::cout << "Teleporting to right\n";
+                    //std::cout << "Teleporting to right\n";
                     // Teleport to right edge
                     trans.m_pos.x = rightest + pb.m_halfSize.x;
                     pb = phys.m_pushbox + trans.m_pos;
@@ -198,7 +203,7 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                 // If didnt collide and now does
                 if (!((oldColresYOnly & utils::OverlapResult::OVERLAP_X) && (oldColresYOnly & utils::OverlapResult::OVERLAP_Y)) && ((newColres & utils::OverlapResult::OVERLAP_X) && (newColres & utils::OverlapResult::OVERLAP_Y)))
                 {
-                    std::cout << "Teleporting to left\n";
+                    //std::cout << "Teleporting to left\n";
                     // Teleport to right edge
                     trans.m_pos.x = leftest - pb.m_halfSize.x;
                     pb = phys.m_pushbox + trans.m_pos;

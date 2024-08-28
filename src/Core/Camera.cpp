@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include "GameData.h"
+#include "Profile.h"
 
 Camera::Camera(const Vector2<float> &pos_, const Vector2<float> &cameraBaseSize_, const Vector2<float> &areaSize_) :
     m_pos(pos_),
@@ -139,6 +140,8 @@ Vector2<float> Camera::getCamPositionInBoundaries(const Vector2<float> &pos_)
 
 void Camera::update()
 {
+    PROFILE_FUNCTION;
+
     if (m_shakeTimer.update())
     {
         m_thisFrameAmp = {0.0f, 0.0f};
