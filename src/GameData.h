@@ -29,7 +29,7 @@ namespace gamedata
         inline constexpr bool drawDebugTextures = false;
         inline constexpr uint32_t debugPathDisplay = 15;
 
-        inline constexpr bool dumpSystemDuration = true;
+        inline constexpr bool dumpSystemDuration = false;
     }
 
     namespace global

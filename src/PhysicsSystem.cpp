@@ -207,7 +207,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
             if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
                 return;
 
-            //std::cout << "Touched slope, teleporting on top, offset.x > 0\n";
+            std::cout << "Touched slope, teleporting on top, offset.x > 0\n";
 
             trans_.m_pos.y = highest;
             pb = phys_.m_pushbox + trans_.m_pos;
@@ -229,7 +229,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
 
             if (overlapPortion >= 0.1 || !phys_.m_onSlopeWithAngle != 0)
             {
-                //std::cout << "Touched edge, teleporting to it, offset.x > 0\n";
+                std::cout << "Touched edge, teleporting to it, offset.x > 0\n";
                 trans_.m_pos.x = csc_.m_collider.m_tlPos.x - pb.m_halfSize.x;
                 pb = phys_.m_pushbox + trans_.m_pos;
             }
@@ -267,7 +267,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
             if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
                 return;
 
-            //std::cout << "Touched slope, teleporting on top, offset.x < 0\n";
+            std::cout << "Touched slope, teleporting on top, offset.x < 0\n";
 
             trans_.m_pos.y = highest;
             pb = phys_.m_pushbox + trans_.m_pos;
@@ -281,7 +281,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
                 phys_.m_inertia.y = 0;
         }
         else if ((overlap & utils::OverlapResult::OOT_X) && (overlap & utils::OverlapResult::OVERLAP_Y)) // Touched as wall
-        {
+        { // 1011'0101'00'0110'00
             if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSide(csc_.m_obstacleId))
                 return;
 
@@ -289,7 +289,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
 
             if (overlapPortion >= 0.1 || !phys_.m_onSlopeWithAngle != 0)
             {
-                //std::cout << "Touched edge, teleporting to it, offset.x < 0\n";
+                std::cout << "Touched edge, teleporting to it, offset.x < 0\n";
                 trans_.m_pos.x = csc_.m_collider.m_tlPos.x + csc_.m_collider.m_size.x + pb.m_halfSize.x;
                 pb = phys_.m_pushbox + trans_.m_pos;
             }

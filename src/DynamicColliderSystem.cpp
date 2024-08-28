@@ -47,12 +47,23 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
         newtl = twop_.m_point2 + (twop_.m_point1 - twop_.m_point2) * twop_.m_timer.getProgressNormalized() - scld_.m_collider.m_size / 2.0f;
 
     SlopeCollider newcld(newtl, scld_.m_collider.m_size, scld_.m_collider.m_topAngleCoef);
+    SlopeCollider newcldYOnly(Vector2{scld_.m_collider.m_tlPos.x, newtl.y}, scld_.m_collider.m_size, scld_.m_collider.m_topAngleCoef);
 
     Vector2<float> offset = newtl - scld_.m_collider.m_tlPos;
 
     const auto dynamics = m_reg.view<ComponentTransform, ComponentPhysical>();
     for (auto [idx, trans, phys] : dynamics.each())
     {
+        ComponentObstacleFallthrough *fallthrough = nullptr;
+
+        if (scld_.m_obstacleId)
+        {
+            if (m_reg.all_of<ComponentObstacleFallthrough>(idx))
+                fallthrough = &m_reg.get<ComponentObstacleFallthrough>(idx);
+            else
+                continue;
+        }
+
         Vector2<float> oldpos = trans.m_pos;
         auto pb = phys.m_pushbox + trans.m_pos;
         auto oldTop = pb.getTopEdge();
@@ -68,11 +79,13 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
         
 
         auto oldColres = scld_.m_collider.getFullCollisionWith(pb, oldHighest);
+        oldHighest = scld_.m_collider.getTopHeight(pb, oldColres);
 
         // If platform moved vertically
         if (offset.y != 0)
         {
-            auto newColres = newcld.getFullCollisionWith(pb, newHighest);
+            auto newColres = newcldYOnly.getFullCollisionWith(pb, newHighest);
+            newHighest = newcldYOnly.getTopHeight(pb, oldColres);
             bool collision = (oldColres || newColres);
 
             // If moving up
@@ -81,7 +94,9 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                 // If was above and now below
                 if (collision && oldpos.y <= oldHighest && oldpos.y > newHighest)
                 {
-                    std::cout << "Teleporting on top\n";
+                    if (fallthrough && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
+                        continue;
+                    std::cout << "Teleporting on top while moving up" << std::endl;
                     // Teleport on top
                     trans.m_pos.y = newHighest;
                     pb = phys.m_pushbox + trans.m_pos;
@@ -96,7 +111,10 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                 // If close enough to top to be considered standing
                 if (collision && heightdiff <= 0.01f)
                 {
-                    std::cout << "Teleporting on top\n";
+                    if (fallthrough && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
+                        continue;
+
+                    std::cout << "Teleporting on top while moving down" << std::endl;
                     // Teleport on top
                     newHighest = newcld.getTopHeight(pb, newColres);
                     trans.m_pos.y = newHighest;
@@ -106,7 +124,10 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                 // If was below and now overlaps
                 else if (collision && scld_.m_obstacleId && oldTop >= scld_.m_collider.m_points[2].y && oldTop < newcld.m_points[2].y)
                 {
-                    std::cout << "Teleporting to bottom\n";
+                    if (fallthrough && !fallthrough->touchedObstacleBottom(scld_.m_obstacleId))
+                        continue;
+
+                    std::cout << "Teleporting to bottom while moving down" << std::endl;
                     // Teleport to bottom
                     trans.m_pos.y = newcld.m_points[2].y + 2 * pb.m_halfSize.y;
                     pb = phys.m_pushbox + trans.m_pos;
@@ -129,20 +150,31 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
         // If platform moved horizontally
         if (offset.x != 0)
         {
+            float oldHighestYOffset = 0.0f;
+            auto oldColresYOnly = newcldYOnly.getFullCollisionWith(pb, oldHighestYOffset);
+            oldHighest = newcldYOnly.getTopHeight(pb, oldColresYOnly);
             auto newColres = newcld.getFullCollisionWith(pb, newHighest);
             bool collision = (oldColres & utils::OverlapResult::BOTH_OVERLAP) || (newColres & utils::OverlapResult::BOTH_OVERLAP);
+            newHighest = newcld.getTopHeight(pb, newColres);
 
             // If it moved to the right
             if (offset.x > 0)
             {
-                // FIXME: when moving at a diagonal, this section is affected by the result of vertical offset
-                
                 // If didnt collide and now does
-                if (!((oldColres & utils::OverlapResult::OVERLAP_X) && (oldColres & utils::OverlapResult::OVERLAP_Y)) && ((newColres & utils::OverlapResult::OVERLAP_X) && (newColres & utils::OverlapResult::OVERLAP_Y)))
+                if (!((oldColresYOnly & utils::OverlapResult::OVERLAP_X) && (oldColresYOnly & utils::OverlapResult::OVERLAP_Y)) && ((newColres & utils::OverlapResult::OVERLAP_X) && (newColres & utils::OverlapResult::OVERLAP_Y)))
                 {
+                    auto rightest = newcld.getMostRightAt(pb);
+                    auto onSlope = !(rightest == newcldYOnly.m_points[1].x);
+
+                    if (fallthrough && onSlope && !fallthrough->touchedObstacleSlope(scld_.m_obstacleId))
+                        continue;
+
+                    else if (fallthrough && !onSlope && !fallthrough->touchedObstacleSide(scld_.m_obstacleId))
+                        continue;
+
                     std::cout << "Teleporting to right\n";
                     // Teleport to right edge
-                    trans.m_pos.x = newcld.getMostRightAt(pb) + pb.m_halfSize.x;
+                    trans.m_pos.x = rightest + pb.m_halfSize.x;
                     pb = phys.m_pushbox + trans.m_pos;
                 }
 
@@ -154,14 +186,25 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
             // If it moved to the left
             else if (offset.x < 0)
             {
+                auto leftest = newcld.getMostLeftAt(pb);
+                auto onSlope = !(leftest == newcldYOnly.m_points[0].x);
+
+                if (fallthrough && onSlope && !fallthrough->touchedObstacleSlope(scld_.m_obstacleId))
+                    continue;
+
+                else if (fallthrough && !onSlope && !fallthrough->touchedObstacleSide(scld_.m_obstacleId))
+                    continue;
+
                 // If didnt collide and now does
-                if (!((oldColres & utils::OverlapResult::OVERLAP_X) && (oldColres & utils::OverlapResult::OVERLAP_Y)) && ((newColres & utils::OverlapResult::OVERLAP_X) && (newColres & utils::OverlapResult::OVERLAP_Y)))
+                if (!((oldColresYOnly & utils::OverlapResult::OVERLAP_X) && (oldColresYOnly & utils::OverlapResult::OVERLAP_Y)) && ((newColres & utils::OverlapResult::OVERLAP_X) && (newColres & utils::OverlapResult::OVERLAP_Y)))
                 {
                     std::cout << "Teleporting to left\n";
                     // Teleport to right edge
-                    trans.m_pos.x = newcld.getMostLeftAt(pb) - pb.m_halfSize.x;
+                    trans.m_pos.x = leftest - pb.m_halfSize.x;
                     pb = phys.m_pushbox + trans.m_pos;
                 }
+
+                // TODO: pull while the character is on slope
 
                 // If attached from right side, pull
                 if (attachedRight)
@@ -169,8 +212,11 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
             }
 
             // If stands on it
-            if (phys.m_isGrounded && (oldColres & utils::OverlapResult::OVERLAP_X) && abs(oldpos.y - oldHighest) <= 1.0f)
+            if (phys.m_isGrounded && (oldColres & utils::OverlapResult::OVERLAP_X) && abs(trans.m_pos.y - newHighest) <= 1.0f)
             {
+                if (fallthrough && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
+                    continue;
+
                 trans.m_pos.x += offset.x;
                 phys.m_onMovingPlatform = true;
             }
