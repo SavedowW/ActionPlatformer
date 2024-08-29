@@ -15,7 +15,7 @@ void ComponentPhysical::convertToInertia(bool convertVelocity_, bool includeEnfo
     
     if (includeEnforced_ || !m_onMovingPlatform)
     {
-        std::cout << "Adding enforced velocity: " << m_enforcedOffset << std::endl;
+        //std::cout << "Adding enforced velocity: " << m_enforcedOffset << std::endl;
         m_inertia += m_enforcedOffset;
     }
 }

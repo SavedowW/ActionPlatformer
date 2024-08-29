@@ -110,6 +110,6 @@ float SlopeCollider::getMostLeftAt(const Collider &cld_)
             return m_tlPos.x + (bot - m_tlPos.y) * m_topAngleCoef;
         }
         else
-            return m_points[1].x;
+            return m_points[0].x;
     }
 }

@@ -101,7 +101,7 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                 {
                     if (fallthrough && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
                         continue;
-                    //std::cout << "Teleporting on top while moving up" << std::endl;
+                    std::cout << "Teleporting on top while moving up" << std::endl;
                     // Teleport on top
                     trans.m_pos.y = newHighest;
                     pb = phys.m_pushbox + trans.m_pos;
@@ -119,7 +119,7 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                     if (fallthrough && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
                         continue;
 
-                    //std::cout << "Teleporting on top while moving down" << std::endl;
+                    std::cout << "Teleporting on top while moving down" << std::endl;
                     // Teleport on top
                     newHighest = newcld.getTopHeight(pb, newColres);
                     trans.m_pos.y = newHighest;
@@ -132,7 +132,7 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                     if (fallthrough && !fallthrough->touchedObstacleBottom(scld_.m_obstacleId))
                         continue;
 
-                    //std::cout << "Teleporting to bottom while moving down" << std::endl;
+                    std::cout << "Teleporting to bottom while moving down" << std::endl;
                     // Teleport to bottom
                     trans.m_pos.y = newcld.m_points[2].y + 2 * pb.m_halfSize.y;
                     pb = phys.m_pushbox + trans.m_pos;
@@ -142,6 +142,7 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
             // Pull if the character is clinging to it
             if (attachedLeft || attachedRight)
             {
+                std::cout << "Attached, pushing in the movement direction (vertical)" << std::endl;
                 if (trans.m_orientation == ORIENTATION::LEFT && abs(oldRightEdge - scld_.m_collider.m_points[0].x) <= 1.0f
                         && pb.m_center.y >= scld_.m_collider.m_points[0].y && pb.m_center.y <= scld_.m_collider.m_points[3].y ||
                     trans.m_orientation == ORIENTATION::RIGHT && abs(oldLeftEdge - scld_.m_collider.m_points[1].x) <= 1.0f
@@ -162,11 +163,13 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
             bool collision = (oldColres & utils::OverlapResult::BOTH_OVERLAP) || (newColres & utils::OverlapResult::BOTH_OVERLAP);
             newHighest = newcld.getTopHeight(pb, newColres);
 
+            bool teleported = false;
+
             // If it moved to the right
             if (offset.x > 0)
             {
                 // If didnt collide and now does
-                if (!((oldColresYOnly & utils::OverlapResult::OVERLAP_X) && (oldColresYOnly & utils::OverlapResult::OVERLAP_Y)) && ((newColres & utils::OverlapResult::OVERLAP_X) && (newColres & utils::OverlapResult::OVERLAP_Y)))
+                if ((newColres & utils::OverlapResult::OVERLAP_X) && (newColres & utils::OverlapResult::OVERLAP_Y))
                 {
                     auto rightest = newcld.getMostRightAt(pb);
                     auto onSlope = !(rightest == newcldYOnly.m_points[1].x);
@@ -177,15 +180,20 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                     else if (fallthrough && !onSlope && !fallthrough->touchedObstacleSide(scld_.m_obstacleId))
                         continue;
 
-                    //std::cout << "Teleporting to right\n";
+                    std::cout << "Teleporting to right " << rand() << std::endl;
                     // Teleport to right edge
                     trans.m_pos.x = rightest + pb.m_halfSize.x;
                     pb = phys.m_pushbox + trans.m_pos;
+                    teleported = true;
                 }
 
                 // If attached from left side, pull
                 if (attachedLeft)
+                {
+                    std::cout << "Attached, pushing in the movement direction" << std::endl;
                     phys.m_extraoffset.x += offset.x;
+                    teleported = true;
+                }
             }
 
             // If it moved to the left
@@ -201,26 +209,33 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                     continue;
 
                 // If didnt collide and now does
-                if (!((oldColresYOnly & utils::OverlapResult::OVERLAP_X) && (oldColresYOnly & utils::OverlapResult::OVERLAP_Y)) && ((newColres & utils::OverlapResult::OVERLAP_X) && (newColres & utils::OverlapResult::OVERLAP_Y)))
+                if ((newColres & utils::OverlapResult::OVERLAP_X) && (newColres & utils::OverlapResult::OVERLAP_Y))
                 {
-                    //std::cout << "Teleporting to left\n";
+                    std::cout << "Teleporting to left\n";
                     // Teleport to right edge
                     trans.m_pos.x = leftest - pb.m_halfSize.x;
                     pb = phys.m_pushbox + trans.m_pos;
+                    teleported = true;
                 }
 
                 // TODO: pull while the character is on slope
 
                 // If attached from right side, pull
                 if (attachedRight)
+                {
+                    std::cout << "Attached, pushing in the movement direction" << std::endl;
                     phys.m_extraoffset.x += offset.x;
+                    teleported = true;
+                }
             }
 
             // If stands on it
-            if (phys.m_isGrounded && (oldColres & utils::OverlapResult::OVERLAP_X) && abs(trans.m_pos.y - newHighest) <= 1.0f)
+            if (!teleported && phys.m_isGrounded && (oldColres & utils::OverlapResult::OVERLAP_X) && abs(trans.m_pos.y - newHighest) <= 1.0f)
             {
                 if (fallthrough && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
                     continue;
+
+                std::cout << "Standing on top, pushing in the movement direction" << std::endl;
 
                 trans.m_pos.x += offset.x;
                 phys.m_onMovingPlatform = true;
