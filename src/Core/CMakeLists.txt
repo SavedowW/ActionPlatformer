@@ -32,6 +32,7 @@ CoreComponents.cpp
 NavGraph.cpp
 Logger.cpp
 Profile.cpp
+RectCollider.cpp
 )
 
 add_library (Core ${CORE_SRC_FILES})

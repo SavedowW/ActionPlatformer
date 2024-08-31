@@ -83,21 +83,19 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                         && pb.m_center.y >= scld_.m_collider.m_points[1].y && pb.m_center.y <= scld_.m_collider.m_points[2].y;
         
 
-        auto oldColres = scld_.m_collider.getFullCollisionWith(pb, oldHighest);
-        oldHighest = scld_.m_collider.getTopHeight(pb, oldColres);
+        auto oldColres = scld_.m_collider.checkOverlap(pb, oldHighest);
 
         // If platform moved vertically
         if (offset.y != 0)
         {
-            auto newColres = newcldYOnly.getFullCollisionWith(pb, newHighest);
-            newHighest = newcldYOnly.getTopHeight(pb, oldColres);
-            bool collision = (oldColres || newColres);
+            auto newColres = newcldYOnly.checkOverlap(pb, newHighest);
+            bool collision = (checkCollision(oldColres, CollisionResult::OVERLAP_BOTH) || checkCollision(newColres, CollisionResult::OVERLAP_BOTH));
 
             // If moving up
             if (offset.y < 0)
             {
-                // If was above and now below
-                if (collision && oldpos.y <= oldHighest && oldpos.y > newHighest)
+                // If was close enough to top to be considered standing
+                if (collision && abs(oldpos.y - oldHighest) <= 0.01f)
                 {
                     if (fallthrough && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
                         continue;
@@ -111,17 +109,14 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
             // If moving down
             else if (offset.y > 0)
             {
-                auto heightdiff = abs(oldpos.y - oldHighest);
-
-                // If close enough to top to be considered standing
-                if (collision && heightdiff <= 0.01f)
+                // If was close enough to top to be considered standing
+                if (collision && abs(oldpos.y - oldHighest) <= 0.01f)
                 {
                     if (fallthrough && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
                         continue;
 
                     std::cout << "Teleporting on top while moving down" << std::endl;
                     // Teleport on top
-                    newHighest = newcld.getTopHeight(pb, newColres);
                     trans.m_pos.y = newHighest;
                     pb = phys.m_pushbox + trans.m_pos;
                 }
@@ -148,7 +143,7 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                     trans.m_orientation == ORIENTATION::RIGHT && abs(oldLeftEdge - scld_.m_collider.m_points[1].x) <= 1.0f
                         && pb.m_center.y >= scld_.m_collider.m_points[1].y && pb.m_center.y <= scld_.m_collider.m_points[2].y)
                 {
-                    phys.m_extraoffset.y += offset.y;
+                    phys.m_extraoffset.y = (abs(phys.m_extraoffset.y) > abs(offset.y) ? phys.m_extraoffset.y : offset.y);
                 }
             }
         }
@@ -157,19 +152,17 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
         if (offset.x != 0)
         {
             float oldHighestYOffset = 0.0f;
-            auto oldColresYOnly = newcldYOnly.getFullCollisionWith(pb, oldHighestYOffset);
-            oldHighest = newcldYOnly.getTopHeight(pb, oldColresYOnly);
-            auto newColres = newcld.getFullCollisionWith(pb, newHighest);
-            bool collision = (oldColres & utils::OverlapResult::BOTH_OVERLAP) || (newColres & utils::OverlapResult::BOTH_OVERLAP);
-            newHighest = newcld.getTopHeight(pb, newColres);
+            auto oldColresYOnly = newcldYOnly.checkOverlap(pb, oldHighestYOffset);
+            auto newColres = newcld.checkOverlap(pb, newHighest);
+            bool collision = (checkCollision(oldColres, CollisionResult::OVERLAP_BOTH) || checkCollision(newColres, CollisionResult::OVERLAP_BOTH));
 
             bool teleported = false;
 
             // If it moved to the right
             if (offset.x > 0)
             {
-                // If didnt collide and now does
-                if ((newColres & utils::OverlapResult::OVERLAP_X) && (newColres & utils::OverlapResult::OVERLAP_Y))
+                // If now collides
+                if (checkCollision(newColres, CollisionResult::OVERLAP_BOTH))
                 {
                     auto rightest = newcld.getMostRightAt(pb);
                     auto onSlope = !(rightest == newcldYOnly.m_points[1].x);
@@ -180,7 +173,7 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                     else if (fallthrough && !onSlope && !fallthrough->touchedObstacleSide(scld_.m_obstacleId))
                         continue;
 
-                    std::cout << "Teleporting to right " << rand() << std::endl;
+                    std::cout << "Teleporting to right " << rand() << std::endl; // TODO: collides while standing on top
                     // Teleport to right edge
                     trans.m_pos.x = rightest + pb.m_halfSize.x;
                     pb = phys.m_pushbox + trans.m_pos;
@@ -191,7 +184,7 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                 if (attachedLeft)
                 {
                     std::cout << "Attached, pushing in the movement direction" << std::endl;
-                    phys.m_extraoffset.x += offset.x;
+                    phys.m_extraoffset.x = (abs(phys.m_extraoffset.x) > abs(offset.x) ? phys.m_extraoffset.x : offset.x);
                     teleported = true;
                 }
             }
@@ -208,8 +201,8 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                 else if (fallthrough && !onSlope && !fallthrough->touchedObstacleSide(scld_.m_obstacleId))
                     continue;
 
-                // If didnt collide and now does
-                if ((newColres & utils::OverlapResult::OVERLAP_X) && (newColres & utils::OverlapResult::OVERLAP_Y))
+                // If now collides
+                if (checkCollision(newColres, CollisionResult::OVERLAP_BOTH))
                 {
                     std::cout << "Teleporting to left\n";
                     // Teleport to right edge
@@ -224,25 +217,26 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentStaticCollider &scld_
                 if (attachedRight)
                 {
                     std::cout << "Attached, pushing in the movement direction" << std::endl;
-                    phys.m_extraoffset.x += offset.x;
+                    phys.m_extraoffset.x = (abs(phys.m_extraoffset.x) > abs(offset.x) ? phys.m_extraoffset.x : offset.x);
                     teleported = true;
                 }
             }
 
             // If stands on it
-            if (!teleported && phys.m_isGrounded && (oldColres & utils::OverlapResult::OVERLAP_X) && abs(trans.m_pos.y - newHighest) <= 1.0f)
+            if (!teleported && phys.m_isGrounded && checkCollision(oldColres, CollisionResult::OVERLAP_X) && abs(trans.m_pos.y - newHighest) <= 1.0f)
             {
                 if (fallthrough && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
                     continue;
 
                 std::cout << "Standing on top, pushing in the movement direction" << std::endl;
 
-                trans.m_pos.x += offset.x;
+                phys.m_extraoffset.x = (abs(phys.m_extraoffset.x) > abs(offset.x) ? phys.m_extraoffset.x : offset.x);
                 phys.m_onMovingPlatform = true;
             }
         }
 
         phys.m_enforcedOffset = (trans.m_pos - oldpos) + phys.m_extraoffset;
+        std::cout << phys.m_extraoffset << std::endl;
     }
 
     scld_.m_collider = newcld;
@@ -255,8 +249,8 @@ bool DynamicColliderSystem::isOverlappingWithDynamic(const SlopeCollider &cld_)
     {
         auto pb = phys.m_pushbox + trans.m_pos;
         float dump = 0.0f;
-        auto res = cld_.getFullCollisionWith(pb, dump);
-        if ((res & utils::OverlapResult::OVERLAP_X) && (res & utils::OverlapResult::OVERLAP_Y))
+        auto res = cld_.checkOverlap(pb, dump);
+        if (checkCollision(res, CollisionResult::OVERLAP_BOTH))
             return true;
     }
 
@@ -270,8 +264,8 @@ bool DynamicColliderSystem::isObstacleOverlappingWithDynamic(const SlopeCollider
     {
         auto pb = phys.m_pushbox + trans.m_pos;
         float dump = 0.0f;
-        auto res = cld_.getFullCollisionWith(pb, dump);
-        if ((res & utils::OverlapResult::OVERLAP_X) && (res & utils::OverlapResult::OVERLAP_Y))
+        auto res = cld_.checkOverlap(pb, dump);
+        if (checkCollision(res, CollisionResult::OVERLAP_BOTH))
         {
             if (!m_reg.all_of<ComponentObstacleFallthrough>(idx))
                 return true;

@@ -1,6 +1,6 @@
 #ifndef TRIGGER_H_
 #define TRIGGER_H_
-#include "Vector2.h"
+#include "RectCollider.h"
 
 struct Trigger : public Collider
 {

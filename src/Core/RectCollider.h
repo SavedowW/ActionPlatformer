@@ -1,0 +1,128 @@
+#ifndef RECT_COLLIDER_H_
+#define RECT_COLLIDER_H_
+#include "Vector2.h"
+
+enum class CollisionResult : uint8_t
+{
+    NONE = 0,
+    OVERLAP_X = 0b01,
+    OVERLAP_Y = 0b10,
+    OVERLAP_BOTH = 0b11
+};
+
+constexpr inline CollisionResult operator|(const CollisionResult& lhs_, const CollisionResult& rhs_)
+{
+    return static_cast<CollisionResult>(static_cast<uint8_t>(lhs_) | static_cast<uint8_t>(rhs_));
+}
+
+constexpr inline CollisionResult operator&(const CollisionResult& lhs_, const CollisionResult& rhs_)
+{
+    return static_cast<CollisionResult>(static_cast<uint8_t>(lhs_) & static_cast<uint8_t>(rhs_));
+}
+
+constexpr inline CollisionResult &operator|=(CollisionResult& lhs_, const CollisionResult& rhs_)
+{
+    return lhs_ = lhs_ | rhs_;
+}
+
+constexpr bool checkCollision(const CollisionResult &res_, const CollisionResult &expected_)
+{
+    return (res_ & expected_) == expected_;
+}
+
+//Only rectangle hitbox
+struct Collider
+{
+    Vector2<float> m_center;
+    Vector2<float> m_halfSize;
+    
+    public:
+    constexpr inline Collider operator+(const Vector2<float>& rhs_) const
+    {
+        return { m_center + rhs_, m_halfSize };
+    }
+
+    constexpr inline float getLeftEdge() const
+    {
+        return m_center.x - m_halfSize.x;
+    }
+
+    constexpr inline float getRightEdge() const
+    {
+        return m_center.x + m_halfSize.x;
+    }
+
+    constexpr inline float getTopEdge() const
+    {
+        return m_center.y - m_halfSize.y;
+    }
+
+    constexpr inline float getBottomEdge() const
+    {
+        return m_center.y + m_halfSize.y;
+    }
+
+    //First 6 bits describe horizontal overlap, second 6 bits - vertical
+    inline CollisionResult checkOverlap(const Collider& rhs_) const
+    {
+        auto delta = (rhs_.m_center - m_center).abs();
+        CollisionResult res = CollisionResult::NONE;
+
+        if (delta.x < rhs_.m_halfSize.x + m_halfSize.x)
+            res |= CollisionResult::OVERLAP_X;
+
+        if (delta.x < rhs_.m_halfSize.x + m_halfSize.x)
+            res |= CollisionResult::OVERLAP_Y;
+
+        return res;
+    }
+    
+    constexpr inline float rangeToLeftBound(float leftBound_) const
+    {
+        return getLeftEdge() - leftBound_;
+    }
+
+    constexpr inline float rangeToRightBound(float rightBound_) const
+    {
+        return rightBound_ - getRightEdge();
+    }
+
+    constexpr inline Vector2<float> getTopLeft() const
+    {
+        return m_center - m_halfSize;
+    }
+
+    constexpr inline Vector2<float> getSize() const
+    {
+        return m_halfSize * 2;
+    }
+
+    constexpr inline float getSquare() const
+    {
+        return (m_halfSize * 2).square();
+    }
+
+    constexpr inline float getOwnOverlapPortion(const Collider &rhs_) const
+    {
+        auto size = m_halfSize + rhs_.m_halfSize - (rhs_.m_center - m_center).abs();
+        if (size.x <= 0 || size.y <= 0)
+            return 0;
+
+        return (size.x * size.y) / getSquare();
+    }
+
+    constexpr inline bool includesPoint(const Vector2<float> point_) const
+    {
+        auto delta = (point_ - m_center).abs();
+        return delta.x <= m_halfSize.x && delta.y <= m_halfSize.y;
+    }
+    
+};
+
+inline std::ostream& operator<< (std::ostream& out_, const Collider& cld_)
+{
+    out_ << "{ " << cld_.getLeftEdge() << ", " << cld_.getTopEdge() << ", " << cld_.getRightEdge() << ", " << cld_.getBottomEdge() << " }";
+    return out_;
+}
+
+#endif

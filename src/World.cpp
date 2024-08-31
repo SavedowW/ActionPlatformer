@@ -12,15 +12,14 @@ World::World(entt::registry &reg_, Camera &cam_, ParticleSystem &partsys_, NavSy
 bool World::isAreaFree(const Collider &cld_, bool considerObstacles_) const
 {
     auto cldview = m_registry.view<ComponentStaticCollider>();
-    float dumped = 0;
 
     for (auto [idx, cld] : cldview.each())
     {
         if (!cld.m_isEnabled || cld.m_obstacleId && !considerObstacles_)
             continue;
 
-        auto colres = cld.m_collider.getFullCollisionWith(cld_, dumped);
-        if (!!(colres & utils::OverlapResult::BOTH_OVERLAP))
+        auto colres = cld.m_collider.checkOverlap(cld_);
+        if (checkCollision(colres, CollisionResult::OVERLAP_BOTH))
             return false;
     }
 
@@ -30,14 +29,13 @@ bool World::isAreaFree(const Collider &cld_, bool considerObstacles_) const
 bool World::isOverlappingObstacle(const Collider &cld_) const
 {
     auto cldview = m_registry.view<ComponentStaticCollider>();
-    float dumped = 0;
 
     for (auto [idx, cld] : cldview.each())
     {
         if (cld.m_isEnabled && cld.m_obstacleId)
         {
-            auto colres = cld.m_collider.getFullCollisionWith(cld_, dumped);
-            if (colres & utils::OverlapResult::OVERLAP_X && colres & utils::OverlapResult::OVERLAP_Y)
+            auto colres = cld.m_collider.checkOverlap(cld_);
+            if (checkCollision(colres, CollisionResult::OVERLAP_BOTH))
                 return true;
         }
     }
@@ -51,7 +49,7 @@ EntityAnywhere World::getOverlappedTrigger(const Collider &cld_, Trigger::Tag ta
 
     for (auto [idx, trg] : trgview.each())
     {
-        if ((trg.m_trigger.m_tag & tag_) == tag_ && ((trg.m_trigger.checkCollisionWith(cld_) & utils::OverlapResult::BOTH_OOT) == utils::OverlapResult::BOTH_OVERLAP))
+        if ((trg.m_trigger.m_tag & tag_) == tag_ && checkCollision(trg.m_trigger.checkOverlap(cld_), CollisionResult::OVERLAP_BOTH))
             return {&m_registry, idx};
     }
 
@@ -78,22 +76,6 @@ bool World::touchingWallAt(ORIENTATION checkSide_, const Vector2<float> &pos_) c
         }
     }
 
-    return false;
-}
-
-bool World::touchingGround(const Collider &cld_, const ComponentObstacleFallthrough &fallthrough_) const
-{
-    auto cldview = m_registry.view<ComponentStaticCollider>();
-    for (auto [idx, cld] : cldview.each())
-    {
-        if (!cld.m_isEnabled || cld.m_obstacleId && fallthrough_.checkIgnoringObstacle(cld.m_obstacleId))
-            continue;
-
-        float dump = 0;
-        auto cldres = cld.m_collider.getFullCollisionWith(cld_, dump);
-        if ((cldres & utils::OverlapResult::OVERLAP_X) && (cldres & (utils::OverlapResult::TOUCH_MIN1_MAX2 << 6)))
-            return true;
-    }
     return false;
 }
 

@@ -329,7 +329,7 @@ public:
         const auto &inq = compInput.m_inputResolver->getInputQueue();
         auto pb = physical.m_pushbox + transform.m_pos;
 
-        if (cworld.touchingGround(pb, cobs))
+        if (physical.m_isGrounded)
             return ORIENTATION::UNSPECIFIED;
 
         if (physical.getPosOffest().x >= -0.5f)

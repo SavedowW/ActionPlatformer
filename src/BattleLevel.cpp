@@ -169,16 +169,16 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_decor = std::move(bld.buildLevel("Resources/Sprites/Tiles/tilemap.json", m_tlmap, playerId));
 
     auto newcld = m_registry.create();
-    m_registry.emplace<ComponentStaticCollider>(newcld, SlopeCollider(getTilePos(Vector2{20.0f, 21.0f}), Vector2{16.0f, 16.0f}, 1), 1);
-    m_registry.emplace<MoveCollider2Points>(newcld, getTilePos(Vector2{20.0f, 21.0f}), getTilePos(Vector2{20.0f, 16.0f}), 180.0f);
+    m_registry.emplace<ComponentStaticCollider>(newcld, SlopeCollider(getTilePos(Vector2{20.0f, 21.0f}), Vector2{16.0f, 16.0f}, 1), 0);
+    m_registry.emplace<MoveCollider2Points>(newcld, getTilePos(Vector2{20.0f, 17.0f}), getTilePos(Vector2{15.0f, 21.0f}), 180.0f);
 
     newcld = m_registry.create();
-    m_registry.emplace<ComponentStaticCollider>(newcld, SlopeCollider(getTilePos(Vector2{17.0f, 21.5f}), Vector2{16.0f, 0.0f}, -1), 1);
-    m_registry.emplace<MoveCollider2Points>(newcld, getTilePos(Vector2{17.0f, 21.5f}), getTilePos(Vector2{17.0f, 16.5f}), 180.0f);
+    m_registry.emplace<ComponentStaticCollider>(newcld, SlopeCollider(getTilePos(Vector2{17.0f, 21.0f}), Vector2{16.0f, 0.0f}, -1), 0);
+    m_registry.emplace<MoveCollider2Points>(newcld, getTilePos(Vector2{17.0f, 17.5f}), getTilePos(Vector2{12.0f, 21.5f}), 180.0f);
 
     newcld = m_registry.create();
-    m_registry.emplace<ComponentStaticCollider>(newcld, SlopeCollider(getTilePos(Vector2{19.0f, 21.0f}), Vector2{16.0f * 2, 16.0f}, 0), 1);
-    m_registry.emplace<MoveCollider2Points>(newcld, getTilePos(Vector2{18.5f, 21.0f}), getTilePos(Vector2{18.5f, 16.0f}), 180.0f);
+    m_registry.emplace<ComponentStaticCollider>(newcld, SlopeCollider(getTilePos(Vector2{19.0f, 21.0f}), Vector2{16.0f * 2, 16.0f}, 0), 0);
+    m_registry.emplace<MoveCollider2Points>(newcld, getTilePos(Vector2{18.5f, 17.0f}), getTilePos(Vector2{13.5f, 21.0f}), 180.0f);
 }
 
 void BattleLevel::enter()

@@ -73,8 +73,9 @@ bool BlindChaseState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     const auto &ownTrans = owner_.reg->get<ComponentTransform>(owner_.idx);
     const auto &tarTrans = owner_.reg->get<ComponentTransform>(ai.m_chaseTarget);
 
-    if ((nav.m_currentOwnConnection->m_traverses[0] & (1 << Traverse::FallthroughBitID)) || (nav.m_currentOwnConnection->m_traverses[1] & (1 << Traverse::FallthroughBitID)))
-        owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx).setIgnoringObstacles();
+    if (nav.m_currentOwnConnection)
+        if ((nav.m_currentOwnConnection->m_traverses[0] & (1 << Traverse::FallthroughBitID)) || (nav.m_currentOwnConnection->m_traverses[1] & (1 << Traverse::FallthroughBitID)))
+            owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx).setIgnoringObstacles();
 
     auto delta = tarTrans.m_pos - ownTrans.m_pos;
     float range = abs(delta.x);

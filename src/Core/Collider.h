@@ -1,6 +1,7 @@
 #ifndef COLLIDER_H_
 #define COLLIDER_H_
 #include "Vector2.h"
+#include "RectCollider.h"
 
 /*
         p0
@@ -37,63 +38,8 @@ struct SlopeCollider
     Vector2<float> m_points[4];
     void generatePoints();
 
-    inline utils::OverlapResult getFullCollisionWith(const Collider &cld_, float &highestPoint_) const
-    {
-        float leftEdge = cld_.getLeftEdge();
-        float rightEdge = cld_.getRightEdge();
-        float topEdge = cld_.getTopEdge();
-        float bottomEdge = cld_.getBottomEdge();
-
-        auto hRes = utils::getOverlap<0>(m_points[0].x, m_points[1].x, leftEdge, rightEdge);
-
-        float highest = 0;
-
-        if (hRes == utils::OverlapResult::NONE)
-            return hRes;
-
-        if (m_topAngleCoef == 0) // Flat
-        {
-            highest = m_highestSlopePoint;
-        }
-        else if (m_topAngleCoef > 0) // Goes down to the right
-        {
-            auto x = std::max(m_tlPos.x, leftEdge);
-            highest = getHeightAt(x);
-        }
-        else // Goes up to the right
-        {
-            auto x = std::min(m_points[1].x, rightEdge);
-            highest = getHeightAt(x);
-        }
-
-        hRes |= utils::getOverlap<6>(highest, m_points[2].y, topEdge, bottomEdge);
-
-        if ((hRes & utils::OverlapResult::OVERLAP_X) && (hRes & utils::OverlapResult::OVERLAP_Y))
-        {
-            hRes |= utils::OverlapResult::BOTH_OVERLAP;
-        }
-        else if ((hRes & utils::OverlapResult::TOUCH_X) && (hRes & utils::OverlapResult::TOUCH_Y))
-        {
-            hRes |= utils::OverlapResult::BOTH_TOUCH;
-        }
-        else if ((hRes & utils::OverlapResult::OOT_X) && (hRes & utils::OverlapResult::OOT_Y))
-        {
-            hRes |= utils::OverlapResult::BOTH_OOT;
-        }
-
-        if (!!(hRes & utils::OverlapResult::OOT_Y))
-        {
-            highestPoint_ = highest;
-
-            if (bottomEdge >= m_lowestSlopePoint)
-                hRes |= utils::OverlapResult::OOT_BOX;
-
-            if (topEdge <= m_lowestSlopePoint)
-                hRes |= utils::OverlapResult::OOT_SLOPE;
-        }
-
-        return hRes;
-    }
+    CollisionResult checkOverlap(const Collider &cld_) const;
+    CollisionResult checkOverlap(const Collider &cld_, float &highestPoint_) const;
 
     int getOrientationDir() const;
 

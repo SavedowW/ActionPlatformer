@@ -13,7 +13,7 @@ void PlayerSystem::setup(entt::entity playerId_)
 
     if (m_reg.all_of<ComponentSpawnLocation>(playerId_))
     {
-        //trans.m_pos = m_reg.get<ComponentSpawnLocation>(playerId_).m_location;
+        trans.m_pos = m_reg.get<ComponentSpawnLocation>(playerId_).m_location;
     }
 
     trans.m_orientation = ORIENTATION::RIGHT;
