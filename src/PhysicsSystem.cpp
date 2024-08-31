@@ -152,7 +152,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
         auto overlap = csc_.m_collider.checkOverlap(pb, highest);
         if (checkCollision(overlap, CollisionResult::OVERLAP_BOTH))
         {
-            if (csc_.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(csc_.m_obstacleId) || oldHeight - highest > abs(trans_.m_pos.x - oldPos.x)) || oldHeight - highest >= 0.1f + abs(csc_.m_collider.m_topAngleCoef * (trans_.m_pos.x - oldPos.x)))
+            if (csc_.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(csc_.m_obstacleId) || oldHeight - highest > abs(trans_.m_pos.x - oldPos.x)))
                 return;
 
             //std::cout << "Touched slope top, teleporting on top, offset.y > 0\n";
@@ -209,7 +209,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
         if (checkCollision(overlap, CollisionResult::OVERLAP_BOTH))
         {
             // If we can rise on top of it
-            if (abs(highest - oldPos.y) <= 1.3f * abs(trans_.m_pos.x - oldPos.x))
+            if (offset.y >= -0.01f && abs(highest - oldPos.y) <= 1.3f * abs(trans_.m_pos.x - oldPos.x))
             {
                 if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
                     return;
@@ -267,7 +267,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
         if (checkCollision(overlap, CollisionResult::OVERLAP_BOTH))
         {
              // If we can rise on top of it
-            if (abs(highest - oldPos.y) <= 1.3f * abs(trans_.m_pos.x - oldPos.x))
+            if (offset.y >= -0.01f && abs(highest - oldPos.y) <= 1.3f * abs(trans_.m_pos.x - oldPos.x))
             {
                 if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
                     return;
@@ -363,7 +363,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
     }
     else
     {
-        if (!magnetEntity(clds_, trans_, phys_, obsFallthrough_))
+        if (offset.y < -0.01f || !magnetEntity(clds_, trans_, phys_, obsFallthrough_))
             ev_.m_lostGround = true;
     }
 
