@@ -16,7 +16,7 @@ public:
 
 
 private:
-    void addCollider(ComponentStaticCollider &&cld_);
+    void addCollider(const SlopeCollider &worldCld_, int obstacleId_);
 
     Application &m_app;
     const std::string m_root;

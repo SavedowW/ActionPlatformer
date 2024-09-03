@@ -79,7 +79,8 @@ DecorLayers LevelBuilder::buildLevel(const std::string &mapDescr_, Tileset &used
             {
                 for (const auto &cld : layer["objects"])
                 {
-                    ComponentStaticCollider compcld;
+                    SlopeCollider scld;
+                    int obstacleId = 0;
 
                     Vector2<float> tl{
                             static_cast<float>(cld["x"]),
@@ -130,7 +131,7 @@ DecorLayers LevelBuilder::buildLevel(const std::string &mapDescr_, Tileset &used
                             {minx, maxy_at_minx},
                         };
 
-                        compcld.m_collider.set(points);
+                        scld.set(points);
                     }
                     else
                     {
@@ -139,7 +140,7 @@ DecorLayers LevelBuilder::buildLevel(const std::string &mapDescr_, Tileset &used
                             static_cast<float>(cld["height"])
                         };
 
-                        compcld.m_collider.set(tl, size, 0);
+                        scld.set(tl, size, 0);
                     }
 
                     if (cld.contains("properties"))
@@ -147,11 +148,11 @@ DecorLayers LevelBuilder::buildLevel(const std::string &mapDescr_, Tileset &used
                         for (const auto &prop : cld["properties"])
                         {
                             if (prop["name"] == "ObstacleGroup")
-                                compcld.m_obstacleId = static_cast<int>(prop["value"]);
+                                obstacleId = static_cast<int>(prop["value"]);
                         }
                     }
-
-                    addCollider(std::move(compcld));
+   
+                    addCollider(scld, obstacleId);
                 }
             }
             else if (layer["name"] == "Navigation")
@@ -168,8 +169,9 @@ DecorLayers LevelBuilder::buildLevel(const std::string &mapDescr_, Tileset &used
     return dmap;
 }
 
-void LevelBuilder::addCollider(ComponentStaticCollider &&cld_)
+void LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obstacleId_)
 {
     auto newid = m_reg.create();
-    m_reg.emplace<ComponentStaticCollider>(newid, std::forward<ComponentStaticCollider>(cld_));
+    auto &tr = m_reg.emplace<ComponentTransform>(newid, worldCld_.m_tlPos, ORIENTATION::RIGHT);
+    m_reg.emplace<ComponentStaticCollider>(newid, ComponentStaticCollider(tr.m_pos, SlopeCollider({0.0f, 0.0f}, worldCld_.m_size, worldCld_.m_topAngleCoef), obstacleId_));
 }

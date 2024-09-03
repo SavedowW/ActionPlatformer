@@ -94,6 +94,15 @@ void GenericState::spawnParticle(const ParticleTemplate &partemplate_, const Com
 
     rp.angle = atan(phys_.m_onSlopeWithAngle) * 180 / 3.1415;
 
+    if (partemplate_.m_tieRule == TieRule::TIE_TO_GROUND)
+    {
+        rp.m_tiePosTo = phys_.m_onGround;
+    }
+    else if (partemplate_.m_tieRule == TieRule::TIE_TO_WALL)
+    {
+        rp.m_tiePosTo = phys_.m_onWall;
+    }
+
     world_.getParticleSys().makeParticle(rp);
 }
 
@@ -121,6 +130,15 @@ void GenericState::spawnParticle(const ParticleTemplate &partemplate_, const Com
         rp.pos.y += partemplate_.offset.y;
 
     rp.angle = atan(phys_.m_onSlopeWithAngle) * 180 / 3.1415;
+
+    if (partemplate_.m_tieRule == TieRule::TIE_TO_GROUND)
+    {
+        rp.m_tiePosTo = phys_.m_onGround;
+    }
+    else if (partemplate_.m_tieRule == TieRule::TIE_TO_WALL)
+    {
+        rp.m_tiePosTo = phys_.m_onWall;
+    }
 
     world_.getParticleSys().makeParticle(rp);
 }
@@ -207,12 +225,6 @@ PhysicalState &PhysicalState::setUpdateSpeedLimitData(TimelineProperty<Vector2<f
     return *this;
 }
 
-PhysicalState &PhysicalState::setGroundedOnSwitch(bool isGrounded_)
-{
-    m_setGroundedOnSwitch = isGrounded_;
-    return *this;
-}
-
 PhysicalState &PhysicalState::setCooldown(FrameTimer<true> *cooldown_, int cooldownTime_)
 {
     m_cooldown = cooldown_;
@@ -261,10 +273,6 @@ void PhysicalState::enter(EntityAnywhere owner_, CharState from_)
     // Convert velocity
     if (m_convertVelocityOnSwitch || m_convertEnforcedVelocity)
         physical.convertToInertia(m_convertVelocityOnSwitch, m_convertEnforcedVelocity);
-
-    // Force grounded
-    if (m_setGroundedOnSwitch.has_value())
-        physical.m_isGrounded = *m_setGroundedOnSwitch;
 
     // set cooldown if necessary
     if (m_cooldown)

@@ -85,8 +85,9 @@ ComponentPlayerInput::ComponentPlayerInput(std::unique_ptr<InputResolver> &&inpu
 {
 }
 
-ComponentStaticCollider::ComponentStaticCollider(const SlopeCollider &collider_, int obstacleId_) :
-    m_collider(collider_),
+ComponentStaticCollider::ComponentStaticCollider(const Vector2<float> &pos_, const SlopeCollider &collider_, int obstacleId_) :
+    m_proto(collider_),
+    m_resolved(pos_, collider_.m_size, collider_.m_topAngleCoef),
     m_obstacleId(obstacleId_)
 {
 

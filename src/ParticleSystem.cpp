@@ -37,9 +37,14 @@ void ParticleSystem::makeParticle(const ParticleRecipe &particle_)
     for (int i = 0; i < particle_.count; ++i)
     {
         auto pid = m_registry.create();
-        m_registry.emplace<ComponentTransform>(pid, particle_.pos, ORIENTATION::UNSPECIFIED);
+        auto &trans = m_registry.emplace<ComponentTransform>(pid, particle_.pos, ORIENTATION::UNSPECIFIED);
         auto &pprim = m_registry.emplace<ComponentParticlePrimitive>(pid, particle_.flip);
-        m_registry.emplace<ComponentParticlePhysics>(pid);
+        auto &phys = m_registry.emplace<ComponentParticlePhysics>(pid);
+        if (particle_.m_tiePosTo != entt::null)
+        {
+            pprim.m_tieTransform = particle_.m_tiePosTo;
+            trans.m_pos -= m_registry.get<ComponentTransform>(particle_.m_tiePosTo).m_pos;
+        }
     
         auto &animrnd = m_registry.emplace<ComponentAnimationRenderable>(pid);
         m_registry.emplace<RenderLayer<LAYER>>(pid);
@@ -75,6 +80,12 @@ ParticleTemplate::ParticleTemplate(int count_, const Vector2<float> &offset_, in
     horizontalFlipGate(std::forward<utils::Gate<float>>(horizontalFlipGate_)),
     verticalFlipGate(std::forward<utils::Gate<float>>(verticalFlipGate_))
 {
+}
+
+ParticleTemplate &ParticleTemplate::setTieRules(TieRule tieRule_)
+{
+    m_tieRule = tieRule_;
+    return *this;
 }
 
 ParticleRecipe::ParticleRecipe(const ParticleTemplate &template_) :

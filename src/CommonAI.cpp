@@ -211,7 +211,7 @@ bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
 
     auto *currentcon = &nav.m_currentPath->m_fullGraph[nav.m_currentOwnConnection->m_ownId];
     
-    if ((!nav.m_checkIfGrounded || phys.m_isGrounded) && *currentcon->m_nextConnection && currentcon->m_nextConnection != currentcon && pb.includesPoint(nav.m_currentPath->m_graph->getNodePos(currentcon->m_con->m_nodes[currentcon->m_nextNode])))
+    if ((!nav.m_checkIfGrounded || (phys.m_onGround != entt::null)) && *currentcon->m_nextConnection && currentcon->m_nextConnection != currentcon && pb.includesPoint(nav.m_currentPath->m_graph->getNodePos(currentcon->m_con->m_nodes[currentcon->m_nextNode])))
     {
         currentcon = *currentcon->m_nextConnection;
         nav.m_currentOwnConnection = currentcon->m_con;
@@ -242,7 +242,7 @@ bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
 
     auto &traverse = currentcon->m_con->m_traverses[1 - currentcon->m_nextNode];
 
-    if (phys.m_isGrounded && (((traverse >> Traverse::ReservedBits) & static_cast<Traverse::TraitT>(TraverseTraits::FALL)) ||
+    if ((phys.m_onGround != entt::null) && (((traverse >> Traverse::ReservedBits) & static_cast<Traverse::TraitT>(TraverseTraits::FALL)) ||
          ((traverse >> Traverse::ReservedBits) & static_cast<Traverse::TraitT>(TraverseTraits::WALK))))
     {
         if (m_currentState->m_stateId != m_moveTowards)

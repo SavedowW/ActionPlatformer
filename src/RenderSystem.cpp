@@ -103,6 +103,8 @@ void RenderSystem::drawParticle(const ComponentTransform &trans_, const Componen
         auto texSize = ren_.m_currentAnimation->getSize();
         auto animorigin = ren_.m_currentAnimation->getOrigin();
         auto texPos = trans_.m_pos;
+        if (partcl_.m_tieTransform != entt::null)
+            texPos += m_reg.get<ComponentTransform>(partcl_.m_tieTransform).m_pos;
 
         if (partcl_.m_flip & SDL_FLIP_HORIZONTAL)
             texPos.x -= (texSize.x - animorigin.x);
@@ -155,12 +157,12 @@ void RenderSystem::drawCollider(const ComponentTransform &trans_, const Componen
 
 void RenderSystem::drawCollider(const ComponentStaticCollider &cld_)
 {
-    m_renderer.drawCollider(cld_.m_collider, {255, 0, 0, Uint8(cld_.m_isEnabled ? 100 : 0)}, {255, 0, 0, 255}, m_camera);
+    m_renderer.drawCollider(cld_.m_resolved, {255, 0, 0, Uint8(cld_.m_isEnabled ? 100 : 0)}, {255, 0, 0, 255}, m_camera);
 }
 
 void RenderSystem::drawObstacle(const ComponentStaticCollider &cld_)
 {
-    m_renderer.drawCollider(cld_.m_collider, {50, 50, 255, Uint8(cld_.m_isEnabled ? 100 : 0)}, {50, 50, 255, 255}, m_camera);
+    m_renderer.drawCollider(cld_.m_resolved, {50, 50, 255, Uint8(cld_.m_isEnabled ? 100 : 0)}, {50, 50, 255, 255}, m_camera);
 }
 
 void RenderSystem::drawTrigger(const ComponentTrigger &cld_)

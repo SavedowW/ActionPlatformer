@@ -10,7 +10,7 @@ struct DynamicColliderSystem
     void updateSwitchingColliders();
     void updateMovingColliders();
 
-    void proceedMovingCollider(ComponentStaticCollider &scld_, MoveCollider2Points &twop_);
+    void proceedMovingCollider(ComponentTransform &trans_, ComponentStaticCollider &scld_, MoveCollider2Points &twop_);
 
     bool isOverlappingWithDynamic(const SlopeCollider &cld_);
     bool isObstacleOverlappingWithDynamic(const SlopeCollider &cld_, int obstacleId_);

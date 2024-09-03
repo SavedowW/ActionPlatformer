@@ -269,8 +269,6 @@ public:
         physical.m_inertia.x = 0;
 
         m_particleTimer.begin(0);
-
-        physical.m_isAttached = true;
     }
 
     virtual void leave(EntityAnywhere owner_, CharState to_) override;
@@ -286,17 +284,19 @@ public:
 
         auto orientation = transform.m_orientation;
 
-        bool stillValid = (orientation == ORIENTATION::RIGHT ? 
-            cworld.touchingWallAt(ORIENTATION::RIGHT, pb.m_center - Vector2{pb.m_halfSize.x, 0.0f}) :
-            cworld.touchingWallAt(ORIENTATION::LEFT, pb.m_center + Vector2{pb.m_halfSize.x, 0.0f}));
+        auto touchedWall = (orientation == ORIENTATION::RIGHT ? 
+            cworld.getTouchedWallAt(ORIENTATION::RIGHT, pb.m_center - Vector2{pb.m_halfSize.x, 0.0f}) :
+            cworld.getTouchedWallAt(ORIENTATION::LEFT, pb.m_center + Vector2{pb.m_halfSize.x, 0.0f}));
 
-        if (!stillValid)
+        if (touchedWall == entt::null)
         {
             if (physical.getPosOffest().y < 0)
                 physical.m_velocity.y -= 1.0f;
             
             m_parent->switchCurrentState(owner_, m_transitionOnLeave);
         }
+        else
+            physical.m_onWall = touchedWall;
 
         if (m_particleTimer.update())
         {
@@ -321,7 +321,7 @@ public:
             return ORIENTATION::UNSPECIFIED;
 
         const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
-        const auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
+        auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
         const auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
         const auto &cworld = owner_.reg->get<World>(owner_.idx);
         const auto &cobs = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
@@ -329,23 +329,31 @@ public:
         const auto &inq = compInput.m_inputResolver->getInputQueue();
         auto pb = physical.m_pushbox + transform.m_pos;
 
-        if (physical.m_isGrounded)
+        if (physical.m_onGround != entt::null)
             return ORIENTATION::UNSPECIFIED;
 
         if (physical.getPosOffest().x >= -0.5f)
         {
             if (m_cmpLeft(inq, 0))
             {
-                if (cworld.touchingWallAt(ORIENTATION::LEFT, pb.m_center + Vector2{pb.m_halfSize.x, 0.0f})) 
+                auto touchedWall = cworld.getTouchedWallAt(ORIENTATION::LEFT, pb.m_center + Vector2{pb.m_halfSize.x, 0.0f});
+                if (touchedWall != entt::null) 
+                {
+                    physical.m_onWall = touchedWall;
                     return ORIENTATION::LEFT;
+                }
             }
         }
         if (physical.getPosOffest().x <= 0.5f)
         {
             if (m_cmpRight(inq, 0))
             {
-                if (cworld.touchingWallAt(ORIENTATION::RIGHT, pb.m_center - Vector2{pb.m_halfSize.x, 0.0f})) 
+                auto touchedWall = cworld.getTouchedWallAt(ORIENTATION::RIGHT, pb.m_center - Vector2{pb.m_halfSize.x, 0.0f});
+                if (touchedWall != entt::null) 
+                {
+                    physical.m_onWall = touchedWall;
                     return ORIENTATION::RIGHT;
+                }
             }
         }
 
@@ -369,6 +377,7 @@ public:
     {
         setGravity(TimelineProperty<Vector2<float>>({0.0f, 0.020f}));
         setConvertVelocityOnSwitch(true, true);
+        setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}));
     }
 
     inline virtual void enter(EntityAnywhere owner_, CharState from_) override
@@ -376,14 +385,18 @@ public:
         ParentAction::enter(owner_, from_);
 
         auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
+        auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
+        const auto &cworld = owner_.reg->get<World>(owner_.idx);
+
+        auto pb = physical.m_pushbox + transform.m_pos;
 
         if (physical.m_inertia.y > 0)
             physical.m_inertia.y = 0;
         if (physical.m_velocity.y > 0)
             physical.m_velocity.y = 0;
-
-        physical.m_isAttached = true;
     }
+
+    virtual void leave(EntityAnywhere owner_, CharState to_) override;
 
     virtual void onOutdated(EntityAnywhere owner_)
     {
@@ -438,7 +451,7 @@ public:
         else
             physical.m_velocity += targetSpeed;
 
-        physical.m_isAttached = false;
+        physical.m_onWall = entt::null;
 
         ParentAction::onOutdated(owner_);
     }

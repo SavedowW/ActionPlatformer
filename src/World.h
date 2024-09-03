@@ -20,7 +20,7 @@ public:
     bool isAreaFree(const Collider &cld_, bool considerObstacles_) const;
     bool isOverlappingObstacle(const Collider &cld_) const;
     EntityAnywhere getOverlappedTrigger(const Collider &cld_, Trigger::Tag tag_) const;
-    bool touchingWallAt(ORIENTATION checkSide_, const Vector2<float> &pos_) const;
+    entt::entity getTouchedWallAt(ORIENTATION checkSide_, const Vector2<float> &pos_) const;
     Camera &getCamera();
     ParticleSystem &getParticleSys();
     NavSystem &getNavsys();

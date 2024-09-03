@@ -71,7 +71,8 @@ void HudSystem::drawPlayerDebug()
     m_playerLog.addRecord(std::string("Player action: ") + psm.getName());
     m_playerLog.addRecord(std::string("Ignored obstacles: ") + ignoredObstacles);
     m_playerLog.addRecord(std::string("On slope: ") + std::to_string(pphysical.m_onSlopeWithAngle));
-    m_playerLog.addRecord(std::string("Attached: ") + std::to_string(pphysical.m_isAttached));
+    m_playerLog.addRecord(std::string("Grounded: ") + std::to_string(pphysical.m_onGround != entt::null));
+    m_playerLog.addRecord(std::string("Attached: ") + std::to_string(pphysical.m_onWall != entt::null));
 
     m_playerLog.dump({gamedata::global::defaultWindowResolution.x - 1.0f, 1.0f});
 

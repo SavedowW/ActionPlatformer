@@ -49,8 +49,8 @@ void PlayerSystem::setup(entt::entity playerId_)
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerActionWallPrejump(
             m_animManager.getAnimID("Char1/wall_prejump"), {CharacterState::NONE, {CharacterState::WALL_CLING}},
-            ParticleTemplate{1, Vector2<float>{-8.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_jump"), 21,
-                0, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}))
+            std::move(ParticleTemplate{1, Vector2<float>{-8.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_jump"), 21,
+                0, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_WALL))))
         ->setTransitionOnTouchedGround(CharacterState::IDLE)
         .setDrag(TimelineProperty<Vector2<float>>({1.0f, 0.5f}))
         .setOutdatedTransition(CharacterState::FLOAT, 3)
@@ -59,8 +59,8 @@ void PlayerSystem::setup(entt::entity playerId_)
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerActionWallCling(
             m_animManager.getAnimID("Char1/wall_cling"), {CharacterState::NONE, {CharacterState::FLOAT}},
-        ParticleTemplate{1, Vector2<float>{0.0f, 25.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_slide"), 21,
-                0, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}))
+        std::move(ParticleTemplate{1, Vector2<float>{0.0f, 25.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_slide"), 21,
+                0, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_WALL))))
         ->setDrag(TimelineProperty<Vector2<float>>({
             {0, {1.0f, 0.2f}},
             {1, {1.0f, 0.4f}},
@@ -73,7 +73,6 @@ void PlayerSystem::setup(entt::entity playerId_)
         &(new PlayerState<false, true, InputComparatorTapUpLeft, InputComparatorTapUpRight, true, InputComparatorIdle, InputComparatorIdle>(
             CharacterState::PREJUMP_FORWARD, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::PRERUN, CharacterState::RUN, CharacterState::RUN_RECOVERY, CharacterState::LANDING_RECOVERY}}, m_animManager.getAnimID("Char1/prejump")))
         ->setAlignedSlopeMax(0.5f)
-        .setGroundedOnSwitch(true)
         .setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
@@ -103,7 +102,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {1, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_jump"), 22,
-                0, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
+                0, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_GROUND)},
             {2, {}},
             }))
     ));
@@ -111,8 +110,7 @@ void PlayerSystem::setup(entt::entity playerId_)
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerState<false, false, InputComparatorTapUp, InputComparatorTapUp, true, InputComparatorIdle, InputComparatorIdle>(
             CharacterState::PREJUMP, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::PRERUN, CharacterState::RUN, CharacterState::RUN_RECOVERY, CharacterState::LANDING_RECOVERY}}, m_animManager.getAnimID("Char1/prejump")))
-        ->setGroundedOnSwitch(true)
-        .setGravity({{0.0f, 0.0f}})
+        ->setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
         .setMagnetLimit(TimelineProperty<float>(4.0f))
@@ -140,7 +138,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {1, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_jump"), 22,
-                0, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
+                0, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_GROUND)},
             {2, {}},
             }))
     ));
@@ -148,8 +146,7 @@ void PlayerSystem::setup(entt::entity playerId_)
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerState<true, false, InputComparatorFail, InputComparatorFail, true, InputComparatorHoldLeft, InputComparatorHoldRight>(
             CharacterState::RUN, {CharacterState::NONE, {}}, m_animManager.getAnimID("Char1/run")))
-        ->setGroundedOnSwitch(true)
-        .setGravity({{0.0f, 0.0f}})
+        ->setGravity({{0.0f, 0.0f}})
         .setUpdateMovementData(
             TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
             TimelineProperty<Vector2<float>>( 
@@ -170,16 +167,16 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {1, ParticleTemplate{1, Vector2<float>{-10.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_run"), 26,
-                2, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
+                2, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_GROUND)},
             {2, {}},
             }))
         .setParticlesLoopable(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {5, ParticleTemplate{1, Vector2<float>{-13.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_run_loop"), 21,
-                2, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
+                2, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_GROUND)},
             {6, {}},
             {30, ParticleTemplate{1, Vector2<float>{-13.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_run_loop"), 21,
-                2, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
+                2, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_GROUND)},
             {31, {}},
             }), 50)
     ));
@@ -187,8 +184,7 @@ void PlayerSystem::setup(entt::entity playerId_)
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerState<false, true, InputComparatorHoldLeft, InputComparatorHoldRight, true, InputComparatorHoldLeft, InputComparatorHoldRight>(
             CharacterState::PRERUN, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::RUN, CharacterState::LANDING_RECOVERY}}, m_animManager.getAnimID("Char1/prerun")))
-        ->setGroundedOnSwitch(true)
-        .setGravity({{0.0f, 0.0f}})
+        ->setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
         .setMagnetLimit(TimelineProperty<float>(4.0f))
@@ -212,8 +208,7 @@ void PlayerSystem::setup(entt::entity playerId_)
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerState<true, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>(
             CharacterState::RUN_RECOVERY, {CharacterState::NONE, {CharacterState::PRERUN, CharacterState::RUN}}, m_animManager.getAnimID("Char1/run_recovery")))
-        ->setGroundedOnSwitch(true)
-        .setGravity({{0.0f, 0.0f}})
+        ->setGravity({{0.0f, 0.0f}})
         .setDrag({{0.5f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
@@ -234,8 +229,7 @@ void PlayerSystem::setup(entt::entity playerId_)
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerState<false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>(
             CharacterState::IDLE, {CharacterState::NONE, {}}, m_animManager.getAnimID("Char1/idle")))
-        ->setGroundedOnSwitch(true)
-        .setGravity({{0.0f, 0.0f}})
+        ->setGravity({{0.0f, 0.0f}})
         .setDrag(TimelineProperty<Vector2<float>>({{0, Vector2{0.1f, 0.1f}}, {3, Vector2{0.5f, 0.5f}}}))
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
@@ -249,15 +243,14 @@ void PlayerSystem::setup(entt::entity playerId_)
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerState<true, false, InputComparatorFail, InputComparatorFail, false, InputComparatorIdle, InputComparatorIdle>(
             CharacterState::LANDING_RECOVERY, {CharacterState::NONE, {}}, m_animManager.getAnimID("Char1/landing_recovery")))
-        ->setGroundedOnSwitch(true)
-        .setGravity({{0.0f, 0.0f}})
+        ->setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
         .setMagnetLimit(TimelineProperty<float>(4.0f))
         .setOutdatedTransition(CharacterState::IDLE, 14)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_land"), 36,
-                2, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
+                2, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_GROUND)},
             {1, {}},
             }))
     ));
@@ -265,15 +258,14 @@ void PlayerSystem::setup(entt::entity playerId_)
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerState<true, false, InputComparatorFail, InputComparatorFail, false, InputComparatorIdle, InputComparatorIdle>(
             CharacterState::HARD_LANDING_RECOVERY, {CharacterState::NONE, {}}, m_animManager.getAnimID("Char1/landing_recovery")))
-        ->setGroundedOnSwitch(true)
-        .setGravity({{0.0f, 0.0f}})
+        ->setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
         .setMagnetLimit(TimelineProperty<float>(4.0f))
         .setOutdatedTransition(CharacterState::IDLE, 14)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_land"), 36,
-                2, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
+                2, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_GROUND)},
             {1, {}},
             }))
     ));
@@ -281,8 +273,7 @@ void PlayerSystem::setup(entt::entity playerId_)
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerActionFloat(
             m_animManager.getAnimID("Char1/float"), {CharacterState::NONE, {}}))
-        ->setGroundedOnSwitch(false)
-        .setGravity({{0.0f, 0.5f}})
+        ->setGravity({{0.0f, 0.5f}})
         .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
         .setNoLanding(TimelineProperty<bool>({{0, true}, {4, false}}))
         .setConvertVelocityOnSwitch(false, true)

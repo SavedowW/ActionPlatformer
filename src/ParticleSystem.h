@@ -3,10 +3,19 @@
 #include "Application.h"
 #include <entt/entt.hpp>
 
+enum class TieRule
+{
+    TIE_TO_WALL,
+    TIE_TO_GROUND,
+    NONE
+};
+
 struct ParticleTemplate
 {
     ParticleTemplate(int count_, const Vector2<float> &offset_, int anim_, uint32_t lifetime_, size_t layer_,
         utils::Gate<float> &&horizontalFlipGate_, utils::Gate<float> &&verticalFlipGate_);
+
+    ParticleTemplate &setTieRules(TieRule tieRule_);
 
     ParticleTemplate() = default;
     ParticleTemplate(const ParticleTemplate &rhs_) = default;
@@ -19,6 +28,7 @@ struct ParticleTemplate
     int anim;
     uint32_t lifetime = 0;
     size_t layer;
+    TieRule m_tieRule = TieRule::NONE;
 
     utils::Gate<float> horizontalFlipGate;
     utils::Gate<float> verticalFlipGate;
@@ -35,6 +45,7 @@ struct ParticleRecipe
     uint32_t lifetime;
     float angle;
     size_t layer;
+    entt::entity m_tiePosTo = entt::null;
 };
 
 class ParticleSystem

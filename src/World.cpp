@@ -18,7 +18,7 @@ bool World::isAreaFree(const Collider &cld_, bool considerObstacles_) const
         if (!cld.m_isEnabled || cld.m_obstacleId && !considerObstacles_)
             continue;
 
-        auto colres = cld.m_collider.checkOverlap(cld_);
+        auto colres = cld.m_resolved.checkOverlap(cld_);
         if (checkCollision(colres, CollisionResult::OVERLAP_BOTH))
             return false;
     }
@@ -34,7 +34,7 @@ bool World::isOverlappingObstacle(const Collider &cld_) const
     {
         if (cld.m_isEnabled && cld.m_obstacleId)
         {
-            auto colres = cld.m_collider.checkOverlap(cld_);
+            auto colres = cld.m_resolved.checkOverlap(cld_);
             if (checkCollision(colres, CollisionResult::OVERLAP_BOTH))
                 return true;
         }
@@ -56,7 +56,7 @@ EntityAnywhere World::getOverlappedTrigger(const Collider &cld_, Trigger::Tag ta
     return {nullptr};
 }
 
-bool World::touchingWallAt(ORIENTATION checkSide_, const Vector2<float> &pos_) const
+entt::entity World::getTouchedWallAt(ORIENTATION checkSide_, const Vector2<float> &pos_) const
 {
     auto cldview = m_registry.view<ComponentStaticCollider>();
     for (auto [idx, cld] : cldview.each())
@@ -66,17 +66,17 @@ bool World::touchingWallAt(ORIENTATION checkSide_, const Vector2<float> &pos_) c
 
         if (checkSide_ == ORIENTATION::LEFT)
         {
-            if (abs(cld.m_collider.m_points[0].x - pos_.x) <= 1.0f && cld.m_collider.m_points[0].y < pos_.y && cld.m_collider.m_points[3].y > pos_.y)
-                return true;
+            if (abs(cld.m_resolved.m_points[0].x - pos_.x) <= 1.0f && cld.m_resolved.m_points[0].y < pos_.y && cld.m_resolved.m_points[3].y > pos_.y)
+                return idx;
         }
         else if (checkSide_ == ORIENTATION::RIGHT)
         {
-            if (abs(cld.m_collider.m_points[1].x - pos_.x) <= 1.0f && cld.m_collider.m_points[1].y < pos_.y && cld.m_collider.m_points[2].y > pos_.y)
-                return true;
+            if (abs(cld.m_resolved.m_points[1].x - pos_.x) <= 1.0f && cld.m_resolved.m_points[1].y < pos_.y && cld.m_resolved.m_points[2].y > pos_.y)
+                return idx;
         }
     }
 
-    return false;
+    return entt::null;
 }
 
 Camera &World::getCamera()

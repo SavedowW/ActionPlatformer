@@ -113,8 +113,7 @@ void EnemySystem::makeEnemy()
     sm.addState(std::unique_ptr<GenericState>(
         &(new NPCState<true, true>(
             Enemy1State::RUN, Enemy1StateNames.at(Enemy1State::RUN), {Enemy1State::NONE, {Enemy1State::IDLE, Enemy1State::RUN}}, m_animManager.getAnimID("Enemy1/run")))
-        ->setGroundedOnSwitch(true)
-        .setGravity({{0.0f, 0.0f}})
+        ->setGravity({{0.0f, 0.0f}})
         .setUpdateMovementData(
             TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
             TimelineProperty<Vector2<float>>( 
@@ -138,8 +137,7 @@ void EnemySystem::makeEnemy()
         &(new AimedPrejump(
             Enemy1State::PREJUMP, Enemy1StateNames.at(Enemy1State::PREJUMP), {Enemy1State::NONE, {Enemy1State::IDLE, Enemy1State::RUN}}, m_animManager.getAnimID("Enemy1/prejump"),
             0.3f, 1.5f))
-        ->setGroundedOnSwitch(true)
-        .setGravity({{0.0f, 0.0f}})
+        ->setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(Enemy1State::FLOAT)
         .setMagnetLimit(TimelineProperty<float>(4.0f))
@@ -157,8 +155,7 @@ void EnemySystem::makeEnemy()
     sm.addState(std::unique_ptr<GenericState>(
         &(new NPCState<false, false>(
             Enemy1State::IDLE, Enemy1StateNames.at(Enemy1State::IDLE), {Enemy1State::NONE, {Enemy1State::IDLE, Enemy1State::RUN}}, m_animManager.getAnimID("Enemy1/idle")))
-        ->setGroundedOnSwitch(true)
-        .setGravity({{0.0f, 0.0f}})
+        ->setGravity({{0.0f, 0.0f}})
         .setDrag(TimelineProperty<Vector2<float>>({{0, Vector2{0.1f, 0.1f}}, {3, Vector2{0.5f, 0.5f}}}))
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(Enemy1State::FLOAT)
@@ -172,8 +169,7 @@ void EnemySystem::makeEnemy()
     sm.addState(std::unique_ptr<GenericState>(
         &(new AimedFloat(
             Enemy1State::FLOAT, Enemy1StateNames.at(Enemy1State::FLOAT), {Enemy1State::NONE, {}}, m_animManager.getAnimID("Enemy1/float")))
-        ->setGroundedOnSwitch(false)
-        .setGravity({{0.0f, 0.3f}})
+        ->setGravity({{0.0f, 0.3f}})
         .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
         .setTransitionOnTouchedGround(Enemy1State::IDLE)
         .setNoLanding(TimelineProperty<bool>({{0, true}, {4, false}}))

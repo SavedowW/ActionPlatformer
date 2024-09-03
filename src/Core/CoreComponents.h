@@ -9,6 +9,7 @@
 #include "NavGraph.h"
 #include "Trigger.h"
 #include "FrameTimer.h"
+#include <entt/entt.hpp>
 #include <set>
 #include <map>
 #include <memory>
@@ -34,6 +35,7 @@ struct ComponentParticlePrimitive
     SDL_RendererFlip m_flip;
     FrameTimer<false> m_lifetime;
     float angle = 0.0f;
+    entt::entity m_tieTransform = entt::null;
 };
 
 struct ComponentSpawnLocation
@@ -69,13 +71,14 @@ struct ComponentPhysical
     Vector2<float> m_gravity;
     Vector2<float> m_inertiaMultiplier;
     Collider m_pushbox;
-    bool m_isAttached = false;
     bool m_onMovingPlatform = false;
     float m_magnetLimit = 0.0f;
     float m_onSlopeWithAngle = 0.0f;
     float m_lastSlopeAngle = 0.0f;
 
-    bool m_isGrounded = true;
+    entt::entity m_onGround = entt::null;
+    entt::entity m_onWall = entt::null;
+
     bool m_noUpwardLanding = false;
 
     // Used to identify offset applied before collision resolution
@@ -100,16 +103,18 @@ struct PhysicalEvents
 struct ComponentStaticCollider
 {
     ComponentStaticCollider() = default;
-    ComponentStaticCollider(const SlopeCollider &collider_, int obstacleId_);
+    ComponentStaticCollider(const Vector2<float> &pos_, const SlopeCollider &collider_, int obstacleId_);
 
     ComponentStaticCollider (const ComponentStaticCollider &rhs_) = delete;
     ComponentStaticCollider (ComponentStaticCollider &&rhs_) = default;
     ComponentStaticCollider &operator=(const ComponentStaticCollider &rhs_) = delete;
     ComponentStaticCollider &operator=(ComponentStaticCollider &&rhs_) = default;
 
-    SlopeCollider m_collider;
     int m_obstacleId = 0;
     bool m_isEnabled = true;
+
+    SlopeCollider m_proto;
+    SlopeCollider m_resolved;
 };
 
 struct SwitchCollider

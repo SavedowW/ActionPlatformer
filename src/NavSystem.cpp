@@ -19,7 +19,7 @@ void NavSystem::update()
     for (const auto [idx, trans, nav] : view.each())
     {
         if (nav.m_checkIfGrounded)
-            if (!m_reg.get<ComponentPhysical>(idx).m_isGrounded)
+            if (m_reg.get<ComponentPhysical>(idx).m_onGround == entt::null)
                 return;
 
         auto newCon = m_graph.findClosestConnection(trans.m_pos, nav.m_validTraitsOwnLocation);

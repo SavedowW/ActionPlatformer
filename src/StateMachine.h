@@ -159,7 +159,6 @@ public:
         TimelineProperty<Vector2<float>> &&mulOwnInrUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirInrUpd_, TimelineProperty<Vector2<float>> &&rawAddInrUpd_);
     PhysicalState &setMagnetLimit(TimelineProperty<float> &&magnetLimit_);
     PhysicalState &setUpdateSpeedLimitData(TimelineProperty<Vector2<float>> &&ownVelLimitUpd_, TimelineProperty<Vector2<float>> &&ownInrLimitUpd_);
-    PhysicalState &setGroundedOnSwitch(bool isGrounded_);
     PhysicalState &setCooldown(FrameTimer<true> *cooldown_, int cooldownTime_);
     PhysicalState &setRecoveryFrames(TimelineProperty<StateMarker> &&recoveryFrames_);
 
@@ -190,7 +189,6 @@ protected:
     TimelineProperty<float> m_magnetLimit;
 
     TimelineProperty<bool> m_canFallThrough;
-    std::optional<bool> m_setGroundedOnSwitch;
 
     FrameTimer<true> *m_cooldown = nullptr;
     uint32_t m_cooldownTime = 0;
