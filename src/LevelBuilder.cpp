@@ -1,6 +1,8 @@
 #include "LevelBuilder.h"
+#include "NavGraph.h"
 #include "TileMapHelper.hpp"
 #include "CoreComponents.h"
+#include "CameraFocusArea.h"
 #include <fstream>
 #include <limits>
 
@@ -161,12 +163,51 @@ DecorLayers LevelBuilder::buildLevel(const std::string &mapDescr_, Tileset &used
             }
             else if (layer["name"] == "Focus areas")
             {
-                std::cout << "WARNING: Focus areas parsing is not implemented yet" << std::endl;
+                std::map<int, Collider> triggerAreas;
+                for (const auto &area : layer["objects"])
+                {
+                    int id = area["id"];
+                    std::string type = area["type"];
+                    if (type == "FocusTrigger")
+                    {
+                        Vector2<float> tl{area["x"], area["y"]};
+                        Vector2<float> size{area["width"], area["height"]};
+                        triggerAreas.emplace(id, Collider(tl + size / 2.0f, size / 2.0f));
+                    }
+                    else if (type == "FocusBorder")
+                    {
+                        Vector2<float> tl = {area["x"], area["y"]};
+                        Vector2<float> size = {area["width"], area["height"]};
+
+                        auto newfocus = m_reg.create();
+                        m_reg.emplace<CameraFocusArea>(newfocus, tl + size / 2, size, *m_app.getRenderer());
+
+                        if (area.contains("properties"))
+                        {
+                            for (auto &prop : area["properties"])
+                            {
+                                if (prop["name"] == "FocusTrigger" && prop["type"] == "object")
+                                    m_reg.get<CameraFocusArea>(newfocus).overrideFocusArea(triggerAreas.at(prop["value"]));
+                                else
+                                    std::cout << "Unknown property \"" << prop["name"] << "\" of type \"" << prop["type"] << "\"" << std::endl;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        std::cout << "Unknown area type at Focus areas: \"" << type << "\" (" << id << ")" << std::endl;
+                    }
+                }
             }
         }
     }
 
     return dmap;
+}
+
+void LevelBuilder::generateGraph(NavGraph &graph_)
+{
+    
 }
 
 void LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obstacleId_)

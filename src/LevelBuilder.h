@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 
 class BattleLevel;
+class NavGraph;
 struct ComponentStaticCollider;
 
 class LevelBuilder
@@ -13,6 +14,7 @@ class LevelBuilder
 public:
     LevelBuilder(Application &app_, entt::registry &reg_);
     DecorLayers buildLevel(const std::string &mapDescr_, Tileset &usedTileset_, entt::entity playerId_);
+    void generateGraph(NavGraph &graph_);
 
 
 private:

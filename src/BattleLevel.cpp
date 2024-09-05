@@ -34,7 +34,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_registry.emplace<Navigatable>(playerId);
     m_registry.emplace<PhysicalEvents>(playerId);
 
-    auto nd1 = m_graph.makeNode(Vector2{0, 25}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
+    /*auto nd1 = m_graph.makeNode(Vector2{0, 25}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
     auto nd2 = m_graph.makeNode(Vector2{6, 25}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
     auto nd3 = m_graph.makeNode(Vector2{10, 21}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
     auto nd4 = m_graph.makeNode(Vector2{21, 21}.mulComponents(gamedata::global::tileSize) + Vector2{0.0f, gamedata::global::tileSize.y / 2.0f});
@@ -154,21 +154,22 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
 
     m_graph.makeConnection(nd20, nd22,
         Traverse::makeSignature(false, TraverseTraits::FALL), 
-        Traverse::makeSignature(false));
+        Traverse::makeSignature(false));*/
 
     m_playerId = playerId;
     m_camsys.m_playerId = playerId;
     m_hudsys.m_playerId = playerId;
     m_enemysys.m_playerId = playerId;
 
-    //m_enemysys.makeEnemy();
+    m_enemysys.makeEnemy();
 
     m_tlmap.load("Tiles/tiles");
 
     LevelBuilder bld(*application_, m_registry);
     m_decor = std::move(bld.buildLevel("Resources/Sprites/Tiles/tilemap.json", m_tlmap, playerId));
+    bld.generateGraph(m_graph);
 
-    auto newcld = m_registry.create();
+    /*auto newcld = m_registry.create();
     m_registry.emplace<ComponentTransform>(newcld, getTilePos(Vector2{20.0f, 21.0f}), ORIENTATION::RIGHT);
     m_registry.emplace<ComponentStaticCollider>(newcld, getTilePos(Vector2{20.0f, 21.0f}), SlopeCollider({0.0f, 0.0f}, Vector2{16.0f, 16.0f}, 1), 0);
     m_registry.emplace<MoveCollider2Points>(newcld, getTilePos(Vector2{20.0f, 17.0f}), getTilePos(Vector2{15.0f, 21.0f}), 180.0f);
@@ -181,7 +182,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     newcld = m_registry.create();
     m_registry.emplace<ComponentTransform>(newcld, getTilePos(Vector2{19.0f, 21.0f}), ORIENTATION::RIGHT);
     m_registry.emplace<ComponentStaticCollider>(newcld, getTilePos(Vector2{19.0f, 21.0f}), SlopeCollider({0.0f, 0.0f}, Vector2{16.0f * 2, 16.0f}, 0), 0);
-    m_registry.emplace<MoveCollider2Points>(newcld, getTilePos(Vector2{18.5f, 17.0f}), getTilePos(Vector2{13.5f, 21.0f}), 180.0f);
+    m_registry.emplace<MoveCollider2Points>(newcld, getTilePos(Vector2{18.5f, 17.0f}), getTilePos(Vector2{13.5f, 21.0f}), 180.0f);*/
 }
 
 void BattleLevel::enter()
@@ -192,10 +193,6 @@ void BattleLevel::enter()
 
     m_camera.setScale(gamedata::global::minCameraScale);
     m_camera.setPos({0.0f, 0.0f});
-
-    auto newfocus = m_registry.create();
-    m_registry.emplace<CameraFocusArea>(newfocus, getTilePos(Vector2{53, 23}), gamedata::global::tileSize.mulComponents(Vector2{20.0f, 16.0f}), *m_application->getRenderer());
-    m_registry.get<CameraFocusArea>(newfocus).overrideFocusArea({getTilePos(Vector2{53.0f, 24.0f}), gamedata::global::tileSize.mulComponents(Vector2{4.0f, 12.0f}) / 2.0f});
 }
 
 void BattleLevel::update()

@@ -236,7 +236,7 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentTransform &trans_, Co
         }
 
         phys.m_enforcedOffset = (trans.m_pos - oldpos) + phys.m_extraoffset;
-        std::cout << phys.m_extraoffset << std::endl;
+        //std::cout << phys.m_extraoffset << std::endl;
     }
 
     scld_.m_resolved = newcld;
