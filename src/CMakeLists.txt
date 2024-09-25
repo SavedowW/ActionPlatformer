@@ -34,6 +34,8 @@ AISystem.cpp
 NavSystem.cpp
 DynamicColliderSystem.cpp
 ParticleSystem.cpp
+Hit.cpp
+BattleSystem.cpp
 )
 
 set(INCLUDE_DIRS

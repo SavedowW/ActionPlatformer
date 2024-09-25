@@ -50,7 +50,7 @@ void SlopeCollider::generatePoints()
     m_hasBox = m_lowestSlopePoint - m_points[2].y;
 }
 
-CollisionResult SlopeCollider::checkOverlap(const Collider &cld_) const
+OverlapResult SlopeCollider::checkOverlap(const Collider &cld_) const
 {
     float leftEdge = cld_.getLeftEdge();
     float rightEdge = cld_.getRightEdge();
@@ -60,58 +60,58 @@ CollisionResult SlopeCollider::checkOverlap(const Collider &cld_) const
     if (m_topAngleCoef > 0)
     {
         float highesty = 0.0f;
-        CollisionResult res = CollisionResult::NONE;
+        OverlapResult res = OverlapResult::NONE;
 
         if (leftEdge > m_points[0].x && rightEdge < m_points[1].x)
         {
-            res |= CollisionResult::OVERLAP_X;
+            res |= OverlapResult::OVERLAP_X;
             highesty = getHeightAt(leftEdge);
         }
         else if (leftEdge <= m_points[0].x && rightEdge > m_points[0].x)
         {
-            res |= CollisionResult::OVERLAP_X;
+            res |= OverlapResult::OVERLAP_X;
             highesty = m_points[0].y;
         }
         else if (leftEdge < m_points[1].x && rightEdge >= m_points[1].x)
         {
-            res |= CollisionResult::OVERLAP_X;
+            res |= OverlapResult::OVERLAP_X;
             highesty = getHeightAt(leftEdge);
         }
         else
-            return CollisionResult::NONE;
+            return OverlapResult::NONE;
         
         if (bottomEdge <= highesty || topEdge >= m_points[2].y)
             return res;
         
-        return CollisionResult::OVERLAP_BOTH;
+        return OverlapResult::OVERLAP_BOTH;
     }
     else if (m_topAngleCoef < 0)
     {
         float highesty = 0.0f;
-        CollisionResult res = CollisionResult::NONE;
+        OverlapResult res = OverlapResult::NONE;
 
         if (leftEdge > m_points[0].x && rightEdge < m_points[1].x)
         {
-            res |= CollisionResult::OVERLAP_X;
+            res |= OverlapResult::OVERLAP_X;
             highesty = getHeightAt(rightEdge);
         }
         else if (leftEdge < m_points[1].x && rightEdge >= m_points[1].x)
         {
-            res |= CollisionResult::OVERLAP_X;
+            res |= OverlapResult::OVERLAP_X;
             highesty = m_points[1].y;
         }
         else if (leftEdge <= m_points[0].x && rightEdge > m_points[0].x)
         {
-            res |= CollisionResult::OVERLAP_X;
+            res |= OverlapResult::OVERLAP_X;
             highesty = getHeightAt(rightEdge);
         }
         else
-            return CollisionResult::NONE;
+            return OverlapResult::NONE;
         
         if (bottomEdge <= highesty || topEdge >= m_points[2].y)
             return res;
         
-        return CollisionResult::OVERLAP_BOTH;
+        return OverlapResult::OVERLAP_BOTH;
     }
     else
     {
@@ -119,21 +119,21 @@ CollisionResult SlopeCollider::checkOverlap(const Collider &cld_) const
         auto center = m_tlPos + halfSize;
 
         auto delta = (cld_.m_center - center).abs();
-        CollisionResult res = CollisionResult::NONE;
+        OverlapResult res = OverlapResult::NONE;
 
         if (delta.x < cld_.m_halfSize.x + halfSize.x)
-            res |= CollisionResult::OVERLAP_X;
+            res |= OverlapResult::OVERLAP_X;
 
         if (delta.y < cld_.m_halfSize.y + halfSize.y)
         {
-            res |= CollisionResult::OVERLAP_Y;
+            res |= OverlapResult::OVERLAP_Y;
         }
 
         return res;
     }
 }
 
-CollisionResult SlopeCollider::checkOverlap(const Collider &cld_, float &highestPoint_) const
+OverlapResult SlopeCollider::checkOverlap(const Collider &cld_, float &highestPoint_) const
 {
     float leftEdge = cld_.getLeftEdge();
     float rightEdge = cld_.getRightEdge();
@@ -143,60 +143,60 @@ CollisionResult SlopeCollider::checkOverlap(const Collider &cld_, float &highest
     if (m_topAngleCoef > 0)
     {
         float highesty = 0.0f;
-        CollisionResult res = CollisionResult::NONE;
+        OverlapResult res = OverlapResult::NONE;
 
         if (leftEdge > m_points[0].x && rightEdge < m_points[1].x)
         {
-            res |= CollisionResult::OVERLAP_X;
+            res |= OverlapResult::OVERLAP_X;
             highesty = getHeightAt(leftEdge);
         }
         else if (leftEdge <= m_points[0].x && rightEdge > m_points[0].x)
         {
-            res |= CollisionResult::OVERLAP_X;
+            res |= OverlapResult::OVERLAP_X;
             highesty = m_points[0].y;
         }
         else if (leftEdge < m_points[1].x && rightEdge >= m_points[1].x)
         {
-            res |= CollisionResult::OVERLAP_X;
+            res |= OverlapResult::OVERLAP_X;
             highesty = getHeightAt(leftEdge);
         }
         else
-            return CollisionResult::NONE;
+            return OverlapResult::NONE;
         
         highestPoint_ = highesty;
         if (bottomEdge <= highesty || topEdge >= m_points[2].y)
             return res;
         
-        return CollisionResult::OVERLAP_BOTH;
+        return OverlapResult::OVERLAP_BOTH;
     }
     else if (m_topAngleCoef < 0)
     {
         float highesty = 0.0f;
-        CollisionResult res = CollisionResult::NONE;
+        OverlapResult res = OverlapResult::NONE;
 
         if (leftEdge > m_points[0].x && rightEdge < m_points[1].x)
         {
-            res |= CollisionResult::OVERLAP_X;
+            res |= OverlapResult::OVERLAP_X;
             highesty = getHeightAt(rightEdge);
         }
         else if (leftEdge < m_points[1].x && rightEdge >= m_points[1].x)
         {
-            res |= CollisionResult::OVERLAP_X;
+            res |= OverlapResult::OVERLAP_X;
             highesty = m_points[1].y;
         }
         else if (leftEdge <= m_points[0].x && rightEdge > m_points[0].x)
         {
-            res |= CollisionResult::OVERLAP_X;
+            res |= OverlapResult::OVERLAP_X;
             highesty = getHeightAt(rightEdge);
         }
         else
-            return CollisionResult::NONE;
+            return OverlapResult::NONE;
         
         highestPoint_ = highesty;
         if (bottomEdge <= highesty || topEdge >= m_points[2].y)
             return res;
         
-        return CollisionResult::OVERLAP_BOTH;
+        return OverlapResult::OVERLAP_BOTH;
     }
     else
     {
@@ -204,16 +204,16 @@ CollisionResult SlopeCollider::checkOverlap(const Collider &cld_, float &highest
         auto center = m_tlPos + halfSize;
 
         auto delta = (cld_.m_center - center).abs();
-        CollisionResult res = CollisionResult::NONE;
+        OverlapResult res = OverlapResult::NONE;
 
         if (delta.x < cld_.m_halfSize.x + halfSize.x)
         {
             highestPoint_ = m_points[0].y;
-            res |= CollisionResult::OVERLAP_X;
+            res |= OverlapResult::OVERLAP_X;
         }
 
         if (delta.y < cld_.m_halfSize.y + halfSize.y)
-            res |= CollisionResult::OVERLAP_Y;
+            res |= OverlapResult::OVERLAP_Y;
 
         return res;
     }
@@ -222,24 +222,6 @@ CollisionResult SlopeCollider::checkOverlap(const Collider &cld_, float &highest
 int SlopeCollider::getOrientationDir() const
 {
     return ValueToOrientationInt(-m_topAngleCoef);
-}
-
-float SlopeCollider::getTopHeight(const Collider &cld_, utils::OverlapResult horOverlapType_) const
-{
-    if (m_topAngleCoef == 0) // Flat
-    {
-        return m_highestSlopePoint;
-    }
-    else if (m_topAngleCoef > 0) // Goes down to the right
-    {
-        auto x = std::max(m_tlPos.x, cld_.getLeftEdge());
-        return getHeightAt(x);
-    }
-    else // Goes up to the right
-    {
-        auto x = std::min(m_points[1].x, cld_.getRightEdge());
-        return getHeightAt(x);
-    }
 }
 
 float SlopeCollider::getHeightAt(float x) const
@@ -281,4 +263,14 @@ float SlopeCollider::getMostLeftAt(const Collider &cld_)
         else
             return m_points[0].x;
     }
+}
+
+bool SlopeCollider::containsPoint(const Vector2<float> &point_) const
+{
+    if (point_.x < m_points[0].x || point_.x > m_points[0].x)
+        return false;
+
+    auto highest = getHeightAt(point_.x);
+
+    return point_.y >= highest && point_.y <= m_points[2].y;
 }

@@ -3,6 +3,7 @@
 #include "Vector2.h"
 #include "StateMarker.hpp"
 #include "World.h"
+#include "Hit.h"
 #include "CoreComponents.h"
 
 using CharState = int;
@@ -148,6 +149,8 @@ public:
         return *this;
     }
 
+    void updateHurtboxes(BattleActor &battleActor_) const;
+
     PhysicalState &setGravity(TimelineProperty<Vector2<float>> &&gravity_);
     PhysicalState &setDrag(TimelineProperty<Vector2<float>> &&drag_);
     PhysicalState &setCanFallThrough(TimelineProperty<bool> &&fallThrough_);
@@ -161,6 +164,7 @@ public:
     PhysicalState &setUpdateSpeedLimitData(TimelineProperty<Vector2<float>> &&ownVelLimitUpd_, TimelineProperty<Vector2<float>> &&ownInrLimitUpd_);
     PhysicalState &setCooldown(FrameTimer<true> *cooldown_, int cooldownTime_);
     PhysicalState &setRecoveryFrames(TimelineProperty<StateMarker> &&recoveryFrames_);
+    PhysicalState &setHurtboxes(Hurtbox &&hurtboxes_);
 
     virtual void onTouchedGround(EntityAnywhere owner_);
     virtual void onLostGround(EntityAnywhere owner_);
@@ -199,6 +203,9 @@ protected:
 
     TimelineProperty<bool> m_noUpwardLanding;
     bool m_convertEnforcedVelocity = false;
+
+    bool m_hasHurtboxes = false;
+    Hurtbox m_hurtboxes;
 };
 
 /*

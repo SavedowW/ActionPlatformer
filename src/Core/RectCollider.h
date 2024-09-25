@@ -2,7 +2,7 @@
 #define RECT_COLLIDER_H_
 #include "Vector2.h"
 
-enum class CollisionResult : uint8_t
+enum class OverlapResult : uint8_t
 {
     NONE = 0,
     OVERLAP_X = 0b01,
@@ -10,22 +10,22 @@ enum class CollisionResult : uint8_t
     OVERLAP_BOTH = 0b11
 };
 
-constexpr inline CollisionResult operator|(const CollisionResult& lhs_, const CollisionResult& rhs_)
+constexpr inline OverlapResult operator|(const OverlapResult& lhs_, const OverlapResult& rhs_)
 {
-    return static_cast<CollisionResult>(static_cast<uint8_t>(lhs_) | static_cast<uint8_t>(rhs_));
+    return static_cast<OverlapResult>(static_cast<uint8_t>(lhs_) | static_cast<uint8_t>(rhs_));
 }
 
-constexpr inline CollisionResult operator&(const CollisionResult& lhs_, const CollisionResult& rhs_)
+constexpr inline OverlapResult operator&(const OverlapResult& lhs_, const OverlapResult& rhs_)
 {
-    return static_cast<CollisionResult>(static_cast<uint8_t>(lhs_) & static_cast<uint8_t>(rhs_));
+    return static_cast<OverlapResult>(static_cast<uint8_t>(lhs_) & static_cast<uint8_t>(rhs_));
 }
 
-constexpr inline CollisionResult &operator|=(CollisionResult& lhs_, const CollisionResult& rhs_)
+constexpr inline OverlapResult &operator|=(OverlapResult& lhs_, const OverlapResult& rhs_)
 {
     return lhs_ = lhs_ | rhs_;
 }
 
-constexpr bool checkCollision(const CollisionResult &res_, const CollisionResult &expected_)
+constexpr bool checkCollision(const OverlapResult &res_, const OverlapResult &expected_)
 {
     return (res_ & expected_) == expected_;
 }
@@ -63,16 +63,16 @@ struct Collider
     }
 
     //First 6 bits describe horizontal overlap, second 6 bits - vertical
-    inline CollisionResult checkOverlap(const Collider& rhs_) const
+    inline OverlapResult checkOverlap(const Collider& rhs_) const
     {
         auto delta = (rhs_.m_center - m_center).abs();
-        CollisionResult res = CollisionResult::NONE;
+        OverlapResult res = OverlapResult::NONE;
 
         if (delta.x < rhs_.m_halfSize.x + m_halfSize.x)
-            res |= CollisionResult::OVERLAP_X;
+            res |= OverlapResult::OVERLAP_X;
 
         if (delta.x < rhs_.m_halfSize.x + m_halfSize.x)
-            res |= CollisionResult::OVERLAP_Y;
+            res |= OverlapResult::OVERLAP_Y;
 
         return res;
     }

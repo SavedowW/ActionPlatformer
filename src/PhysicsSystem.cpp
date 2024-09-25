@@ -145,7 +145,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
         if (!csc_.m_isEnabled || oldTop >= csc_.m_resolved.m_points[2].y)
             return;
         auto overlap = csc_.m_resolved.checkOverlap(pb, highest);
-        if (checkCollision(overlap, CollisionResult::OVERLAP_BOTH))
+        if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
         {
             if (csc_.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(csc_.m_obstacleId) || oldHeight - highest > abs(trans_.m_pos.x - oldPos.x)))
                 return;
@@ -172,7 +172,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
             return;
 
         auto overlap = csc_.m_resolved.checkOverlap(pb, highest);
-        if (checkCollision(overlap, CollisionResult::OVERLAP_BOTH))
+        if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
         {
             if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleBottom(csc_.m_obstacleId))
                 return;
@@ -201,7 +201,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
         auto overlap = csc_.m_resolved.checkOverlap(pb, highest);
 
         // If we touched collider
-        if (checkCollision(overlap, CollisionResult::OVERLAP_BOTH))
+        if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
         {
             // If we can rise on top of it
             if (oldPos.y - highest <= 1.3f * abs(trans_.m_pos.x - oldPos.x))
@@ -263,7 +263,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
         auto overlap = csc_.m_resolved.checkOverlap(pb, highest);
 
         // If we touched collider
-        if (checkCollision(overlap, CollisionResult::OVERLAP_BOTH))
+        if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
         {
              // If we can rise on top of it
             if (oldPos.y - highest <= 1.3f * abs(trans_.m_pos.x - oldPos.x))
@@ -432,7 +432,7 @@ std::pair<entt::entity, const SlopeCollider*> PhysicsSystem::getHighestVerticalM
 
         float height = 0.0f;
         auto horOverlap = areaCld_.m_resolved.checkOverlap(cld_, height);
-        if (checkCollision(horOverlap, CollisionResult::OVERLAP_X))
+        if (checkCollision(horOverlap, OverlapResult::OVERLAP_X))
         {
             if (height >= baseCoord && (foundGround == entt::null || height < coord_))
             {
@@ -470,7 +470,7 @@ void PhysicsSystem::updateTouchedObstacles(const Collider &pb_, ComponentObstacl
         if (obsFallthrough_.m_overlappedObstacles.contains(cld.m_obstacleId))
             continue;
 
-        if (checkCollision(cld.m_resolved.checkOverlap(pb_), CollisionResult::OVERLAP_BOTH))
+        if (checkCollision(cld.m_resolved.checkOverlap(pb_), OverlapResult::OVERLAP_BOTH))
             obsFallthrough_.m_overlappedObstacles.insert(cld.m_obstacleId);
     }
 }

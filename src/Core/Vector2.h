@@ -193,6 +193,12 @@ struct Vector2
         return x * rhs.x + y * rhs.y;
     }
 
+    template<typename TR>
+    constexpr inline auto cross(const Vector2<TR>& rhs) const -> decltype(x * rhs.x)
+    {
+        return x * rhs.y - y * rhs.x;
+    }
+
     template<bool ON_ZEROES = true, typename T2>
     constexpr inline bool areAlignedOnX(const Vector2<T2> &rhs_) const
     {
@@ -264,6 +270,23 @@ namespace utils
         Vector2<float> normal = Vector2{dir1.y, -dir1.x}.normalised();
         return abs(normal.dot(p1));
     }
+}
+
+// https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
+inline std::pair<float, float> overlaps(const std::pair<Vector2<float>, Vector2<float>> &con1_, const std::pair<Vector2<float>, Vector2<float>> &con2_)
+{
+    auto r = con1_.second - con1_.first;
+    auto s = con2_.second - con2_.first;
+    auto diff = con2_.first - con1_.first;
+    auto divider = r.cross(s);
+
+    if (divider == 0) // lines are parallel (and possible collinear)
+        return {-1.0f, -1.0f};
+
+    auto u = (diff).cross(r) / divider;
+    auto t = (diff).cross(s) / divider;
+
+    return {t, u};
 }
 
 #endif

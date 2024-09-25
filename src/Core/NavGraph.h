@@ -32,6 +32,15 @@ namespace Traverse
             return signature;
     }
 
+    template<typename... TraitsT>
+    constexpr TraitT extendSignature(TraitT signature_, TraitsT... traits_)
+    {
+        if constexpr (sizeof...(TraitsT) > 0)
+            return signature_ | ((static_cast<TraitT>(traits_) | ...) << ReservedBits);
+        else
+            return signature_;
+    }
+
     constexpr bool canTraverseByPath(const TraitT &traverse_, const TraitT &path_)
     {
         auto required = path_ & ReservedMask;

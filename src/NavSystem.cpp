@@ -20,7 +20,7 @@ void NavSystem::update()
     {
         if (nav.m_checkIfGrounded)
             if (m_reg.get<ComponentPhysical>(idx).m_onGround == entt::null)
-                return;
+                continue;
 
         auto newCon = m_graph.findClosestConnection(trans.m_pos, nav.m_validTraitsOwnLocation);
         if (newCon.second <= nav.m_maxRange)

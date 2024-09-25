@@ -166,8 +166,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_tlmap.load("Tiles/tiles");
 
     LevelBuilder bld(*application_, m_registry);
-    m_decor = std::move(bld.buildLevel("Resources/Sprites/Tiles/tilemap.json", m_tlmap, playerId));
-    bld.generateGraph(m_graph);
+    m_decor = std::move(bld.buildLevel("Resources/Sprites/Tiles/tilemap.json", m_tlmap, playerId, m_graph));
 
     /*auto newcld = m_registry.create();
     m_registry.emplace<ComponentTransform>(newcld, getTilePos(Vector2{20.0f, 21.0f}), ORIENTATION::RIGHT);

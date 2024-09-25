@@ -159,6 +159,19 @@ GenericState *GenericState::getRealCurrentState()
     return this;
 }
 
+void PhysicalState::updateHurtboxes(BattleActor &battleActor_) const
+{
+    if (m_parent->m_framesInState == 0)
+        throw std::string("Frames in state is 0");
+
+    battleActor_.m_currentFrame = m_parent->m_framesInState - 1;
+
+    if (m_hasHurtboxes)
+        battleActor_.m_hurtboxes = &m_hurtboxes;
+    else
+        battleActor_.m_hurtboxes = nullptr;
+}
+
 PhysicalState &PhysicalState::setGravity(TimelineProperty<Vector2<float>> &&gravity_)
 {
     m_gravity = std::move(gravity_);
@@ -235,6 +248,13 @@ PhysicalState &PhysicalState::setCooldown(FrameTimer<true> *cooldown_, int coold
 PhysicalState &PhysicalState::setRecoveryFrames(TimelineProperty<StateMarker> &&recoveryFrames_)
 {
     m_recoveryFrames = std::move(recoveryFrames_);
+    return *this;
+}
+
+PhysicalState &PhysicalState::setHurtboxes(Hurtbox &&hurtboxes_)
+{
+    m_hasHurtboxes = true;
+    m_hurtboxes = std::move(hurtboxes_);
     return *this;
 }
 

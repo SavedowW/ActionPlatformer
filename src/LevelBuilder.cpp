@@ -3,6 +3,7 @@
 #include "TileMapHelper.hpp"
 #include "CoreComponents.h"
 #include "CameraFocusArea.h"
+#include "StateMachine.h"
 #include <fstream>
 #include <limits>
 
@@ -19,7 +20,7 @@ LevelBuilder::LevelBuilder(Application &app_, entt::registry &reg_) :
 {
 }
 
-DecorLayers LevelBuilder::buildLevel(const std::string &mapDescr_, Tileset &usedTileset_, entt::entity playerId_)
+DecorLayers LevelBuilder::buildLevel(const std::string &mapDescr_, Tileset &usedTileset_, entt::entity playerId_, NavGraph &graph_)
 {
     auto fullpath = m_root + "/" + mapDescr_;
     DecorLayers dmap(&m_app);
@@ -159,7 +160,47 @@ DecorLayers LevelBuilder::buildLevel(const std::string &mapDescr_, Tileset &used
             }
             else if (layer["name"] == "Navigation")
             {
-                std::cout << "WARNING: Navigation parsing is not implemented yet" << std::endl;
+                std::map<int, NodeID> nodes;
+                std::map<std::pair<int, int>, std::pair<Traverse::TraitT, Traverse::TraitT>> connections;
+
+                for (const auto &point : layer["objects"])
+                {
+                    Vector2<float> pos {
+                                static_cast<float>(point["x"]),
+                                static_cast<float>(point["y"])
+                            };
+
+                    nodes[static_cast<int>(point["id"])] = graph_.makeNode(pos);
+                }
+
+                for (const auto &point : layer["objects"])
+                {
+                    if (point.contains("properties"))
+                    {
+                        auto src = static_cast<int>(point["id"]);
+                        for (const auto &prop : point["properties"])
+                        {
+                            auto traits = lineToTraverse(prop["name"]);
+                            auto dst = static_cast<int>(prop["value"]);
+                            
+                            bool swapped = false;
+                            if (src < dst)
+                            {
+                                connections[{src, dst}].first = traits;
+                            }
+                            else
+                            {
+                                connections[{dst, src}].second = traits;
+                            }
+
+                        }
+                    }
+                }
+
+                for (auto &con : connections)
+                {
+                    graph_.makeConnection(nodes[con.first.first], nodes[con.first.second], con.second.first, con.second.second);
+                }
             }
             else if (layer["name"] == "Focus areas")
             {
@@ -205,14 +246,37 @@ DecorLayers LevelBuilder::buildLevel(const std::string &mapDescr_, Tileset &used
     return dmap;
 }
 
-void LevelBuilder::generateGraph(NavGraph &graph_)
-{
-    
-}
-
 void LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obstacleId_)
 {
     auto newid = m_reg.create();
     auto &tr = m_reg.emplace<ComponentTransform>(newid, worldCld_.m_tlPos, ORIENTATION::RIGHT);
     m_reg.emplace<ComponentStaticCollider>(newid, ComponentStaticCollider(tr.m_pos, SlopeCollider({0.0f, 0.0f}, worldCld_.m_size, worldCld_.m_topAngleCoef), obstacleId_));
+}
+
+Traverse::TraitT LevelBuilder::lineToTraverse(const std::string &line_) const
+{
+    std::vector<TraverseTraits> traits;
+    bool requireFallthrough = false;
+    std::istringstream iss(line_);
+    std::string s;
+    getline( iss, s, ' ' );
+    while (getline( iss, s, ' ' ) )
+    {
+        if (s == "W")
+            traits.push_back(TraverseTraits::WALK);
+        else if (s == "J")
+            traits.push_back(TraverseTraits::JUMP);
+        else if (s == "F")
+            traits.push_back(TraverseTraits::FALL);
+        else if (s == "D")
+            requireFallthrough = true;
+        else
+            std::cout << "Warning: unknown trait identifier \"" << s << "\" at \"" << line_ << "\"" << std::endl;
+    }
+
+    auto sig = Traverse::makeSignature(requireFallthrough);
+    for (auto &el : traits)
+        sig = Traverse::extendSignature(sig, el);
+
+    return sig;
 }

@@ -7,6 +7,52 @@
 
 namespace utils
 {
+    template<typename T>
+    class MinMax
+    {
+    public:
+        void addValue(const T &value_)
+        {
+            if (m_valueCount == 0)
+            {
+                m_min = value_;
+                m_max = value_;
+                m_valueCount++;
+            }
+            else
+            {
+                if (value_ < m_min)
+                    m_min = value_;
+
+                if (value_ > m_max)
+                    m_max = value_;
+
+                if (m_valueCount == 1)
+                    m_valueCount++;
+            }
+        }
+
+        const T &getMin() const
+        {
+            return m_min;
+        }
+
+        const T &getMax() const
+        {
+            return m_max;
+        }
+
+        bool isEmpty() const
+        {
+            return !m_valueCount;
+        }
+
+    private:
+        int m_valueCount = 0;
+        T m_min = 0;
+        T m_max = 0;
+    };
+
     // Way faster than dynamic implementation with base class, operator() and inheritors comparing value under interface
     template<typename T>
     class Gate
@@ -177,144 +223,6 @@ namespace utils
         col.b = tmp;
 
         return col;
-    }
-
-    /*
-        Structure used to encode collision result
-        Its technically would be possible to encode every single collision case in 1 byte as it would allow up to 256 cases,
-        but that would require complicated logic to decode
-        This version spends 6 bits per axis and gives 4 extra bits which are in a very suboptimal way
-        General cases can be matched with masks, 0 means no collision and overlap and details can be retrieved with bit shifting
-        LE - less or equals, GE - greater or equals, etc
-        OOT - overlap or touch
-    */
-    enum class OverlapResult : uint16_t
-    {
-        NONE =            0b0000'0000'00'0000'00,
-
-        // Touching 
-        TOUCH_MIN1_MAX2 = 0b0000'0000'00'0000'01,
-        TOUCH_MAX1_MIN2 = 0b0000'0000'00'0000'10,
-
-        // Overlapping
-        MIN2_LE_MIN1 =    0b0000'0000'00'0001'00,
-        MIN2_GE_MIN1 =    0b0000'0000'00'0010'00,
-        MIN2_EQ_MIN1 =    0b0000'0000'00'0011'00,
-        MAX2_LE_MAX1 =    0b0000'0000'00'0100'00,
-        MAX2_GE_MAX1 =    0b0000'0000'00'1000'00,
-        MAX2_EQ_MAX1 =    0b0000'0000'00'1100'00,
-
-        // Extra
-        OOT_BOX =         0b0001'0000'00'0000'00, // Slopes only
-        OOT_SLOPE =       0b0010'0000'00'0000'00, // Slopes only
-        BOTH_TOUCH =      0b0100'0000'00'0000'00,
-        BOTH_OVERLAP =    0b1000'0000'00'0000'00,
-        BOTH_OOT =        0b1100'0000'00'0000'00,
-
-        // Read-only masks
-        OVERLAP_X =   0b0000'0000'00'1111'00,
-        OVERLAP_Y =   0b0000'1111'00'0000'00,
-        TOUCH_X =     0b0000'0000'00'0000'11,
-        TOUCH_Y =     0b0000'0000'11'0000'00,
-        OOT_X =       0b0000'0000'00'1111'11,
-        OOT_Y =       0b0000'1111'11'0000'00,
-        EXTRAS =      0b1111'0000'00'0000'00
-    };
-
-    constexpr inline OverlapResult operator|(const OverlapResult& lhs_, const OverlapResult& rhs_)
-    {
-        return static_cast<OverlapResult>(static_cast<uint16_t>(lhs_) | static_cast<uint16_t>(rhs_));
-    }
-
-    constexpr inline OverlapResult operator&(const OverlapResult& lhs_, const OverlapResult& rhs_)
-    {
-        return static_cast<OverlapResult>(static_cast<uint16_t>(lhs_) & static_cast<uint16_t>(rhs_));
-    }
-
-    constexpr inline OverlapResult &operator|=(OverlapResult& lhs_, const OverlapResult& rhs_)
-    {
-        return lhs_ = lhs_ | rhs_;
-    }
-
-    constexpr inline OverlapResult &operator&=(OverlapResult& lhs_, const OverlapResult& rhs_)
-    {
-        return lhs_ = lhs_ & rhs_;
-    }
-
-    constexpr inline OverlapResult operator<<(const OverlapResult& lhs_, unsigned int offset_)
-    {
-        return static_cast<OverlapResult>(static_cast<uint16_t>(lhs_) << offset_);
-    }
-
-    constexpr inline bool operator!(const OverlapResult& lhs_)
-    {
-        return static_cast<bool>(!static_cast<uint16_t>(lhs_));
-    }
-
-    constexpr inline bool operator&&(const OverlapResult& lhs_, const OverlapResult& rhs_)
-    {
-        return static_cast<uint16_t>(lhs_) && static_cast<uint16_t>(rhs_);
-    }
-
-    constexpr inline bool operator||(const OverlapResult& lhs_, const OverlapResult& rhs_)
-    {
-        return static_cast<uint16_t>(lhs_) || static_cast<uint16_t>(rhs_);
-    }
-
-    constexpr inline bool operator&&(const OverlapResult& lhs_, bool rhs_)
-    {
-        return static_cast<uint16_t>(lhs_) && rhs_;
-    }
-
-    constexpr inline bool operator&&(bool lhs_, const OverlapResult& rhs_)
-    {
-        return lhs_ && static_cast<uint16_t>(rhs_);
-    }
-
-    constexpr inline bool operator||(const OverlapResult& lhs_, bool rhs_)
-    {
-        return static_cast<uint16_t>(lhs_) || rhs_;
-    }
-
-    constexpr inline bool operator||(bool lhs_, const OverlapResult& rhs_)
-    {
-        return lhs_ || static_cast<uint16_t>(rhs_);
-    }
-
-    /*
-        Determines an overlap between 2 abstract lines regardless from dimension
-        OFFSET determines bit offset
-        Produces 6 bits at specified offset
-    */
-    template<unsigned int OFFSET>
-    constexpr inline OverlapResult getOverlap(float l1min_, float l1max_, float l2min_, float l2max_)
-    {
-        if (l2max_ < l1min_ || l2min_ > l1max_)
-            return OverlapResult::NONE;
-
-        OverlapResult res = OverlapResult::NONE;
-
-        if (l2max_ == l1min_)
-            return OverlapResult::TOUCH_MIN1_MAX2 << OFFSET;
-
-        if (l2min_ == l1max_)
-            return OverlapResult::TOUCH_MAX1_MIN2 << OFFSET;
-
-        auto dif1 = l2min_ - l1min_;
-        auto dif2 = l2max_ - l1max_;
-
-        if (dif1 >= 0)
-            res |= OverlapResult::MIN2_GE_MIN1;
-        if (dif1 <= 0)
-            res |= OverlapResult::MIN2_LE_MIN1;
-
-        if (dif2 >= 0)
-            res |= OverlapResult::MAX2_GE_MAX1;
-        if (dif2 <= 0)
-            res |= OverlapResult::MAX2_LE_MAX1;
-        
-        return (res << OFFSET);
-
     }
 
     // Gets portion of l1, overlapped by l2, result is in range [0, 1]

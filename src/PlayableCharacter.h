@@ -149,7 +149,7 @@ public:
     }
 
 protected:
-    const Collider m_hurtbox;
+    const Collider m_pushbox;
     CMP_LEFT m_cmpLeft;
     CMP_RIGHT m_cmpRight;
     CMP_PROCEED_LEFT m_cmpProcLeft;

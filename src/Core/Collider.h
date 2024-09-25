@@ -38,17 +38,17 @@ struct SlopeCollider
     Vector2<float> m_points[4];
     void generatePoints();
 
-    CollisionResult checkOverlap(const Collider &cld_) const;
-    CollisionResult checkOverlap(const Collider &cld_, float &highestPoint_) const;
+    OverlapResult checkOverlap(const Collider &cld_) const;
+    OverlapResult checkOverlap(const Collider &cld_, float &highestPoint_) const;
 
     int getOrientationDir() const;
-
-    float getTopHeight(const Collider &cld_, utils::OverlapResult horOverlapType_) const;
 
     float getHeightAt(float x) const;
 
     float getMostRightAt(const Collider &cld_);
     float getMostLeftAt(const Collider &cld_);
+
+    bool containsPoint(const Vector2<float> &point_) const;
 };
 
 
