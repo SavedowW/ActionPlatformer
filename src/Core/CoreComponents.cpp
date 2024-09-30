@@ -140,3 +140,11 @@ MoveCollider2Points::MoveCollider2Points(const Vector2<float> &point1_, const Ve
 {
     m_timer.begin(duration_);
 }
+
+Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_)
+{
+    if (trans_.m_orientation == ORIENTATION::LEFT)
+        return Collider{{trans_.m_pos.x - col_.m_center.x, trans_.m_pos.y + col_.m_center.y}, col_.m_halfSize};
+    else
+        return Collider{{trans_.m_pos.x + col_.m_center.x, trans_.m_pos.y + col_.m_center.y}, col_.m_halfSize};
+}

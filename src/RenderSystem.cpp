@@ -29,6 +29,7 @@ void RenderSystem::draw()
     const auto viewPhysical = m_reg.view<ComponentTransform, ComponentPhysical>();
     auto viewFocuses = m_reg.view<CameraFocusArea>();
     const auto viewTransforms = m_reg.view<ComponentTransform>();
+    const auto viewBtlAct = m_reg.view<ComponentTransform, BattleActor>();
 
     if constexpr (gamedata::debug::drawColliders)
     {
@@ -55,6 +56,9 @@ void RenderSystem::draw()
     {
         for (auto [idx, trans, phys] : viewPhysical.each())
             drawCollider(trans, phys);
+
+        for (auto [idx, trans, btl] : viewBtlAct.each())
+            drawBattleActorColliders(trans, btl);
     }
 
     if constexpr (gamedata::debug::drawFocusAreas)
@@ -140,6 +144,23 @@ void RenderSystem::handleLayer()
 
     for (auto [idx, trans, phys, inst] : viewInstances.each())
         drawInstance(trans, inst);
+}
+
+void RenderSystem::drawBattleActorColliders(const ComponentTransform &trans_, const BattleActor &btlact_)
+{
+    if (btlact_.m_hurtboxes)
+    {
+        for (const auto &group : *(btlact_.m_hurtboxes))
+        {
+            for (const auto &tcld : group.m_colliders)
+            {
+                if (tcld.m_timeline[btlact_.m_currentFrame])
+                {
+                    m_renderer.drawCollider(getColliderAt(tcld.m_collider, trans_), gamedata::characters::hurtboxColor, gamedata::characters::hurtboxColor, m_camera);
+                }
+            }
+        }
+    }
 }
 
 void RenderSystem::drawCollider(const ComponentTransform &trans_, const ComponentPhysical &phys_)

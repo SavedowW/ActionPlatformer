@@ -231,4 +231,6 @@ struct MoveCollider2Points
     bool m_toSecond;
 };
 
+Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_);
+
 #endif

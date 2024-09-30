@@ -19,6 +19,7 @@
 #include "NavSystem.h"
 #include "DynamicColliderSystem.h"
 #include "ParticleSystem.h"
+#include "BattleSystem.h"
 
 class BattleLevel : public Level
 {
@@ -49,6 +50,7 @@ protected:
     NavSystem m_navsys;
     DynamicColliderSystem m_colsys;
     ParticleSystem m_partsys;
+    BattleSystem m_battlesys;
 
     NavGraph m_graph;
 

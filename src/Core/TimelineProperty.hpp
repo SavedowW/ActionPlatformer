@@ -44,8 +44,8 @@ public:
         m_isEmpty = true;
     }
 
-    TimelineProperty(const TimelineProperty<T> &rhs) = delete;
-    TimelineProperty& operator=(const TimelineProperty<T> &rhs) = delete;
+    TimelineProperty(const TimelineProperty<T> &rhs) = default;
+    TimelineProperty& operator=(const TimelineProperty<T> &rhs) = default;
 
     TimelineProperty(TimelineProperty<T> &&rhs)
     {

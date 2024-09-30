@@ -33,7 +33,7 @@ struct Hit
 struct HitboxGroup
 {
     std::vector<TemporaryCollider> m_colliders;
-    Hit m_hitData;    
+    Hit m_hitData;
 };
 
 struct BattleActor

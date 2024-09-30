@@ -1,5 +1,6 @@
 #ifndef RENDER_SYSTEM_H_
 #define RENDER_SYSTEM_H_
+#include "Hit.h"
 #include "CoreComponents.h"
 #include "Application.h"
 #include "CameraFocusArea.h"
@@ -19,6 +20,7 @@ struct RenderSystem
     template<size_t LAYER>
     void handleLayer();
 
+    void drawBattleActorColliders(const ComponentTransform &trans_, const BattleActor &btlact_);
     void drawCollider(const ComponentTransform &trans_, const ComponentPhysical &phys_);
     void drawCollider(const ComponentStaticCollider &cld_);
     void drawObstacle(const ComponentStaticCollider &cld_);

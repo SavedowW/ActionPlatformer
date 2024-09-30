@@ -50,7 +50,7 @@ namespace gamedata
 
     namespace characters
     {
-        inline constexpr SDL_Color pushboxColor = {255, 242, 0, 100};
+        inline constexpr SDL_Color pushboxColor = {255, 242, 0, 50};
         inline constexpr SDL_Color hitboxColor = {255, 0, 0, 100};
         inline constexpr SDL_Color hurtboxColor = {0, 255, 0, 100};
     }

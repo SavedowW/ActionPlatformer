@@ -11,6 +11,6 @@ void BattleSystem::update()
     auto viewBtl = m_reg.view<BattleActor, StateMachine>();
     for (auto [idx, btl, sm] : viewBtl.each())
     {
-        static_cast<PhysicalState*>(sm.getRealCurrentState())->updateHurtboxes(btl);
+        dynamic_cast<PhysicalState*>(sm.getRealCurrentState())->updateHurtboxes(btl);
     }
 }

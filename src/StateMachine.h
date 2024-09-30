@@ -165,6 +165,7 @@ public:
     PhysicalState &setCooldown(FrameTimer<true> *cooldown_, int cooldownTime_);
     PhysicalState &setRecoveryFrames(TimelineProperty<StateMarker> &&recoveryFrames_);
     PhysicalState &setHurtboxes(Hurtbox &&hurtboxes_);
+    PhysicalState &addHit(HitboxGroup &&hit_);
 
     virtual void onTouchedGround(EntityAnywhere owner_);
     virtual void onLostGround(EntityAnywhere owner_);
@@ -206,6 +207,8 @@ protected:
 
     bool m_hasHurtboxes = false;
     Hurtbox m_hurtboxes;
+
+    std::vector<HitboxGroup> m_hits;
 };
 
 /*

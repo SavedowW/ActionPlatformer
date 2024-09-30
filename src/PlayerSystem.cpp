@@ -158,6 +158,19 @@ void PlayerSystem::setup(entt::entity playerId_)
             TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Inr mul
             TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
             TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
+        .setHurtboxes({
+            {
+                HurtboxGroup(
+                    {
+                        {
+                            {{{0.0f, -12.0f}, {5.0f, 12.0f}}, TimelineProperty<bool>(true)},
+                            {{{9.0f, -6.0f}, {4.0f, 6.0f}}, TimelineProperty<bool>({{0, true}, {15, false}})},
+                            {{{15.0f, -3.0f}, {2.0f, 3.0f}}, TimelineProperty<bool>({{0, true}, {5, false}})}
+                        }
+                    }, HurtTrait::NORMAL
+                )
+            }
+        })
         .setUpdateSpeedLimitData(
             TimelineProperty<Vector2<float>>({2.5f, 0.0f}),
             TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))

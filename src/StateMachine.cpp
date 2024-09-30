@@ -161,10 +161,7 @@ GenericState *GenericState::getRealCurrentState()
 
 void PhysicalState::updateHurtboxes(BattleActor &battleActor_) const
 {
-    if (m_parent->m_framesInState == 0)
-        throw std::string("Frames in state is 0");
-
-    battleActor_.m_currentFrame = m_parent->m_framesInState - 1;
+    battleActor_.m_currentFrame = m_parent->m_framesInState;
 
     if (m_hasHurtboxes)
         battleActor_.m_hurtboxes = &m_hurtboxes;
@@ -256,6 +253,11 @@ PhysicalState &PhysicalState::setHurtboxes(Hurtbox &&hurtboxes_)
     m_hasHurtboxes = true;
     m_hurtboxes = std::move(hurtboxes_);
     return *this;
+}
+
+PhysicalState &PhysicalState::addHit(HitboxGroup &&hit_)
+{
+    m_hits.push_back(std::move(hit_));
 }
 
 GenericState &GenericState::setParticlesSingle(TimelineProperty<ParticleTemplate> &&particlesSingle_)
