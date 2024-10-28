@@ -221,6 +221,25 @@ void Renderer::fillRectangle(const Vector2<float> &pos_, const Vector2<float> &s
     SDL_RenderFillRectF(m_renderer, &rect);
 }
 
+void Renderer::drawCross(const Vector2<float> &center_, const Vector2<float> &vSize_, const Vector2<float> &hSize_, const SDL_Color &col_, const Camera &cam_)
+{
+    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - Vector2{m_backbuffGameplay.m_w, m_backbuffGameplay.m_h} / 2;
+	Vector2<int> center = center_ - camTL;
+
+	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
+	SDL_Rect vRect[2] = {{ center.x - vSize_.x / 2.0f, center.y - vSize_.y / 2.0f, static_cast<int>(vSize_.x), static_cast<int>(vSize_.y) },
+	                { center.x - hSize_.x / 2.0f, center.y - hSize_.y / 2.0f, static_cast<int>(hSize_.x), static_cast<int>(hSize_.y) }};
+	SDL_RenderDrawRects(m_renderer, vRect, 2);
+}
+
+void Renderer::drawCross(const Vector2<float> &center_, const Vector2<float> &vSize_, const Vector2<float> &hSize_, const SDL_Color &col_)
+{
+	SDL_SetRenderDrawColor(m_renderer, col_.r, col_.g, col_.b, col_.a);
+	SDL_Rect vRect[2] = {{ center_.x - vSize_.x / 2.0f, center_.y - vSize_.y / 2.0f, static_cast<int>(vSize_.x), static_cast<int>(vSize_.y) },
+	                { center_.x - hSize_.x / 2.0f, center_.y - hSize_.y / 2.0f, static_cast<int>(hSize_.x), static_cast<int>(hSize_.y) }};
+	SDL_RenderDrawRects(m_renderer, vRect, 2);
+}
+
 void Renderer::drawGeometry(SDL_Texture *texture, const SDL_Vertex *vertices, int num_vertices, const int *indices, int num_indices)
 {
     SDL_ClearError();

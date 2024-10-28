@@ -159,7 +159,7 @@ GenericState *GenericState::getRealCurrentState()
     return this;
 }
 
-void PhysicalState::updateHurtboxes(BattleActor &battleActor_) const
+void PhysicalState::updateActor(BattleActor &battleActor_) const
 {
     battleActor_.m_currentFrame = m_parent->m_framesInState;
 
@@ -167,6 +167,15 @@ void PhysicalState::updateHurtboxes(BattleActor &battleActor_) const
         battleActor_.m_hurtboxes = &m_hurtboxes;
     else
         battleActor_.m_hurtboxes = nullptr;
+
+    battleActor_.m_activeHits.clear();
+    for (const auto &hit : m_hits)
+    {
+        if (battleActor_.m_currentFrame >= hit.m_activeWindow.first && battleActor_.m_currentFrame <= hit.m_activeWindow.second)
+        {
+            battleActor_.m_activeHits.push_back(&hit);
+        }
+    }
 }
 
 PhysicalState &PhysicalState::setGravity(TimelineProperty<Vector2<float>> &&gravity_)
@@ -258,6 +267,7 @@ PhysicalState &PhysicalState::setHurtboxes(Hurtbox &&hurtboxes_)
 PhysicalState &PhysicalState::addHit(HitboxGroup &&hit_)
 {
     m_hits.push_back(std::move(hit_));
+    return *this;
 }
 
 GenericState &GenericState::setParticlesSingle(TimelineProperty<ParticleTemplate> &&particlesSingle_)
@@ -305,6 +315,11 @@ void PhysicalState::enter(EntityAnywhere owner_, CharState from_)
     physical.m_drag = m_drag[0];
     physical.m_noUpwardLanding = m_noUpwardLanding[0];
     physical.m_magnetLimit = m_magnetLimit[0];
+
+    for (auto &el : m_hits)
+    {
+        el.m_hitData.updateId();
+    }
 }
 
 void GenericState::leave(EntityAnywhere owner_, CharState to_)

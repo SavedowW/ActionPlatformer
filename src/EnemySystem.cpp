@@ -18,7 +18,7 @@ void EnemySystem::makeEnemy()
     auto enemyId = m_reg.create();
     m_reg.emplace<ComponentTransform>(enemyId, Vector2{170.0f, 300.0f}, ORIENTATION::RIGHT);
     m_reg.emplace<PhysicalEvents>(enemyId);
-    m_reg.emplace<BattleActor>(enemyId);
+    m_reg.emplace<BattleActor>(enemyId, BattleTeams::ENEMIES);
 
     auto &nav = m_reg.emplace<Navigatable>(enemyId);
     nav.m_validTraitsOwnLocation = Traverse::makeSignature(true, TraverseTraits::WALK, TraverseTraits::JUMP,  TraverseTraits::FALL);
@@ -80,7 +80,7 @@ void EnemySystem::makeEnemy()
     navigateChase->addState(std::unique_ptr<GenericState>(
         new BlindChaseState(
             Enemy1State::META_BLIND_CHASE, Enemy1StateNames.at(Enemy1State::META_BLIND_CHASE), {Enemy1State::NONE, {}},
-            Enemy1State::IDLE, Enemy1State::RUN, 20.0f)
+            Enemy1State::IDLE, Enemy1State::RUN, 50.0f)
     ));
 
     navigateChase->setInitialState(Enemy1State::IDLE);
@@ -131,6 +131,17 @@ void EnemySystem::makeEnemy()
             TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
         .setTransitionOnLostGround(Enemy1State::FLOAT)
         .setMagnetLimit(TimelineProperty<float>(10.0f))
+        .setHurtboxes({
+            {
+                HurtboxGroup(
+                    {
+                        {
+                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                        }
+                    }, HurtTrait::NORMAL
+                )
+            }
+        })
         .setCanFallThrough(TimelineProperty(true))
     ));
 
@@ -144,6 +155,17 @@ void EnemySystem::makeEnemy()
         .setMagnetLimit(TimelineProperty<float>(4.0f))
         .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
         .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+        .setHurtboxes({
+            {
+                HurtboxGroup(
+                    {
+                        {
+                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                        }
+                    }, HurtTrait::NORMAL
+                )
+            }
+        })
         .setOutdatedTransition(Enemy1State::FLOAT, 1)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
@@ -161,6 +183,17 @@ void EnemySystem::makeEnemy()
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(Enemy1State::FLOAT)
         .setMagnetLimit(TimelineProperty<float>(8.0f))
+        .setHurtboxes({
+            {
+                HurtboxGroup(
+                    {
+                        {
+                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                        }
+                    }, HurtTrait::NORMAL
+                )
+            }
+        })
         .setCanFallThrough(TimelineProperty(true))
         .setUpdateSpeedLimitData(
             TimelineProperty<Vector2<float>>({9999.9f, 0.0f}),
@@ -172,6 +205,17 @@ void EnemySystem::makeEnemy()
             Enemy1State::FLOAT, Enemy1StateNames.at(Enemy1State::FLOAT), {Enemy1State::NONE, {}}, m_animManager.getAnimID("Enemy1/float")))
         ->setGravity({{0.0f, 0.3f}})
         .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+        .setHurtboxes({
+            {
+                HurtboxGroup(
+                    {
+                        {
+                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                        }
+                    }, HurtTrait::NORMAL
+                )
+            }
+        })
         .setTransitionOnTouchedGround(Enemy1State::IDLE)
         .setNoLanding(TimelineProperty<bool>({{0, true}, {4, false}}))
     ));

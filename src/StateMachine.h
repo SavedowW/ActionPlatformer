@@ -149,7 +149,7 @@ public:
         return *this;
     }
 
-    void updateHurtboxes(BattleActor &battleActor_) const;
+    void updateActor(BattleActor &battleActor_) const;
 
     PhysicalState &setGravity(TimelineProperty<Vector2<float>> &&gravity_);
     PhysicalState &setDrag(TimelineProperty<Vector2<float>> &&drag_);

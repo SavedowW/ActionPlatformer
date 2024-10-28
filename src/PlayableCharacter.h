@@ -18,6 +18,7 @@ enum class CharacterState : CharState {
     HARD_LANDING_RECOVERY,
     WALL_CLING,
     WALL_CLING_PREJUMP,
+    ATTACK_1,
     NONE
 };
 
@@ -32,7 +33,8 @@ inline const std::map<CharacterState, std::string> CharacterStateNames {
     {CharacterState::LANDING_RECOVERY, "LANDING_RECOVERY"},
     {CharacterState::HARD_LANDING_RECOVERY, "HARD_LANDING_RECOVERY"},
     {CharacterState::WALL_CLING, "WALL_CLING"},
-    {CharacterState::WALL_CLING_PREJUMP, "WALL_CLING_PREJUMP"}
+    {CharacterState::WALL_CLING_PREJUMP, "WALL_CLING_PREJUMP"},
+    {CharacterState::ATTACK_1, "ATTACK_1"}
 };
 
 template<bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN>
@@ -66,7 +68,7 @@ inline ORIENTATION attemptInput(const InputComparator &cmpL_, const InputCompara
     return ORIENTATION::UNSPECIFIED;
 }
 
-template<bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN,
+template<bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN, bool FORCE_TOWARDS_INPUT,
     typename CMP_LEFT, typename CMP_RIGHT,
     bool ATTEMPT_PROCEED, typename CMP_PROCEED_LEFT, typename CMP_PROCEED_RIGHT>
 class PlayerState : public PhysicalState
@@ -123,25 +125,25 @@ public:
         auto orientation = transform.m_orientation;
         const auto &inq = compInput.m_inputResolver->getInputQueue();
 
-        bool possibleToLeft = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle <= 0 || physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
-        bool possibleToRight = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle >= 0 || -physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
+        bool possibleToLeft = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle <= 0 || physical.m_onSlopeWithAngle <= m_alignedSlopeMax) && (!FORCE_TOWARDS_INPUT || inq[0].m_dir.x <= 0);
+        bool possibleToRight = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle >= 0 || -physical.m_onSlopeWithAngle <= m_alignedSlopeMax) && (!FORCE_TOWARDS_INPUT || inq[0].m_dir.x >= 0);
 
         InputComparatorFail failin;
 
         auto &lInput = (possibleToLeft ? static_cast<const InputComparator&>(m_cmpLeft) : static_cast<const InputComparator&>(failin));
         auto &rInput = (possibleToRight ? static_cast<const InputComparator&>(m_cmpRight) : static_cast<const InputComparator&>(failin));
 
-        return attemptInput<REQUIRE_ALIGNMENT, FORCE_REALIGN>(lInput, rInput, orientation, inq, 0);
+        return attemptInput<REQUIRE_ALIGNMENT, FORCE_REALIGN | FORCE_TOWARDS_INPUT>(lInput, rInput, orientation, inq, 0);
     }
 
-    inline PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
+    inline PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
         &setAlignedSlopeMax(float alignedSlopeMax_)
     {
         m_alignedSlopeMax = alignedSlopeMax_;
         return *this;
     }
 
-    inline PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
+    inline PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
         &setRealignOnSwitch(bool realignOnSwitch_)
     {
         m_realignOnSwitchForInput = realignOnSwitch_;
@@ -160,11 +162,11 @@ protected:
 };
 
 
-class PlayerActionFloat: public PlayerState<false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>
+class PlayerActionFloat: public PlayerState<false, true, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>
 {
 public:
     PlayerActionFloat(int anim_, StateMarker transitionableFrom_) :
-        PlayerState<false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>(CharacterState::FLOAT, std::move(transitionableFrom_), anim_)
+        PlayerState<false, true, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>(CharacterState::FLOAT, std::move(transitionableFrom_), anim_)
     {
     }
 
@@ -235,18 +237,18 @@ public:
     }
 
 protected:
-    using ParentAction = PlayerState<false, true, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>;
+    using ParentAction = PlayerState<false, true, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>;
     InputComparatorHoldLeft m_driftLeftInput;
     InputComparatorHoldRight m_driftRightInput;
     InputComparatorHoldUp m_driftUpInput;
 
 };
 
-class PlayerActionWallCling: public PlayerState<false, true, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail>
+class PlayerActionWallCling: public PlayerState<false, true, false, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail>
 {
 public:
     PlayerActionWallCling(int anim_, StateMarker transitionableFrom_, ParticleTemplate &&slideParticle_) :
-        PlayerState<false, true, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail>(CharacterState::WALL_CLING, std::move(transitionableFrom_), anim_),
+        PlayerState<false, true, false, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail>(CharacterState::WALL_CLING, std::move(transitionableFrom_), anim_),
         m_transitionOnLeave(CharacterState::FLOAT),
         m_slideParticle(std::move(slideParticle_))
     {
@@ -361,18 +363,18 @@ public:
     }
 
 protected:
-    using ParentAction = PlayerState<false, true, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail>;
+    using ParentAction = PlayerState<false, true, false, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail>;
     CharacterState m_transitionOnLeave;
 
     ParticleTemplate m_slideParticle;
     FrameTimer<true> m_particleTimer;
 };
 
-class PlayerActionWallPrejump: public PlayerState<true, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>
+class PlayerActionWallPrejump: public PlayerState<true, false, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>
 {
 public:
     PlayerActionWallPrejump(int anim_, StateMarker transitionableFrom_, ParticleTemplate &&jumpParticle_) :
-        PlayerState<true, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>(CharacterState::WALL_CLING_PREJUMP, std::move(transitionableFrom_), anim_),
+        PlayerState<true, false, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>(CharacterState::WALL_CLING_PREJUMP, std::move(transitionableFrom_), anim_),
         m_jumpParticle(std::move(jumpParticle_))
     {
         setGravity(TimelineProperty<Vector2<float>>({0.0f, 0.020f}));
@@ -457,7 +459,7 @@ public:
     }
 
 protected:
-    using ParentAction = PlayerState<true, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>;
+    using ParentAction = PlayerState<true, false, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>;
     InputComparatorHoldLeft m_l;
     InputComparatorHoldRight m_r;
     InputComparatorHoldUp m_u;

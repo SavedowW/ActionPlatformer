@@ -20,11 +20,11 @@ namespace gamedata
     namespace debug
     {
         inline constexpr bool drawColliders = true;
-        inline constexpr bool drawFocusAreas = true;
-        inline constexpr bool drawCameraOffset = true;
-        inline constexpr bool drawNpsDebug = true;
-        inline constexpr bool drawCurrentConnection = true;
-        inline constexpr bool drawNavGraph = true;
+        inline constexpr bool drawFocusAreas = false;
+        inline constexpr bool drawCameraOffset = false;
+        inline constexpr bool drawNpsDebug = false;
+        inline constexpr bool drawCurrentConnection = false;
+        inline constexpr bool drawNavGraph = false;
         inline constexpr bool drawTransforms = false;
         inline constexpr bool drawDebugTextures = false;
         inline constexpr uint32_t debugPathDisplay = 15;

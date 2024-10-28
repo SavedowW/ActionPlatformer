@@ -17,6 +17,12 @@ void RenderSystem::update()
     {
         if (ren.m_currentAnimation)
             ren.m_currentAnimation->update();
+
+        if (ren.m_flash)
+        {
+            if (ren.m_flash->update())
+                ren.m_flash.reset();
+        }
     }
 }
 
@@ -97,6 +103,21 @@ void RenderSystem::drawInstance(const ComponentTransform &trans_, const Componen
         auto edge = ren_.m_currentAnimation->getBorderSprite();
 
         m_renderer.renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, m_camera, 0.0f, flip);
+
+        if (ren_.m_flash)
+        {
+            auto col = ren_.m_flash->getFlashColor();
+            auto whitespr = ren_.m_currentAnimation->getWhiteSprite();
+            SDL_SetTextureColorMod(whitespr, col.r, col.g, col.b);
+            SDL_SetTextureAlphaMod(whitespr, col.a);
+            m_renderer.renderTexture(whitespr, texPos.x, texPos.y, texSize.x , texSize.y, m_camera, 0.0f, flip);
+        }
+
+        if constexpr (gamedata::debug::drawDebugTextures)
+        {
+            m_renderer.drawRectangle(texPos, texSize, {100, 0, 100, 255}, m_camera);
+            m_renderer.fillRectangle(texPos + animorigin - Vector2{2.0f, 2.0f}, {5.0f, 5.0f}, {100, 0, 100, 255}, m_camera);
+        }
     }
 }
 
@@ -161,6 +182,15 @@ void RenderSystem::drawBattleActorColliders(const ComponentTransform &trans_, co
             }
         }
     }
+
+    for (const auto *hit : btlact_.m_activeHits)
+    {
+        for (const auto &tmpcld : hit->m_colliders)
+        {
+            if (tmpcld.m_timeline[btlact_.m_currentFrame])
+                m_renderer.drawCollider(getColliderAt(tmpcld.m_collider, trans_), gamedata::characters::hitboxColor, gamedata::characters::hitboxColor, m_camera);
+        }
+    }
 }
 
 void RenderSystem::drawCollider(const ComponentTransform &trans_, const ComponentPhysical &phys_)
@@ -198,6 +228,5 @@ void RenderSystem::drawFocusArea(CameraFocusArea &cfa_)
 
 void RenderSystem::drawTransform(const ComponentTransform &cfa_)
 {
-    m_renderer.drawLine(cfa_.m_pos - Vector2<float>{0.0f, 5.0f}, cfa_.m_pos + Vector2<float>{0.0f, 5.0f}, {0, 0, 0, 255}, m_camera);
-    m_renderer.drawLine(cfa_.m_pos - Vector2<float>{5.0f, 0.0f}, cfa_.m_pos + Vector2<float>{5.0f, 0.0f}, {0, 0, 0, 255}, m_camera);
+    m_renderer.drawCross(cfa_.m_pos, {1.0f, 10.0f}, {10.0f, 1.0f}, {0, 0, 0, 255}, m_camera);
 }

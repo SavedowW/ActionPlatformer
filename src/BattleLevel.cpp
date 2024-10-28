@@ -34,7 +34,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_registry.emplace<StateMachine>(playerId);
     m_registry.emplace<Navigatable>(playerId);
     m_registry.emplace<PhysicalEvents>(playerId);
-    m_registry.emplace<BattleActor>(playerId);
+    m_registry.emplace<BattleActor>(playerId, BattleTeams::PLAYER);
 
     m_playerId = playerId;
     m_camsys.m_playerId = playerId;
@@ -77,6 +77,11 @@ void BattleLevel::enter()
 void BattleLevel::update()
 {
     PROFILE_FUNCTION;
+
+    /*
+        ComponentPhysical - read / write
+    */
+    m_physsys.prepHitstop();
 
     /*
         ComponentPlayerInput - read and write
@@ -144,6 +149,7 @@ void BattleLevel::update()
         BattleActor - read / write
     */
    m_battlesys.update();
+   m_battlesys.handleAttacks();
 
     /*
         ComponentDynamicCameraTarget (player) - read / write
@@ -179,6 +185,8 @@ void BattleLevel::draw()
     m_navsys.draw(m_camera);
 
     m_camsys.debugDraw(renderer, m_camera);
+
+    m_battlesys.debugDraw(m_camera);
 
     m_hudsys.draw();
 

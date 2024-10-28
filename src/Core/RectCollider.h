@@ -111,12 +111,20 @@ struct Collider
         return (size.x * size.y) / getSquare();
     }
 
+    constexpr inline Collider getOverlapArea(const Collider &rhs_) const
+    {
+        Vector2<float> tl_max{std::max(getLeftEdge(), rhs_.getLeftEdge()), std::max(getTopEdge(), rhs_.getTopEdge())};
+        Vector2<float> br_min{std::min(getRightEdge(), rhs_.getRightEdge()), std::min(getBottomEdge(), rhs_.getBottomEdge())};
+
+        return Collider((tl_max + br_min) / 2, (br_min - tl_max) / 2);
+    }
+
     constexpr inline bool includesPoint(const Vector2<float> point_) const
     {
         auto delta = (point_ - m_center).abs();
         return delta.x <= m_halfSize.x && delta.y <= m_halfSize.y;
     }
-    
+
 };
 
 inline std::ostream& operator<< (std::ostream& out_, const Collider& cld_)

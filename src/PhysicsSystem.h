@@ -8,6 +8,7 @@ struct PhysicsSystem
 {
     PhysicsSystem(entt::registry &reg_, Vector2<float> levelSize_);
 
+    void prepHitstop();
     void prepEntities();
     void updateSMs();
     void updatePhysics();

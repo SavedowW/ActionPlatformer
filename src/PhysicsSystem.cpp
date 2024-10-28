@@ -7,6 +7,18 @@ PhysicsSystem::PhysicsSystem(entt::registry &reg_, Vector2<float> levelSize_) :
 {
 }
 
+void PhysicsSystem::prepHitstop()
+{
+    PROFILE_FUNCTION;
+
+    auto viewPhys = m_reg.view<ComponentPhysical>();
+    for (auto [idx, phys] : viewPhys.each())
+    {
+        if (phys.m_hitstopLeft)
+            phys.m_hitstopLeft--;
+    }
+}
+
 void PhysicsSystem::prepEntities()
 {
     PROFILE_FUNCTION;
@@ -26,6 +38,9 @@ void PhysicsSystem::updateSMs()
 
     for (auto [idx, sm] : viewSM.each())
     {
+        if (checkCurrentHitstop(m_reg, idx))
+            continue;
+
         sm.update({&m_reg, idx}, 0);
     }
 
@@ -48,7 +63,12 @@ void PhysicsSystem::updatePhysics()
     const auto viewscld = m_reg.view<ComponentStaticCollider>();
 
     for (auto [idx, trans, phys, obsfall, ev] : viewPhys.each())
+    {
+        if (phys.m_hitstopLeft)
+            continue;
+
         proceedEntity(viewscld, trans, phys, obsfall, ev);
+    }
 
     for (auto [idx, trans, phys] : viewPhysSimplified.each())
         proceedEntity(viewscld, trans, phys);
@@ -71,6 +91,9 @@ void PhysicsSystem::updatePhysicalEvents()
 
     for (auto [idx, physev, sm] : viewPhysEvent.each())
     {
+        if (checkCurrentHitstop(m_reg, idx))
+            continue;
+
         auto *currentState = static_cast<PhysicalState*>(sm.getRealCurrentState());
         if (physev.m_lostGround)
         {
@@ -94,6 +117,9 @@ void PhysicsSystem::updateOverlappedObstacles()
     auto viewColliders = m_reg.view<ComponentStaticCollider>();
     for (auto [idx, trans, phys, obsfallthrough] : viewTransPhysObs.each())
     {
+        if (phys.m_hitstopLeft)
+            continue;
+            
         resetEntityObstacles(trans, phys, obsfallthrough, viewColliders);
         obsfallthrough.m_isIgnoringObstacles.update();
     }

@@ -148,3 +148,40 @@ Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_)
     else
         return Collider{{trans_.m_pos.x + col_.m_center.x, trans_.m_pos.y + col_.m_center.y}, col_.m_halfSize};
 }
+
+bool checkCurrentHitstop(entt::registry &reg_, const entt::entity &idx_)
+{
+    auto *phys = reg_.try_get<ComponentPhysical>(idx_);
+
+    return phys && phys->m_hitstopLeft;
+}
+
+FlashLinear::FlashLinear(uint32_t duration_, SDL_Color color_, uint32_t firstFrame_) :
+    Flash(duration_, firstFrame_),
+    m_flashColor(color_)
+{
+}
+
+SDL_Color FlashLinear::getFlashColor() const
+{
+    return {m_flashColor.r, m_flashColor.g, m_flashColor.b, static_cast<uint8_t>(m_flashColor.a * (1 - static_cast<float>(m_currentFrame) / m_fullDuration))};
+}
+
+std::unique_ptr<Flash> FlashLinear::clone() const
+{
+    return std::unique_ptr<Flash>(new FlashLinear(m_fullDuration, m_flashColor, m_currentFrame));
+}
+
+Flash::Flash(uint32_t duration_, uint32_t firstFrame) :
+    m_fullDuration(duration_),
+    m_currentFrame(firstFrame)
+{
+}
+
+bool Flash::update()
+{
+    if (m_currentFrame >= m_fullDuration)
+        return true;
+
+    return ++m_currentFrame >= m_fullDuration;
+}

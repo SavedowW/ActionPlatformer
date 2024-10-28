@@ -75,6 +75,7 @@ struct ComponentPhysical
     float m_magnetLimit = 0.0f;
     float m_onSlopeWithAngle = 0.0f;
     float m_lastSlopeAngle = 0.0f;
+    uint32_t m_hitstopLeft = 0;
 
     entt::entity m_onGround = entt::null;
     entt::entity m_onWall = entt::null;
@@ -155,6 +156,30 @@ struct ComponentObstacleFallthrough
     std::set<int> m_overlappedObstacles;
 };
 
+class Flash
+{
+public:
+    Flash(uint32_t duration_, uint32_t firstFrame = 0);
+    virtual SDL_Color getFlashColor() const = 0;
+    bool update();
+    virtual std::unique_ptr<Flash> clone() const = 0;
+
+protected:
+    uint32_t m_fullDuration;
+    uint32_t m_currentFrame;
+};
+
+class FlashLinear : public Flash
+{
+public:
+    FlashLinear(uint32_t duration_, SDL_Color color_, uint32_t firstFrame_ = 0);
+    virtual SDL_Color getFlashColor() const override;
+    virtual std::unique_ptr<Flash> clone() const override;
+
+private:
+    SDL_Color m_flashColor;
+};
+
 struct ComponentAnimationRenderable
 {
     ComponentAnimationRenderable() = default;
@@ -166,6 +191,7 @@ struct ComponentAnimationRenderable
 
     std::map<int, std::unique_ptr<Animation>> m_animations;
     Animation *m_currentAnimation;
+    std::unique_ptr<Flash> m_flash;
 };
 
 struct ComponentPlayerInput
@@ -232,5 +258,6 @@ struct MoveCollider2Points
 };
 
 Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_);
+bool checkCurrentHitstop(entt::registry &reg_, const entt::entity &idx_);
 
 #endif
