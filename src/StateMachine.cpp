@@ -64,7 +64,7 @@ std::string StateMachine::getName() const
     return std::string("root") + " -> " + m_currentState->getName(m_framesInState);
 }
 
-void GenericState::spawnParticle(const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_)
+void GenericState::spawnParticle(EntityAnywhere owner_, const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_)
 {
     auto offset = phys_.m_velocity + phys_.m_inertia;
 
@@ -92,21 +92,24 @@ void GenericState::spawnParticle(const ParticleTemplate &partemplate_, const Com
     else
         rp.pos.y += partemplate_.offset.y;
 
-    rp.angle = atan(phys_.m_onSlopeWithAngle) * 180 / 3.1415;
-
     if (partemplate_.m_tieRule == TieRule::TIE_TO_GROUND)
     {
         rp.m_tiePosTo = phys_.m_onGround;
+        rp.angle = atan(phys_.m_onSlopeWithAngle) * 180 / 3.1415;
     }
     else if (partemplate_.m_tieRule == TieRule::TIE_TO_WALL)
     {
         rp.m_tiePosTo = phys_.m_onWall;
     }
+    else if (partemplate_.m_tieRule == TieRule::TIE_TO_SOURCE)
+    {
+        rp.m_tiePosTo = owner_.idx;
+    }
 
     world_.getParticleSys().makeParticle(rp);
 }
 
-void GenericState::spawnParticle(const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_, SDL_RendererFlip verFlip_)
+void GenericState::spawnParticle(EntityAnywhere owner_, const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_, SDL_RendererFlip verFlip_)
 {
     auto offset = phys_.m_velocity + phys_.m_inertia;
 
@@ -129,15 +132,18 @@ void GenericState::spawnParticle(const ParticleTemplate &partemplate_, const Com
     else
         rp.pos.y += partemplate_.offset.y;
 
-    rp.angle = atan(phys_.m_onSlopeWithAngle) * 180 / 3.1415;
-
     if (partemplate_.m_tieRule == TieRule::TIE_TO_GROUND)
     {
         rp.m_tiePosTo = phys_.m_onGround;
+        rp.angle = atan(phys_.m_onSlopeWithAngle) * 180 / 3.1415;
     }
     else if (partemplate_.m_tieRule == TieRule::TIE_TO_WALL)
     {
         rp.m_tiePosTo = phys_.m_onWall;
+    }
+    else if (partemplate_.m_tieRule == TieRule::TIE_TO_SOURCE)
+    {
+        rp.m_tiePosTo = owner_.idx;
     }
 
     world_.getParticleSys().makeParticle(rp);
@@ -337,10 +343,10 @@ bool GenericState::update(EntityAnywhere owner_, uint32_t currentFrame_)
         auto &world = owner_.reg->get<World>(owner_.idx);
 
         if (partemplate.count)
-            spawnParticle(partemplate, transform, phys, world);
+            spawnParticle(owner_, partemplate, transform, phys, world);
 
         if (partemplateLoop.count)
-            spawnParticle(partemplateLoop, transform, phys, world);
+            spawnParticle(owner_, partemplateLoop, transform, phys, world);
     }
 
     // Handle duration

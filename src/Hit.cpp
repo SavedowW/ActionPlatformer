@@ -19,18 +19,13 @@ HitboxGroup HitGeneration::hitPlayerLight()
     hit.m_hitData.m_victimFlash = std::make_unique<FlashLinear>(10, SDL_Color{255, 255, 255, 255}, 0);
 
     hit.m_colliders.push_back({
-        {{9.0f, -12.0f}, {4.0f, 4.0f}},
-        TimelineProperty<bool>({{5, true}, {12, false}})
+        {{5.0f, -15.0f}, {8.0f, 4.0f}},
+        TimelineProperty<bool>({{5, true}, {10, false}})
     });
 
     hit.m_colliders.push_back({
-        {{22.0f, -15.0f}, {12.0f, 2.5f}},
-        TimelineProperty<bool>({{5, true}, {8, false}})
-    });
-
-    hit.m_colliders.push_back({
-        {{14.0f, -14.0f}, {8.0f, 2.0f}},
-        TimelineProperty<bool>({{8, true}, {11, false}})
+        {{22.0f, -21.0f}, {15.0f, 9.0f}},
+        TimelineProperty<bool>({{5, true}, {10, false}})
     });
 
     hit.m_activeWindow = {5, 11};

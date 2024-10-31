@@ -27,6 +27,7 @@ void PlayerSystem::setup(entt::entity playerId_)
     animrnd.m_animations[m_animManager.getAnimID("Char1/prerun")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/prerun"), LOOPMETHOD::NOLOOP);
     animrnd.m_animations[m_animManager.getAnimID("Char1/run_recovery")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/run_recovery"), LOOPMETHOD::NOLOOP);
     animrnd.m_animations[m_animManager.getAnimID("Char1/landing_recovery")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/landing_recovery"), LOOPMETHOD::NOLOOP);
+    animrnd.m_animations[m_animManager.getAnimID("Char1/attack1")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/attack1"), LOOPMETHOD::NOLOOP);
 
     animrnd.m_currentAnimation = animrnd.m_animations[m_animManager.getAnimID("Char1/float")].get();
     animrnd.m_currentAnimation->reset();
@@ -37,6 +38,7 @@ void PlayerSystem::setup(entt::entity playerId_)
     m_animManager.preload("Char1/particles/particle_run_loop");
     m_animManager.preload("Char1/particles/particle_wall_jump");
     m_animManager.preload("Char1/particles/particle_wall_slide");
+    m_animManager.preload("Char1/particles/attack1_trace");
 
 
     phys.m_pushbox = {Vector2{0.0f, -16.0f}, Vector2{7.0f, 16.0f}};
@@ -187,9 +189,11 @@ void PlayerSystem::setup(entt::entity playerId_)
             }))
     ));
 
+    // BUG: character falls through the ground when using the attack on the slope going upwards to the right
+    // TODO: way to stabilize camera (moves a lot at the beginning of an attack because of impulse)
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>(
-            CharacterState::ATTACK_1, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::PRERUN, CharacterState::RUN, CharacterState::RUN_RECOVERY, CharacterState::LANDING_RECOVERY}}, m_animManager.getAnimID("Char1/prerun")))
+            CharacterState::ATTACK_1, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::PRERUN, CharacterState::RUN, CharacterState::RUN_RECOVERY, CharacterState::LANDING_RECOVERY}}, m_animManager.getAnimID("Char1/attack1")))
         ->setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
@@ -201,15 +205,13 @@ void PlayerSystem::setup(entt::entity playerId_)
             TimelineProperty<Vector2<float>>( 
                 {
                     {0, {1.0f, 1.0f}},
-                    {7, {0.0f, 0.0f}},
-                    {8, {0.0f, 0.0f}}
+                    {5, {0.5f, 0.0f}}
                 }), // Vel mul
             TimelineProperty<Vector2<float>>( 
                 {
                     {0, {0.0f, 0.0f}},
-                    {2, {1.0f, 0.0f}},
-                    {4, {3.0f, 0.0f}},
-                    {6, {0.0f, 0.0f}}
+                    {2, {2.0f, 0.0f}},
+                    {5, {0.0f, 0.0f}}
                 }),  // Dir vel mul
             TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Raw vel
             TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Inr mul
@@ -227,6 +229,13 @@ void PlayerSystem::setup(entt::entity playerId_)
             }
         })
         .addHit(HitGeneration::hitPlayerLight())
+        .setDrag({{0.3f, 0.0f}})
+        .setParticlesSingle(TimelineProperty<ParticleTemplate>({
+            {0, {}},
+            {4, ParticleTemplate{1, Vector2<float>{4.0f, 1.0f}, m_animManager.getAnimID("Char1/particles/attack1_trace"), 10,
+                2, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_SOURCE)},
+            {5, {}},
+        }))
         .setOutdatedTransition(CharacterState::IDLE, 30)
     ));
 

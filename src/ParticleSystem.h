@@ -3,10 +3,13 @@
 #include "Application.h"
 #include <entt/entt.hpp>
 
+// TODO: tie to the player
+// TODO: way to destroy particle when the source is interrupted (the player gets hit, etc)
 enum class TieRule
 {
     TIE_TO_WALL,
     TIE_TO_GROUND,
+    TIE_TO_SOURCE,
     NONE
 };
 
@@ -43,7 +46,7 @@ struct ParticleRecipe
     int anim;
     SDL_RendererFlip flip = SDL_FLIP_NONE;
     uint32_t lifetime;
-    float angle;
+    float angle = 0;
     size_t layer;
     entt::entity m_tiePosTo = entt::null;
 };

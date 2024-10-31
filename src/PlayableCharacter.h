@@ -305,11 +305,11 @@ public:
             m_particleTimer.begin(8);
             auto yspd = physical.m_appliedOffset.y;
             if (yspd > 0.5f)
-                spawnParticle(m_slideParticle, transform, physical, cworld, SDL_FLIP_VERTICAL);
+                spawnParticle(owner_, m_slideParticle, transform, physical, cworld, SDL_FLIP_VERTICAL);
             else if (yspd < -0.5f)
             {
                 m_slideParticle.offset.y -= 30.0f;
-                spawnParticle(m_slideParticle, transform, physical, cworld, SDL_FLIP_NONE);
+                spawnParticle(owner_, m_slideParticle, transform, physical, cworld, SDL_FLIP_NONE);
                 m_slideParticle.offset.y += 30.0f;
             }
         }
@@ -441,9 +441,9 @@ public:
         //std::cout << targetSpeed << std::endl;
 
         if (targetSpeed.y >= 0)
-            spawnParticle(m_jumpParticle, transform, physical, world, SDL_FLIP_VERTICAL);
+            spawnParticle(owner_, m_jumpParticle, transform, physical, world, SDL_FLIP_VERTICAL);
         else
-            spawnParticle(m_jumpParticle, transform, physical, world, SDL_FLIP_NONE);
+            spawnParticle(owner_, m_jumpParticle, transform, physical, world, SDL_FLIP_NONE);
 
         if (fall)
         {
