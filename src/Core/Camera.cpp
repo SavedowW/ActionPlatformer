@@ -172,7 +172,7 @@ void Camera::update()
     }
 }
 
-void Camera::startShake(int xAmp, int yAmp, int period)
+void Camera::startShake(int xAmp, int yAmp, uint32_t period)
 {
     m_xShakeAmp = xAmp;
     m_yShakeAmp = yAmp;

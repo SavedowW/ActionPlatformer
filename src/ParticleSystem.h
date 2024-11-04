@@ -3,9 +3,7 @@
 #include "Application.h"
 #include <entt/entt.hpp>
 
-// TODO: tie to the player
-// TODO: way to destroy particle when the source is interrupted (the player gets hit, etc)
-enum class TieRule
+enum class TiePosRule
 {
     TIE_TO_WALL,
     TIE_TO_GROUND,
@@ -13,12 +11,19 @@ enum class TieRule
     NONE
 };
 
+enum class TieLifetimeRule
+{
+    DESTROY_ON_STATE_LEAVE,
+    NONE
+};
+
 struct ParticleTemplate
 {
-    ParticleTemplate(int count_, const Vector2<float> &offset_, int anim_, uint32_t lifetime_, size_t layer_,
-        utils::Gate<float> &&horizontalFlipGate_, utils::Gate<float> &&verticalFlipGate_);
+    ParticleTemplate(int count_, const Vector2<float> &offset_, int anim_, uint32_t lifetime_, size_t layer_);
 
-    ParticleTemplate &setTieRules(TieRule tieRule_);
+    ParticleTemplate &setTiePosRules(TiePosRule tieRule_);
+    ParticleTemplate &setTieLifetimeRules(TieLifetimeRule tieRule_);
+    ParticleTemplate &setNotDependOnGroundAngle();
 
     ParticleTemplate() = default;
     ParticleTemplate(const ParticleTemplate &rhs_) = default;
@@ -31,10 +36,9 @@ struct ParticleTemplate
     int anim;
     uint32_t lifetime = 0;
     size_t layer;
-    TieRule m_tieRule = TieRule::NONE;
-
-    utils::Gate<float> horizontalFlipGate;
-    utils::Gate<float> verticalFlipGate;
+    TiePosRule m_tiePosRule = TiePosRule::NONE;
+    TieLifetimeRule m_tieLifetimeRule = TieLifetimeRule::NONE;
+    bool m_dependOnGroundAngle = true;
 };
 
 struct ParticleRecipe
@@ -56,10 +60,10 @@ class ParticleSystem
 public:
     ParticleSystem(entt::registry &reg_, Application &app_);
 
-    void makeParticle(const ParticleRecipe &particle_);
+    void makeParticle(const ParticleRecipe &particle_, std::vector<entt::entity> *placeId_ = nullptr);
 
     template<size_t LAYER>
-    void makeParticle(const ParticleRecipe &particle_);
+    void makeParticle(const ParticleRecipe &particle_, std::vector<entt::entity> *placeId_ = nullptr);
 
     void update();
 

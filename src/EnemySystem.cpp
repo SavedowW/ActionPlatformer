@@ -80,7 +80,7 @@ void EnemySystem::makeEnemy()
     navigateChase->addState(std::unique_ptr<GenericState>(
         new BlindChaseState(
             Enemy1State::META_BLIND_CHASE, Enemy1StateNames.at(Enemy1State::META_BLIND_CHASE), {Enemy1State::NONE, {}},
-            Enemy1State::IDLE, Enemy1State::RUN, 50.0f)
+            Enemy1State::IDLE, Enemy1State::RUN, 200.0f)
     ));
 
     navigateChase->setInitialState(Enemy1State::IDLE);
@@ -170,7 +170,7 @@ void EnemySystem::makeEnemy()
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {1, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_jump"), 22,
-                0, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}},
+                0}},
             {2, {}},
             }))
     ));

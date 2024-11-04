@@ -40,7 +40,7 @@ bool StateMachine::attemptTransition(EntityAnywhere owner_, GenericState* until_
     auto currentStateId = m_currentState->m_stateId;
     for (auto &el : m_states)
     {
-        if (el->transitionableFrom(currentStateId))
+        if (el->transitionableFrom(currentStateId) || m_currentState->transitionableInto(el->m_stateId, m_framesInState))
         {
             auto res = el->isPossible(owner_);
             if (res != ORIENTATION::UNSPECIFIED)
@@ -64,7 +64,7 @@ std::string StateMachine::getName() const
     return std::string("root") + " -> " + m_currentState->getName(m_framesInState);
 }
 
-void GenericState::spawnParticle(EntityAnywhere owner_, const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_)
+void GenericState::spawnParticle(EntityAnywhere owner_, const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_, SDL_RendererFlip flip_)
 {
     auto offset = phys_.m_velocity + phys_.m_inertia;
 
@@ -72,19 +72,23 @@ void GenericState::spawnParticle(EntityAnywhere owner_, const ParticleTemplate &
     rp.pos = trans_.m_pos;
 
     //if (partemplate_.horizontalFlipGate.fits(offset.x))
-    if (trans_.m_orientation == ORIENTATION::LEFT)
+    if (trans_.m_orientation == ORIENTATION::LEFT || trans_.m_orientation == ORIENTATION::RIGHT && (flip_ & SDL_FLIP_HORIZONTAL))
     {
         rp.flip = SDL_RendererFlip(rp.flip | SDL_FLIP_HORIZONTAL);
         rp.pos.x -= partemplate_.offset.x;
-        rp.pos.y -= partemplate_.offset.x * phys_.m_onSlopeWithAngle;
+
+        if (!(flip_ & SDL_FLIP_VERTICAL) && partemplate_.m_dependOnGroundAngle)
+            rp.pos.y -= partemplate_.offset.x * (partemplate_.m_dependOnGroundAngle ? phys_.m_onSlopeWithAngle : 1.0f);
     }
     else
     {
         rp.pos.x += partemplate_.offset.x;
-        rp.pos.y += partemplate_.offset.x * phys_.m_onSlopeWithAngle;
+
+        if (!(flip_ & SDL_FLIP_VERTICAL) && partemplate_.m_dependOnGroundAngle)
+            rp.pos.y += partemplate_.offset.x * (partemplate_.m_dependOnGroundAngle ? phys_.m_onSlopeWithAngle : 1.0f);
     }
 
-    if (partemplate_.verticalFlipGate.fits(offset.y))
+    if (flip_ & SDL_FLIP_VERTICAL)
     {
         rp.flip = SDL_RendererFlip(rp.flip | SDL_FLIP_VERTICAL);
         rp.pos.y -= partemplate_.offset.y;
@@ -92,61 +96,23 @@ void GenericState::spawnParticle(EntityAnywhere owner_, const ParticleTemplate &
     else
         rp.pos.y += partemplate_.offset.y;
 
-    if (partemplate_.m_tieRule == TieRule::TIE_TO_GROUND)
+    if (partemplate_.m_tiePosRule == TiePosRule::TIE_TO_GROUND)
     {
         rp.m_tiePosTo = phys_.m_onGround;
-        rp.angle = atan(phys_.m_onSlopeWithAngle) * 180 / 3.1415;
+
+        if (partemplate_.m_dependOnGroundAngle)
+            rp.angle = atan(phys_.m_onSlopeWithAngle) * 180 / 3.1415;
     }
-    else if (partemplate_.m_tieRule == TieRule::TIE_TO_WALL)
+    else if (partemplate_.m_tiePosRule == TiePosRule::TIE_TO_WALL)
     {
         rp.m_tiePosTo = phys_.m_onWall;
     }
-    else if (partemplate_.m_tieRule == TieRule::TIE_TO_SOURCE)
+    else if (partemplate_.m_tiePosRule == TiePosRule::TIE_TO_SOURCE)
     {
         rp.m_tiePosTo = owner_.idx;
     }
 
-    world_.getParticleSys().makeParticle(rp);
-}
-
-void GenericState::spawnParticle(EntityAnywhere owner_, const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_, SDL_RendererFlip verFlip_)
-{
-    auto offset = phys_.m_velocity + phys_.m_inertia;
-
-    ParticleRecipe rp(partemplate_);
-    rp.pos = trans_.m_pos;
-
-    rp.flip = verFlip_;
-
-    //if (partemplate_.horizontalFlipGate.fits(offset.x))
-    if (trans_.m_orientation == ORIENTATION::LEFT || (verFlip_ & SDL_FLIP_HORIZONTAL))
-    {
-        rp.flip = SDL_RendererFlip(rp.flip | SDL_FLIP_HORIZONTAL);
-        rp.pos.x -= partemplate_.offset.x;
-    }
-    else
-        rp.pos.x += partemplate_.offset.x;
-
-    if (verFlip_ & SDL_FLIP_VERTICAL)
-        rp.pos.y -= partemplate_.offset.y;
-    else
-        rp.pos.y += partemplate_.offset.y;
-
-    if (partemplate_.m_tieRule == TieRule::TIE_TO_GROUND)
-    {
-        rp.m_tiePosTo = phys_.m_onGround;
-        rp.angle = atan(phys_.m_onSlopeWithAngle) * 180 / 3.1415;
-    }
-    else if (partemplate_.m_tieRule == TieRule::TIE_TO_WALL)
-    {
-        rp.m_tiePosTo = phys_.m_onWall;
-    }
-    else if (partemplate_.m_tieRule == TieRule::TIE_TO_SOURCE)
-    {
-        rp.m_tiePosTo = owner_.idx;
-    }
-
-    world_.getParticleSys().makeParticle(rp);
+    world_.getParticleSys().makeParticle(rp, (partemplate_.m_tieLifetimeRule == TieLifetimeRule::DESTROY_ON_STATE_LEAVE ? &m_lifetimeTiedParticles : nullptr));
 }
 
 std::ostream &operator<<(std::ostream &os_, const StateMachine &rhs_)
@@ -163,6 +129,16 @@ void GenericState::setParent(StateMachine *parent_)
 GenericState *GenericState::getRealCurrentState()
 {
     return this;
+}
+
+bool GenericState::transitionableFrom(CharState targetStateId_) const
+{
+    return m_transitionableFrom[targetStateId_];
+}
+
+bool GenericState::transitionableInto(CharState targetStateId_, uint32_t currentFrame_) const
+{
+    return false;
 }
 
 void PhysicalState::updateActor(BattleActor &battleActor_) const
@@ -276,6 +252,11 @@ PhysicalState &PhysicalState::addHit(HitboxGroup &&hit_)
     return *this;
 }
 
+bool PhysicalState::transitionableInto(CharState targetStateId_, uint32_t currentFrame_) const
+{
+    return !m_recoveryFrames.isEmpty() && m_recoveryFrames[currentFrame_][targetStateId_];
+}
+
 GenericState &GenericState::setParticlesSingle(TimelineProperty<ParticleTemplate> &&particlesSingle_)
 {
     m_particlesSingle = std::move(particlesSingle_);
@@ -330,6 +311,13 @@ void PhysicalState::enter(EntityAnywhere owner_, CharState from_)
 
 void GenericState::leave(EntityAnywhere owner_, CharState to_)
 {
+    for (auto &particle : m_lifetimeTiedParticles)
+    {
+        if (owner_.reg->valid(particle))
+            owner_.reg->destroy(particle);
+    }
+
+    m_lifetimeTiedParticles.clear();
 }
 
 bool GenericState::update(EntityAnywhere owner_, uint32_t currentFrame_)
@@ -343,10 +331,10 @@ bool GenericState::update(EntityAnywhere owner_, uint32_t currentFrame_)
         auto &world = owner_.reg->get<World>(owner_.idx);
 
         if (partemplate.count)
-            spawnParticle(owner_, partemplate, transform, phys, world);
+            spawnParticle(owner_, partemplate, transform, phys, world, SDL_FLIP_NONE);
 
         if (partemplateLoop.count)
-            spawnParticle(owner_, partemplateLoop, transform, phys, world);
+            spawnParticle(owner_, partemplateLoop, transform, phys, world, SDL_FLIP_NONE);
     }
 
     // Handle duration

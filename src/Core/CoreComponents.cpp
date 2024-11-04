@@ -22,7 +22,7 @@ void ComponentPhysical::convertToInertia(bool convertVelocity_, bool includeEnfo
 
 Vector2<float> ComponentPhysical::getPosOffest() const
 {
-    return m_velocity + m_inertia.mulComponents(m_inertiaMultiplier) + m_extraoffset;
+    return m_velocity + m_inertia.mulComponents(m_inertiaMultiplier) + m_extraoffset + m_adjustOffset;
 }
 
 void ComponentObstacleFallthrough::setIgnoringObstacles()

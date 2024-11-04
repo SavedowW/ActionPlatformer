@@ -52,7 +52,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         &(new PlayerActionWallPrejump(
             m_animManager.getAnimID("Char1/wall_prejump"), {CharacterState::NONE, {CharacterState::WALL_CLING}},
             std::move(ParticleTemplate{1, Vector2<float>{-8.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_jump"), 21,
-                0, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_WALL))))
+                0}.setTiePosRules(TiePosRule::TIE_TO_WALL))))
         ->setTransitionOnTouchedGround(CharacterState::IDLE)
         .setHurtboxes({
             {
@@ -73,7 +73,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         &(new PlayerActionWallCling(
             m_animManager.getAnimID("Char1/wall_cling"), {CharacterState::NONE, {CharacterState::FLOAT}},
         std::move(ParticleTemplate{1, Vector2<float>{0.0f, 25.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_slide"), 21,
-                0, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_WALL))))
+                0}.setTiePosRules(TiePosRule::TIE_TO_WALL))))
         ->setDrag(TimelineProperty<Vector2<float>>({
             {0, {1.0f, 0.2f}},
             {1, {1.0f, 0.4f}},
@@ -137,7 +137,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {1, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_jump"), 22,
-                0, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_GROUND)},
+                0}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {2, {}},
             }))
     ));
@@ -184,17 +184,19 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {1, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_jump"), 22,
-                0, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_GROUND)},
+                0}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {2, {}},
             }))
     ));
 
-    // BUG: character falls through the ground when using the attack on the slope going upwards to the right
-    // TODO: way to stabilize camera (moves a lot at the beginning of an attack because of impulse)
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>(
             CharacterState::ATTACK_1, {CharacterState::NONE, {CharacterState::IDLE, CharacterState::PRERUN, CharacterState::RUN, CharacterState::RUN_RECOVERY, CharacterState::LANDING_RECOVERY}}, m_animManager.getAnimID("Char1/attack1")))
-        ->setGravity({{0.0f, 0.0f}})
+        ->setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>({
+                    {0, {0.0f, 1.0f}},
+                    {8, {1.0f, 1.0f}}
+                }))
+        .setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
         .setMagnetLimit(TimelineProperty<float>({
@@ -229,11 +231,21 @@ void PlayerSystem::setup(entt::entity playerId_)
             }
         })
         .addHit(HitGeneration::hitPlayerLight())
-        .setDrag({{0.3f, 0.0f}})
+        .setDrag(TimelineProperty<Vector2<float>>({
+            {0, {0.05f, 0.05f}},
+            {8, {0.3f, 0.3f}},
+            }))
+        .setRecoveryFrames(TimelineProperty<StateMarker>({
+            {0, StateMarker{CharacterState::NONE, {}}},
+            {25, StateMarker{CharacterState::NONE, {CharacterState::ATTACK_1, CharacterState::PREJUMP, CharacterState::PRERUN}}}
+            }))
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
-            {4, ParticleTemplate{1, Vector2<float>{4.0f, 1.0f}, m_animManager.getAnimID("Char1/particles/attack1_trace"), 10,
-                2, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_SOURCE)},
+            {4, ParticleTemplate{1, Vector2<float>{5.0f, -2.0f}, m_animManager.getAnimID("Char1/particles/attack1_trace"), 10,
+                2}
+                .setTiePosRules(TiePosRule::TIE_TO_SOURCE)
+                .setTieLifetimeRules(TieLifetimeRule::DESTROY_ON_STATE_LEAVE)
+                .setNotDependOnGroundAngle()},
             {5, {}},
         }))
         .setOutdatedTransition(CharacterState::IDLE, 30)
@@ -274,16 +286,16 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {1, ParticleTemplate{1, Vector2<float>{-10.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_run"), 26,
-                2, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_GROUND)},
+                2}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {2, {}},
             }))
         .setParticlesLoopable(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {5, ParticleTemplate{1, Vector2<float>{-13.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_run_loop"), 21,
-                2, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_GROUND)},
+                2}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {6, {}},
             {30, ParticleTemplate{1, Vector2<float>{-13.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_run_loop"), 21,
-                2, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_GROUND)},
+                2}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {31, {}},
             }), 50)
     ));
@@ -401,7 +413,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setOutdatedTransition(CharacterState::IDLE, 14)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_land"), 36,
-                2, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_GROUND)},
+                2}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {1, {}},
             }))
     ));
@@ -427,7 +439,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setOutdatedTransition(CharacterState::IDLE, 14)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_land"), 36,
-                2, utils::Gate<float>::makeMax(-std::numeric_limits<float>::min()), utils::Gate<float>::makeNever()}.setTieRules(TieRule::TIE_TO_GROUND)},
+                2}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {1, {}},
             }))
     ));
@@ -435,7 +447,11 @@ void PlayerSystem::setup(entt::entity playerId_)
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerActionFloat(
             m_animManager.getAnimID("Char1/float"), {CharacterState::NONE, {}}))
-        ->setGravity({{0.0f, 0.5f}})
+        ->setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>({
+                    {0, {0.5f, 0.5f}},
+                    {6, {1.0f, 1.0f}}
+                }))
+        .setGravity({{0.0f, 0.5f}})
         .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
         .setNoLanding(TimelineProperty<bool>({{0, true}, {4, false}}))
         .setHurtboxes({

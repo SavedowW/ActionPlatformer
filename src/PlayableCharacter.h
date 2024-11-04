@@ -82,6 +82,8 @@ public:
     inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_)
     {
         auto res = PhysicalState::update(owner_, currentFrame_);
+        if (!m_lookaheadSpeedSensitivity.isEmpty())
+            owner_.reg->get<ComponentDynamicCameraTarget>(owner_.idx).m_lookaheadSpeedSensitivity = m_lookaheadSpeedSensitivity[currentFrame_];
 
         const auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
         auto &compFallthrough = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
@@ -111,6 +113,16 @@ public:
         auto inres = attemptInput<true, false>(lInput, rInput, orientation, inq, 0);
         return inres == ORIENTATION::UNSPECIFIED;
 
+    }
+
+    inline virtual void enter(EntityAnywhere owner_, CharState from_) override
+    {
+        PhysicalState::enter(owner_, from_);
+
+        if (!m_lookaheadSpeedSensitivity.isEmpty())
+            owner_.reg->get<ComponentDynamicCameraTarget>(owner_.idx).m_lookaheadSpeedSensitivity = m_lookaheadSpeedSensitivity[0];
+        else
+            owner_.reg->get<ComponentDynamicCameraTarget>(owner_.idx).m_lookaheadSpeedSensitivity = {1.0f, 1.0f};
     }
 
     inline virtual ORIENTATION isPossible(EntityAnywhere owner_) const override
@@ -144,6 +156,13 @@ public:
     }
 
     inline PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
+        &setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>&& lookaheadSpeedSensitivity_)
+    {
+        m_lookaheadSpeedSensitivity = std::move(lookaheadSpeedSensitivity_);
+        return *this;
+    }
+
+    inline PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
         &setRealignOnSwitch(bool realignOnSwitch_)
     {
         m_realignOnSwitchForInput = realignOnSwitch_;
@@ -159,6 +178,7 @@ protected:
 
     std::optional<float> m_alignedSlopeMax;
     bool m_realignOnSwitchForInput = false;
+    TimelineProperty<Vector2<float>> m_lookaheadSpeedSensitivity;
 };
 
 
@@ -298,7 +318,15 @@ public:
             m_parent->switchCurrentState(owner_, m_transitionOnLeave);
         }
         else
+        {
             physical.m_onWall = touchedWall;
+            auto &csc = owner_.reg->get<ComponentStaticCollider>(touchedWall);
+
+            if (orientation == ORIENTATION::RIGHT)
+                physical.m_adjustOffset.x += csc.m_resolved.m_points[1].x - pb.getLeftEdge();
+            else
+                physical.m_adjustOffset.x += csc.m_resolved.m_points[0].x - pb.getRightEdge();
+        }
 
         if (m_particleTimer.update())
         {

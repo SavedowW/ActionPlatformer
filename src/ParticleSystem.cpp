@@ -8,22 +8,22 @@ ParticleSystem::ParticleSystem(entt::registry &reg_, Application &app_) :
 {
 }
 
-void ParticleSystem::makeParticle(const ParticleRecipe &particle_)
+void ParticleSystem::makeParticle(const ParticleRecipe &particle_, std::vector<entt::entity> *placeId_)
 {
     EXPECTED_RENDER_LAYERS(3);
     
     switch (particle_.layer)
     {
         case 0:
-            makeParticle<0>(particle_);
+            makeParticle<0>(particle_, placeId_);
             break;
 
         case 1:
-            makeParticle<1>(particle_);
+            makeParticle<1>(particle_, placeId_);
             break;
 
         case 2:
-            makeParticle<2>(particle_);
+            makeParticle<2>(particle_, placeId_);
             break;
 
         default:
@@ -32,7 +32,7 @@ void ParticleSystem::makeParticle(const ParticleRecipe &particle_)
 }
 
 template<size_t LAYER>
-void ParticleSystem::makeParticle(const ParticleRecipe &particle_)
+void ParticleSystem::makeParticle(const ParticleRecipe &particle_, std::vector<entt::entity> *placeId_)
 {
     for (int i = 0; i < particle_.count; ++i)
     {
@@ -55,6 +55,9 @@ void ParticleSystem::makeParticle(const ParticleRecipe &particle_)
             pprim.m_lifetime.begin(particle_.lifetime);
         
         pprim.angle = particle_.angle;
+
+        if (placeId_)
+            placeId_->push_back(pid);
     }
 }
 
@@ -71,20 +74,30 @@ void ParticleSystem::update()
     }
 }
 
-ParticleTemplate::ParticleTemplate(int count_, const Vector2<float> &offset_, int anim_, uint32_t lifetime_, size_t layer_, utils::Gate<float> &&horizontalFlipGate_, utils::Gate<float> &&verticalFlipGate_) :
+ParticleTemplate::ParticleTemplate(int count_, const Vector2<float> &offset_, int anim_, uint32_t lifetime_, size_t layer_) :
     count(count_),
     offset(offset_),
     anim(anim_),
     lifetime(lifetime_),
-    layer(layer_),
-    horizontalFlipGate(std::forward<utils::Gate<float>>(horizontalFlipGate_)),
-    verticalFlipGate(std::forward<utils::Gate<float>>(verticalFlipGate_))
+    layer(layer_)
 {
 }
 
-ParticleTemplate &ParticleTemplate::setTieRules(TieRule tieRule_)
+ParticleTemplate &ParticleTemplate::setTiePosRules(TiePosRule tiePosRule_)
 {
-    m_tieRule = tieRule_;
+    m_tiePosRule = tiePosRule_;
+    return *this;
+}
+
+ParticleTemplate &ParticleTemplate::setTieLifetimeRules(TieLifetimeRule tieRule_)
+{
+    m_tieLifetimeRule = tieRule_;
+    return *this;
+}
+
+ParticleTemplate &ParticleTemplate::setNotDependOnGroundAngle()
+{
+    m_dependOnGroundAngle = false;
     return *this;
 }
 

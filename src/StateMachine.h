@@ -87,19 +87,14 @@ public:
     virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_);
     virtual ORIENTATION isPossible(EntityAnywhere owner_) const;
     virtual std::string getName(uint32_t framesInState_) const;
-
-    template<typename PLAYER_STATE_T>
-    bool transitionableFrom(PLAYER_STATE_T state_) const
-    {
-        return m_transitionableFrom[state_];
-    }
+    bool transitionableFrom(CharState targetStateId_) const;
+    virtual bool transitionableInto(CharState targetStateId_, uint32_t currentFrame_) const;
 
     virtual void onOutdated(EntityAnywhere owner_);
 
     const CharState m_stateId;
 
 protected:
-    void spawnParticle(EntityAnywhere owner_, const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_);
     void spawnParticle(EntityAnywhere owner_, const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_, SDL_RendererFlip verFlip_);
 
     const StateMarker m_transitionableFrom;
@@ -112,6 +107,8 @@ protected:
     TimelineProperty<ParticleTemplate> m_particlesSingle;
     TimelineProperty<ParticleTemplate> m_particlesLoopable;
     uint32_t m_loopDuration = 1;
+
+    std::vector<entt::entity> m_lifetimeTiedParticles;
 };
 
 class PhysicalState: public GenericState
@@ -166,6 +163,8 @@ public:
     PhysicalState &setRecoveryFrames(TimelineProperty<StateMarker> &&recoveryFrames_);
     PhysicalState &setHurtboxes(Hurtbox &&hurtboxes_);
     PhysicalState &addHit(HitboxGroup &&hit_);
+    virtual bool transitionableInto(CharState targetStateId_, uint32_t currentFrame_) const;
+
 
     virtual void onTouchedGround(EntityAnywhere owner_);
     virtual void onLostGround(EntityAnywhere owner_);

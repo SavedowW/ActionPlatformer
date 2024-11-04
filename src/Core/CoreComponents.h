@@ -77,6 +77,9 @@ struct ComponentPhysical
     float m_lastSlopeAngle = 0.0f;
     uint32_t m_hitstopLeft = 0;
 
+    // Always resetted to {0, 0} after physics iteration, not controlled or limited in any way
+    Vector2<float> m_adjustOffset;
+
     entt::entity m_onGround = entt::null;
     entt::entity m_onWall = entt::null;
 
@@ -217,6 +220,7 @@ struct ComponentDynamicCameraTarget
     ComponentDynamicCameraTarget &operator=(ComponentDynamicCameraTarget &&rhs_) = default;
 
     Vector2<float> m_offset;
+    Vector2<float> m_lookaheadSpeedSensitivity = {1.0f, 1.0f};
 };
 
 struct Navigatable

@@ -230,7 +230,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
         if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
         {
             // If we can rise on top of it
-            if (oldPos.y - highest <= 1.3f * abs(trans_.m_pos.x - oldPos.x))
+            if (oldPos.y - highest <= (1.3f * abs(trans_.m_pos.x - oldPos.x) + 0.0001))
             {
                 if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
                     return;
@@ -292,7 +292,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
         if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
         {
              // If we can rise on top of it
-            if (oldPos.y - highest <= 1.3f * abs(trans_.m_pos.x - oldPos.x))
+            if (oldPos.y - highest <= (1.3f * abs(trans_.m_pos.x - oldPos.x) + 0.0001))
             {
                 if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
                     return;
@@ -402,6 +402,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
 
     phys_.m_appliedOffset = trans_.m_pos - oldPos;
     phys_.m_extraoffset = {0.0f, 0.0f};
+    phys_.m_adjustOffset = {0.0f, 0.0f};
 }
 
 void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_, ComponentParticlePhysics &phys_)

@@ -30,6 +30,13 @@ struct HurtboxGroup
 
 using Hurtbox = std::vector<HurtboxGroup>;
 
+struct CamShakeDescr
+{
+    int m_xAmp = 0;
+    int m_yAmp = 0;
+    uint32_t m_period = 0;
+};
+
 /*
     Hit data:
     Damage - only a few attacks deal damage, health is limited by a small amount of hearts (approx 3-10 for most enemies)
@@ -52,6 +59,8 @@ struct Hit
     uint32_t m_hitstop = 0;
     std::set<BattleTeams> m_friendTeams;
     std::unique_ptr<Flash> m_victimFlash;
+
+    CamShakeDescr m_onHitShake;
     
     void updateId();
 };

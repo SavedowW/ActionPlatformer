@@ -17,6 +17,7 @@ HitboxGroup HitGeneration::hitPlayerLight()
     hit.m_hitData.m_friendTeams.insert(BattleTeams::PLAYER);
     hit.m_hitData.m_hitstop = 8;
     hit.m_hitData.m_victimFlash = std::make_unique<FlashLinear>(10, SDL_Color{255, 255, 255, 255}, 0);
+    hit.m_hitData.m_onHitShake = {5, 5, 8};
 
     hit.m_colliders.push_back({
         {{5.0f, -15.0f}, {8.0f, 4.0f}},

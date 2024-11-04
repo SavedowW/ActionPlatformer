@@ -29,7 +29,7 @@ public:
     Vector2<float> getPositionNormalizedValues();
 
     void update();
-    void startShake(int xAmp, int yAmp, int period);
+    void startShake(int xAmp, int yAmp, uint32_t period);
 
 private:
     Vector2<float> m_pos;

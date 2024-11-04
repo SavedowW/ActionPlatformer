@@ -2,8 +2,8 @@
 #include "StateMachine.h"
 #include "Profile.h"
 
-BattleSystem::BattleSystem(entt::registry &reg_, Application &app_) :
-    m_reg(reg_), m_app(app_)
+BattleSystem::BattleSystem(entt::registry &reg_, Application &app_, Camera &cam_) :
+    m_reg(reg_), m_app(app_), m_cam(cam_)
 {
 }
 
@@ -66,13 +66,13 @@ void BattleSystem::handleAttacks()
     }
 }
 
-void BattleSystem::debugDraw(Camera &cam_)
+void BattleSystem::debugDraw()
 {
     auto &rnd = *m_app.getRenderer();
     for (int i = 0; i < m_appliedHits.getFilled(); ++i)
     {
         const auto &el = m_appliedHits[i];
-        rnd.drawCross(el, {1.0f, 5.0f}, {5.0f, 1.0f}, {0, 0, 0, 255}, cam_);
+        rnd.drawCross(el, {1.0f, 5.0f}, {5.0f, 1.0f}, {0, 0, 0, 255}, m_cam);
     }
 }
 
@@ -95,4 +95,7 @@ void BattleSystem::applyHit(ActorDescr attacker_, ActorDescr victim_, const Hitb
         auto *vicRen = m_reg.try_get<ComponentAnimationRenderable>(victim_.m_id);
         vicRen->m_flash = hit_.m_hitData.m_victimFlash->clone();
     }
+
+    if (hit_.m_hitData.m_onHitShake.m_period > 0)
+        m_cam.startShake(hit_.m_hitData.m_onHitShake.m_xAmp, hit_.m_hitData.m_onHitShake.m_yAmp, hit_.m_hitData.m_onHitShake.m_period);
 }

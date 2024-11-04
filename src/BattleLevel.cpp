@@ -20,7 +20,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_colsys(m_registry),
     m_graph(*application_),
     m_partsys(m_registry, *application_),
-    m_battlesys(m_registry, *application_)
+    m_battlesys(m_registry, *application_, m_camera)
 {
     auto playerId = m_registry.create();
     m_registry.emplace<ComponentTransform>(playerId, Vector2{313.34f, 352.0f}, ORIENTATION::RIGHT);
@@ -41,7 +41,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_hudsys.m_playerId = playerId;
     m_enemysys.m_playerId = playerId;
 
-    m_enemysys.makeEnemy();
+    //m_enemysys.makeEnemy();
 
     m_tlmap.load("Tiles/tiles");
 
@@ -186,7 +186,7 @@ void BattleLevel::draw()
 
     m_camsys.debugDraw(renderer, m_camera);
 
-    m_battlesys.debugDraw(m_camera);
+    m_battlesys.debugDraw();
 
     m_hudsys.draw();
 

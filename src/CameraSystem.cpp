@@ -20,7 +20,7 @@ void CameraSystem::update()
     if (phys.m_appliedOffset.x != 0)
     {
         auto targetoffset = utils::signof(phys.m_appliedOffset.x) * std::min(abs(phys.m_appliedOffset.x * 30.0f), 100.0f);
-        auto delta = targetoffset - dtar.m_offset.x;
+        auto delta = (targetoffset - dtar.m_offset.x) * dtar.m_lookaheadSpeedSensitivity.x;
         float realOffset = 0.0f;
         if (abs(delta) <= 1.0f)
         {
@@ -50,7 +50,7 @@ void CameraSystem::update()
         else if (phys.m_onSlopeWithAngle != 0.0f)
             vprio = 1.5f;
         auto targetoffset = utils::signof(phys.m_appliedOffset.y) * std::min(abs(phys.m_appliedOffset.y * vprio * 20.0f), 100.0f);
-        auto delta = targetoffset - dtar.m_offset.y;
+        auto delta = (targetoffset - dtar.m_offset.y) * dtar.m_lookaheadSpeedSensitivity.y;
         float realOffset = 0.0f;
         if (abs(delta) <= 1.0f)
         {
