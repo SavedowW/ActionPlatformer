@@ -5,8 +5,7 @@
 #include "World.h"
 #include "Hit.h"
 #include "CoreComponents.h"
-
-using CharState = int;
+#include "StateCommon.h"
 
 class GenericState;
 
@@ -37,7 +36,8 @@ public:
     template<typename PLAYER_STATE_T>
     void switchCurrentState(EntityAnywhere owner_, PLAYER_STATE_T stateId_)
     {
-        switchCurrentState(owner_, m_states[m_stateIds[static_cast<CharState>(stateId_)]].get());
+        if (static_cast<CharState>(stateId_) != std::numeric_limits<CharState>::max())
+            switchCurrentState(owner_, m_states[m_stateIds[static_cast<CharState>(stateId_)]].get());
     }
     
     template<typename PLAYER_STATE_T>
@@ -163,6 +163,7 @@ public:
     PhysicalState &setRecoveryFrames(TimelineProperty<StateMarker> &&recoveryFrames_);
     PhysicalState &setHurtboxes(Hurtbox &&hurtboxes_);
     PhysicalState &addHit(HitboxGroup &&hit_);
+    PhysicalState &setHitStateMapping(HitStateMapping &&hitStateMapping_);
     virtual bool transitionableInto(CharState targetStateId_, uint32_t currentFrame_) const;
 
 
@@ -201,13 +202,15 @@ protected:
 
     std::map<CharState, int> m_uniqueTransitionAnims;
 
-    TimelineProperty<bool> m_noUpwardLanding;
+    TimelineProperty<bool> m_noLanding;
     bool m_convertEnforcedVelocity = false;
 
     bool m_hasHurtboxes = false;
     Hurtbox m_hurtboxes;
 
     std::vector<HitboxGroup> m_hits;
+
+    std::optional<HitStateMapping> m_hitStateMapping;
 };
 
 /*

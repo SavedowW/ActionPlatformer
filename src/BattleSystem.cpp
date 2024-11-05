@@ -98,4 +98,7 @@ void BattleSystem::applyHit(ActorDescr attacker_, ActorDescr victim_, const Hitb
 
     if (hit_.m_hitData.m_onHitShake.m_period > 0)
         m_cam.startShake(hit_.m_hitData.m_onHitShake.m_xAmp, hit_.m_hitData.m_onHitShake.m_yAmp, hit_.m_hitData.m_onHitShake.m_period);
+
+    if (victim_.m_actor.m_hitStateTransitions && !victim_.m_actor.m_hitStateTransitions->m_hitstunTransitions.isEmpty())
+        victim_.m_sm.switchCurrentState({&m_reg, victim_.m_id}, victim_.m_actor.m_hitStateTransitions->m_hitstunTransitions[hit_.m_hitData.m_hitstun]);
 }

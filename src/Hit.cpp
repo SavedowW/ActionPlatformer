@@ -69,3 +69,9 @@ HitPosResult detectHit(const std::vector<TemporaryCollider> &hit_, uint32_t hitA
     else
         return {false};
 }
+
+HitStateMapping &HitStateMapping::addHitstunTransition(uint32_t level_, CharState transition_)
+{
+    m_hitstunTransitions.addPropertyValue(level_, CharState{transition_});
+    return *this;
+}

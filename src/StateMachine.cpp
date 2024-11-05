@@ -69,9 +69,10 @@ void GenericState::spawnParticle(EntityAnywhere owner_, const ParticleTemplate &
     auto offset = phys_.m_velocity + phys_.m_inertia;
 
     ParticleRecipe rp(partemplate_);
-    rp.pos = trans_.m_pos;
 
-    //if (partemplate_.horizontalFlipGate.fits(offset.x))
+    if (partemplate_.m_tiePosRule != TiePosRule::TIE_TO_SOURCE)
+        rp.pos = trans_.m_pos;
+
     if (trans_.m_orientation == ORIENTATION::LEFT || trans_.m_orientation == ORIENTATION::RIGHT && (flip_ & SDL_FLIP_HORIZONTAL))
     {
         rp.flip = SDL_RendererFlip(rp.flip | SDL_FLIP_HORIZONTAL);
@@ -158,6 +159,11 @@ void PhysicalState::updateActor(BattleActor &battleActor_) const
             battleActor_.m_activeHits.push_back(&hit);
         }
     }
+
+    if (m_hitStateMapping.has_value())
+        battleActor_.m_hitStateTransitions = &(m_hitStateMapping.value());
+    else
+        battleActor_.m_hitStateTransitions = nullptr;
 }
 
 PhysicalState &PhysicalState::setGravity(TimelineProperty<Vector2<float>> &&gravity_)
@@ -180,7 +186,7 @@ PhysicalState &PhysicalState::setCanFallThrough(TimelineProperty<bool> &&fallThr
 
 PhysicalState &PhysicalState::setNoLanding(TimelineProperty<bool> &&noLanding_)
 {
-    m_noUpwardLanding = std::move(noLanding_);
+    m_noLanding = std::move(noLanding_);
     return *this;
 }
 
@@ -252,6 +258,12 @@ PhysicalState &PhysicalState::addHit(HitboxGroup &&hit_)
     return *this;
 }
 
+PhysicalState &PhysicalState::setHitStateMapping(HitStateMapping &&hitStateMapping_)
+{
+    m_hitStateMapping = std::move(hitStateMapping_);
+    return *this;
+}
+
 bool PhysicalState::transitionableInto(CharState targetStateId_, uint32_t currentFrame_) const
 {
     return !m_recoveryFrames.isEmpty() && m_recoveryFrames[currentFrame_][targetStateId_];
@@ -300,7 +312,7 @@ void PhysicalState::enter(EntityAnywhere owner_, CharState from_)
     //physical.m_pushbox = Collider{Vector2{0.0f, -30.0f}, Vector2{10.0f, 30.0f}}; // TODO: to property
 
     physical.m_drag = m_drag[0];
-    physical.m_noUpwardLanding = m_noUpwardLanding[0];
+    physical.m_noLanding = m_noLanding[0];
     physical.m_magnetLimit = m_magnetLimit[0];
 
     for (auto &el : m_hits)
@@ -370,7 +382,7 @@ bool PhysicalState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     physical.m_gravity = m_gravity[currentFrame_];
     physical.m_drag = m_drag[currentFrame_];
     physical.m_inertiaMultiplier = m_appliedInertiaMultiplier[currentFrame_];
-    physical.m_noUpwardLanding = m_noUpwardLanding[currentFrame_];
+    physical.m_noLanding = m_noLanding[currentFrame_];
     physical.m_magnetLimit = m_magnetLimit[currentFrame_];
 
     return GenericState::update(owner_, currentFrame_);

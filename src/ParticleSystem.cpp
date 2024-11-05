@@ -43,7 +43,9 @@ void ParticleSystem::makeParticle(const ParticleRecipe &particle_, std::vector<e
         if (particle_.m_tiePosTo != entt::null)
         {
             pprim.m_tieTransform = particle_.m_tiePosTo;
-            trans.m_pos -= m_registry.get<ComponentTransform>(particle_.m_tiePosTo).m_pos;
+
+            if (particle_.m_baseTemplate.m_tiePosRule != TiePosRule::TIE_TO_SOURCE)
+                trans.m_pos -= m_registry.get<ComponentTransform>(particle_.m_tiePosTo).m_pos;
         }
     
         auto &animrnd = m_registry.emplace<ComponentAnimationRenderable>(pid);
@@ -105,6 +107,7 @@ ParticleRecipe::ParticleRecipe(const ParticleTemplate &template_) :
     count(template_.count),
     anim(template_.anim),
     lifetime(template_.lifetime),
-    layer(template_.layer)
+    layer(template_.layer),
+    m_baseTemplate(template_)
 {
 }

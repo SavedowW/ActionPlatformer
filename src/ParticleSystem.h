@@ -53,6 +53,8 @@ struct ParticleRecipe
     float angle = 0;
     size_t layer;
     entt::entity m_tiePosTo = entt::null;
+
+    const ParticleTemplate &m_baseTemplate;
 };
 
 class ParticleSystem

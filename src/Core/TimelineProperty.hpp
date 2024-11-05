@@ -7,6 +7,12 @@
 #include <utility>
 #include <cstdint>
 
+/*
+    Class to describe data that changes on different frames, like actual frames in different animation, active hitboxes, etc
+    In general, when is indexed by a key k0, finds an element v1 with key k1 where k1 is the max key in the container where k1 <= k0
+    Therefore, can be used for things not dependant on time like state transition basing on event level (for example, if getting hit by an attack
+    with at least level 0, transition to state A, if its at least level 2 - state B, and if its at least level 5 - state C)
+*/
 template<typename T>
 class TimelineProperty {
 public:

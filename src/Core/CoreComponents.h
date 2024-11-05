@@ -83,7 +83,7 @@ struct ComponentPhysical
     entt::entity m_onGround = entt::null;
     entt::entity m_onWall = entt::null;
 
-    bool m_noUpwardLanding = false;
+    bool m_noLanding = false;
 
     // Used to identify offset applied before collision resolution
     Vector2<float> m_calculatedOffset;

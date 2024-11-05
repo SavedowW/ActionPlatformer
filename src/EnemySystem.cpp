@@ -198,6 +198,10 @@ void EnemySystem::makeEnemy()
         .setUpdateSpeedLimitData(
             TimelineProperty<Vector2<float>>({9999.9f, 0.0f}),
             TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
+        .setHitStateMapping(std::move(HitStateMapping()
+            .addHitstunTransition(0, std::numeric_limits<CharState>::max())
+            .addHitstunTransition(2, static_cast<CharState>(Enemy1State::PREJUMP))
+            ))
     ));
 
     sm.addState(std::unique_ptr<GenericState>(

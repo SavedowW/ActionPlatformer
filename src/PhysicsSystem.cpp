@@ -154,7 +154,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
     auto offset = phys_.getPosOffest();
     phys_.m_calculatedOffset = offset;
     auto pb = phys_.m_pushbox + trans_.m_pos;
-    bool noUpwardLanding = phys_.m_noUpwardLanding;
+    bool noLanding = phys_.m_noLanding;
 
     auto oldHeight = trans_.m_pos.y;
     auto oldTop = pb.getTopEdge();
@@ -179,9 +179,13 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
             std::cout << "Touched slope top, teleporting on top, offset.y > 0\n";
 
             trans_.m_pos.y = highest;
-            if (csc_.m_resolved.m_topAngleCoef != 0)
-                touchedSlope = (pb.getBottomEdge() > csc_.m_resolved.m_highestSlopePoint ? csc_.m_resolved.m_topAngleCoef : 0.0f);
-            onGround = idx_;
+
+            if (!noLanding)
+            {
+                if (csc_.m_resolved.m_topAngleCoef != 0)
+                    touchedSlope = (pb.getBottomEdge() > csc_.m_resolved.m_highestSlopePoint ? csc_.m_resolved.m_topAngleCoef : 0.0f);
+                onGround = idx_;
+            }
             pb = phys_.m_pushbox + trans_.m_pos;
 
             if (phys_.m_velocity.y > 0)
@@ -230,7 +234,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
         if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
         {
             // If we can rise on top of it
-            if (oldPos.y - highest <= (1.3f * abs(trans_.m_pos.x - oldPos.x) + 0.0001))
+            if (oldPos.y - highest <= 1.3f * abs(trans_.m_pos.x - oldPos.x))
             {
                 if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
                     return;
@@ -292,7 +296,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
         if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
         {
              // If we can rise on top of it
-            if (oldPos.y - highest <= (1.3f * abs(trans_.m_pos.x - oldPos.x) + 0.0001))
+            if (oldPos.y - highest <= 1.3f * abs(trans_.m_pos.x - oldPos.x))
             {
                 if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
                     return;
@@ -373,7 +377,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
         // Rising
         else
         {
-            if (noUpwardLanding)
+            if (noLanding)
             {
                 touchedSlope = 0;
                 onGround = entt::null;

@@ -3,6 +3,7 @@
 #include "TimelineProperty.hpp"
 #include "RectCollider.h"
 #include "CoreComponents.h"
+#include "StateCommon.h"
 #include <set>
 
 enum class HurtTrait {
@@ -54,7 +55,7 @@ struct Hit
     uint32_t m_id = 0;
 
     int m_damage = false;
-    int m_hitstun = 0;
+    uint32_t m_hitstun = 0;
     float m_stagger = 0.0f;
     uint32_t m_hitstop = 0;
     std::set<BattleTeams> m_friendTeams;
@@ -80,6 +81,13 @@ struct HitPosResult
 
 HitPosResult detectHit(const std::vector<TemporaryCollider> &hit_, uint32_t hitActiveFrame_, const ComponentTransform &attacker_, const std::vector<TemporaryCollider> &hurtbox_, uint32_t hurtboxActiveFrame_, const ComponentTransform &victim_);
 
+struct HitStateMapping
+{
+    TimelineProperty<CharState> m_hitstunTransitions;
+
+    HitStateMapping &addHitstunTransition(uint32_t level_, CharState transition_);
+};
+
 struct BattleActor
 {
     BattleActor(BattleTeams team_);
@@ -88,6 +96,7 @@ struct BattleActor
     BattleTeams m_team = BattleTeams::NONE;
     std::vector<const HitboxGroup *> m_activeHits;
     std::set<uint32_t> m_appliedHits;
+    const HitStateMapping *m_hitStateTransitions = nullptr;
 };
 
 namespace HitGeneration
