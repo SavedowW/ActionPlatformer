@@ -241,7 +241,7 @@ void PlayerSystem::setup(entt::entity playerId_)
             }))
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
-            {4, ParticleTemplate{1, Vector2<float>{5.0f, -2.0f}, m_animManager.getAnimID("Char1/particles/attack1_trace"), 10,
+            {4, ParticleTemplate{1, Vector2<float>{3.0f, 3.0f}, m_animManager.getAnimID("Char1/particles/attack1_trace"), 10,
                 2}
                 .setTiePosRules(TiePosRule::TIE_TO_SOURCE)
                 .setTieLifetimeRules(TieLifetimeRule::DESTROY_ON_STATE_LEAVE)

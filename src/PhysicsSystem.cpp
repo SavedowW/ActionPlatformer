@@ -234,7 +234,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
         if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
         {
             // If we can rise on top of it
-            if (oldPos.y - highest <= 1.3f * abs(trans_.m_pos.x - oldPos.x))
+            if (oldPos.y - highest <= (1.3f * abs(trans_.m_pos.x - oldPos.x) + 0.0001))
             {
                 if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
                     return;
@@ -295,8 +295,8 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
         // If we touched collider
         if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
         {
-             // If we can rise on top of it
-            if (oldPos.y - highest <= 1.3f * abs(trans_.m_pos.x - oldPos.x))
+            // If we can rise on top of it
+            if (oldPos.y - highest <= (1.3f * abs(trans_.m_pos.x - oldPos.x) + 0.0001))
             {
                 if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
                     return;
