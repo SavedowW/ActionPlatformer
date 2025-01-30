@@ -103,6 +103,7 @@ namespace HitGeneration
 {
 
 HitboxGroup hitPlayerLight();
+HitboxGroup hitPlayerChain();
 
 }
 

@@ -19,6 +19,7 @@ enum class CharacterState : CharState {
     WALL_CLING,
     WALL_CLING_PREJUMP,
     ATTACK_1,
+    ATTACK_1_CHAIN,
     NONE
 };
 
@@ -34,7 +35,8 @@ inline const std::map<CharacterState, std::string> CharacterStateNames {
     {CharacterState::HARD_LANDING_RECOVERY, "HARD_LANDING_RECOVERY"},
     {CharacterState::WALL_CLING, "WALL_CLING"},
     {CharacterState::WALL_CLING_PREJUMP, "WALL_CLING_PREJUMP"},
-    {CharacterState::ATTACK_1, "ATTACK_1"}
+    {CharacterState::ATTACK_1, "ATTACK_1"},
+    {CharacterState::ATTACK_1_CHAIN, "ATTACK_1_CHAIN"}
 };
 
 template<bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN>
@@ -145,7 +147,7 @@ public:
         auto &lInput = (possibleToLeft ? static_cast<const InputComparator&>(m_cmpLeft) : static_cast<const InputComparator&>(failin));
         auto &rInput = (possibleToRight ? static_cast<const InputComparator&>(m_cmpRight) : static_cast<const InputComparator&>(failin));
 
-        return attemptInput<REQUIRE_ALIGNMENT, FORCE_REALIGN | FORCE_TOWARDS_INPUT>(lInput, rInput, orientation, inq, 0);
+        return attemptInput<REQUIRE_ALIGNMENT, FORCE_REALIGN | FORCE_TOWARDS_INPUT>(lInput, rInput, orientation, inq, m_extendedBuffer);
     }
 
     inline PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
@@ -169,6 +171,13 @@ public:
         return *this;
     }
 
+    inline PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
+        &setExtendedBuffer(uint32_t extendedBuffer_)
+    {
+        m_extendedBuffer = extendedBuffer_;
+        return *this;
+    }
+
 protected:
     const Collider m_pushbox;
     CMP_LEFT m_cmpLeft;
@@ -179,6 +188,8 @@ protected:
     std::optional<float> m_alignedSlopeMax;
     bool m_realignOnSwitchForInput = false;
     TimelineProperty<Vector2<float>> m_lookaheadSpeedSensitivity;
+
+    uint32_t m_extendedBuffer = 0;
 };
 
 
@@ -494,6 +505,92 @@ protected:
     InputComparatorHoldDown m_d;
 
     ParticleTemplate m_jumpParticle;
+};
+
+class PlayerActionAttack1Chain: public PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>
+{
+public:
+    inline PlayerActionAttack1Chain(int anim_, int animTrace_) :
+        PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>(CharacterState::ATTACK_1_CHAIN, {CharacterState::NONE, {}}, anim_)
+    {
+        setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>({
+                    {0, {0.0f, 1.0f}},
+                    {15, {1.0f, 1.0f}},
+                    {40, {0.0f, 1.0f}},
+                    {45, {1.0f, 1.0f}}
+                }));
+        setExtendedBuffer(10);
+        setGravity({{0.0f, 0.0f}});
+        setConvertVelocityOnSwitch(true, false);
+        setTransitionOnLostGround(CharacterState::FLOAT);
+        setMagnetLimit(TimelineProperty<float>({
+                    {0, 16.0f},
+                    {15, 4.0f}
+                }));
+        setUpdateMovementData(
+            TimelineProperty<Vector2<float>>( 
+                {
+                    {0, {1.0f, 1.0f}},
+                    {12, {0.1f, 1.0f}},
+                    {30, {1.0f, 1.0f}},
+                    {44, {0.0f, 1.0f}},
+                }), // Vel mul
+            TimelineProperty<Vector2<float>>( 
+                {
+                    {0, {0.0f, 0.0f}},
+                    {9, {5.0f, 0.0f}},
+                    {12, {0.0f, 0.0f}},
+                    {40, {-1.5f, 0.0f}},
+                    {41, {0.0f, 0.0f}}
+                }),  // Dir vel mul
+            TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Raw vel
+            TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Inr mul
+            TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
+            TimelineProperty<Vector2<float>>({0.0f, 0.0f})); // Raw inr
+        setHurtboxes({
+            {
+                HurtboxGroup(
+                    {
+                        {
+                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>({{0, true}, {12, false}, {28, true}})},
+                            {{{2.0f, -8.0f}, {16.0f, 8.0f}}, TimelineProperty<bool>({{12, true}, {28, false}})}
+                        }
+                    }, HurtTrait::NORMAL
+                )
+            }
+        });
+        addHit(HitGeneration::hitPlayerChain());
+        setDrag(TimelineProperty<Vector2<float>>({
+            {0, {0.05f, 0.05f}},
+            {8, {0.3f, 0.3f}},
+            }));
+        setRecoveryFrames(TimelineProperty<StateMarker>({
+            {0, StateMarker{CharacterState::NONE, {}}}
+            }));
+        setParticlesSingle(TimelineProperty<ParticleTemplate>({
+            {0, {}},
+            {11, ParticleTemplate{1, Vector2<float>{5.0f, 2.0f}, animTrace_, 10,
+                2}
+                .setTiePosRules(TiePosRule::TIE_TO_SOURCE)
+                .setTieLifetimeRules(TieLifetimeRule::DESTROY_ON_STATE_LEAVE)
+                .setNotDependOnGroundAngle()},
+            {12, {}},
+        }));
+        setOutdatedTransition(CharacterState::IDLE, 46);
+    }
+
+    inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
+    {
+        auto updateres = PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>::update(owner_, currentFrame_);
+
+        if (currentFrame_ == 11)
+        {
+            auto &wrld = owner_.reg->get<World>(owner_.idx);
+            wrld.getCamera().startShake(15, 15, 14);
+        }
+
+        return updateres;
+    }
 };
 
 #endif

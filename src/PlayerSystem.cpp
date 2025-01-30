@@ -28,6 +28,7 @@ void PlayerSystem::setup(entt::entity playerId_)
     animrnd.m_animations[m_animManager.getAnimID("Char1/run_recovery")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/run_recovery"), LOOPMETHOD::NOLOOP);
     animrnd.m_animations[m_animManager.getAnimID("Char1/landing_recovery")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/landing_recovery"), LOOPMETHOD::NOLOOP);
     animrnd.m_animations[m_animManager.getAnimID("Char1/attack1")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/attack1"), LOOPMETHOD::NOLOOP);
+    animrnd.m_animations[m_animManager.getAnimID("Char1/attack1_chain")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/attack1_chain"), LOOPMETHOD::NOLOOP);
 
     animrnd.m_currentAnimation = animrnd.m_animations[m_animManager.getAnimID("Char1/float")].get();
     animrnd.m_currentAnimation->reset();
@@ -39,6 +40,7 @@ void PlayerSystem::setup(entt::entity playerId_)
     m_animManager.preload("Char1/particles/particle_wall_jump");
     m_animManager.preload("Char1/particles/particle_wall_slide");
     m_animManager.preload("Char1/particles/attack1_trace");
+    m_animManager.preload("Char1/particles/attack1_chain_trace");
 
 
     phys.m_pushbox = {Vector2{0.0f, -16.0f}, Vector2{7.0f, 16.0f}};
@@ -237,7 +239,8 @@ void PlayerSystem::setup(entt::entity playerId_)
             }))
         .setRecoveryFrames(TimelineProperty<StateMarker>({
             {0, StateMarker{CharacterState::NONE, {}}},
-            {25, StateMarker{CharacterState::NONE, {CharacterState::ATTACK_1, CharacterState::PREJUMP, CharacterState::PRERUN}}}
+            {16, StateMarker{CharacterState::NONE, {CharacterState::ATTACK_1_CHAIN}}},
+            {25, StateMarker{CharacterState::NONE, {CharacterState::ATTACK_1_CHAIN, CharacterState::PREJUMP, CharacterState::PRERUN}}}
             }))
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
@@ -249,6 +252,13 @@ void PlayerSystem::setup(entt::entity playerId_)
             {5, {}},
         }))
         .setOutdatedTransition(CharacterState::IDLE, 30)
+    ));
+
+    // TODO: fix flying off a cliff
+    // TODO: grounded particles that only appear if there is a ground in front of you
+    sm.addState(std::unique_ptr<GenericState>(
+        new PlayerActionAttack1Chain(
+            m_animManager.getAnimID("Char1/attack1_chain"), m_animManager.getAnimID("Char1/particles/attack1_chain_trace"))
     ));
 
     sm.addState(std::unique_ptr<GenericState>(

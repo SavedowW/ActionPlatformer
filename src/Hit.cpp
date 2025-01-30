@@ -35,6 +35,28 @@ HitboxGroup HitGeneration::hitPlayerLight()
     return hit;
 }
 
+HitboxGroup HitGeneration::hitPlayerChain()
+{
+    HitboxGroup hit;
+
+    hit.m_hitData.m_damage = 1;
+    hit.m_hitData.m_hitstun = 3;
+    hit.m_hitData.m_stagger = 7.0f;
+    hit.m_hitData.m_friendTeams.insert(BattleTeams::PLAYER);
+    hit.m_hitData.m_hitstop = 16;
+    hit.m_hitData.m_victimFlash = std::make_unique<FlashLinear>(10, SDL_Color{255, 255, 255, 255}, 0);
+
+    hit.m_colliders.push_back({
+        {{26.0f, -16.0f}, {24.0f, 16.0f}},
+        TimelineProperty<bool>({{12, true}, {15, false}})
+    });
+
+    hit.m_activeWindow = {12, 15};
+
+
+    return hit;
+}
+
 void Hit::updateId()
 {
     m_id = ++m_lastId;
