@@ -78,3 +78,11 @@ INPUT_BUTTON_STATE InputResolver::getPostFrameButtonState(INPUT_BUTTON button_) 
     return INPUT_BUTTON_STATE::OFF;
 }
 
+void InputResolver::nullifyCurrentInput()
+{
+    for (const auto &btn : {INPUT_BUTTON::UP, INPUT_BUTTON::DOWN, INPUT_BUTTON::LEFT, INPUT_BUTTON::RIGHT, INPUT_BUTTON::ATTACK})
+    {
+        if (m_currentInput.m_inputs[btn] == INPUT_BUTTON_STATE::PRESSED || m_currentInput.m_inputs[btn] == INPUT_BUTTON_STATE::HOLD)
+            m_currentInput.m_inputs[btn] = INPUT_BUTTON_STATE::RELEASED;
+    }
+}

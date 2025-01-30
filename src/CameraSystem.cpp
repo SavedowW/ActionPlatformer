@@ -4,15 +4,21 @@
 #include "GameData.h"
 #include "Profile.h"
 
-CameraSystem::CameraSystem(entt::registry &reg_, Camera &cam_) :
+CameraSystem::CameraSystem(entt::registry &reg_, Application &app_, Camera &cam_) :
+    InputReactor(app_.getInputSystem()),
     m_reg(reg_),
     m_cam(cam_)
 {
+    subscribe(EVENTS::CAM_STOP);
+    setInputEnabled(true);
 }
 
 void CameraSystem::update()
 {
     PROFILE_FUNCTION;
+
+    if (m_cameraStopped)
+        return;
 
     Vector2<float> target;
     auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(m_playerId);
@@ -125,5 +131,16 @@ void CameraSystem::debugDraw(Renderer &ren_, Camera &cam_)
         auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(m_playerId);
         ren_.drawLine(trans.m_pos, trans.m_pos + dtar.m_offset, {188, 74, 155, 255}, cam_);
         ren_.drawLine(trans.m_pos + dtar.m_offset, trans.m_pos + dtar.m_offset + BODY_OFFSET, {188, 74, 155, 255}, cam_);
+    }
+}
+
+void CameraSystem::receiveInput(EVENTS event, const float scale_)
+{
+    switch (event)
+    {
+        case (EVENTS::CAM_STOP):
+            if (scale_ > 0)
+                m_cameraStopped = !m_cameraStopped;
+            break;
     }
 }

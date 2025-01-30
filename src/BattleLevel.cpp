@@ -12,7 +12,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_rendersys(m_registry, *application_, m_camera),
     m_inputsys(m_registry),
     m_physsys(m_registry, size_),
-    m_camsys(m_registry, m_camera),
+    m_camsys(m_registry, *application_, m_camera),
     m_hudsys(m_registry, *application_, m_camera, lvlId_, size_, m_lastFullFrameTime),
     m_enemysys(m_registry, *application_, m_navsys, m_camera, m_partsys),
     m_aisys(m_registry),
@@ -20,7 +20,8 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_colsys(m_registry),
     m_graph(*application_),
     m_partsys(m_registry, *application_),
-    m_battlesys(m_registry, *application_, m_camera)
+    m_battlesys(m_registry, *application_, m_camera),
+    m_chatBoxSys(m_registry, *application_, m_camera)
 {
     auto playerId = m_registry.create();
     m_registry.emplace<ComponentTransform>(playerId, Vector2{313.34f, 352.0f}, ORIENTATION::RIGHT);
@@ -35,6 +36,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_registry.emplace<Navigatable>(playerId);
     m_registry.emplace<PhysicalEvents>(playerId);
     m_registry.emplace<BattleActor>(playerId, BattleTeams::PLAYER);
+    m_registry.emplace<HUDPoint>(playerId, HUDPosRule::REL_TRANSFORM, Vector2{0.0f, -16.0f}, 16.0f);
 
     m_playerId = playerId;
     m_camsys.m_playerId = playerId;
@@ -47,6 +49,10 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
 
     LevelBuilder bld(*application_, m_registry);
     m_decor = std::move(bld.buildLevel("Resources/Sprites/Tiles/tilemap.json", m_tlmap, playerId, m_graph));
+
+    m_chatBoxSys.setPlayerEntity(m_playerId);
+
+    subscribe(EVENTS::FN4);
 
     /*auto newcld = m_registry.create();
     m_registry.emplace<ComponentTransform>(newcld, getTilePos(Vector2{20.0f, 21.0f}), ORIENTATION::RIGHT);
@@ -72,6 +78,19 @@ void BattleLevel::enter()
 
     m_camera.setScale(gamedata::global::minCameraScale);
     m_camera.setPos({0.0f, 0.0f});
+}
+
+void BattleLevel::receiveInput(EVENTS event, const float scale_)
+{
+    Level::receiveInput(event, scale_);
+
+    if (event == EVENTS::FN4 && scale_ > 0)
+    {
+        ChatMessageSequence seq{m_playerId, ChatBoxSide::PREFER_TOP, true, true};
+        seq.m_messages.emplace_back("Hello, chat\nHow are you?", 3);
+        seq.m_messages.emplace_back("I've been better", 3);
+        m_chatBoxSys.addSequence(std::move(seq));
+    }
 }
 
 void BattleLevel::update()
@@ -189,6 +208,8 @@ void BattleLevel::draw()
     m_battlesys.debugDraw();
 
     m_hudsys.draw();
+
+    m_chatBoxSys.draw();
 
     renderer.updateScreen(m_camera);
 }

@@ -5,6 +5,14 @@
 #include <SDL.h>
 #include <regex>
 
+namespace Easing
+{
+    inline float circ(float val_)
+    {
+        return sqrt(1.0f - powf(val_ - 1.0f, 2.0f));
+    }
+}
+
 namespace utils
 {
     template<typename T>

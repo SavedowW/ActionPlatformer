@@ -20,12 +20,15 @@
 #include "DynamicColliderSystem.h"
 #include "ParticleSystem.h"
 #include "BattleSystem.h"
+#include "ChatBox.h"
 
 class BattleLevel : public Level
 {
 public:
     BattleLevel(Application *application_, const Vector2<float>& size_, int lvlId_);
     virtual void enter() override;
+
+    void receiveInput(EVENTS event, const float scale_) override;
 
     virtual ~BattleLevel() = default;
 
@@ -51,6 +54,7 @@ protected:
     DynamicColliderSystem m_colsys;
     ParticleSystem m_partsys;
     BattleSystem m_battlesys;
+    ChatboxSystem m_chatBoxSys;
 
     NavGraph m_graph;
 

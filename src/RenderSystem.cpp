@@ -15,7 +15,7 @@ void RenderSystem::update()
 
     for (auto [idx, ren] : rens.each())
     {
-        if (ren.m_currentAnimation)
+        if (ren.m_currentAnimation && !checkCurrentHitstop(m_reg, idx))
             ren.m_currentAnimation->update();
 
         if (ren.m_flash)

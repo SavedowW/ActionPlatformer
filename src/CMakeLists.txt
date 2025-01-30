@@ -36,6 +36,7 @@ DynamicColliderSystem.cpp
 ParticleSystem.cpp
 Hit.cpp
 BattleSystem.cpp
+ChatBox.cpp
 )
 
 set(INCLUDE_DIRS

@@ -10,8 +10,8 @@ HudSystem::HudSystem(entt::registry &reg_, Application &app_, Camera &cam_, int 
     m_lvlId(lvlId_),
     m_lvlSize(lvlSize_),
     m_frameTime(frameTime_),
-    m_commonLog(app_, 0, fonts::HOR_ALIGN::LEFT, 22),
-    m_playerLog(app_, 0, fonts::HOR_ALIGN::RIGHT, 22)
+    m_commonLog(app_, 0, fonts::HOR_ALIGN::LEFT, 12),
+    m_playerLog(app_, 0, fonts::HOR_ALIGN::RIGHT, 12)
 {
     auto &texman = *app_.getTextureManager();
 
@@ -72,17 +72,17 @@ void HudSystem::drawPlayerDebug()
     m_playerLog.addRecord(std::string("Ignored obstacles: ") + ignoredObstacles);
     m_playerLog.addRecord(std::string("On slope: ") + std::to_string(pphysical.m_onSlopeWithAngle));
     m_playerLog.addRecord(std::string("Grounded: ") + std::to_string(pphysical.m_onGround != entt::null));
-    m_playerLog.addRecord(std::string("Attached: ") + std::to_string(pphysical.m_onWall != entt::null));
+    m_playerLog.addRecord(std::string("Attac\nhed: ") + std::to_string(pphysical.m_onWall != entt::null));
 
-    m_playerLog.dump({gamedata::global::defaultWindowResolution.x - 1.0f, 1.0f});
+    m_playerLog.dump({gamedata::global::hudLayerResolution.x - 1.0f, 1.0f});
 
     auto inputs = pinp.m_inputResolver->getCurrentInputDir();
 
     Vector2<float> arrowPos[] = {
-        Vector2{620.0f, 20.0f},
-        Vector2{655.0f, 55.0f},
-        Vector2{620.0f, 90.0f},
-        Vector2{585.0f, 55.0f},
+        Vector2{320.0f, 25.0f},
+        Vector2{355.0f, 60.0f},
+        Vector2{320.0f, 95.0f},
+        Vector2{285.0f, 60.0f},
     };
 
     bool isValid[] = {
@@ -105,7 +105,7 @@ void HudSystem::drawPlayerDebug()
         SDL_FPoint sdlcenter = {spr->m_w / 2.0f, spr->m_h / 2.0f};
 
         m_renderer.renderTexture(spr->getSprite(),
-        arrowPos[i].x, arrowPos[i].y, spr->m_w, spr->m_h, angles[i], &sdlcenter, SDL_FLIP_NONE);
+        arrowPos[i].x - sdlcenter.x, arrowPos[i].y - sdlcenter.y, spr->m_w, spr->m_h, angles[i], &sdlcenter, SDL_FLIP_NONE);
     }
 }
 

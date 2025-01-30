@@ -1,3 +1,4 @@
+#include "GameData.h"
 #include "TextManager.h"
 #include <fstream>
 #include "utf8.h"
@@ -40,15 +41,16 @@ fonts::Symbol::~Symbol()
 }
 
 template<typename Func, typename... Args>
-fonts::Font::Font(Func generateSymbols_, const CharChunkDistribution &distrib_, Args&&... args_) :
-    m_distrib(distrib_)
+fonts::Font::Font(Func generateSymbols_, int height_, const CharChunkDistribution &distrib_, Args&&... args_) :
+    m_distrib(distrib_),
+    m_height(height_)
 {
     std::cout << "Initializing font...\n";
     static_assert(std::is_invocable_v<Func, decltype(m_symbols)&, decltype(distrib_), Args...>, "Function Func should be invokable with these arguments");
     generateSymbols_(m_symbols, distrib_, std::forward<Args>(args_)...);
 }
 
-const fonts::Symbol &fonts::Font::operator[](uint32_t ch_)
+const fonts::Symbol &fonts::Font::operator[](uint32_t ch_) const
 {
     return m_symbols[m_distrib.m_chunkSearch[ch_]][ch_ % CHUNK_SIZE];
 }
@@ -56,9 +58,10 @@ const fonts::Symbol &fonts::Font::operator[](uint32_t ch_)
 TextManager::TextManager(Renderer *renderer_, const std::string &basePath_) :
     m_charChunks(basePath_ + "/Resources/GeneralCharacterList.txt"),
     m_renderer(renderer_),
-    m_fonts{fonts::Font(generateSimpleShadedSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  24, SDL_Color{255, 255, 255, 255}, SDL_Color{100, 100, 100, 255}),
-    fonts::Font(generateSimpleSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  18, SDL_Color{255, 255, 255, 255}),
-    fonts::Font(generateSimpleSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  8, SDL_Color{255, 255, 255, 255})}
+    m_fonts{fonts::Font(generateSimpleShadedSymbols, 12, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  12, SDL_Color{255, 255, 255, 255}, SDL_Color{100, 100, 100, 255}),
+    fonts::Font(generateSimpleSymbols, 18, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  18, SDL_Color{255, 255, 255, 255}),
+    fonts::Font(generateSimpleSymbols, 8, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  8, SDL_Color{255, 255, 255, 255}),
+    fonts::Font(generateSimpleSymbols, 16, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/VanillaExtractRegular.ttf",  16, gamedata::colors::LVL1)}
     //m_fonts{fonts::Font(generateOutlinedSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  24, 2, SDL_Color{0, 0, 0, 255}, SDL_Color{0, 100, 0, 255})}
     //m_fonts{fonts::Font(generateOutlinedTexturedSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf", "/Resources/Fonts/fontBack.png",  24, 2, SDL_Color{0, 0, 0, 255})}
 {
@@ -411,8 +414,8 @@ void TextManager::generateSimpleShadedSymbols(std::vector<std::array<fonts::Symb
 
             renderer_.setRenderTarget(symbols_[i].m_tex);
             SDL_RenderCopy(sdlrenderer, shade, nullptr, &dstShadow1);
-            SDL_RenderCopy(sdlrenderer, shade, nullptr, &dstShadow2);
-            SDL_RenderCopy(sdlrenderer, shade, nullptr, &dstShadow3);
+            //SDL_RenderCopy(sdlrenderer, shade, nullptr, &dstShadow2);
+            //SDL_RenderCopy(sdlrenderer, shade, nullptr, &dstShadow3);
             SDL_RenderCopy(sdlrenderer, letter, nullptr, &dstMain);
 
             renderer_.setRenderTarget();
@@ -460,6 +463,16 @@ void TextManager::renderText(const std::string &text_, int fontid_, Vector2<floa
             m_renderer->renderTexture(sym.m_tex, pos_.x, pos_.y, (float)sym.m_w, (float)sym.m_h);
         pos_.x += sym.m_advance;
     }
+}
+
+const fonts::Symbol *TextManager::getSymbol(int fontid_, uint32_t ch_) const
+{
+    return &m_fonts.at(fontid_)[ch_];
+}
+
+int TextManager::getFontHeight(int fontid_) const
+{
+    return m_fonts.at(fontid_).m_height;
 }
 
 fonts::CharChunkDistribution::CharChunkDistribution(const std::string &charlist_)

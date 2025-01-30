@@ -41,6 +41,7 @@ namespace gamedata
         inline constexpr Vector2<float> baseResolution = {320.0f, 180.0f}; // 320 x 180 or 480 x 270
         inline constexpr Vector2<float> maxCameraSize = {640.0f, 360.0f};
         inline constexpr Vector2<float> minCameraSize = {320.0f, 180.0f};
+        inline constexpr Vector2<int> hudLayerResolution = {640, 360};
         inline constexpr float baseCameraScale = 1.0f;
         inline constexpr float maxCameraScale = maxCameraSize.y / baseResolution.y;
         inline constexpr float minCameraScale = minCameraSize.y / baseResolution.y;

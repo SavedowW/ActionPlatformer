@@ -24,7 +24,7 @@ Renderer::Renderer(Window &window_)
 	SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
 	m_backbuffGameplay.setTexture(tex);
 
-	tex = createTexture(gamedata::global::defaultWindowResolution);
+	tex = createTexture(gamedata::global::hudLayerResolution);
 	SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
 	m_backbuffHUD.setTexture(tex);
 

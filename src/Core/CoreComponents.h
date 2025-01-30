@@ -244,6 +244,19 @@ struct Navigatable
     }
 };
 
+enum class HUDPosRule
+{
+    POS_WORLD,
+    REL_TRANSFORM
+};
+
+struct HUDPoint
+{
+    HUDPosRule m_posRule = HUDPosRule::POS_WORLD;
+    Vector2<float> m_pos;
+    float m_vOffset = 0.0f;
+};
+
 template<size_t LAYER>
 struct RenderLayer
 {

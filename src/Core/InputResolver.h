@@ -20,6 +20,8 @@ public:
     Vector2<int> getCurrentInputDir() const;
     INPUT_BUTTON_STATE getPostFrameButtonState(INPUT_BUTTON button_) const;
 
+    void nullifyCurrentInput();
+
     void update();
 
 protected:
