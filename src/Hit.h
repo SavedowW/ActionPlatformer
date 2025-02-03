@@ -99,6 +99,18 @@ struct BattleActor
     const HitStateMapping *m_hitStateTransitions = nullptr;
 };
 
+struct HealthOwner
+{
+    HealthOwner(int realHealth_, AnimationManager &animationManager_);
+    HealthOwner(const HealthOwner &rhs_) = delete;
+    HealthOwner(HealthOwner &&rhs_) = default;
+    HealthOwner &operator=(const HealthOwner &rhs_) = delete;
+    HealthOwner &operator=(HealthOwner &&rhs_) = default;
+
+    std::vector<std::unique_ptr<Animation>> m_heartAnims;
+    int m_realHealth = 0;
+};
+
 namespace HitGeneration
 {
 

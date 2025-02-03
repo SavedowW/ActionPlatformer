@@ -97,3 +97,12 @@ HitStateMapping &HitStateMapping::addHitstunTransition(uint32_t level_, CharStat
     m_hitstunTransitions.addPropertyValue(level_, CharState{transition_});
     return *this;
 }
+
+HealthOwner::HealthOwner(int realHealth_, AnimationManager &animationManager_):
+    m_realHealth(realHealth_)
+{
+    for (int i = 0; i < realHealth_; ++i)
+    {
+        m_heartAnims.push_back(std::move(std::make_unique<Animation>(animationManager_, animationManager_.getAnimID("UI/heart"), LOOPMETHOD::NOLOOP)));
+    }
+}

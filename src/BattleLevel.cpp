@@ -37,6 +37,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_registry.emplace<PhysicalEvents>(playerId);
     m_registry.emplace<BattleActor>(playerId, BattleTeams::PLAYER);
     m_registry.emplace<HUDPoint>(playerId, HUDPosRule::REL_TRANSFORM, Vector2{0.0f, -16.0f}, 16.0f);
+    m_registry.emplace<HealthOwner>(playerId, 3, *application_->getAnimationManager());
 
     m_playerId = playerId;
     m_camsys.m_playerId = playerId;
