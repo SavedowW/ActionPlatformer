@@ -24,6 +24,12 @@ void RenderSystem::update()
                 ren.m_flash.reset();
         }
     }
+
+    auto hprens = m_reg.view<HealthRendererCommonWRT>();
+    for (auto [idx, hpren] : hprens.each())
+    {
+        hpren.update();
+    }
 }
 
 void RenderSystem::draw()
@@ -36,6 +42,7 @@ void RenderSystem::draw()
     auto viewFocuses = m_reg.view<CameraFocusArea>();
     const auto viewTransforms = m_reg.view<ComponentTransform>();
     const auto viewBtlAct = m_reg.view<ComponentTransform, BattleActor>();
+    const auto viewHealthOwners = m_reg.view<ComponentTransform, HealthRendererCommonWRT>();
 
     if constexpr (gamedata::debug::drawColliders)
     {
@@ -57,6 +64,9 @@ void RenderSystem::draw()
     handleLayer<0>();
     handleLayer<1>();
     handleLayer<2>();
+
+    for (auto [idx, trans, hren] : viewHealthOwners.each())
+        drawHealth(trans, hren);
 
     if constexpr (gamedata::debug::drawColliders)
     {
@@ -229,4 +239,60 @@ void RenderSystem::drawFocusArea(CameraFocusArea &cfa_)
 void RenderSystem::drawTransform(const ComponentTransform &cfa_)
 {
     m_renderer.drawCross(cfa_.m_pos, {1.0f, 10.0f}, {10.0f, 1.0f}, {0, 0, 0, 255}, m_camera);
+}
+
+void RenderSystem::drawHealth(const ComponentTransform &trans_, const HealthRendererCommonWRT &howner_)
+{
+    if (howner_.m_state == HealthRendererCommonWRT::DelayFadeStates::INACTIVE)
+        return;
+
+    Vector2<float> worldPos = trans_.m_pos + howner_.m_offset;
+
+    if (gamedata::debug::drawHealthPos)
+        m_renderer.drawCross(worldPos, {1.0f, 5.0f}, {5.0f, 1.0f}, {255, 0, 0, 255}, m_camera);
+
+    if (!howner_.m_heartAnims.empty() && howner_.m_heartAnims[0])
+    {
+        auto texSize = howner_.m_heartAnims[0]->getSize();
+        auto animorigin = howner_.m_heartAnims[0]->getOrigin();
+
+        auto texCenter = worldPos - animorigin;
+        texCenter.y -= (texSize.y / 2.4);
+
+        float mid = (float)(howner_.m_heartAnims.size() - 1) / 2.0f;
+        int cnt = 0;
+
+        for (auto &el : howner_.m_heartAnims)
+        {
+            if (!el)
+                continue;
+
+            auto offsetMul = cnt - mid;
+            auto spr = el->getSprite();
+            auto texPos = texCenter;
+            texPos.x += (texSize.x - 14) * offsetMul;
+
+            uint8_t alpha = 255;
+            
+            if (howner_.m_state == HealthRendererCommonWRT::DelayFadeStates::FADE_IN)
+                alpha *= howner_.m_delayFadeTimer.getProgressNormalized();
+            else if (howner_.m_state == HealthRendererCommonWRT::DelayFadeStates::FADE_OUT)
+                alpha *= 1 - howner_.m_delayFadeTimer.getProgressNormalized();
+
+            if (alpha != 255)
+            {
+                uint8_t oldAlpha = 0;
+                SDL_GetTextureAlphaMod(spr, &oldAlpha);
+                SDL_SetTextureAlphaMod(spr, alpha);
+                m_renderer.renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, m_camera, 0.0f, SDL_FLIP_NONE);
+                SDL_SetTextureAlphaMod(spr, oldAlpha);
+            }
+            else
+                m_renderer.renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, m_camera, 0.0f, SDL_FLIP_NONE);
+
+            //m_renderer.drawRectangle(texPos, texSize, {0, 0, 0, 255}, m_camera);
+
+            cnt++;
+        }
+    }
 }

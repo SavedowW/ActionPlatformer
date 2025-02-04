@@ -36,6 +36,9 @@ void EnemySystem::makeEnemy()
     ai.m_requestedOrientation = ORIENTATION::RIGHT;
     ai.m_navigationTarget = {430, 410};
 
+    m_reg.emplace<HealthOwner>(enemyId, 3);
+    m_reg.emplace<HealthRendererCommonWRT>(enemyId, 3, m_animManager, Vector2{0.0f, -28.0f});
+
     /*auto *proxySwitchState = new ProxySelectionState(
         Enemy1State::META_PROXY_SWITCH, Enemy1StateNames.at(Enemy1State::META_PROXY_SWITCH), {Enemy1State::NONE, {}}, 
         {Enemy1State::META_BLIND_CHASE, Enemy1State::META_MOVE_TOWARDS}, {100.0f}, {&m_reg, m_playerId});

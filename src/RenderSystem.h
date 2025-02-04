@@ -26,7 +26,8 @@ struct RenderSystem
     void drawObstacle(const ComponentStaticCollider &cld_);
     void drawTrigger(const ComponentTrigger &cld_);
     void drawFocusArea(CameraFocusArea &cfa_);
-    void drawTransform(const ComponentTransform &cfa_);
+    void drawTransform(const ComponentTransform &trans_);
+    void drawHealth(const ComponentTransform &trans_, const HealthRendererCommonWRT &howner_);
 
 
     entt::registry &m_reg;

@@ -119,7 +119,8 @@ public:
         GenericState(stateId_, stateName_, std::move(transitionableFrom_)),
         m_anim(anim_),
         m_drag({1.0f, 0.0f}),
-        m_appliedInertiaMultiplier({1.0f, 1.0f})
+        m_appliedInertiaMultiplier({1.0f, 1.0f}),
+        m_canFallThrough(true)
     {}
 
     template<typename PLAYER_STATE_T>

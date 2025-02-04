@@ -4,6 +4,7 @@
 #include "RectCollider.h"
 #include "CoreComponents.h"
 #include "StateCommon.h"
+#include "FrameTimer.h"
 #include <set>
 
 enum class HurtTrait {
@@ -101,14 +102,44 @@ struct BattleActor
 
 struct HealthOwner
 {
-    HealthOwner(int realHealth_, AnimationManager &animationManager_);
+    HealthOwner(int realHealth_);
     HealthOwner(const HealthOwner &rhs_) = delete;
     HealthOwner(HealthOwner &&rhs_) = default;
     HealthOwner &operator=(const HealthOwner &rhs_) = delete;
     HealthOwner &operator=(HealthOwner &&rhs_) = default;
 
+    int takeDamage(int damage_);
+
+    int m_realHealth = 0;
+};
+
+// In world, relative to transform, on timers
+struct HealthRendererCommonWRT
+{
+    HealthRendererCommonWRT(int realHealth_, AnimationManager &animationManager_, const Vector2<float> &offset_);
+    HealthRendererCommonWRT(const HealthRendererCommonWRT &rhs_) = delete;
+    HealthRendererCommonWRT(HealthRendererCommonWRT &&rhs_) = default;
+    HealthRendererCommonWRT &operator=(const HealthRendererCommonWRT &rhs_) = delete;
+    HealthRendererCommonWRT &operator=(HealthRendererCommonWRT &&rhs_) = default;
+
+    void update();
+    void takeDamage(int newHealth_);
+    void touch();
+
     std::vector<std::unique_ptr<Animation>> m_heartAnims;
     int m_realHealth = 0;
+    Vector2<float> m_offset;
+
+    // TODO: to separate class?
+    enum class DelayFadeStates
+    {
+        INACTIVE,
+        FADE_IN,
+        ANIMATION,
+        IDLE,
+        FADE_OUT
+    } m_state = DelayFadeStates::INACTIVE;
+    FrameTimer<false> m_delayFadeTimer;
 };
 
 namespace HitGeneration

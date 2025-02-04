@@ -78,6 +78,23 @@ void BattleSystem::debugDraw()
 
 void BattleSystem::applyHit(ActorDescr attacker_, ActorDescr victim_, const HitboxGroup &hit_)
 {
+    // Inflict damage and trigger related animation
+    if (auto *hren = m_reg.try_get<HealthRendererCommonWRT>(victim_.m_id))
+        hren->touch();
+
+    if (hit_.m_hitData.m_damage)
+    {
+        auto *vicHP = m_reg.try_get<HealthOwner>(victim_.m_id);
+
+        if (vicHP)
+        {
+            auto newhealth = vicHP->takeDamage(hit_.m_hitData.m_damage);
+
+            if (auto *hren = m_reg.try_get<HealthRendererCommonWRT>(victim_.m_id))
+                hren->takeDamage(newhealth);
+        }
+    }
+
     if (hit_.m_hitData.m_hitstop)
     {
         auto *physAtk = m_reg.try_get<ComponentPhysical>(attacker_.m_id);

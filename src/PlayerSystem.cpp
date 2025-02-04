@@ -198,6 +198,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                     {0, {0.0f, 1.0f}},
                     {8, {1.0f, 1.0f}}
                 }))
+        .setCanFallThrough(TimelineProperty<bool>(false))
         .setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)

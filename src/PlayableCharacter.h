@@ -89,7 +89,7 @@ public:
 
         const auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
         auto &compFallthrough = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
-        if (compInput.m_inputResolver->getInputQueue()[0].m_inputs.at(INPUT_BUTTON::DOWN) == INPUT_BUTTON_STATE::PRESSED)
+        if (m_canFallThrough[currentFrame_] && compInput.m_inputResolver->getInputQueue()[0].m_inputs.at(INPUT_BUTTON::DOWN) == INPUT_BUTTON_STATE::PRESSED)
             compFallthrough.setIgnoringObstacles();
 
         if (!res)
@@ -514,11 +514,12 @@ public:
         PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>(CharacterState::ATTACK_1_CHAIN, {CharacterState::NONE, {}}, anim_)
     {
         setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>({
-                    {0, {0.0f, 1.0f}},
+                    {0, {0.0f, 0.0f}},
                     {15, {1.0f, 1.0f}},
-                    {40, {0.0f, 1.0f}},
+                    {40, {0.0f, 0.0f}},
                     {45, {1.0f, 1.0f}}
                 }));
+        setCanFallThrough(TimelineProperty<bool>(false));
         setExtendedBuffer(10);
         setGravity({{0.0f, 0.0f}});
         setConvertVelocityOnSwitch(true, false);

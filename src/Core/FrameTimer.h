@@ -8,6 +8,7 @@ class FrameTimer
 public:
 	FrameTimer(uint32_t framesToWait_ = 0);
 	void begin(uint32_t framesToWait_);
+	void beginAt(uint32_t framesToWait_, float progress_);
     bool update();
 	bool isOver() const;
 	bool isActive() const;

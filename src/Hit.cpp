@@ -47,6 +47,11 @@ HitboxGroup HitGeneration::hitPlayerChain()
     hit.m_hitData.m_victimFlash = std::make_unique<FlashLinear>(10, SDL_Color{255, 255, 255, 255}, 0);
 
     hit.m_colliders.push_back({
+        {{0.0f, -20.0f}, {24.0f, 12.0f}},
+        TimelineProperty<bool>({{12, true}, {13, false}})
+    });
+
+    hit.m_colliders.push_back({
         {{26.0f, -16.0f}, {24.0f, 16.0f}},
         TimelineProperty<bool>({{12, true}, {15, false}})
     });
@@ -98,11 +103,120 @@ HitStateMapping &HitStateMapping::addHitstunTransition(uint32_t level_, CharStat
     return *this;
 }
 
-HealthOwner::HealthOwner(int realHealth_, AnimationManager &animationManager_):
+HealthOwner::HealthOwner(int realHealth_):
+    m_realHealth(realHealth_)
+{
+}
+
+int HealthOwner::takeDamage(int damage_)
+{
+    m_realHealth = std::max(0, m_realHealth - damage_);
+    return m_realHealth;
+}
+
+HealthRendererCommonWRT::HealthRendererCommonWRT(int realHealth_, AnimationManager &animationManager_, const Vector2<float> &offset_) :
+    m_offset(offset_),
     m_realHealth(realHealth_)
 {
     for (int i = 0; i < realHealth_; ++i)
     {
         m_heartAnims.push_back(std::move(std::make_unique<Animation>(animationManager_, animationManager_.getAnimID("UI/heart"), LOOPMETHOD::NOLOOP)));
+    }
+}
+
+void HealthRendererCommonWRT::update()
+{
+    switch (m_state)
+    {
+        case DelayFadeStates::INACTIVE:
+            break;
+
+        case DelayFadeStates::FADE_IN:
+            if (m_delayFadeTimer.update())
+            {
+                m_state = DelayFadeStates::ANIMATION;
+            }
+            break;
+
+        case DelayFadeStates::ANIMATION:
+        {
+
+            bool hasActiveAnimations = false;
+
+            for (int i = m_realHealth; i < m_heartAnims.size(); ++i)
+            {
+
+                if (m_heartAnims[i])
+                {
+                    hasActiveAnimations = true;
+
+                    if (m_heartAnims[i]->isFinished())
+                    {
+                        m_heartAnims[i].reset();
+                    }
+                    else
+                    {
+                        m_heartAnims[i]->update();
+                    }
+                }
+            }
+
+            if (!hasActiveAnimations)
+            {
+                m_state = DelayFadeStates::IDLE;
+                m_delayFadeTimer.begin(180);
+            }
+
+            break;
+        }
+
+        case DelayFadeStates::IDLE:
+            if (m_delayFadeTimer.update())
+            {
+                m_state = DelayFadeStates::FADE_OUT;
+                m_delayFadeTimer.begin(60);
+            }
+            break;
+
+        case DelayFadeStates::FADE_OUT:
+            if (m_delayFadeTimer.update())
+            {
+                m_state = DelayFadeStates::INACTIVE;
+                m_heartAnims.erase(m_heartAnims.begin() + m_realHealth, m_heartAnims.end());
+            }
+            break;
+    }
+}
+
+void HealthRendererCommonWRT::takeDamage(int newHealth_)
+{
+    m_realHealth = newHealth_;
+    touch();
+}
+
+void HealthRendererCommonWRT::touch()
+{
+    switch (m_state)
+    {
+        case DelayFadeStates::INACTIVE:
+            // Begin fade in timer
+            m_delayFadeTimer.begin(10);
+            m_state = DelayFadeStates::FADE_IN;
+            break;
+
+        case DelayFadeStates::IDLE:
+            // Might have taken damage, otherwise it will just reset the timer
+            m_state = DelayFadeStates::ANIMATION;
+            break;
+
+        case DelayFadeStates::FADE_OUT:
+            // Go from fade out into fade in timer with same progress (alpha)
+            m_delayFadeTimer.beginAt(10, 1.0f - m_delayFadeTimer.getProgressNormalized());
+            m_state = DelayFadeStates::FADE_IN;
+            break;
+
+        default:
+            // Already in fade in or active animation, no need to update state
+            break;
     }
 }
