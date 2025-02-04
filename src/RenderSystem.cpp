@@ -257,7 +257,7 @@ void RenderSystem::drawHealth(const ComponentTransform &trans_, const HealthRend
         auto animorigin = howner_.m_heartAnims[0]->getOrigin();
 
         auto texCenter = worldPos - animorigin;
-        texCenter.y -= (texSize.y / 2.4);
+        texCenter.y -= (texSize.y - 20);
 
         float mid = (float)(howner_.m_heartAnims.size() - 1) / 2.0f;
         int cnt = 0;
@@ -270,7 +270,7 @@ void RenderSystem::drawHealth(const ComponentTransform &trans_, const HealthRend
             auto offsetMul = cnt - mid;
             auto spr = el->getSprite();
             auto texPos = texCenter;
-            texPos.x += (texSize.x - 14) * offsetMul;
+            texPos.x += (texSize.x - 19) * offsetMul;
 
             uint8_t alpha = 255;
             
