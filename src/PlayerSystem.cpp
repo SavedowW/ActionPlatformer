@@ -222,6 +222,10 @@ void PlayerSystem::setup(entt::entity playerId_)
             TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Inr mul
             TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
             TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
+        .setMulInsidePushbox(TimelineProperty<std::optional<Vector2<float>>>({
+            {2, Vector2<float>{0.2f, 1.0f}},
+            {5, std::optional<Vector2<float>>()}
+        }))
         .setHurtboxes({
             {
                 HurtboxGroup(

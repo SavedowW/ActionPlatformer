@@ -151,6 +151,7 @@ public:
 
     PhysicalState &setGravity(TimelineProperty<Vector2<float>> &&gravity_);
     PhysicalState &setDrag(TimelineProperty<Vector2<float>> &&drag_);
+    PhysicalState &setMulInsidePushbox(TimelineProperty<std::optional<Vector2<float>>> &&mulInsidePushbox_);
     PhysicalState &setCanFallThrough(TimelineProperty<bool> &&fallThrough_);
     PhysicalState &setNoLanding(TimelineProperty<bool> &&noLanding_);
     PhysicalState &setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>> &&inerMul_);
@@ -186,6 +187,8 @@ protected:
     TimelineProperty<Vector2<float>> m_rawAddInrUpd;
     TimelineProperty<Vector2<float>> m_appliedInertiaMultiplier;
     TimelineProperty<Vector2<float>> m_drag;
+
+    TimelineProperty<std::optional<Vector2<float>>> m_mulInsidePushbox;
 
     bool m_convertVelocityOnSwitch = false;
 

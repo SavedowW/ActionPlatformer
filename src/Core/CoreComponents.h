@@ -77,6 +77,8 @@ struct ComponentPhysical
     float m_lastSlopeAngle = 0.0f;
     uint32_t m_hitstopLeft = 0;
 
+    const Vector2<float> *m_mulInsidePushbox = nullptr;
+
     // Always resetted to {0, 0} after physics iteration, not controlled or limited in any way
     Vector2<float> m_adjustOffset;
 

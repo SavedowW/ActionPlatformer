@@ -67,7 +67,7 @@ void PhysicsSystem::updatePhysics()
         if (phys.m_hitstopLeft)
             continue;
 
-        proceedEntity(viewscld, trans, phys, obsfall, ev);
+        proceedEntity(viewscld, idx, trans, phys, obsfall, ev);
     }
 
     for (auto [idx, trans, phys] : viewPhysSimplified.each())
@@ -125,7 +125,7 @@ void PhysicsSystem::updateOverlappedObstacles()
     }
 }
 
-void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_)
+void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_)
 {
     auto oldPos = trans_.m_pos;
 
@@ -151,9 +151,15 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
     //std::cout << m_staticColliderQuery.size() << std::endl;
 
     // Prepare vars for collision detection
-    auto offset = phys_.getPosOffest();
-    phys_.m_calculatedOffset = offset;
     auto pb = phys_.m_pushbox + trans_.m_pos;
+    auto offset = phys_.getPosOffest();
+
+    if (phys_.m_mulInsidePushbox && isInsidePushbox(pb, idx_))
+    {
+        offset = offset.mulComponents(*phys_.m_mulInsidePushbox);
+    }
+
+    phys_.m_calculatedOffset = offset;
     bool noLanding = phys_.m_noLanding;
 
     auto oldHeight = trans_.m_pos.y;
@@ -475,6 +481,28 @@ std::pair<entt::entity, const SlopeCollider*> PhysicsSystem::getHighestVerticalM
     }
 
     return {foundGround, foundcld};
+}
+
+bool PhysicsSystem::isInsidePushbox(const Collider &pb_, const entt::entity &idx_)
+{
+    auto viewPhys = m_reg.view<ComponentTransform, ComponentPhysical>();
+
+    for (auto [idx, trans, phys] : viewPhys.each())
+    {
+        if (idx == idx_)
+            continue;
+        
+        if (phys.m_pushbox.m_halfSize.x <= 0 || phys.m_pushbox.m_halfSize.y <= 0)
+            continue;
+
+        auto pb2 = phys.m_pushbox + trans.m_pos;
+        auto overlap = pb_.checkOverlap(pb2);
+
+        if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
+            return true;
+    }
+
+    return false;
 }
 
 void PhysicsSystem::resetEntityObstacles(const ComponentTransform &trans_, const ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, const auto &clds_)

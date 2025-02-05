@@ -178,6 +178,12 @@ PhysicalState &PhysicalState::setDrag(TimelineProperty<Vector2<float>> &&drag_)
     return *this;
 }
 
+PhysicalState &PhysicalState::setMulInsidePushbox(TimelineProperty<std::optional<Vector2<float>>> &&mulInsidePushbox_)
+{
+    m_mulInsidePushbox = std::move(mulInsidePushbox_);
+    return *this;
+}
+
 PhysicalState &PhysicalState::setCanFallThrough(TimelineProperty<bool> &&fallThrough_)
 {
     m_canFallThrough = std::move(fallThrough_);
@@ -377,6 +383,12 @@ bool PhysicalState::update(EntityAnywhere owner_, uint32_t currentFrame_)
 
     if (!m_ownInrLimitUpd.isEmpty())
         physical.m_inertia = utils::clamp(physical.m_inertia, -m_ownInrLimitUpd[currentFrame_], m_ownInrLimitUpd[currentFrame_]);
+
+    // Offset multiplier inside pushbox
+    if (m_mulInsidePushbox[currentFrame_])
+        physical.m_mulInsidePushbox = &m_mulInsidePushbox[currentFrame_].value();
+    else
+        physical.m_mulInsidePushbox = nullptr;
 
     // Handle gravity
     physical.m_gravity = m_gravity[currentFrame_];
