@@ -14,7 +14,6 @@ set(SRC_FILES
 main.cpp
 BattleLevel.cpp
 Stage1.cpp
-StaticDecor.cpp
 LevelBuilder.cpp
 PlayableCharacter.cpp
 TileMapHelper.cpp
