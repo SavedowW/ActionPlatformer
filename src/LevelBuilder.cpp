@@ -16,30 +16,50 @@ void addTrigger(entt::registry &reg_, const Trigger &trg_)
 LevelBuilder::LevelBuilder(Application &app_, entt::registry &reg_) :
     m_app(app_),
     m_root(app_.getBasePath()),
-    m_reg(reg_)
+    m_reg(reg_),
+    m_tilebase(app_)
 {
 }
 
-DecorLayers LevelBuilder::buildLevel(const std::string &mapDescr_, Tileset &usedTileset_, entt::entity playerId_, NavGraph &graph_)
+void LevelBuilder::buildLevel(const std::string &mapDescr_,entt::entity playerId_, NavGraph &graph_)
 {
     auto fullpath = m_root + "/" + mapDescr_;
-    DecorLayers dmap(&m_app);
 
     std::ifstream mapjson(fullpath);
     if (!mapjson.is_open())
     {
         std::cout << "Failed to open map description at \"" << fullpath << "\"\n";
-        return dmap;
+        return;
     }
 
     nlohmann::json mapdata = nlohmann::json::parse(mapjson);
+
+    // Parsing tilesets
+    for (const auto &jsonTileset : mapdata["tilesets"])
+    {
+        auto firstgid = static_cast<int>(jsonTileset["firstgid"]);
+        auto filename = static_cast<std::string>(jsonTileset["source"]);
+        filename = filename.substr(0, filename.size() - 4);
+        filename = "Tiles/" + filename;
+        m_tilebase.addTileset(filename, firstgid);
+    }
+
+    int layerId = mapdata.size();
+
     for (const auto &layer : mapdata["layers"])
     {
+        layerId--;
+        
         std::cout << "Loading " << layer["name"] << " of type " << layer["type"] << std::endl;
         if (layer["type"] == "tilelayer")
         {
-            int height = layer["height"];
-            int width = layer["width"];
+            Vector2<int> pos;
+            pos.y = (layer.contains("offsety") ? static_cast<int>(layer["offsety"]) : 0);
+            pos.x = (layer.contains("offsetx") ? static_cast<int>(layer["offsetx"]) : 0);
+
+            Vector2<int> size;
+            size.y = layer["height"];
+            size.x = layer["width"];
 
             SDL_Color layerCfg = {255, 255, 255, 255};
             Vector2<float> parallaxFactor {1.0f, 1.0f};
@@ -55,14 +75,29 @@ DecorLayers LevelBuilder::buildLevel(const std::string &mapDescr_, Tileset &used
             if (layer.contains("parallaxy"))
                 parallaxFactor.y = layer["parallaxy"];
 
-            int pos = 0;
-            auto layerid = dmap.createLayer(layerCfg, parallaxFactor);
-            for (const auto &tile : layer["data"])
+            auto tex = m_app.getRenderer()->createTexture(gamedata::global::maxCameraSize);
+            SDL_SetTextureColorMod(tex, layerCfg.r, layerCfg.g, layerCfg.b);
+            SDL_SetTextureAlphaMod(tex, layerCfg.a);
+
+            auto entity = m_reg.create();
+            auto &tilelayer = m_reg.emplace<TilemapLayer>(entity, tex, size, parallaxFactor);
+            m_reg.emplace<ComponentTransform>(entity, pos, ORIENTATION::RIGHT);
+            m_reg.emplace<RenderLayer>(entity, layerId);
+
+            int tileLinearPos = 0;
+            for (const uint32_t tile : layer["data"])
             {
-                unsigned int gid = tile;
-                if (gid != 0)
-                    dmap.insert(layerid, usedTileset_.getTile(getTilePos(Vector2{pos % width, pos / width}), gid));
-                pos++;
+                if (tile)
+                {
+                    uint32_t gid = tile;
+                    Vector2<int> tilePos;
+                    tilePos.x = tileLinearPos % size.x;
+                    tilePos.y = tileLinearPos / size.x;
+
+                    tilelayer.m_tiles[tilePos.y][tilePos.x] = m_tilebase.getTile(gid);
+                }
+
+                tileLinearPos++;
             }
         }
         else if (layer["type"] == "objectgroup")
@@ -242,8 +277,6 @@ DecorLayers LevelBuilder::buildLevel(const std::string &mapDescr_, Tileset &used
             }
         }
     }
-
-    return dmap;
 }
 
 void LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obstacleId_)

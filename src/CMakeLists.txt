@@ -16,7 +16,6 @@ BattleLevel.cpp
 Stage1.cpp
 StaticDecor.cpp
 LevelBuilder.cpp
-DecorLayers.cpp
 PlayableCharacter.cpp
 TileMapHelper.cpp
 StateMachine.cpp

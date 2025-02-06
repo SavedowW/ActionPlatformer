@@ -11,14 +11,15 @@ struct RenderSystem
     RenderSystem(entt::registry &reg_, Application &app_, Camera &camera_);
 
     void update();
+    void updateDepth();
     void draw();
 
     void drawInstance(const ComponentTransform &trans_, const ComponentAnimationRenderable &ren_);
-
     void drawParticle(const ComponentTransform &trans_, const ComponentParticlePrimitive &partcl_, const ComponentAnimationRenderable &ren_);
+    void drawTilemapLayer(const ComponentTransform &trans_, TilemapLayer &tilemap_);
 
-    template<size_t LAYER>
-    void handleLayer();
+    void handleDepthInstance(const entt::entity &idx_, const RenderLayer &layer_);
+
 
     void drawBattleActorColliders(const ComponentTransform &trans_, const BattleActor &btlact_);
     void drawCollider(const ComponentTransform &trans_, const ComponentPhysical &phys_);

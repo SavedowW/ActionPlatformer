@@ -6,8 +6,6 @@
 BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_, int lvlId_) :
     Level(application_, size_, lvlId_),
     m_camera({0.0f, 0.0f}, gamedata::global::baseResolution, m_size),
-    m_decor(application_),
-    m_tlmap(application_),
     m_playerSystem(m_registry, *application_),
     m_rendersys(m_registry, *application_, m_camera),
     m_inputsys(m_registry),
@@ -21,14 +19,15 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_graph(*application_),
     m_partsys(m_registry, *application_),
     m_battlesys(m_registry, *application_, m_camera),
-    m_chatBoxSys(m_registry, *application_, m_camera)
+    m_chatBoxSys(m_registry, *application_, m_camera),
+    m_lvlBuilder(*application_, m_registry)
 {
     auto playerId = m_registry.create();
     m_registry.emplace<ComponentTransform>(playerId, Vector2{313.34f, 352.0f}, ORIENTATION::RIGHT);
     m_registry.emplace<ComponentPhysical>(playerId);
     m_registry.emplace<ComponentObstacleFallthrough>(playerId);
     m_registry.emplace<ComponentAnimationRenderable>(playerId);
-    m_registry.emplace<RenderLayer<1>>(playerId);
+    m_registry.emplace<RenderLayer>(playerId, 1);
     m_registry.emplace<ComponentPlayerInput>(playerId, std::unique_ptr<InputResolver>(new InputResolver(application_->getInputSystem())));
     m_registry.emplace<ComponentDynamicCameraTarget>(playerId);
     m_registry.emplace<World>(playerId, m_registry, m_camera, m_partsys, m_navsys);
@@ -47,10 +46,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
 
     m_enemysys.makeEnemy();
 
-    m_tlmap.load("Tiles/tiles");
-
-    LevelBuilder bld(*application_, m_registry);
-    m_decor = std::move(bld.buildLevel("Resources/Sprites/Tiles/tilemap.json", m_tlmap, playerId, m_graph));
+    m_lvlBuilder.buildLevel("Resources/Sprites/Tiles/tilemap.json", playerId, m_graph);
 
     m_chatBoxSys.setPlayerEntity(m_playerId);
 
@@ -189,6 +185,8 @@ void BattleLevel::update()
         Just updates camera shake logic, but many systems can cause shake
     */
     m_camera.update();
+
+    m_rendersys.updateDepth();
 }
 
 void BattleLevel::draw()
@@ -197,8 +195,6 @@ void BattleLevel::draw()
 
     auto &renderer = *m_application->getRenderer();
     renderer.prepareRenderer(gamedata::colors::LVL2);
-
-    m_decor.draw(m_camera);
 
     m_rendersys.draw();
 

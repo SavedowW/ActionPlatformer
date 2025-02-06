@@ -32,10 +32,24 @@ void RenderSystem::update()
     }
 }
 
+void RenderSystem::updateDepth()
+{
+    PROFILE_FUNCTION;
+
+    if (RenderLayer::m_dirtyOrder)
+    {
+        std::cout << "Updating depth" << std::endl;
+        m_reg.sort<RenderLayer>([](const RenderLayer &lhs_, const RenderLayer &rhs_)
+        {
+            return lhs_.m_depth > rhs_.m_depth;
+        });
+    }
+
+    RenderLayer::m_dirtyOrder = false;
+}
+
 void RenderSystem::draw()
 {
-    EXPECTED_RENDER_LAYERS(3);
-
     const auto viewColliders = m_reg.view<ComponentStaticCollider>();
     const auto viewTriggers = m_reg.view<ComponentTrigger>();
     const auto viewPhysical = m_reg.view<ComponentTransform, ComponentPhysical>();
@@ -43,6 +57,14 @@ void RenderSystem::draw()
     const auto viewTransforms = m_reg.view<ComponentTransform>();
     const auto viewBtlAct = m_reg.view<ComponentTransform, BattleActor>();
     const auto viewHealthOwners = m_reg.view<ComponentTransform, HealthRendererCommonWRT>();
+
+    const auto renderable = m_reg.view<RenderLayer>();
+
+    for (auto [idx, renlayer] : renderable.each())
+        handleDepthInstance(idx, renlayer);
+
+    for (auto [idx, trans, hren] : viewHealthOwners.each())
+        drawHealth(trans, hren);
 
     if constexpr (gamedata::debug::drawColliders)
     {
@@ -60,13 +82,6 @@ void RenderSystem::draw()
         for (auto [idx, trg] : viewTriggers.each())
             drawTrigger(trg);
     }
-
-    handleLayer<0>();
-    handleLayer<1>();
-    handleLayer<2>();
-
-    for (auto [idx, trans, hren] : viewHealthOwners.each())
-        drawHealth(trans, hren);
 
     if constexpr (gamedata::debug::drawColliders)
     {
@@ -164,17 +179,55 @@ void RenderSystem::drawParticle(const ComponentTransform &trans_, const Componen
     }
 }
 
-template <size_t LAYER>
-void RenderSystem::handleLayer()
+void RenderSystem::drawTilemapLayer(const ComponentTransform &trans_, TilemapLayer &tilemap_)
 {
-    const auto viewInstances = m_reg.view<ComponentTransform, ComponentPhysical, ComponentAnimationRenderable, RenderLayer<LAYER>>();
-    const auto viewParticles = m_reg.view<ComponentTransform, ComponentParticlePhysics, ComponentParticlePrimitive, ComponentAnimationRenderable, RenderLayer<LAYER>>();
+    auto old = m_renderer.setRenderTarget(tilemap_.m_tex.getSprite());
+    m_renderer.fillRenderer({255, 255, 255, 0});
 
-    for (auto [idx, trans, phys, partcl, ren] : viewParticles.each())
-        drawParticle(trans, partcl, ren);
+    Vector2<int> camTL = Vector2<int>(m_camera.getPos().mulComponents(tilemap_.m_parallaxFactor)) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
 
-    for (auto [idx, trans, phys, inst] : viewInstances.each())
-        drawInstance(trans, inst);
+    SDL_Rect dst;
+    dst.w = gamedata::global::tileSize.x;
+    dst.h = gamedata::global::tileSize.y;
+    dst.x = trans_.m_pos.x -camTL.x;
+    dst.y = trans_.m_pos.y -camTL.y;
+
+    for (auto &row : tilemap_.m_tiles)
+    {
+        dst.x = trans_.m_pos.x - camTL.x;
+        for (auto &tile : row)
+        {
+            if (tile.m_tile)
+            {
+                m_renderer.renderTexture(tile.m_tile->m_tex, &tile.m_tile->m_src, &dst, 0, nullptr, tile.m_flip);
+            }
+            dst.x += gamedata::global::tileSize.x;
+        }
+        dst.y += gamedata::global::tileSize.y;
+    }
+    m_renderer.setRenderTarget(old);
+    m_renderer.renderTexture(tilemap_.m_tex.getSprite(), 0, 0, tilemap_.m_tex.m_w, tilemap_.m_tex.m_h);
+}
+
+void RenderSystem::handleDepthInstance(const entt::entity &idx_, const RenderLayer &layer_)
+{
+    if (auto *ren = m_reg.try_get<ComponentAnimationRenderable>(idx_))
+    {
+        if (auto *partcl = m_reg.try_get<ComponentParticlePrimitive>(idx_))
+        {
+            // Definitely particle
+            drawParticle(m_reg.get<ComponentTransform>(idx_), *partcl, *ren);
+        }
+        else
+        {
+            // Definitely instance
+            drawInstance(m_reg.get<ComponentTransform>(idx_), *ren);
+        }
+    }
+    else if (auto *tilemap = m_reg.try_get<TilemapLayer>(idx_))
+    {
+        drawTilemapLayer(m_reg.get<ComponentTransform>(idx_), *tilemap);
+    }
 }
 
 void RenderSystem::drawBattleActorColliders(const ComponentTransform &trans_, const BattleActor &btlact_)

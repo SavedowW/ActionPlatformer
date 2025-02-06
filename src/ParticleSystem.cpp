@@ -10,30 +10,6 @@ ParticleSystem::ParticleSystem(entt::registry &reg_, Application &app_) :
 
 void ParticleSystem::makeParticle(const ParticleRecipe &particle_, std::vector<entt::entity> *placeId_)
 {
-    EXPECTED_RENDER_LAYERS(3);
-    
-    switch (particle_.layer)
-    {
-        case 0:
-            makeParticle<0>(particle_, placeId_);
-            break;
-
-        case 1:
-            makeParticle<1>(particle_, placeId_);
-            break;
-
-        case 2:
-            makeParticle<2>(particle_, placeId_);
-            break;
-
-        default:
-            throw std::string("Particle has an incorrect layer: ") + std::to_string(particle_.layer);
-    }
-}
-
-template<size_t LAYER>
-void ParticleSystem::makeParticle(const ParticleRecipe &particle_, std::vector<entt::entity> *placeId_)
-{
     for (int i = 0; i < particle_.count; ++i)
     {
         auto pid = m_registry.create();
@@ -49,7 +25,7 @@ void ParticleSystem::makeParticle(const ParticleRecipe &particle_, std::vector<e
         }
     
         auto &animrnd = m_registry.emplace<ComponentAnimationRenderable>(pid);
-        m_registry.emplace<RenderLayer<LAYER>>(pid);
+        m_registry.emplace<RenderLayer>(pid, particle_.layer);
         animrnd.m_animations[particle_.anim] = std::make_unique<Animation>(m_animmgmt, particle_.anim, LOOPMETHOD::JUMP_LOOP);
         animrnd.m_currentAnimation = animrnd.m_animations[particle_.anim].get();
 
@@ -76,7 +52,7 @@ void ParticleSystem::update()
     }
 }
 
-ParticleTemplate::ParticleTemplate(int count_, const Vector2<float> &offset_, int anim_, uint32_t lifetime_, size_t layer_) :
+ParticleTemplate::ParticleTemplate(int count_, const Vector2<float> &offset_, int anim_, uint32_t lifetime_, int layer_) :
     count(count_),
     offset(offset_),
     anim(anim_),

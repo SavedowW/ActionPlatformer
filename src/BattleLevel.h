@@ -38,9 +38,6 @@ protected:
 
     Camera m_camera;
 
-    DecorLayers m_decor;
-    Tileset m_tlmap;
-
     entt::registry m_registry;
     PlayerSystem m_playerSystem;
     RenderSystem m_rendersys;
@@ -59,6 +56,8 @@ protected:
     NavGraph m_graph;
 
     entt::entity m_playerId;
+
+    LevelBuilder m_lvlBuilder;
 };
 
 #endif

@@ -185,3 +185,23 @@ bool Flash::update()
 
     return ++m_currentFrame >= m_fullDuration;
 }
+
+RenderLayer::RenderLayer(int depth_) :
+    m_depth(depth_)
+{
+    m_dirtyOrder = true;
+}
+
+RenderLayer::~RenderLayer()
+{
+    m_dirtyOrder = true;
+}
+
+TilemapLayer::TilemapLayer(SDL_Texture *tex_, const Vector2<int> &size_, const Vector2<float> &parallaxFactor_) :
+    m_tex(tex_),
+    m_parallaxFactor(parallaxFactor_),
+    m_tiles(size_.y, std::vector<Tile>(size_.x, {}))
+{
+}
+
+bool RenderLayer::m_dirtyOrder = false;

@@ -575,7 +575,7 @@ public:
         setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {11, ParticleTemplate{1, Vector2<float>{5.0f, 2.0f}, animTrace_, 10,
-                2}
+                -1}
                 .setTiePosRules(TiePosRule::TIE_TO_SOURCE)
                 .setTieLifetimeRules(TieLifetimeRule::DESTROY_ON_STATE_LEAVE)
                 .setNotDependOnGroundAngle()},

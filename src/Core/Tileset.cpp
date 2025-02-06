@@ -1,7 +1,13 @@
 #include "Tileset.h"
 
-Tileset::Tileset(Application *application_) :
-    m_texManager(*application_->getTextureManager())
+const unsigned TilesetBase::FLIPPED_HORIZONTALLY_FLAG  = 0x80000000;
+const unsigned TilesetBase::FLIPPED_VERTICALLY_FLAG    = 0x40000000;
+const unsigned TilesetBase::FLIPPED_DIAGONALLY_FLAG    = 0x20000000;
+const unsigned TilesetBase::ROTATED_HEXAGONAL_120_FLAG = 0x10000000;   
+
+Tileset::Tileset(Application &app_, uint32_t firstgid_) :
+    m_texManager(*app_.getTextureManager()),
+    m_firstgid(firstgid_)
 {
 }
 
@@ -20,7 +26,38 @@ void Tileset::load(const std::string &spritesheet_)
     }
 }
 
-Tile Tileset::getTile(const Vector2<float> pos_, unsigned gid_)
+TileView *Tileset::getView(uint32_t id_)
+{
+    return &m_tiles[id_ - m_firstgid];
+}
+
+TilesetBase::TilesetBase(Application &app_) :
+    m_app(app_)
+{
+}
+
+SDL_RendererFlip TilesetBase::flagsToFlip(uint32_t gid_)
+{
+    SDL_RendererFlip res = SDL_FLIP_NONE;
+
+    if (gid_ & FLIPPED_HORIZONTALLY_FLAG)
+        res = SDL_RendererFlip(res | SDL_FLIP_HORIZONTAL);
+
+    if (gid_ & FLIPPED_VERTICALLY_FLAG)
+        res = SDL_RendererFlip(res | SDL_FLIP_VERTICAL);
+
+    return res;
+}
+
+void TilesetBase::addTileset(const std::string &spritesheet_, uint32_t firstgid_)
+{
+    m_tilesets.emplace_back(m_app, firstgid_);
+    m_tilesets.back().load(spritesheet_);
+
+    m_tilesetMapping.addPropertyValue(firstgid_, m_tilesets.size() - 1);
+}
+
+Tile TilesetBase::getTile(uint32_t gid_)
 {
     auto flags = flagsToFlip(gid_);
     gid_ &= ~(FLIPPED_HORIZONTALLY_FLAG |
@@ -28,18 +65,6 @@ Tile Tileset::getTile(const Vector2<float> pos_, unsigned gid_)
         FLIPPED_DIAGONALLY_FLAG |
         ROTATED_HEXAGONAL_120_FLAG);
 
-    return {m_tiles[gid_ - 1], pos_, flags};
-}
-
-SDL_RendererFlip Tileset::flagsToFlip(unsigned guid_) const
-{
-    SDL_RendererFlip res = SDL_FLIP_NONE;
-
-    if (guid_ & FLIPPED_HORIZONTALLY_FLAG)
-        res = SDL_RendererFlip(res | SDL_FLIP_HORIZONTAL);
-
-    if (guid_ & FLIPPED_VERTICALLY_FLAG)
-        res = SDL_RendererFlip(res | SDL_FLIP_VERTICAL);
-
-    return res;
+    int tilesetId = m_tilesetMapping[gid_];
+    return {m_tilesets[tilesetId].getView(gid_), flags};
 }

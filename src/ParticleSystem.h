@@ -19,7 +19,7 @@ enum class TieLifetimeRule
 
 struct ParticleTemplate
 {
-    ParticleTemplate(int count_, const Vector2<float> &offset_, int anim_, uint32_t lifetime_, size_t layer_);
+    ParticleTemplate(int count_, const Vector2<float> &offset_, int anim_, uint32_t lifetime_, int layer_);
 
     ParticleTemplate &setTiePosRules(TiePosRule tieRule_);
     ParticleTemplate &setTieLifetimeRules(TieLifetimeRule tieRule_);
@@ -35,7 +35,7 @@ struct ParticleTemplate
     Vector2<float> offset;
     int anim;
     uint32_t lifetime = 0;
-    size_t layer;
+    int layer;
     TiePosRule m_tiePosRule = TiePosRule::NONE;
     TieLifetimeRule m_tieLifetimeRule = TieLifetimeRule::NONE;
     bool m_dependOnGroundAngle = true;
@@ -62,9 +62,6 @@ class ParticleSystem
 public:
     ParticleSystem(entt::registry &reg_, Application &app_);
 
-    void makeParticle(const ParticleRecipe &particle_, std::vector<entt::entity> *placeId_ = nullptr);
-
-    template<size_t LAYER>
     void makeParticle(const ParticleRecipe &particle_, std::vector<entt::entity> *placeId_ = nullptr);
 
     void update();

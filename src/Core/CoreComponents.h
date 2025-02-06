@@ -1,5 +1,6 @@
 #ifndef CORE_COMPONENTS_H_
 #define CORE_COMPONENTS_H_
+#include "Tileset.h"
 #include "InputResolver.h"
 #include "Vector2.h"
 #include "FrameTimer.h"
@@ -259,10 +260,13 @@ struct HUDPoint
     float m_vOffset = 0.0f;
 };
 
-template<size_t LAYER>
 struct RenderLayer
 {
-    static_assert(LAYER < gamedata::global::renderLayerCount, "Layer does not exist");
+    RenderLayer(int depth_);
+    ~RenderLayer();
+
+    int m_depth;
+    static bool m_dirtyOrder;
 };
 
 struct MoveCollider2Points
@@ -274,6 +278,14 @@ struct MoveCollider2Points
     float m_duration;
     FrameTimer<true> m_timer;
     bool m_toSecond;
+};
+
+struct TilemapLayer
+{
+    TilemapLayer(SDL_Texture *tex_, const Vector2<int> &size_, const Vector2<float> &parallaxFactor_);
+    std::vector<std::vector<Tile>> m_tiles;
+    Texture m_tex;
+    Vector2<float> m_parallaxFactor;
 };
 
 Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_);
