@@ -226,6 +226,11 @@ void PlayerSystem::setup(entt::entity playerId_)
             {2, Vector2<float>{0.2f, 1.0f}},
             {5, std::optional<Vector2<float>>()}
         }))
+        .setTransitionVelocityMultiplier(TimelineProperty<Vector2<float>>({
+            {0, {1.0f, 1.0f}},
+            {2, {0.2f, 1.0f}},
+            {10, {1.0f, 1.0f}}
+        }))
         .setHurtboxes({
             {
                 HurtboxGroup(
@@ -259,7 +264,6 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setOutdatedTransition(CharacterState::IDLE, 30)
     ));
 
-    // TODO: fix flying off a cliff
     // TODO: grounded particles that only appear if there is a ground in front of you
     sm.addState(std::unique_ptr<GenericState>(
         new PlayerActionAttack1Chain(

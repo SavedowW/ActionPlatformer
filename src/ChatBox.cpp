@@ -28,10 +28,13 @@ void ChatboxSystem::setPlayerEntity(entt::entity playerId_)
 
 void ChatboxSystem::addSequence(ChatMessageSequence &&seq_)
 {
+    if (seq_.m_messages.empty())
+        throw std::string("ChatboxSystem received an empty sequence");
+
     m_sequences.emplace_back(std::move(seq_));
     m_sequences.back().compileAndSetSize(*m_app.getTextManager());
 
-    if (m_sequences.back().m_proceedByInput)
+    if (m_sequences.back().m_claimInputs)
     {
         auto &resolver = *m_reg.get<ComponentPlayerInput>(m_playerId).m_inputResolver;
         resolver.setInputEnabled(false);
@@ -51,20 +54,37 @@ void ChatboxSystem::receiveInput(EVENTS event, const float scale_)
                 while (seqid < m_sequences.size())
                 {
                     auto &seq = m_sequences[seqid];
-                    seq.m_messages.erase(seq.m_messages.begin());
-                    if (seq.m_messages.empty())
+                    if (seq.m_proceedByInput)
                     {
-                        m_sequences.erase(m_sequences.begin() + seqid);
+                        seq.m_messages.erase(seq.m_messages.begin());
+                        if (seq.m_messages.empty())
+                        {
+                            endSequence(seqid);
+                        }
+                        else
+                        {
+                            seq.m_currentMessage = &seq.m_messages[0];
+                            seqid++;
+                        }
                     }
                     else
-                    {
-                        seq.m_currentMessage = &seq.m_messages[0];
                         seqid++;
-                    }
                 }
             }
             break;
     }
+}
+
+void ChatboxSystem::endSequence(size_t seqId_)
+{
+    if (m_sequences[seqId_].m_returnInputs)
+    {
+        auto &resolver = *m_reg.get<ComponentPlayerInput>(m_playerId).m_inputResolver;
+        resolver.setInputEnabled(true);
+        resolver.nullifyCurrentInput();
+    }
+
+    m_sequences.erase(m_sequences.begin() + seqId_);
 }
 
 void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<float> &tl_)
@@ -74,7 +94,7 @@ void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<float> &
     auto pos = tl_;
     bool newLine = true;
     int currentLine = 0;
-    for (int i = 0; i <= seq_.m_currentMessage->m_currentProceedingCharacter && i < seq_.m_currentMessage->m_symbols.size(); ++i)
+    for (int i = 0; i < seq_.m_currentMessage->m_currentProceedingCharacter && i < seq_.m_currentMessage->m_symbols.size(); ++i)
     {
         auto &sym = seq_.m_currentMessage->m_symbols[i];
         if (newLine)
@@ -187,7 +207,7 @@ void ChatboxSystem::draw()
             
         }
 
-        if (seq.m_currentMessage->m_currentState == ChatMessage::State::APPEAR)
+        if (seq.m_timer.isOver() && seq.m_currentMessage->m_currentState == ChatMessage::State::APPEAR)
         {
             for (int i = seq.m_currentMessage->m_firstCharacterForFadingIn; i <= seq.m_currentMessage->m_currentProceedingCharacter && i < seq.m_currentMessage->m_symbols.size(); ++i)
             {
@@ -256,11 +276,13 @@ void ChatboxSystem::draw()
     }
 }
 
-ChatMessageSequence::ChatMessageSequence(entt::entity src_, const ChatBoxSide &side_, bool fitScreen_, bool proceedByInput_) :
+ChatMessageSequence::ChatMessageSequence(entt::entity src_, const ChatBoxSide &side_, bool fitScreen_, bool proceedByInput_, bool claimInputs_, bool returnInputs_) :
     m_source(src_),
     m_side(side_),
     m_fitScreen(fitScreen_),
-    m_proceedByInput(proceedByInput_)
+    m_proceedByInput(proceedByInput_),
+    m_claimInputs(claimInputs_),
+    m_returnInputs(returnInputs_)
 {
 }
 

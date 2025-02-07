@@ -552,6 +552,11 @@ public:
             {9, Vector2<float>{0.2f, 1.0f}},
             {12, std::optional<Vector2<float>>()}
         }));
+        setTransitionVelocityMultiplier(TimelineProperty<Vector2<float>>({
+                    {0, {1.0f, 1.0f}},
+                    {9, {0.2f, 1.0f}},
+                    {17, {1.0f, 1.0f}}
+                }));
         setHurtboxes({
             {
                 HurtboxGroup(

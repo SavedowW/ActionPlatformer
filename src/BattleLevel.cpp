@@ -84,7 +84,7 @@ void BattleLevel::receiveInput(EVENTS event, const float scale_)
 
     if (event == EVENTS::FN4 && scale_ > 0)
     {
-        ChatMessageSequence seq{m_playerId, ChatBoxSide::PREFER_TOP, true, true};
+        ChatMessageSequence seq{m_playerId, ChatBoxSide::PREFER_TOP, true, true, true, true};
         seq.m_messages.emplace_back("Hello, chat\nHow are you?", 3);
         seq.m_messages.emplace_back("I've been better", 3);
         m_chatBoxSys.addSequence(std::move(seq));

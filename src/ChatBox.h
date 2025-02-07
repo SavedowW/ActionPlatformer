@@ -20,9 +20,9 @@ struct ChatMessage
     std::vector<const fonts::Symbol*> m_symbols;
     std::vector<FrameTimer<false>> m_symbolAppearTimers;
     std::vector<int> m_lineHeights;
-    uint32_t m_defaultCharacterDelay = 1;
+    uint32_t m_defaultCharacterDelay = 2;
     uint32_t m_defaultAppearDuration = 12;
-    uint32_t m_currentProceedingCharacter = 1;
+    uint32_t m_currentProceedingCharacter = 0;
     uint32_t m_firstCharacterForFadingIn = 0;
     enum class State { APPEAR, IDLE } m_currentState = State::APPEAR;
 
@@ -31,7 +31,7 @@ struct ChatMessage
 
 struct ChatMessageSequence
 {
-    ChatMessageSequence(entt::entity src_, const ChatBoxSide &side_, bool fitScreen_, bool proceedByInput_);
+    ChatMessageSequence(entt::entity src_, const ChatBoxSide &side_, bool fitScreen_, bool proceedByInput_, bool claimInputs_, bool returnInputs_);
     void compileAndSetSize(const TextManager &textMan_);
 
     entt::entity m_source;
@@ -44,6 +44,8 @@ struct ChatMessageSequence
     bool m_fitScreen;
 
     bool m_proceedByInput = false;
+    bool m_claimInputs = false;
+    bool m_returnInputs = false;
 
     std::vector<ChatMessage> m_messages;
     ChatMessage *m_currentMessage = nullptr;
@@ -59,6 +61,8 @@ public:
 
     void addSequence(ChatMessageSequence &&seq_);
     void receiveInput(EVENTS event, const float scale_) override;
+
+    void endSequence(size_t seqId_);
 
     void renderText(ChatMessageSequence &seq_, const Vector2<float> &tl_);
 

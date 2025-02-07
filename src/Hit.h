@@ -130,7 +130,6 @@ struct HealthRendererCommonWRT
     int m_realHealth = 0;
     Vector2<float> m_offset;
 
-    // TODO: to separate class?
     enum class DelayFadeStates
     {
         INACTIVE,

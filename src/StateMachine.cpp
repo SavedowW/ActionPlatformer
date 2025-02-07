@@ -202,6 +202,12 @@ PhysicalState &PhysicalState::setAppliedInertiaMultiplier(TimelineProperty<Vecto
     return *this;
 }
 
+PhysicalState &PhysicalState::setTransitionVelocityMultiplier(TimelineProperty<Vector2<float>> &&convRate_)
+{
+    m_transitionVelocityMultiplier = std::move(convRate_);
+    return *this;
+}
+
 PhysicalState &PhysicalState::setConvertVelocityOnSwitch(bool convertVelocity_, bool convertEnforced_)
 {
     m_convertVelocityOnSwitch = convertVelocity_;
@@ -293,6 +299,12 @@ void GenericState::enter(EntityAnywhere owner_, CharState from_)
     //std::cout << "Switched to " << m_stateName << std::endl;
 }
 
+void PhysicalState::leave(EntityAnywhere owner_, CharState to_)
+{
+    auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
+    physical.m_velocity = physical.m_velocity.mulComponents(physical.m_stateLeaveVelocityMultiplier);
+}
+
 void PhysicalState::enter(EntityAnywhere owner_, CharState from_)
 {
     GenericState::enter(owner_, from_);
@@ -314,8 +326,6 @@ void PhysicalState::enter(EntityAnywhere owner_, CharState from_)
     // set cooldown if necessary
     if (m_cooldown)
         m_cooldown->begin(m_cooldownTime);
-
-    //physical.m_pushbox = Collider{Vector2{0.0f, -30.0f}, Vector2{10.0f, 30.0f}}; // TODO: to property
 
     physical.m_drag = m_drag[0];
     physical.m_noLanding = m_noLanding[0];
@@ -389,6 +399,8 @@ bool PhysicalState::update(EntityAnywhere owner_, uint32_t currentFrame_)
         physical.m_mulInsidePushbox = &m_mulInsidePushbox[currentFrame_].value();
     else
         physical.m_mulInsidePushbox = nullptr;
+
+    physical.m_stateLeaveVelocityMultiplier = m_transitionVelocityMultiplier[currentFrame_];
 
     // Handle gravity
     physical.m_gravity = m_gravity[currentFrame_];

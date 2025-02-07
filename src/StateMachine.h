@@ -120,8 +120,11 @@ public:
         m_anim(anim_),
         m_drag({1.0f, 0.0f}),
         m_appliedInertiaMultiplier({1.0f, 1.0f}),
-        m_canFallThrough(true)
+        m_canFallThrough(true),
+        m_transitionVelocityMultiplier({1.0f, 1.0f})
     {}
+
+    virtual void leave(EntityAnywhere owner_, CharState to_) override;
 
     template<typename PLAYER_STATE_T>
     PhysicalState &setTransitionOnTouchedGround(PLAYER_STATE_T state_)
@@ -155,6 +158,7 @@ public:
     PhysicalState &setCanFallThrough(TimelineProperty<bool> &&fallThrough_);
     PhysicalState &setNoLanding(TimelineProperty<bool> &&noLanding_);
     PhysicalState &setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>> &&inerMul_);
+    PhysicalState &setTransitionVelocityMultiplier(TimelineProperty<Vector2<float>> &&convRate_);
     PhysicalState &setConvertVelocityOnSwitch(bool convertVelocity_, bool convertEnforced_);
     PhysicalState &setUpdateMovementData(
         TimelineProperty<Vector2<float>> &&mulOwnVelUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirVelUpd_, TimelineProperty<Vector2<float>> &&rawAddVelUpd_,
@@ -189,6 +193,7 @@ protected:
     TimelineProperty<Vector2<float>> m_drag;
 
     TimelineProperty<std::optional<Vector2<float>>> m_mulInsidePushbox;
+    TimelineProperty<Vector2<float>> m_transitionVelocityMultiplier;
 
     bool m_convertVelocityOnSwitch = false;
 

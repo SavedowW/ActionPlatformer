@@ -97,6 +97,8 @@ struct ComponentPhysical
     // Offset enforced by dynamic colliders, used for things like inertia
     Vector2<float> m_enforcedOffset;
 
+    Vector2<float> m_stateLeaveVelocityMultiplier;
+
     void convertToInertia(bool convertVelocity_, bool includeEnforced_);
     Vector2<float> getPosOffest() const;
 };
