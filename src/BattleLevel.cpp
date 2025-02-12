@@ -7,7 +7,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     Level(application_, size_, lvlId_),
     m_camera({0.0f, 0.0f}, gamedata::global::baseResolution, m_size),
     m_playerSystem(m_registry, *application_),
-    m_rendersys(m_registry, *application_, m_camera),
+    m_rendersys(m_registry, *application_, m_camera, m_cldRoutesCollection),
     m_inputsys(m_registry),
     m_physsys(m_registry, size_),
     m_camsys(m_registry, *application_, m_camera),
@@ -46,7 +46,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
 
     m_enemysys.makeEnemy();
 
-    m_lvlBuilder.buildLevel("Resources/Sprites/Tiles/tilemap.json", playerId, m_graph);
+    m_lvlBuilder.buildLevel("Resources/Sprites/Tiles/tilemap.json", playerId, m_graph, m_cldRoutesCollection);
 
     m_chatBoxSys.setPlayerEntity(m_playerId);
 

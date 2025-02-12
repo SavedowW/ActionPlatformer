@@ -1,11 +1,15 @@
 #include "RenderSystem.h"
 #include "Profile.h"
 
-RenderSystem::RenderSystem(entt::registry &reg_, Application &app_, Camera &camera_) :
+RenderSystem::RenderSystem(entt::registry &reg_, Application &app_, Camera &camera_, ColliderRoutesCollection &rtCol_) :
+    InputReactor(app_.getInputSystem()),
     m_reg(reg_),
     m_renderer(*app_.getRenderer()),
-    m_camera(camera_)
+    m_camera(camera_),
+    m_routesCollection(rtCol_)
 {
+    subscribe(EVENTS::REN_DBG_1);
+    setInputEnabled(true);
 }
 
 void RenderSystem::update()
@@ -102,6 +106,12 @@ void RenderSystem::draw()
     {
         for (auto [idx, trans] : viewTransforms.each())
             drawTransform(trans);
+    }
+
+    if constexpr (gamedata::debug::drawColliderRoutes)
+    {
+        for (const auto &el : m_routesCollection.routes)
+            drawColliderRoute(el.second);
     }
 }
 
@@ -347,5 +357,40 @@ void RenderSystem::drawHealth(const ComponentTransform &trans_, const HealthRend
 
             cnt++;
         }
+    }
+}
+
+void RenderSystem::drawColliderRoute(const ColliderPointRouting &route_)
+{
+    const Vector2<float> nodeSize{5.0f, 5.0f};
+
+    if (route_.m_dbgIter == 0)
+    {
+        m_renderer.fillRectangle(route_.m_origin.m_pos - nodeSize / 2.0f, nodeSize, {255, 127, 39, 255}, m_camera);
+    }
+    else
+    {
+        auto newPoint = route_.m_links[route_.m_dbgIter - 1].m_target.m_pos;
+        auto prevPoint = route_.m_origin.m_pos;
+        if (route_.m_dbgIter > 1)
+            prevPoint = route_.m_links[route_.m_dbgIter - 2].m_target.m_pos;
+
+        m_renderer.fillRectangle(newPoint - nodeSize / 2.0f, nodeSize, {0, 255, 0, 100}, m_camera);
+        m_renderer.drawLine(prevPoint - Vector2{1.0f, 1.0f}, newPoint - Vector2{1.0f, 1.0f}, {0, 255, 0, 100}, m_camera);
+    }
+}
+
+void RenderSystem::receiveInput(EVENTS event_, const float scale_)
+{
+    switch (event_)
+    {
+        case EVENTS::REN_DBG_1:
+            if (scale_ > 0)
+                for (auto &el : m_routesCollection.routes)
+                    el.second.m_dbgIter = (el.second.m_dbgIter + 1 > el.second.m_links.size() ? 0 : el.second.m_dbgIter + 1);
+            break;
+
+        default:
+            std::cout << "RenderSystem received undefined event " << int(event_) << std::endl;
     }
 }

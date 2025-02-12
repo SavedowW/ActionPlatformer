@@ -28,7 +28,8 @@ namespace gamedata
         inline constexpr bool drawTransforms = false;
         inline constexpr bool drawDebugTextures = false;
         inline constexpr bool drawHealthPos = false;
-        inline constexpr uint32_t debugPathDisplay = 15;
+        inline constexpr bool drawColliderRoutes = true;
+        inline constexpr uint32_t debugPathDisplay = 0;
     }
 
     namespace global

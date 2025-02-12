@@ -4,8 +4,10 @@
 #include "CoreComponents.h"
 #include "CameraFocusArea.h"
 #include "StateMachine.h"
+#include "ColliderRouting.h"
 #include <fstream>
 #include <limits>
+#include <sstream>
 
 void addTrigger(entt::registry &reg_, const Trigger &trg_)
 {
@@ -21,7 +23,7 @@ LevelBuilder::LevelBuilder(Application &app_, entt::registry &reg_) :
 {
 }
 
-void LevelBuilder::buildLevel(const std::string &mapDescr_,entt::entity playerId_, NavGraph &graph_)
+void LevelBuilder::buildLevel(const std::string &mapDescr_,entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_)
 {
     auto fullpath = m_root + "/" + mapDescr_;
 
@@ -107,10 +109,10 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_,entt::entity playerId
                 for (const auto &obj : layer["objects"])
                 {
                     if (obj["type"] == "SpawnPoint")
-                    m_reg.emplace_or_replace<ComponentSpawnLocation>(playerId_, Vector2{
-                        static_cast<float>(obj["x"]),
-                        static_cast<float>(obj["y"])
-                    });
+                        m_reg.emplace_or_replace<ComponentSpawnLocation>(playerId_, Vector2{
+                            static_cast<float>(obj["x"]),
+                            static_cast<float>(obj["y"])
+                        });
                 }
             }
             else if (layer["name"] == "Collision")
@@ -274,6 +276,85 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_,entt::entity playerId
                         std::cout << "Unknown area type at Focus areas: \"" << type << "\" (" << id << ")" << std::endl;
                     }
                 }
+            }
+            else if (layer["name"] == "ColliderRouting")
+            {
+                struct PointDescr
+                {
+                    std::string initialLink;
+                    Vector2<float> pos;
+                    std::map<std::string, int> links;
+                    std::map<int, std::string> rules;
+                };
+
+                std::map<int, PointDescr> points;
+
+                for (const auto &obj : layer["objects"])
+                {
+                    auto &newpoint = points[static_cast<int>(obj["id"])];
+                    newpoint.pos.x = static_cast<int>(obj["x"]);
+                    newpoint.pos.y = static_cast<int>(obj["y"]);
+
+                    std::cout << "New point at " << static_cast<int>(obj["id"]) << std::endl;
+                    std::cout << newpoint.pos << std::endl;
+
+                    if (obj.contains("properties"))
+                    {
+                        for (const auto &prop : obj["properties"])
+                        {
+                            if (prop["name"] == "InitialRoute")
+                            {
+                                std::cout << "Initial route: " << utils::wrap(prop["value"]) << std::endl;
+                                newpoint.initialLink = prop["value"];
+                            }
+                            else if (utils::startsWith(prop["name"], "LINK"))
+                            {
+                                std::cout << "New link " << utils::wrap(prop["name"]) << " to " << prop["value"] << std::endl;
+                                newpoint.links[prop["name"]] = prop["value"];
+                            }
+                            else if (utils::startsWith(prop["name"], "RouteRule"))
+                            {
+                                std::string ruledescr = prop["value"];
+                                std::stringstream ss(ruledescr);
+                                int from;
+                                std::string to;
+                                ss >> from;
+                                ss >> to;
+                                newpoint.rules[from] = to;
+                                std::cout << "New rule from " << from << " to " << utils::wrap(to) << std::endl;
+                            }
+                        }
+                    }
+                }
+
+                // Data ready, put it into the collection
+                for (const auto &point : points)
+                {
+                    if (!point.second.initialLink.empty())
+                    {
+                        auto &newroute = rtCollection_.routes[point.first];
+                        newroute.m_origin.m_id = point.first;
+                        newroute.m_origin.m_pos = point.second.pos;
+
+                        auto currentLink = point.second.initialLink;
+                        int currentPoint = point.first;
+                        while (newroute.m_links.empty() || newroute.m_origin.m_id != currentPoint && !currentLink.empty())
+                        {
+                            auto &newlnk = newroute.m_links.emplace_back();
+                            newlnk.m_target.m_id = points[currentPoint].links[currentLink];
+                            newlnk.m_target.m_pos = points[newlnk.m_target.m_id].pos;
+
+                            auto oldPoint = currentPoint;
+                            currentPoint = newlnk.m_target.m_id;
+
+                            if (points[currentPoint].rules.contains(oldPoint))
+                                currentLink = points[currentPoint].rules[oldPoint];
+                            else
+                                currentLink = "";
+                        }
+                    }
+                }
+
             }
         }
     }

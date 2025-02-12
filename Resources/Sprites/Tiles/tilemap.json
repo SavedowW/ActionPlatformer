@@ -4,6 +4,110 @@
  "infinite":false,
  "layers":[
         {
+         "draworder":"topdown",
+         "id":11,
+         "name":"ColliderRouting",
+         "objects":[
+                {
+                 "id":78,
+                 "properties":[
+                        {
+                         "name":"LINK1",
+                         "type":"object",
+                         "value":79
+                        }, 
+                        {
+                         "name":"LINK2",
+                         "type":"object",
+                         "value":83
+                        }, 
+                        {
+                         "name":"RouteRule 1",
+                         "type":"string",
+                         "value":"83 LINK1"
+                        }, 
+                        {
+                         "name":"RouteRule 2",
+                         "type":"string",
+                         "value":"79 LINK2"
+                        }],
+                 "template":"ColliderKeyPoint.tx",
+                 "x":360,
+                 "y":280
+                }, 
+                {
+                 "id":79,
+                 "properties":[
+                        {
+                         "name":"LINK1",
+                         "type":"object",
+                         "value":84
+                        }, 
+                        {
+                         "name":"LINK2",
+                         "type":"object",
+                         "value":78
+                        }, 
+                        {
+                         "name":"RouteRule 1",
+                         "type":"string",
+                         "value":"78 LINK1"
+                        }, 
+                        {
+                         "name":"RouteRule 2",
+                         "type":"string",
+                         "value":"84 LINK2"
+                        }],
+                 "template":"ColliderKeyPoint.tx",
+                 "x":440,
+                 "y":280
+                }, 
+                {
+                 "id":83,
+                 "properties":[
+                        {
+                         "name":"InitialRoute",
+                         "type":"string",
+                         "value":"LINK1"
+                        }, 
+                        {
+                         "name":"LINK1",
+                         "type":"object",
+                         "value":78
+                        }, 
+                        {
+                         "name":"RouteRule",
+                         "type":"string",
+                         "value":"78 LINK1"
+                        }],
+                 "template":"ColliderKeyPoint.tx",
+                 "x":312,
+                 "y":328
+                }, 
+                {
+                 "id":84,
+                 "properties":[
+                        {
+                         "name":"LINK1",
+                         "type":"object",
+                         "value":79
+                        }, 
+                        {
+                         "name":"RouteRule",
+                         "type":"string",
+                         "value":"79 LINK1"
+                        }],
+                 "template":"ColliderKeyPoint.tx",
+                 "x":440,
+                 "y":216
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
          "data":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -221,9 +325,15 @@
          "height":64,
          "id":9,
          "name":"platform",
-         "offsetx":68,
-         "offsety":236,
+         "offsetx":80,
+         "offsety":224,
          "opacity":1,
+         "properties":[
+                {
+                 "name":"collider",
+                 "type":"object",
+                 "value":76
+                }],
          "type":"tilelayer",
          "visible":true,
          "width":64,
@@ -562,6 +672,23 @@
                  "width":16,
                  "x":544,
                  "y":128
+                }, 
+                {
+                 "height":16,
+                 "id":76,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"RoutingStart",
+                         "type":"object",
+                         "value":83
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":48,
+                 "x":288,
+                 "y":320
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1175,8 +1302,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":11,
- "nextobjectid":76,
+ "nextlayerid":12,
+ "nextobjectid":85,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.0",

@@ -21,6 +21,7 @@
 #include "ParticleSystem.h"
 #include "BattleSystem.h"
 #include "ChatBox.h"
+#include "ColliderRouting.h"
 
 class BattleLevel : public Level
 {
@@ -57,6 +58,7 @@ protected:
 
     entt::entity m_playerId;
 
+    ColliderRoutesCollection m_cldRoutesCollection;
     LevelBuilder m_lvlBuilder;
 };
 

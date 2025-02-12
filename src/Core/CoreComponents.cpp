@@ -1,4 +1,5 @@
 #include "CoreComponents.h"
+#include <vector>
 
 ComponentTransform::ComponentTransform(const Vector2<float> &pos_, ORIENTATION orient_) :
     m_pos(pos_), m_orientation(orient_)
@@ -200,7 +201,7 @@ RenderLayer::~RenderLayer()
 TilemapLayer::TilemapLayer(SDL_Texture *tex_, const Vector2<int> &size_, const Vector2<float> &parallaxFactor_) :
     m_tex(tex_),
     m_parallaxFactor(parallaxFactor_),
-    m_tiles(size_.y, std::vector<Tile>(size_.x, {}))
+    m_tiles(size_.y, std::vector<Tile>(size_.x, Tile{}))
 {
 }
 

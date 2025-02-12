@@ -4,11 +4,12 @@
 #include "CoreComponents.h"
 #include "Application.h"
 #include "CameraFocusArea.h"
+#include "ColliderRouting.h"
 #include <entt/entt.hpp>
 
-struct RenderSystem
+struct RenderSystem : public InputReactor
 {
-    RenderSystem(entt::registry &reg_, Application &app_, Camera &camera_);
+    RenderSystem(entt::registry &reg_, Application &app_, Camera &camera_, ColliderRoutesCollection &rtCol_);
 
     void update();
     void updateDepth();
@@ -30,10 +31,14 @@ struct RenderSystem
     void drawTransform(const ComponentTransform &trans_);
     void drawHealth(const ComponentTransform &trans_, const HealthRendererCommonWRT &howner_);
 
+    void drawColliderRoute(const ColliderPointRouting &route_);
+
+    void receiveInput(EVENTS event_, const float scale_) override;
 
     entt::registry &m_reg;
     Renderer &m_renderer;
     Camera &m_camera;
+    ColliderRoutesCollection &m_routesCollection;
 };
 
 #endif

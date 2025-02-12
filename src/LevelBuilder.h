@@ -1,5 +1,6 @@
-#ifndef DECORATION_BUILDER_H_
-#define DECORATION_BUILDER_H_
+#ifndef LEVEL_BUILDER_H_
+#define LEVEL_BUILDER_H_
+#include "ColliderRouting.h"
 #include "Application.h"
 #include "Tileset.h"
 #include "StateMachine.h"
@@ -12,7 +13,7 @@ class LevelBuilder
 {
 public:
     LevelBuilder(Application &app_, entt::registry &reg_);
-    void buildLevel(const std::string &mapDescr_, entt::entity playerId_, NavGraph &graph_);
+    void buildLevel(const std::string &mapDescr_, entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_);
 
 
 private:

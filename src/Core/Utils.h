@@ -308,6 +308,17 @@ namespace utils
         }
     }
 
+    inline bool startsWith(const std::string &base_, const std::string &beginning_)
+    {
+        for (int i = 0; i < beginning_.size(); ++i)
+        {
+            if (base_[i] != beginning_[i])
+                return false;
+        }
+
+        return true;
+    }
+
 }
 
 // Assert uniqueness
