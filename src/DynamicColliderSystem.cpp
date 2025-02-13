@@ -29,8 +29,13 @@ void DynamicColliderSystem::updateMovingColliders()
 {
     PROFILE_FUNCTION;
     
-    auto dynamics = m_reg.view<ComponentTransform, ComponentStaticCollider, MoveCollider2Points>();
+    auto routes = m_reg.view<ComponentStaticCollider, MoveCollider2Points, ColliderRoutingIterator>();
+    for (auto [idx, scld, m2p, routing] : routes.each())
+    {
+        solveRouteIter(scld, m2p, routing);
+    }
 
+    auto dynamics = m_reg.view<ComponentTransform, ComponentStaticCollider, MoveCollider2Points>();
     for (auto [idx, trans, scld, mvmnt] : dynamics.each())
     {
         proceedMovingCollider(trans, scld, mvmnt);
@@ -39,22 +44,89 @@ void DynamicColliderSystem::updateMovingColliders()
 
 void DynamicColliderSystem::proceedMovingCollider(ComponentTransform &trans_, ComponentStaticCollider &scld_, MoveCollider2Points &twop_)
 {
-    if (twop_.m_timer.update())
+    if (twop_.m_timer.isOver())
+        return;
+
+    twop_.m_timer.update();
+
+    const Vector2<float> newtl = twop_.m_point2 + (twop_.m_point1 - twop_.m_point2) * twop_.m_timer.getProgressNormalized() - scld_.m_proto.m_size / 2.0f;
+
+    moveColliderAt(trans_, scld_, newtl);
+}
+
+bool DynamicColliderSystem::isOverlappingWithDynamic(const SlopeCollider &cld_)
+{
+    const auto dynamics = m_reg.view<ComponentTransform, ComponentPhysical>();
+    for (const auto [idx, trans, phys] : dynamics.each())
     {
-        twop_.m_timer.begin(twop_.m_duration);
-        twop_.m_toSecond = !twop_.m_toSecond;
+        auto pb = phys.m_pushbox + trans.m_pos;
+        float dump = 0.0f;
+        auto res = cld_.checkOverlap(pb, dump);
+        if (checkCollision(res, OverlapResult::OVERLAP_BOTH))
+            return true;
     }
 
-    Vector2<float> newtl;
-    if (twop_.m_toSecond)
-        newtl = twop_.m_point1 + (twop_.m_point2 - twop_.m_point1) * twop_.m_timer.getProgressNormalized() - scld_.m_proto.m_size / 2.0f;
-    else
-        newtl = twop_.m_point2 + (twop_.m_point1 - twop_.m_point2) * twop_.m_timer.getProgressNormalized() - scld_.m_proto.m_size / 2.0f;
+    return false;
+}
 
-    SlopeCollider newcld(newtl, scld_.m_proto.m_size, scld_.m_proto.m_topAngleCoef);
-    SlopeCollider newcldYOnly(Vector2{trans_.m_pos.x, newtl.y}, scld_.m_proto.m_size, scld_.m_proto.m_topAngleCoef);
+bool DynamicColliderSystem::isObstacleOverlappingWithDynamic(const SlopeCollider &cld_, int obstacleId_)
+{
+    const auto dynamics = m_reg.view<ComponentTransform, ComponentPhysical>();
+    for (const auto [idx, trans, phys] : dynamics.each())
+    {
+        auto pb = phys.m_pushbox + trans.m_pos;
+        float dump = 0.0f;
+        auto res = cld_.checkOverlap(pb, dump);
+        if (checkCollision(res, OverlapResult::OVERLAP_BOTH))
+        {
+            if (!m_reg.all_of<ComponentObstacleFallthrough>(idx))
+                return true;
+            else
+                m_reg.get<ComponentObstacleFallthrough>(idx).setIgnoreObstacle(obstacleId_);
+        }
+    }
 
-    Vector2<float> offset = newtl - trans_.m_pos;
+    return false;
+}
+
+void DynamicColliderSystem::solveRouteIter(ComponentStaticCollider &scld_, MoveCollider2Points &m2p_, ColliderRoutingIterator &iter_)
+{
+    bool firstTime = !m2p_.m_timer.isActive() && !m2p_.m_timer.isOver();
+
+    if (firstTime)
+        iter_.m_offset = scld_.m_resolved.m_tlPos + scld_.m_resolved.m_size / 2.0f - iter_.m_route.m_origin.m_pos;
+
+    if (firstTime || iter_.m_iter == iter_.m_route.m_links.size() - 1 && m2p_.m_timer.isOver())
+    {
+        iter_.m_iter = 0;
+
+        m2p_.m_point2 = iter_.m_route.m_origin.m_pos - iter_.m_offset;
+        m2p_.m_point1 = iter_.m_route.m_links[0].m_target.m_pos - iter_.m_offset;
+        m2p_.m_timer.begin(iter_.m_route.m_links[0].m_duration);
+
+        std::cout << "Starting movement at " << iter_.m_iter << ": (" << m2p_.m_point1 << ") - (" << m2p_.m_point2 << ")" << std::endl;
+    }
+    else if (m2p_.m_timer.isOver())
+    {
+        iter_.m_iter++;
+
+        m2p_.m_point2 = iter_.m_route.m_links[iter_.m_iter - 1].m_target.m_pos - iter_.m_offset;
+        m2p_.m_point1 = iter_.m_route.m_links[iter_.m_iter].m_target.m_pos - iter_.m_offset;
+        m2p_.m_timer.begin(iter_.m_route.m_links[iter_.m_iter].m_duration);
+
+        std::cout << "Continuing movement at " << iter_.m_iter << ": (" << m2p_.m_point1 << ") - (" << m2p_.m_point2 << ")" << std::endl;
+    }
+}
+
+void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, ComponentStaticCollider &scld_, const Vector2<float> &newtl_)
+{
+    // Resolved collider with full offset applied
+    const SlopeCollider newcld(newtl_, scld_.m_proto.m_size, scld_.m_proto.m_topAngleCoef);
+
+    // Resolved collider with only Y offset applied
+    const SlopeCollider newcldYOnly(Vector2{trans_.m_pos.x, newtl_.y}, scld_.m_proto.m_size, scld_.m_proto.m_topAngleCoef);
+
+    const Vector2<float> offset = newtl_ - trans_.m_pos;
 
     const auto dynamics = m_reg.view<ComponentTransform, ComponentPhysical>();
     for (auto [idx, trans, phys] : dynamics.each())
@@ -238,40 +310,5 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentTransform &trans_, Co
     }
 
     scld_.m_resolved = newcld;
-    trans_.m_pos = newtl;
-}
-
-bool DynamicColliderSystem::isOverlappingWithDynamic(const SlopeCollider &cld_)
-{
-    const auto dynamics = m_reg.view<ComponentTransform, ComponentPhysical>();
-    for (const auto [idx, trans, phys] : dynamics.each())
-    {
-        auto pb = phys.m_pushbox + trans.m_pos;
-        float dump = 0.0f;
-        auto res = cld_.checkOverlap(pb, dump);
-        if (checkCollision(res, OverlapResult::OVERLAP_BOTH))
-            return true;
-    }
-
-    return false;
-}
-
-bool DynamicColliderSystem::isObstacleOverlappingWithDynamic(const SlopeCollider &cld_, int obstacleId_)
-{
-    const auto dynamics = m_reg.view<ComponentTransform, ComponentPhysical>();
-    for (const auto [idx, trans, phys] : dynamics.each())
-    {
-        auto pb = phys.m_pushbox + trans.m_pos;
-        float dump = 0.0f;
-        auto res = cld_.checkOverlap(pb, dump);
-        if (checkCollision(res, OverlapResult::OVERLAP_BOTH))
-        {
-            if (!m_reg.all_of<ComponentObstacleFallthrough>(idx))
-                return true;
-            else
-                m_reg.get<ComponentObstacleFallthrough>(idx).setIgnoreObstacle(obstacleId_);
-        }
-    }
-
-    return false;
+    trans_.m_pos = newtl_;
 }

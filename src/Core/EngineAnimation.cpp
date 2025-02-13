@@ -507,7 +507,6 @@ void EngineAnimation::loadAnimationV2(Renderer &ren_)
     }
     SDL_RWread(m_rw, &m_duration, sizeof(m_duration), 1);
 
-
     auto layersToLoad = {0, 1, 2};
 
     for (auto &el : layersToLoad)

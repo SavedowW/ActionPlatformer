@@ -229,7 +229,7 @@ float SlopeCollider::getHeightAt(float x) const
     return m_tlPos.y + m_topAngleCoef * (x - m_tlPos.x);
 }
 
-float SlopeCollider::getMostRightAt(const Collider &cld_)
+float SlopeCollider::getMostRightAt(const Collider &cld_) const
 {
     if (m_topAngleCoef <= 0) // Flat or up to the right
     {
@@ -247,7 +247,7 @@ float SlopeCollider::getMostRightAt(const Collider &cld_)
     }
 }
 
-float SlopeCollider::getMostLeftAt(const Collider &cld_)
+float SlopeCollider::getMostLeftAt(const Collider &cld_) const
 {
     if (m_topAngleCoef >= 0) // Flat or down to the right
     {

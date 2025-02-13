@@ -13,6 +13,9 @@ struct RoutingPoint
 struct RoutingLink
 {
     RoutingPoint m_target;
+
+    // TODO: calculate from map (speed, raw frames, etc)
+    uint32_t m_duration = 60;
 };
 
 struct ColliderPointRouting
@@ -26,7 +29,22 @@ struct ColliderPointRouting
 
 struct ColliderRoutesCollection
 {
-    std::map<int, ColliderPointRouting> routes;
+    // Shouldn't change size once level is built
+    std::map<int, ColliderPointRouting> m_routes;
+};
+
+struct ColliderRoutingIterator
+{
+    ColliderRoutingIterator(ColliderPointRouting &route_);
+
+    ColliderRoutingIterator (const ColliderRoutingIterator &rhs_) = delete;
+    ColliderRoutingIterator (ColliderRoutingIterator &&rhs_) = default;
+    ColliderRoutingIterator &operator=(const ColliderRoutingIterator &rhs_) = delete;
+    ColliderRoutingIterator &operator=(ColliderRoutingIterator &&rhs_) = default;
+
+    ColliderPointRouting &m_route;
+    Vector2<float> m_offset;
+    size_t m_iter = 0;
 };
 
 #endif

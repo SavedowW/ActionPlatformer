@@ -45,8 +45,8 @@ struct SlopeCollider
 
     float getHeightAt(float x) const;
 
-    float getMostRightAt(const Collider &cld_);
-    float getMostLeftAt(const Collider &cld_);
+    float getMostRightAt(const Collider &cld_) const;
+    float getMostLeftAt(const Collider &cld_) const;
 
     bool containsPoint(const Vector2<float> &point_) const;
 };

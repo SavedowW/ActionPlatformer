@@ -133,15 +133,6 @@ void ComponentParticlePhysics::applyDrag()
     }
 }
 
-MoveCollider2Points::MoveCollider2Points(const Vector2<float> &point1_, const Vector2<float> &point2_, float duration_) :
-    m_point1(point1_),
-    m_point2(point2_),
-    m_duration(duration_),
-    m_toSecond(true)
-{
-    m_timer.begin(duration_);
-}
-
 Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_)
 {
     if (trans_.m_orientation == ORIENTATION::LEFT)

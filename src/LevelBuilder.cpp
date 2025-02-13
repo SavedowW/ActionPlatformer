@@ -27,6 +27,8 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_,entt::entity playerId
 {
     auto fullpath = m_root + "/" + mapDescr_;
 
+    std::map<int, entt::entity> idToEntity;
+
     std::ifstream mapjson(fullpath);
     if (!mapjson.is_open())
     {
@@ -81,9 +83,33 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_,entt::entity playerId
             SDL_SetTextureColorMod(tex, layerCfg.r, layerCfg.g, layerCfg.b);
             SDL_SetTextureAlphaMod(tex, layerCfg.a);
 
-            auto entity = m_reg.create();
+            entt::entity entity = entt::null;
+            bool existingEntity = false;
+
+            if (layer.contains("properties"))
+            {
+                for (const auto &prop : layer["properties"])
+                {
+                    if (prop["name"] == "collider")
+                    {
+                        entity = idToEntity[static_cast<int>(prop["value"])];
+                        existingEntity = true;
+                    }
+                }
+            }
+
+            if (entity == entt::null)
+                entity = m_reg.create();
+
             auto &tilelayer = m_reg.emplace<TilemapLayer>(entity, tex, size, parallaxFactor);
-            m_reg.emplace<ComponentTransform>(entity, pos, ORIENTATION::RIGHT);
+            if (!existingEntity)
+                m_reg.emplace<ComponentTransform>(entity, pos, ORIENTATION::RIGHT);
+            else
+            {
+                auto &trans = m_reg.get<ComponentTransform>(entity);
+                tilelayer.m_posOffset = pos - trans.m_pos;
+            }
+
             m_reg.emplace<RenderLayer>(entity, layerId);
 
             int tileLinearPos = 0;
@@ -119,8 +145,10 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_,entt::entity playerId
             {
                 for (const auto &cld : layer["objects"])
                 {
+                    int objectId = static_cast<int>(cld["id"]);
                     SlopeCollider scld;
                     int obstacleId = 0;
+                    ColliderPointRouting *route = nullptr;
 
                     Vector2<float> tl{
                             static_cast<float>(cld["x"]),
@@ -189,10 +217,12 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_,entt::entity playerId
                         {
                             if (prop["name"] == "ObstacleGroup")
                                 obstacleId = static_cast<int>(prop["value"]);
+                            else if (prop["name"] == "RoutingStart")
+                                route = &rtCollection_.m_routes[static_cast<int>(prop["value"])];
                         }
                     }
    
-                    addCollider(scld, obstacleId);
+                    idToEntity[objectId] = addCollider(scld, obstacleId, route);
                 }
             }
             else if (layer["name"] == "Navigation")
@@ -332,7 +362,7 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_,entt::entity playerId
                 {
                     if (!point.second.initialLink.empty())
                     {
-                        auto &newroute = rtCollection_.routes[point.first];
+                        auto &newroute = rtCollection_.m_routes[point.first];
                         newroute.m_origin.m_id = point.first;
                         newroute.m_origin.m_pos = point.second.pos;
 
@@ -360,11 +390,18 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_,entt::entity playerId
     }
 }
 
-void LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obstacleId_)
+entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obstacleId_, ColliderPointRouting *route_)
 {
     auto newid = m_reg.create();
     auto &tr = m_reg.emplace<ComponentTransform>(newid, worldCld_.m_tlPos, ORIENTATION::RIGHT);
     m_reg.emplace<ComponentStaticCollider>(newid, ComponentStaticCollider(tr.m_pos, SlopeCollider({0.0f, 0.0f}, worldCld_.m_size, worldCld_.m_topAngleCoef), obstacleId_));
+    if (route_)
+    {
+        m_reg.emplace<MoveCollider2Points>(newid);
+        m_reg.emplace<ColliderRoutingIterator>(newid, *route_);
+    }
+
+    return newid;
 }
 
 Traverse::TraitT LevelBuilder::lineToTraverse(const std::string &line_) const

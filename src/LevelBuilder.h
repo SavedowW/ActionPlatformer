@@ -17,7 +17,7 @@ public:
 
 
 private:
-    void addCollider(const SlopeCollider &worldCld_, int obstacleId_);
+    entt::entity addCollider(const SlopeCollider &worldCld_, int obstacleId_, ColliderPointRouting *route_);
     Traverse::TraitT lineToTraverse(const std::string &line_) const;
 
     Application &m_app;

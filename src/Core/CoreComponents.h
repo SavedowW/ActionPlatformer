@@ -273,13 +273,9 @@ struct RenderLayer
 
 struct MoveCollider2Points
 {
-    MoveCollider2Points(const Vector2<float> &point1_, const Vector2<float> &point2_, float duration_);
-
     Vector2<float> m_point1;
     Vector2<float> m_point2;
-    float m_duration;
-    FrameTimer<true> m_timer;
-    bool m_toSecond;
+    FrameTimer<false> m_timer;
 };
 
 struct TilemapLayer
@@ -288,6 +284,7 @@ struct TilemapLayer
     std::vector<std::vector<Tile>> m_tiles;
     Texture m_tex;
     Vector2<float> m_parallaxFactor;
+    Vector2<float> m_posOffset;
 };
 
 Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_);

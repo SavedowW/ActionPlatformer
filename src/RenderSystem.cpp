@@ -110,7 +110,7 @@ void RenderSystem::draw()
 
     if constexpr (gamedata::debug::drawColliderRoutes)
     {
-        for (const auto &el : m_routesCollection.routes)
+        for (const auto &el : m_routesCollection.m_routes)
             drawColliderRoute(el.second);
     }
 }
@@ -199,12 +199,12 @@ void RenderSystem::drawTilemapLayer(const ComponentTransform &trans_, TilemapLay
     SDL_Rect dst;
     dst.w = gamedata::global::tileSize.x;
     dst.h = gamedata::global::tileSize.y;
-    dst.x = trans_.m_pos.x -camTL.x;
-    dst.y = trans_.m_pos.y -camTL.y;
+    dst.x = trans_.m_pos.x + tilemap_.m_posOffset.x -camTL.x;
+    dst.y = trans_.m_pos.y + tilemap_.m_posOffset.y -camTL.y;
 
     for (auto &row : tilemap_.m_tiles)
     {
-        dst.x = trans_.m_pos.x - camTL.x;
+        dst.x = trans_.m_pos.x + tilemap_.m_posOffset.x - camTL.x;
         for (auto &tile : row)
         {
             if (tile.m_tile)
@@ -386,7 +386,7 @@ void RenderSystem::receiveInput(EVENTS event_, const float scale_)
     {
         case EVENTS::REN_DBG_1:
             if (scale_ > 0)
-                for (auto &el : m_routesCollection.routes)
+                for (auto &el : m_routesCollection.m_routes)
                     el.second.m_dbgIter = (el.second.m_dbgIter + 1 > el.second.m_links.size() ? 0 : el.second.m_dbgIter + 1);
             break;
 
