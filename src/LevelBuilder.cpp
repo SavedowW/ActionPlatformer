@@ -150,27 +150,27 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_,entt::entity playerId
                     int obstacleId = 0;
                     ColliderPointRouting *route = nullptr;
 
-                    Vector2<float> tl{
-                            static_cast<float>(cld["x"]),
-                            static_cast<float>(cld["y"])
+                    Vector2<int> tl{
+                            static_cast<int>(cld["x"]),
+                            static_cast<int>(cld["y"])
                         };
 
                     if (cld.contains("polygon"))
                     {
-                        float minx = std::numeric_limits<float>::max();
-                        float maxx = std::numeric_limits<float>::min();
+                        int minx = std::numeric_limits<int>::max();
+                        int maxx = std::numeric_limits<int>::min();
 
-                        float miny_at_minx = std::numeric_limits<float>::max();
-                        float miny_at_maxx = std::numeric_limits<float>::max();
+                        int miny_at_minx = std::numeric_limits<int>::max();
+                        int miny_at_maxx = std::numeric_limits<int>::max();
 
-                        float maxy_at_minx = std::numeric_limits<float>::min();
-                        float maxy_at_maxx = std::numeric_limits<float>::min();
+                        int maxy_at_minx = std::numeric_limits<int>::min();
+                        int maxy_at_maxx = std::numeric_limits<int>::min();
 
                         for (const auto &vertex : cld["polygon"])
                         {
-                            Vector2<float> vvx = tl + Vector2{
-                                static_cast<float>(vertex["x"]),
-                                static_cast<float>(vertex["y"])
+                            Vector2<int> vvx = tl + Vector2{
+                                static_cast<int>(vertex["x"]),
+                                static_cast<int>(vertex["y"])
                             };
 
                             minx = std::min(minx, vvx.x);
@@ -192,7 +192,7 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_,entt::entity playerId
                             }
                         }
 
-                        Vector2<float> points[4] = {
+                        Vector2<int> points[4] = {
                             {minx, miny_at_minx},
                             {maxx, miny_at_maxx},
                             {maxx, maxy_at_maxx},
@@ -278,17 +278,17 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_,entt::entity playerId
                     std::string type = area["type"];
                     if (type == "FocusTrigger")
                     {
-                        Vector2<float> tl{area["x"], area["y"]};
-                        Vector2<float> size{area["width"], area["height"]};
-                        triggerAreas.emplace(id, Collider(tl + size / 2.0f, size / 2.0f));
+                        Vector2<int> tl{area["x"], area["y"]};
+                        Vector2<int> size{area["width"], area["height"]};
+                        triggerAreas.emplace(id, Collider(tl, size));
                     }
                     else if (type == "FocusBorder")
                     {
-                        Vector2<float> tl = {area["x"], area["y"]};
-                        Vector2<float> size = {area["width"], area["height"]};
+                        Vector2<int> tl = {area["x"], area["y"]};
+                        Vector2<int> size = {area["width"], area["height"]};
 
                         auto newfocus = m_reg.create();
-                        m_reg.emplace<CameraFocusArea>(newfocus, tl + size / 2, size, *m_app.getRenderer());
+                        m_reg.emplace<CameraFocusArea>(newfocus, tl, size, *m_app.getRenderer());
 
                         if (area.contains("properties"))
                         {
@@ -394,7 +394,7 @@ entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obsta
 {
     auto newid = m_reg.create();
     auto &tr = m_reg.emplace<ComponentTransform>(newid, worldCld_.m_tlPos, ORIENTATION::RIGHT);
-    m_reg.emplace<ComponentStaticCollider>(newid, ComponentStaticCollider(tr.m_pos, SlopeCollider({0.0f, 0.0f}, worldCld_.m_size, worldCld_.m_topAngleCoef), obstacleId_));
+    m_reg.emplace<ComponentStaticCollider>(newid, ComponentStaticCollider(tr.m_pos, SlopeCollider({0, 0}, worldCld_.m_size, worldCld_.m_topAngleCoef), obstacleId_));
     if (route_)
     {
         m_reg.emplace<MoveCollider2Points>(newid);

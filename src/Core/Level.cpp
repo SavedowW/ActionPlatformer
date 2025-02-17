@@ -3,7 +3,7 @@
 #include "Profile.h"
 #include <thread>
 
-Level::Level(Application *application_, const Vector2<float> &size_, int lvlId_) :
+Level::Level(Application *application_, const Vector2<int> &size_, int lvlId_) :
 	InputReactor(application_->getInputSystem()),
 	m_size(size_),
 	m_levelId(lvlId_),

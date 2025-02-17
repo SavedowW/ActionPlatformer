@@ -208,7 +208,7 @@ public:
         const auto &fallthrough = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
         auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
         //std::cout << fallthrough.m_ignoredObstacles.size() << std::endl;
-        if (fallthrough.isIgnoringAllObstacles() && phys.getPosOffest().x * phys.m_lastSlopeAngle > 0.0f)
+        if (fallthrough.isIgnoringAllObstacles() && phys.peekOffset().x * phys.m_lastSlopeAngle > 0.0f)
             phys.m_velocity.y += 2.0f;
     }
 
@@ -318,26 +318,18 @@ public:
         auto orientation = transform.m_orientation;
 
         auto touchedWall = (orientation == ORIENTATION::RIGHT ? 
-            cworld.getTouchedWallAt(ORIENTATION::RIGHT, pb.m_center - Vector2{pb.m_halfSize.x, 0.0f}) :
-            cworld.getTouchedWallAt(ORIENTATION::LEFT, pb.m_center + Vector2{pb.m_halfSize.x, 0.0f}));
+            cworld.isWallAt(ORIENTATION::RIGHT, pb.m_topLeft + Vector2{-1, pb.m_size.y / 2}) :
+            cworld.isWallAt(ORIENTATION::LEFT, pb.m_topLeft + Vector2{pb.m_size.x, pb.m_size.y / 2}));
 
         if (touchedWall == entt::null)
         {
-            if (physical.getPosOffest().y < 0)
+            if (physical.peekRawOffset().y < 0)
                 physical.m_velocity.y -= 1.0f;
             
             m_parent->switchCurrentState(owner_, m_transitionOnLeave);
         }
         else
-        {
             physical.m_onWall = touchedWall;
-            auto &csc = owner_.reg->get<ComponentStaticCollider>(touchedWall);
-
-            if (orientation == ORIENTATION::RIGHT)
-                physical.m_adjustOffset.x += csc.m_resolved.m_points[1].x - pb.getLeftEdge();
-            else
-                physical.m_adjustOffset.x += csc.m_resolved.m_points[0].x - pb.getRightEdge();
-        }
 
         if (m_particleTimer.update())
         {
@@ -373,11 +365,11 @@ public:
         if (physical.m_onGround != entt::null)
             return ORIENTATION::UNSPECIFIED;
 
-        if (physical.getPosOffest().x >= -0.5f)
+        if (physical.peekRawOffset().x >= -0.001)
         {
             if (m_cmpLeft(inq, 0))
             {
-                auto touchedWall = cworld.getTouchedWallAt(ORIENTATION::LEFT, pb.m_center + Vector2{pb.m_halfSize.x, 0.0f});
+                auto touchedWall = cworld.isWallAt(ORIENTATION::LEFT, pb.m_topLeft + Vector2{pb.m_size.x, pb.m_size.y / 2});
                 if (touchedWall != entt::null) 
                 {
                     physical.m_onWall = touchedWall;
@@ -385,11 +377,12 @@ public:
                 }
             }
         }
-        if (physical.getPosOffest().x <= 0.5f)
+        
+        if (physical.peekRawOffset().x <= 0.001)
         {
             if (m_cmpRight(inq, 0))
             {
-                auto touchedWall = cworld.getTouchedWallAt(ORIENTATION::RIGHT, pb.m_center - Vector2{pb.m_halfSize.x, 0.0f});
+                auto touchedWall = cworld.isWallAt(ORIENTATION::RIGHT, pb.m_topLeft + Vector2{-1, pb.m_size.y / 2});
                 if (touchedWall != entt::null) 
                 {
                     physical.m_onWall = touchedWall;
@@ -562,8 +555,8 @@ public:
                 HurtboxGroup(
                     {
                         {
-                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>({{0, true}, {12, false}, {28, true}})},
-                            {{{2.0f, -8.0f}, {16.0f, 8.0f}}, TimelineProperty<bool>({{12, true}, {28, false}})}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>({{0, true}, {12, false}, {28, true}})},
+                            {{{-30, -16}, {32, 16}}, TimelineProperty<bool>({{12, true}, {28, false}})}
                         }
                     }, HurtTrait::NORMAL
                 )

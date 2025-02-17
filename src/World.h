@@ -13,6 +13,7 @@ struct EntityAnywhere
     entt::entity idx;
 };
 
+// Interface used by entities to access world data (create particles, run collision checks, cause camera shake, access navigation system)
 class World
 {
 public:
@@ -20,9 +21,14 @@ public:
     bool isAreaFree(const Collider &cld_, bool considerObstacles_) const;
     bool isOverlappingObstacle(const Collider &cld_) const;
     EntityAnywhere getOverlappedTrigger(const Collider &cld_, Trigger::Tag tag_) const;
-    entt::entity getTouchedWallAt(ORIENTATION checkSide_, const Vector2<float> &pos_) const;
-    Camera &getCamera();
+    entt::entity isWallAt(const ORIENTATION checkSide_, const Vector2<int> &pos_) const;
+
     ParticleSystem &getParticleSys();
+    
+    // TODO: Move to renderer
+    Camera &getCamera();
+
+    // TODO: To navigatable component
     NavSystem &getNavsys();
 
 private:

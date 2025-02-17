@@ -19,7 +19,7 @@ struct DynamicColliderSystem
     
 private:
     void solveRouteIter(ComponentStaticCollider &scld_, MoveCollider2Points &m2p_, ColliderRoutingIterator &iter_);
-    void moveColliderAt(ComponentTransform &trans_, ComponentStaticCollider &scld_, const Vector2<float> &newtl_);
+    void moveColliderAt(ComponentTransform &trans_, ComponentStaticCollider &scld_, const Vector2<int> &newtl_);
 
     entt::registry &m_reg;
 };

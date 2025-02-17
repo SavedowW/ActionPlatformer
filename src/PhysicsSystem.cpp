@@ -1,7 +1,7 @@
 #include "PhysicsSystem.h"
 #include "Profile.h"
 
-PhysicsSystem::PhysicsSystem(entt::registry &reg_, Vector2<float> levelSize_) :
+PhysicsSystem::PhysicsSystem(entt::registry &reg_, Vector2<int> levelSize_) :
     m_reg(reg_),
     m_levelSize(levelSize_)
 {
@@ -152,7 +152,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
 
     // Prepare vars for collision detection
     auto pb = phys_.m_pushbox + trans_.m_pos;
-    auto offset = phys_.getPosOffest();
+    auto offset = phys_.claimOffset();
 
     if (phys_.m_mulInsidePushbox && isInsidePushbox(pb, idx_))
     {
@@ -169,29 +169,31 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
 
     entt::entity onGround = entt::null;
     float touchedSlope = 0.0f;
-    float highest = m_levelSize.y;
+    int highest = m_levelSize.y;
 
     // Fall collision detection - single collider vs single entity
     auto resolveFall = [&](entt::entity idx_, const ComponentStaticCollider &csc_)
     {
-        if (!csc_.m_isEnabled || oldTop >= csc_.m_resolved.m_points[2].y)
+        if (!csc_.m_isEnabled)
             return;
+
         auto overlap = csc_.m_resolved.checkOverlap(pb, highest);
         if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
         {
-            if (csc_.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(csc_.m_obstacleId) || oldHeight - highest > abs(trans_.m_pos.x - oldPos.x)))
+            if (csc_.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(csc_.m_obstacleId) || oldHeight - highest > 0))
                 return;
 
             std::cout << "Touched slope top, teleporting on top, offset.y > 0\n";
 
-            trans_.m_pos.y = highest;
+            trans_.m_pos.y = highest - 1;
 
             if (!noLanding)
             {
                 if (csc_.m_resolved.m_topAngleCoef != 0)
-                    touchedSlope = (pb.getBottomEdge() > csc_.m_resolved.m_highestSlopePoint ? csc_.m_resolved.m_topAngleCoef : 0.0f);
+                    touchedSlope = csc_.m_resolved.m_topAngleCoef;
                 onGround = idx_;
             }
+
             pb = phys_.m_pushbox + trans_.m_pos;
 
             if (phys_.m_velocity.y > 0)
@@ -204,7 +206,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
     // Rise collision detection
     auto resolveRise = [&](const ComponentStaticCollider &csc_)
     {
-        if (!csc_.m_isEnabled || csc_.m_resolved.m_highestSlopePoint > oldTop)
+        if (!csc_.m_isEnabled)
             return;
 
         auto overlap = csc_.m_resolved.checkOverlap(pb, highest);
@@ -223,7 +225,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
                 phys_.m_inertia.y = 0;
             }
 
-            trans_.m_pos.y = csc_.m_resolved.m_points[2].y + pb.getSize().y;
+            trans_.m_pos.y = csc_.m_resolved.m_points[2].y + pb.m_size.y;
             pb = phys_.m_pushbox + trans_.m_pos;
         }
     };
@@ -240,20 +242,20 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
         if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
         {
             // If we can rise on top of it
-            if (oldPos.y - highest <= (1.3f * abs(trans_.m_pos.x - oldPos.x) + 0.0001))
+            if (oldPos.y - highest <= (1.3f * abs(trans_.m_pos.x - oldPos.x)))
             {
                 if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
                     return;
 
                 std::cout << "Touched slope, teleporting on top, offset.x > 0\n";
 
-                trans_.m_pos.y = highest;
+                trans_.m_pos.y = highest - 1;
                 pb = phys_.m_pushbox + trans_.m_pos;
 
-                if (offset.y >= -0.1f)
+                if (offset.y >= 0)
                 {
                     if (csc_.m_resolved.m_topAngleCoef != 0)
-                        touchedSlope = (pb.getBottomEdge() > csc_.m_resolved.m_highestSlopePoint ? csc_.m_resolved.m_topAngleCoef : 0.0f);
+                        touchedSlope = csc_.m_resolved.m_topAngleCoef;
                     onGround = idx_;
                 }
 
@@ -273,7 +275,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
                 if (overlapPortion >= 0.1 || !phys_.m_onSlopeWithAngle != 0)
                 {
                     std::cout << "Touched edge, teleporting to it, offset.x > 0\n";
-                    trans_.m_pos.x = csc_.m_resolved.m_tlPos.x - pb.m_halfSize.x;
+                    trans_.m_pos.x = csc_.m_resolved.m_tlPos.x - pb.m_size.x / 2 - 1;
                     pb = phys_.m_pushbox + trans_.m_pos;
                 }
 
@@ -302,20 +304,20 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
         if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
         {
             // If we can rise on top of it
-            if (oldPos.y - highest <= (1.3f * abs(trans_.m_pos.x - oldPos.x) + 0.0001))
+            if (oldPos.y - highest <= (1.3f * abs(trans_.m_pos.x - oldPos.x)))
             {
                 if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
                     return;
 
                 std::cout << "Touched slope, teleporting on top, offset.x < 0\n";
 
-                trans_.m_pos.y = highest;
+                trans_.m_pos.y = highest - 1;
                 pb = phys_.m_pushbox + trans_.m_pos;
 
-                if (offset.y >= -0.1f)
+                if (offset.y >= 0)
                 {
                     if (csc_.m_resolved.m_topAngleCoef != 0)
-                        touchedSlope = (pb.getBottomEdge() > csc_.m_resolved.m_highestSlopePoint ? csc_.m_resolved.m_topAngleCoef : 0.0f);
+                        touchedSlope = csc_.m_resolved.m_topAngleCoef;
                     onGround = idx_;
                 }
 
@@ -335,7 +337,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
                 if (overlapPortion >= 0.1 || !phys_.m_onSlopeWithAngle != 0)
                 {
                     std::cout << "Touched edge, teleporting to it, offset.x < 0\n";
-                    trans_.m_pos.x = csc_.m_resolved.m_tlPos.x + csc_.m_resolved.m_size.x + pb.m_halfSize.x;
+                    trans_.m_pos.x = csc_.m_resolved.m_points[1].x + pb.m_size.x / 2;
                     pb = phys_.m_pushbox + trans_.m_pos;
                 }
 
@@ -403,7 +405,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
     }
     else
     {
-        if (offset.y < -0.01f || !magnetEntity(clds_, trans_, phys_, obsFallthrough_))
+        if (offset.y < 0 || !magnetEntity(clds_, trans_, phys_, obsFallthrough_))
         {
             phys_.m_onGround = entt::null;
             ev_.m_lostGround = true;
@@ -412,7 +414,6 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
 
     phys_.m_appliedOffset = trans_.m_pos - oldPos;
     phys_.m_extraoffset = {0.0f, 0.0f};
-    phys_.m_adjustOffset = {0.0f, 0.0f};
 }
 
 void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_, ComponentParticlePhysics &phys_)
@@ -423,28 +424,28 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
     phys_.applyDrag();
 
     // Prepare vars for collision detection
-    auto offset = phys_.getPosOffest();
+    auto offset = phys_.claimOffset();
     trans_.m_pos += offset;
 }
 
 bool PhysicsSystem::magnetEntity(const auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, const ComponentObstacleFallthrough &obsFallthrough_)
 {
     //std::cout << "Magnet " << rand() << std::endl;
-    if (phys_.m_magnetLimit <= 0.0f)
+    if (phys_.m_magnetLimit <= 0)
         return false;
 
     auto pb = phys_.m_pushbox + trans_.m_pos;
     auto bot = pb.getBottomEdge();
 
-    float height = trans_.m_pos.y;
+    int height = trans_.m_pos.y;
     const auto [found, pcld] = getHighestVerticalMagnetCoord(clds_, pb, height, obsFallthrough_.m_ignoredObstacles, obsFallthrough_.m_isIgnoringObstacles.isActive());
     if ( found != entt::null )
     {
-        float magnetRange = height - trans_.m_pos.y;
+        int magnetRange = height - trans_.m_pos.y;
         if (magnetRange <= phys_.m_magnetLimit)
         {
             //std::cout << "MAGNET: " << magnetRange << std::endl;
-            trans_.m_pos.y = height;
+            trans_.m_pos.y = height - 1;
             phys_.m_lastSlopeAngle = phys_.m_onSlopeWithAngle;
             phys_.m_onSlopeWithAngle = (bot > pcld->m_highestSlopePoint ? pcld->m_topAngleCoef : 0.0f);
             phys_.m_onGround = found;
@@ -455,10 +456,10 @@ bool PhysicsSystem::magnetEntity(const auto &clds_, ComponentTransform &trans_, 
     return false;
 }
 
-std::pair<entt::entity, const SlopeCollider*> PhysicsSystem::getHighestVerticalMagnetCoord(const auto &clds_, const Collider &cld_, float &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_)
+std::pair<entt::entity, const SlopeCollider*> PhysicsSystem::getHighestVerticalMagnetCoord(const auto &clds_, const Collider &cld_, int &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_)
 {
-    float baseCoord = coord_;
-    float bot = cld_.getBottomEdge();
+    auto baseCoord = coord_;
+    auto bot = cld_.getBottomEdge();
     entt::entity foundGround = entt::null;
     const SlopeCollider *foundcld = nullptr;
     
@@ -467,7 +468,7 @@ std::pair<entt::entity, const SlopeCollider*> PhysicsSystem::getHighestVerticalM
         if (!areaCld_.m_isEnabled || areaCld_.m_obstacleId && (ignoreAllObstacles_ || ignoredObstacles_.contains(areaCld_.m_obstacleId)))
             continue;
 
-        float height = 0.0f;
+        int height = 0;
         auto horOverlap = areaCld_.m_resolved.checkOverlap(cld_, height);
         if (checkCollision(horOverlap, OverlapResult::OVERLAP_X))
         {
@@ -492,7 +493,7 @@ bool PhysicsSystem::isInsidePushbox(const Collider &pb_, const entt::entity &idx
         if (idx == idx_)
             continue;
         
-        if (phys.m_pushbox.m_halfSize.x <= 0 || phys.m_pushbox.m_halfSize.y <= 0)
+        if (phys.m_pushbox.m_size.x <= 0 || phys.m_pushbox.m_size.y <= 0)
             continue;
 
         auto pb2 = phys.m_pushbox + trans.m_pos;

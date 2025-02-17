@@ -43,7 +43,7 @@ void PlayerSystem::setup(entt::entity playerId_)
     m_animManager.preload("Char1/particles/attack1_chain_trace");
 
 
-    phys.m_pushbox = {Vector2{0.0f, -16.0f}, Vector2{7.0f, 16.0f}};
+    phys.m_pushbox = {Vector2{-7.0f, -32.0f}, Vector2{14.0f, 32.0f}};
     phys.m_gravity = {0.0f, 0.5f};
 
 
@@ -53,7 +53,7 @@ void PlayerSystem::setup(entt::entity playerId_)
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerActionWallPrejump(
             m_animManager.getAnimID("Char1/wall_prejump"), {CharacterState::NONE, {CharacterState::WALL_CLING}},
-            std::move(ParticleTemplate{1, Vector2<float>{-8.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_jump"), 21,
+            std::move(ParticleTemplate{1, Vector2<float>{-8.00f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_jump"), 21,
                 2}.setTiePosRules(TiePosRule::TIE_TO_WALL))))
         ->setTransitionOnTouchedGround(CharacterState::IDLE)
         .setHurtboxes({
@@ -61,7 +61,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -86,7 +86,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -129,7 +129,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -176,7 +176,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -236,7 +236,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -295,7 +295,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -345,7 +345,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -377,7 +377,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -399,7 +399,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -423,7 +423,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -449,7 +449,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -478,7 +478,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )

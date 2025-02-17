@@ -91,9 +91,7 @@ void CameraSystem::update()
     }
     else
     {
-        // 8 => 1.6f
-        // 13.5 => 2.0f
-        float spdpow = utils::clamp(0.03f * phys.m_appliedOffset.getLen() + 1.28f, 1.6f, 3.0f);
+        float spdpow = utils::clamp(float(0.03f * phys.m_appliedOffset.getLen()) + 1.28f, 1.6f, 3.0f);
         m_cam.smoothMoveTowards(target, {1.0f, 0.5f}, 5.0f, spdpow, 80.0f);
         m_cam.smoothScaleTowards(gamedata::global::baseCameraScale);
     }

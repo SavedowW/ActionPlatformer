@@ -95,7 +95,7 @@ void EnemySystem::makeEnemy()
 
 
     auto &phys = m_reg.emplace<ComponentPhysical>(enemyId);
-    phys.m_pushbox = Collider(Vector2{0.0f, -15.0f}, Vector2{15.0f, 15.0f});
+    phys.m_pushbox = Collider(Vector2{-15, -30}, Vector2{30, 30});
     phys.m_gravity = {0.0f, 0.2f};
 
 
@@ -139,7 +139,7 @@ void EnemySystem::makeEnemy()
                 HurtboxGroup(
                     {
                         {
-                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -163,7 +163,7 @@ void EnemySystem::makeEnemy()
                 HurtboxGroup(
                     {
                         {
-                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -191,7 +191,7 @@ void EnemySystem::makeEnemy()
                 HurtboxGroup(
                     {
                         {
-                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -217,7 +217,7 @@ void EnemySystem::makeEnemy()
                 HurtboxGroup(
                     {
                         {
-                            {{{0.0f, -14.0f}, {6.0f, 14.0f}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )

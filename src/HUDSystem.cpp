@@ -113,13 +113,13 @@ void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPh
 {
     auto txt1 = sm_.getName();
     auto txt2 = ai_.m_sm.getName();
-    Vector2<float> worldOrigin = trans_.m_pos + phys_.m_pushbox.m_center + Vector2{phys_.m_pushbox.m_halfSize.x, -phys_.m_pushbox.m_halfSize.y};
+    auto worldOrigin = trans_.m_pos + phys_.m_pushbox.m_topLeft + Vector2{phys_.m_pushbox.m_size.x, 0};
 
     Vector2<int> camSize = m_cam.getSize();
     Vector2<int> camTL = m_cam.getTopLeft();
     auto screenRelPos = (worldOrigin - camTL).mulComponents(Vector2{1.0f / camSize.x, 1.0f / camSize.y});
     
-	Vector2<int> screenOrigin = screenRelPos.mulComponents(gamedata::global::defaultWindowResolution);
+	Vector2<int> screenOrigin = screenRelPos.mulComponents(gamedata::global::hudLayerResolution);
 
     m_textManager.renderText(txt1, 1, screenOrigin);
     m_textManager.renderText(txt2, 1, screenOrigin + Vector2{0.0f, 18.0f});

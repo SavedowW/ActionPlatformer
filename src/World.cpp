@@ -56,7 +56,7 @@ EntityAnywhere World::getOverlappedTrigger(const Collider &cld_, Trigger::Tag ta
     return {nullptr};
 }
 
-entt::entity World::getTouchedWallAt(ORIENTATION checkSide_, const Vector2<float> &pos_) const
+entt::entity World::isWallAt(const ORIENTATION checkSide_, const Vector2<int> &pos_) const
 {
     auto cldview = m_registry.view<ComponentStaticCollider>();
     for (auto [idx, cld] : cldview.each())
@@ -66,12 +66,12 @@ entt::entity World::getTouchedWallAt(ORIENTATION checkSide_, const Vector2<float
 
         if (checkSide_ == ORIENTATION::LEFT)
         {
-            if (abs(cld.m_resolved.m_points[0].x - pos_.x) <= 1.0f && cld.m_resolved.m_points[0].y < pos_.y && cld.m_resolved.m_points[3].y > pos_.y)
+            if (cld.m_resolved.m_points[0].x == pos_.x && cld.m_resolved.m_points[0].y <= pos_.y && cld.m_resolved.m_points[3].y >= pos_.y)
                 return idx;
         }
         else if (checkSide_ == ORIENTATION::RIGHT)
         {
-            if (abs(cld.m_resolved.m_points[1].x - pos_.x) <= 1.0f && cld.m_resolved.m_points[1].y < pos_.y && cld.m_resolved.m_points[2].y > pos_.y)
+            if (cld.m_resolved.m_points[1].x == pos_.x && cld.m_resolved.m_points[1].y <= pos_.y && cld.m_resolved.m_points[2].y >= pos_.y)
                 return idx;
         }
     }

@@ -20,14 +20,14 @@ struct ComponentTransform
 {
     ComponentTransform() = default;
 
-    ComponentTransform(const Vector2<float> &pos_, ORIENTATION orient_);
+    ComponentTransform(const Vector2<int> &pos_, ORIENTATION orient_);
 
     ComponentTransform (const ComponentTransform &rhs_) = delete;
     ComponentTransform (ComponentTransform &&rhs_) = default;
     ComponentTransform &operator=(const ComponentTransform &rhs_) = delete;
     ComponentTransform &operator=(ComponentTransform &&rhs_) = default;
     
-    Vector2<float> m_pos;
+    Vector2<int> m_pos;
     ORIENTATION m_orientation = ORIENTATION::RIGHT;
 };
 
@@ -52,8 +52,13 @@ struct ComponentParticlePhysics
     Vector2<float> m_gravity;
     Vector2<float> m_inertiaMultiplier;
 
-    Vector2<float> getPosOffest() const;
     void applyDrag();
+    Vector2<int> claimOffset();
+    Vector2<int> peekOffset() const;
+    Vector2<float> peekRawOffset() const;
+
+private:
+    Vector2<float> m_velocityLeftover;
 };
 
 struct ComponentPhysical
@@ -73,15 +78,12 @@ struct ComponentPhysical
     Vector2<float> m_inertiaMultiplier;
     Collider m_pushbox;
     bool m_onMovingPlatform = false;
-    float m_magnetLimit = 0.0f;
+    int m_magnetLimit = 0.0f;
     float m_onSlopeWithAngle = 0.0f;
     float m_lastSlopeAngle = 0.0f;
     uint32_t m_hitstopLeft = 0;
 
     const Vector2<float> *m_mulInsidePushbox = nullptr;
-
-    // Always resetted to {0, 0} after physics iteration, not controlled or limited in any way
-    Vector2<float> m_adjustOffset;
 
     entt::entity m_onGround = entt::null;
     entt::entity m_onWall = entt::null;
@@ -89,18 +91,23 @@ struct ComponentPhysical
     bool m_noLanding = false;
 
     // Used to identify offset applied before collision resolution
-    Vector2<float> m_calculatedOffset;
+    Vector2<int> m_calculatedOffset;
 
     // Used to calculate camera offset
-    Vector2<float> m_appliedOffset;
+    Vector2<int> m_appliedOffset;
 
     // Offset enforced by dynamic colliders, used for things like inertia
-    Vector2<float> m_enforcedOffset;
+    Vector2<int> m_enforcedOffset;
 
     Vector2<float> m_stateLeaveVelocityMultiplier;
 
     void convertToInertia(bool convertVelocity_, bool includeEnforced_);
-    Vector2<float> getPosOffest() const;
+    Vector2<int> claimOffset();
+    Vector2<int> peekOffset() const;
+    Vector2<float> peekRawOffset() const;
+
+private:
+    Vector2<float> m_velocityLeftover;
 };
 
 struct PhysicalEvents

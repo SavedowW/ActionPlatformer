@@ -121,7 +121,7 @@ void RenderSystem::drawInstance(const ComponentTransform &trans_, const Componen
     {
         auto texSize = ren_.m_currentAnimation->getSize();
         auto animorigin = ren_.m_currentAnimation->getOrigin();
-        auto texPos = trans_.m_pos;
+        auto texPos = trans_.m_pos + Vector2{1, 1};
         texPos.y -= animorigin.y;
         SDL_RendererFlip flip = SDL_FLIP_NONE;
         if (trans_.m_orientation == ORIENTATION::LEFT)
@@ -162,7 +162,7 @@ void RenderSystem::drawParticle(const ComponentTransform &trans_, const Componen
     {
         auto texSize = ren_.m_currentAnimation->getSize();
         auto animorigin = ren_.m_currentAnimation->getOrigin();
-        auto texPos = trans_.m_pos;
+        auto texPos = trans_.m_pos + Vector2{1, 1};
         if (partcl_.m_tieTransform != entt::null)
             texPos += m_reg.get<ComponentTransform>(partcl_.m_tieTransform).m_pos;
 
@@ -250,7 +250,7 @@ void RenderSystem::drawBattleActorColliders(const ComponentTransform &trans_, co
             {
                 if (tcld.m_timeline[btlact_.m_currentFrame])
                 {
-                    m_renderer.drawCollider(getColliderAt(tcld.m_collider, trans_), gamedata::characters::hurtboxColor, gamedata::characters::hurtboxColor, m_camera);
+                    m_renderer.drawCollider(getColliderAt(tcld.m_collider, trans_), gamedata::characters::hurtboxColor, m_camera);
                 }
             }
         }
@@ -261,7 +261,7 @@ void RenderSystem::drawBattleActorColliders(const ComponentTransform &trans_, co
         for (const auto &tmpcld : hit->m_colliders)
         {
             if (tmpcld.m_timeline[btlact_.m_currentFrame])
-                m_renderer.drawCollider(getColliderAt(tmpcld.m_collider, trans_), gamedata::characters::hitboxColor, gamedata::characters::hitboxColor, m_camera);
+                m_renderer.drawCollider(getColliderAt(tmpcld.m_collider, trans_), gamedata::characters::hitboxColor, m_camera);
         }
     }
 }
@@ -269,29 +269,29 @@ void RenderSystem::drawBattleActorColliders(const ComponentTransform &trans_, co
 void RenderSystem::drawCollider(const ComponentTransform &trans_, const ComponentPhysical &phys_)
 {
     auto pb = phys_.m_pushbox + trans_.m_pos;
-    m_renderer.drawCollider(pb, {238, 195, 154, 50}, {238, 195, 154, 100}, m_camera);
+    m_renderer.drawCollider(pb, {238, 195, 154, 50}, m_camera);
 
-    auto edgex = (trans_.m_orientation == ORIENTATION::RIGHT ? pb.getRightEdge() - 1 : 
-                    (trans_.m_orientation == ORIENTATION::LEFT ? pb.getLeftEdge() : pb.m_center.x));
+    auto edgex = (trans_.m_orientation == ORIENTATION::RIGHT ? pb.getRightEdge() : 
+                    (trans_.m_orientation == ORIENTATION::LEFT ? pb.getLeftEdge() : pb.m_topLeft.x + pb.m_size.x / 2));
 
     Vector2 TR{edgex, pb.getTopEdge()};
     Vector2 BR{edgex, pb.getBottomEdge()};
-    m_renderer.drawLine(TR, BR, {0, 255, 0, 100}, m_camera);
+    //m_renderer.drawLine(TR, BR, {0, 255, 0, 100}, m_camera);
 }
 
 void RenderSystem::drawCollider(const ComponentStaticCollider &cld_)
 {
-    m_renderer.drawCollider(cld_.m_resolved, {255, 0, 0, Uint8(cld_.m_isEnabled ? 100 : 0)}, {255, 0, 0, 255}, m_camera);
+    m_renderer.drawCollider(cld_.m_resolved, {255, 0, 0, Uint8(cld_.m_isEnabled ? 100 : 0)}, m_camera);
 }
 
 void RenderSystem::drawObstacle(const ComponentStaticCollider &cld_)
 {
-    m_renderer.drawCollider(cld_.m_resolved, {50, 50, 255, Uint8(cld_.m_isEnabled ? 100 : 0)}, {50, 50, 255, 255}, m_camera);
+    m_renderer.drawCollider(cld_.m_resolved, {50, 50, 255, Uint8(cld_.m_isEnabled ? 100 : 0)}, m_camera);
 }
 
 void RenderSystem::drawTrigger(const ComponentTrigger &cld_)
 {
-    m_renderer.drawCollider(cld_.m_trigger, {255, 50, 255, 50}, {255, 50, 255, 100}, m_camera);
+    m_renderer.drawCollider(cld_.m_trigger, {255, 50, 255, 50}, m_camera);
 }
 
 void RenderSystem::drawFocusArea(CameraFocusArea &cfa_)

@@ -1,7 +1,7 @@
 #include "CoreComponents.h"
 #include <vector>
 
-ComponentTransform::ComponentTransform(const Vector2<float> &pos_, ORIENTATION orient_) :
+ComponentTransform::ComponentTransform(const Vector2<int> &pos_, ORIENTATION orient_) :
     m_pos(pos_), m_orientation(orient_)
 {
 }
@@ -21,9 +21,22 @@ void ComponentPhysical::convertToInertia(bool convertVelocity_, bool includeEnfo
     }
 }
 
-Vector2<float> ComponentPhysical::getPosOffest() const
+Vector2<int> ComponentPhysical::claimOffset()
 {
-    return m_velocity + m_inertia.mulComponents(m_inertiaMultiplier) + m_extraoffset + m_adjustOffset;
+    auto offset = m_velocity + m_inertia.mulComponents(m_inertiaMultiplier) + m_extraoffset + m_velocityLeftover;
+    Vector2<int> iOffset = offset;
+    m_velocityLeftover = offset - iOffset;
+    return iOffset;
+}
+
+Vector2<int> ComponentPhysical::peekOffset() const
+{
+    return m_velocity + m_inertia.mulComponents(m_inertiaMultiplier) + m_extraoffset + m_velocityLeftover;
+}
+
+Vector2<float> ComponentPhysical::peekRawOffset() const
+{
+    return m_velocity + m_inertia.mulComponents(m_inertiaMultiplier) + m_extraoffset + m_velocityLeftover;
 }
 
 void ComponentObstacleFallthrough::setIgnoringObstacles()
@@ -109,11 +122,6 @@ bool SwitchCollider::updateTimer()
     return m_isEnabled;
 }
 
-Vector2<float> ComponentParticlePhysics::getPosOffest() const
-{
-    return m_velocity + m_inertia.mulComponents(m_inertiaMultiplier);
-}
-
 void ComponentParticlePhysics::applyDrag()
 {
     if (m_inertia.x != 0)
@@ -133,12 +141,25 @@ void ComponentParticlePhysics::applyDrag()
     }
 }
 
+Vector2<int> ComponentParticlePhysics::claimOffset()
+{
+    auto offset = m_velocity + m_inertia.mulComponents(m_inertiaMultiplier);
+    Vector2<int> iOffset = offset;
+    m_velocityLeftover = offset - iOffset;
+    return iOffset;
+}
+
+Vector2<float> ComponentParticlePhysics::peekRawOffset() const
+{
+    return m_velocity + m_inertia.mulComponents(m_inertiaMultiplier);
+}
+
 Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_)
 {
     if (trans_.m_orientation == ORIENTATION::LEFT)
-        return Collider{{trans_.m_pos.x - col_.m_center.x, trans_.m_pos.y + col_.m_center.y}, col_.m_halfSize};
+        return Collider{{trans_.m_pos.x - col_.m_topLeft.x - col_.m_size.x + 1, trans_.m_pos.y + col_.m_topLeft.y + 1}, col_.m_size};
     else
-        return Collider{{trans_.m_pos.x + col_.m_center.x, trans_.m_pos.y + col_.m_center.y}, col_.m_halfSize};
+        return Collider{trans_.m_pos + col_.m_topLeft + Vector2{1, 1}, col_.m_size};
 }
 
 bool checkCurrentHitstop(entt::registry &reg_, const entt::entity &idx_)

@@ -20,12 +20,12 @@ HitboxGroup HitGeneration::hitPlayerLight()
     hit.m_hitData.m_onHitShake = {5, 5, 8};
 
     hit.m_colliders.push_back({
-        {{5.0f, -15.0f}, {8.0f, 4.0f}},
+        {{-3, -19}, {16, 8}},
         TimelineProperty<bool>({{5, true}, {10, false}})
     });
 
     hit.m_colliders.push_back({
-        {{22.0f, -21.0f}, {15.0f, 9.0f}},
+        {{7, -30}, {30, 18}},
         TimelineProperty<bool>({{5, true}, {10, false}})
     });
 
@@ -47,12 +47,12 @@ HitboxGroup HitGeneration::hitPlayerChain()
     hit.m_hitData.m_victimFlash = std::make_unique<FlashLinear>(10, SDL_Color{255, 255, 255, 255}, 0);
 
     hit.m_colliders.push_back({
-        {{0.0f, -20.0f}, {24.0f, 12.0f}},
+        {{-24, -32}, {48, 24}},
         TimelineProperty<bool>({{12, true}, {13, false}})
     });
 
     hit.m_colliders.push_back({
-        {{26.0f, -16.0f}, {24.0f, 16.0f}},
+        {{2, -32}, {48, 32}},
         TimelineProperty<bool>({{12, true}, {15, false}})
     });
 
@@ -86,8 +86,8 @@ HitPosResult detectHit(const std::vector<TemporaryCollider> &hit_, uint32_t hitA
             auto hurtboxCld = getColliderAt(hurtbox.m_collider, victim_);
 
             auto overlap = hitboxCld.getOverlapArea(hurtboxCld);
-            if (overlap.m_halfSize.x > 0 && overlap.m_halfSize.y > 0)
-                avgpos += overlap.m_center;
+            if (overlap.m_size.x > 0 && overlap.m_size.y > 0)
+                avgpos += overlap.m_topLeft + overlap.m_size / 2.0f;
         }
     }
 

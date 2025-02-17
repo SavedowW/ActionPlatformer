@@ -23,7 +23,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_lvlBuilder(*application_, m_registry)
 {
     auto playerId = m_registry.create();
-    m_registry.emplace<ComponentTransform>(playerId, Vector2{313.34f, 352.0f}, ORIENTATION::RIGHT);
+    m_registry.emplace<ComponentTransform>(playerId, Vector2{313, 352}, ORIENTATION::RIGHT);
     m_registry.emplace<ComponentPhysical>(playerId);
     m_registry.emplace<ComponentObstacleFallthrough>(playerId);
     m_registry.emplace<ComponentAnimationRenderable>(playerId);

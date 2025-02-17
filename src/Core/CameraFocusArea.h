@@ -14,7 +14,7 @@ public:
     CameraFocusArea(const CameraFocusArea &rhs_) = delete;
     CameraFocusArea &operator=(const CameraFocusArea &rhs_) = delete;
     
-    CameraFocusArea(Vector2<float> center_, Vector2<float> size_, Renderer &renderer_);
+    CameraFocusArea(Vector2<int> topLeft_, Vector2<int> size_, Renderer &renderer_);
     Vector2<float> getCameraTargetPosition(const Vector2<float> &playerFocusPosition_);
     bool checkIfEnters(const Collider &cld_, bool isOwned_) const;
     float getScale() const;
@@ -22,7 +22,7 @@ public:
     void overrideFocusArea(const Collider &area_);
 
 private:
-    CameraFocusArea(Vector2<float> center_, float scaledSizeX_, float scaledSizeY_, Renderer &renderer_);
+    CameraFocusArea(Vector2<int> topLeft_, int scaledSizeX_, int scaledSizeY_, Renderer &renderer_);
     
     Renderer *m_renderer;
     float m_scale;

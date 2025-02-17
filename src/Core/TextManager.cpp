@@ -55,13 +55,14 @@ const fonts::Symbol &fonts::Font::operator[](uint32_t ch_) const
     return m_symbols[m_distrib.m_chunkSearch[ch_]][ch_ % CHUNK_SIZE];
 }
 
+// TODO: remove font size duplication
 TextManager::TextManager(Renderer *renderer_, const std::string &basePath_) :
     m_charChunks(basePath_ + "/Resources/GeneralCharacterList.txt"),
     m_renderer(renderer_),
-    m_fonts{fonts::Font(generateSimpleShadedSymbols, 12, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  12, SDL_Color{255, 255, 255, 255}, SDL_Color{100, 100, 100, 255}),
-    fonts::Font(generateSimpleSymbols, 18, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  18, SDL_Color{255, 255, 255, 255}),
-    fonts::Font(generateSimpleSymbols, 8, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  8, SDL_Color{255, 255, 255, 255}),
-    fonts::Font(generateSimpleSymbols, 16, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/VanillaExtractRegular.ttf",  16, gamedata::colors::LVL1)}
+    m_fonts{fonts::Font(generateSimpleShadedSymbols, 12, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  12, SDL_Color{255, 255, 255, 255}, SDL_Color{100, 100, 100, 255}), // Screen debug data
+    fonts::Font(generateSimpleSymbols, 8, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  8, SDL_Color{255, 255, 255, 255}), // For npc debug
+    fonts::Font(generateSimpleSymbols, 8, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  8, SDL_Color{255, 255, 255, 255}), // For navigation system
+    fonts::Font(generateSimpleSymbols, 16, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/VanillaExtractRegular.ttf",  16, gamedata::colors::LVL1)} // Used for chatbox
     //m_fonts{fonts::Font(generateOutlinedSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  24, 2, SDL_Color{0, 0, 0, 255}, SDL_Color{0, 100, 0, 255})}
     //m_fonts{fonts::Font(generateOutlinedTexturedSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf", "/Resources/Fonts/fontBack.png",  24, 2, SDL_Color{0, 0, 0, 255})}
 {

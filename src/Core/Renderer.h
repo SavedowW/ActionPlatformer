@@ -45,6 +45,8 @@ public:
     void drawCross(const Vector2<float> &center_, const Vector2<float> &vSize_, const Vector2<float> &hSize_, const SDL_Color& col_);
     void drawGeometry(SDL_Texture *texture, const SDL_Vertex *vertices, int num_vertices, const int *indices, int num_indices);
 
+    void drawCollider(const Collider &cld_, const SDL_Color &fillCol_, const Camera &cam_);
+    void drawCollider(const SlopeCollider &cld_, const SDL_Color &fillCol_, const Camera &cam_);
     void drawCollider(const Collider &cld_, const SDL_Color &fillCol_, const SDL_Color &borderCol_, const Camera &cam_);
     void drawCollider(const SlopeCollider &cld_, const SDL_Color &fillCol_, const SDL_Color &borderCol_, const Camera &cam_);
 

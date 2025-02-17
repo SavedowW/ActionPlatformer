@@ -33,96 +33,77 @@ constexpr bool checkCollision(const OverlapResult &res_, const OverlapResult &ex
 //Only rectangle hitbox
 struct Collider
 {
-    Vector2<float> m_center;
-    Vector2<float> m_halfSize;
+    Vector2<int> m_topLeft;
+    Vector2<int> m_size;
     
     public:
-    constexpr inline Collider operator+(const Vector2<float>& rhs_) const
+    constexpr inline Collider operator+(const Vector2<int>& rhs_) const
     {
-        return { m_center + rhs_, m_halfSize };
+        return { m_topLeft + rhs_ + Vector2{1, 1}, m_size };
     }
 
-    constexpr inline float getLeftEdge() const
+    constexpr inline int getLeftEdge() const
     {
-        return m_center.x - m_halfSize.x;
+        return m_topLeft.x;
     }
 
-    constexpr inline float getRightEdge() const
+    constexpr inline int getRightEdge() const
     {
-        return m_center.x + m_halfSize.x;
+        return m_topLeft.x + m_size.x - 1;
     }
 
-    constexpr inline float getTopEdge() const
+    constexpr inline int getTopEdge() const
     {
-        return m_center.y - m_halfSize.y;
+        return m_topLeft.y;
     }
 
-    constexpr inline float getBottomEdge() const
+    constexpr inline int getBottomEdge() const
     {
-        return m_center.y + m_halfSize.y;
+        return m_topLeft.y + m_size.y - 1;
     }
 
     //First 6 bits describe horizontal overlap, second 6 bits - vertical
     inline OverlapResult checkOverlap(const Collider& rhs_) const
     {
-        auto delta = (rhs_.m_center - m_center).abs();
         OverlapResult res = OverlapResult::NONE;
 
-        if (delta.x < rhs_.m_halfSize.x + m_halfSize.x)
+        if (!( (getRightEdge() < rhs_.getLeftEdge()) || (getLeftEdge() > rhs_.getRightEdge()) ))
             res |= OverlapResult::OVERLAP_X;
 
-        if (delta.x < rhs_.m_halfSize.x + m_halfSize.x)
+        if (!( (getBottomEdge() < rhs_.getTopEdge()) || (getTopEdge() > rhs_.getBottomEdge()) ))
             res |= OverlapResult::OVERLAP_Y;
 
         return res;
     }
-    
-    constexpr inline float rangeToLeftBound(float leftBound_) const
-    {
-        return getLeftEdge() - leftBound_;
-    }
 
-    constexpr inline float rangeToRightBound(float rightBound_) const
+    constexpr inline int getSquare() const
     {
-        return rightBound_ - getRightEdge();
-    }
-
-    constexpr inline Vector2<float> getTopLeft() const
-    {
-        return m_center - m_halfSize;
-    }
-
-    constexpr inline Vector2<float> getSize() const
-    {
-        return m_halfSize * 2;
-    }
-
-    constexpr inline float getSquare() const
-    {
-        return (m_halfSize * 2).square();
+        return m_size.x * m_size.y;
     }
 
     constexpr inline float getOwnOverlapPortion(const Collider &rhs_) const
     {
-        auto size = m_halfSize + rhs_.m_halfSize - (rhs_.m_center - m_center).abs();
-        if (size.x <= 0 || size.y <= 0)
+        Vector2<int> tl_max{std::max(getLeftEdge(), rhs_.getLeftEdge()), std::max(getTopEdge(), rhs_.getTopEdge())};
+        Vector2<int> br_min{std::min(getRightEdge(), rhs_.getRightEdge()), std::min(getBottomEdge(), rhs_.getBottomEdge())};
+
+        if (br_min.x <= tl_max.x || br_min.y <= tl_max.y)
             return 0;
 
-        return (size.x * size.y) / getSquare();
+        return float((br_min - tl_max + Vector2{1, 1}).square()) / m_size.square();
     }
 
     constexpr inline Collider getOverlapArea(const Collider &rhs_) const
     {
-        Vector2<float> tl_max{std::max(getLeftEdge(), rhs_.getLeftEdge()), std::max(getTopEdge(), rhs_.getTopEdge())};
-        Vector2<float> br_min{std::min(getRightEdge(), rhs_.getRightEdge()), std::min(getBottomEdge(), rhs_.getBottomEdge())};
+        Vector2<int> tl_max{std::max(getLeftEdge(), rhs_.getLeftEdge()), std::max(getTopEdge(), rhs_.getTopEdge())};
+        Vector2<int> br_min{std::min(getRightEdge(), rhs_.getRightEdge()), std::min(getBottomEdge(), rhs_.getBottomEdge())};
 
-        return Collider((tl_max + br_min) / 2, (br_min - tl_max) / 2);
+        return Collider(tl_max, br_min - tl_max + Vector2{1, 1});
     }
 
-    constexpr inline bool includesPoint(const Vector2<float> point_) const
+    constexpr inline bool includesPoint(const Vector2<int> point_) const
     {
-        auto delta = (point_ - m_center).abs();
-        return delta.x <= m_halfSize.x && delta.y <= m_halfSize.y;
+        auto delta = (point_ - m_topLeft);
+        return delta.x < m_size.x && delta.y < m_size.y && delta.x >= 0 && delta.y >= 0;
     }
 
 };
