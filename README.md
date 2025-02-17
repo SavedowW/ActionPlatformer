@@ -15,8 +15,8 @@ cmake .. -DCMAKE_TOOLCHAIN_FILE="conan_toolchain.cmake"
 cmake --buid .
 ```
 If you are not using conan, make sure to provide dependencies to CMake manually
-## TODOs
-# Short-term goals / necessary for release:
+# TODOs
+### Short-term goals / necessary for release:
 - [DONE, but physics bs never ends] Use ints for position but keep floats for velocity / inertia - celeste uses similar system and it works fine. Currently, floats cause a lot of headache due to inaccuracy (0.1 + 0.2 - 0.3) and edgecases, some of which cause visible jiggle for moving objects
 - Normalize camera behavior while following moving player, especially on the moving platforms and while wall jumping
 - More content, mechanics (planned or not) in general (obviously)
@@ -26,13 +26,13 @@ If you are not using conan, make sure to provide dependencies to CMake manually
 - Add gamepad support (is it really necessary?)
 - Make so that tile layers are automatically handled the last
 - Simplify World component, it shouldn't provide access to camera or navigation system
-# Optional stuff
+### Optional stuff
 - Fade-out with resize or dithering instead of alpha - not necessary, might be worse, but worth trying
-# Optimizations
+### Optimizations
 - Multithreading - should be at least possible with ECS
 - Render only tiles within camera scope - shouldn't be too hard and probably will become necessary anyway
 - Collect colliders into chunks to optimize collision detection - it depends
-# Dreams
+### Dreams
 - Automated building of pathfinding graph
 - Reorganize components and systems for multithreaded optimization (the way ECS is supposed to be used)
 - Fade out with dithering mask instead of alpha channel
