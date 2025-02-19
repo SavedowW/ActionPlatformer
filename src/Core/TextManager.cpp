@@ -430,14 +430,14 @@ void TextManager::generateSimpleShadedSymbols(std::vector<std::array<fonts::Symb
     std::cout << generated << " characters generated out of " << charsTotal << ", " << notProvided << " characters not provided\n";
 }
 
-void TextManager::renderText(const std::string &text_, int fontid_, Vector2<float> pos_, fonts::HOR_ALIGN horAlign_, Camera *cam_)
+void TextManager::renderText(const std::string &text_, int fontid_, Vector2<int> pos_, fonts::HOR_ALIGN horAlign_, Camera *cam_)
 {
     U8Wrapper wrp(text_);
     auto begin = wrp.begin();
     uint32_t ch1 = begin.getu8();
     if (horAlign_ != fonts::HOR_ALIGN::LEFT)
     {
-        float len = m_fonts[fontid_][ch1].m_minx;
+        auto len = m_fonts[fontid_][ch1].m_minx;
         for (auto &ch : wrp)
         {
             auto &sym = m_fonts[fontid_][ch.getu8()];
@@ -446,7 +446,7 @@ void TextManager::renderText(const std::string &text_, int fontid_, Vector2<floa
 
         if (horAlign_ == fonts::HOR_ALIGN::CENTER)
         {
-            pos_.x -= len / 2.0f;
+            pos_.x -= len / 2;
         }
         else if (horAlign_ == fonts::HOR_ALIGN::RIGHT)
         {
@@ -461,7 +461,7 @@ void TextManager::renderText(const std::string &text_, int fontid_, Vector2<floa
         if (cam_)
             m_renderer->renderTexture(sym.m_tex, pos_.x, pos_.y, sym.m_w, sym.m_h, *cam_, 0, SDL_FLIP_NONE);
         else
-            m_renderer->renderTexture(sym.m_tex, pos_.x, pos_.y, (float)sym.m_w, (float)sym.m_h);
+            m_renderer->renderTexture(sym.m_tex, pos_.x, pos_.y, sym.m_w, sym.m_h);
         pos_.x += sym.m_advance;
     }
 }

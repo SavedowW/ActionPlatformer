@@ -72,7 +72,7 @@ void BattleSystem::debugDraw()
     for (int i = 0; i < m_appliedHits.getFilled(); ++i)
     {
         const auto &el = m_appliedHits[i];
-        rnd.drawCross(el, {1.0f, 5.0f}, {5.0f, 1.0f}, {0, 0, 0, 255}, m_cam);
+        rnd.drawCross(el, {1, 5}, {5, 1}, {0, 0, 0, 255}, m_cam);
     }
 }
 

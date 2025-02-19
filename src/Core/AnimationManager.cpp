@@ -217,12 +217,12 @@ void Animation::animFinished()
 	}
 }
 
-Vector2<float> Animation::getSize()
+Vector2<int> Animation::getSize()
 {
-	return {(float)m_textures->m_w, (float)m_textures->m_h};
+	return {m_textures->m_w, m_textures->m_h};
 }
 
-Vector2<float> Animation::getOrigin()
+Vector2<int> Animation::getOrigin()
 {
     return m_textures->m_origin;
 }

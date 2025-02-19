@@ -231,7 +231,7 @@ struct ComponentDynamicCameraTarget
     ComponentDynamicCameraTarget &operator=(const ComponentDynamicCameraTarget &rhs_) = delete;
     ComponentDynamicCameraTarget &operator=(ComponentDynamicCameraTarget &&rhs_) = default;
 
-    Vector2<float> m_offset;
+    Vector2<int> m_offset;
     Vector2<float> m_lookaheadSpeedSensitivity = {1.0f, 1.0f};
 };
 

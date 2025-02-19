@@ -151,7 +151,7 @@ void RenderSystem::drawInstance(const ComponentTransform &trans_, const Componen
         if constexpr (gamedata::debug::drawDebugTextures)
         {
             m_renderer.drawRectangle(texPos, texSize, {100, 0, 100, 255}, m_camera);
-            m_renderer.fillRectangle(texPos + animorigin - Vector2{2.0f, 2.0f}, {5.0f, 5.0f}, {100, 0, 100, 255}, m_camera);
+            m_renderer.fillRectangle(texPos + animorigin - Vector2{2, 2}, {5, 5}, {100, 0, 100, 255}, m_camera);
         }
     }
 }
@@ -184,7 +184,7 @@ void RenderSystem::drawParticle(const ComponentTransform &trans_, const Componen
         if constexpr (gamedata::debug::drawDebugTextures)
         {
             m_renderer.drawRectangle(texPos, texSize, {100, 0, 100, 255}, m_camera);
-            m_renderer.fillRectangle(texPos + animorigin - Vector2{2.0f, 2.0f}, {5.0f, 5.0f}, {100, 0, 100, 255}, m_camera);
+            m_renderer.fillRectangle(texPos + animorigin - Vector2{2, 2}, {5, 5}, {100, 0, 100, 255}, m_camera);
         }
     }
 }
@@ -301,7 +301,7 @@ void RenderSystem::drawFocusArea(CameraFocusArea &cfa_)
 
 void RenderSystem::drawTransform(const ComponentTransform &cfa_)
 {
-    m_renderer.drawCross(cfa_.m_pos, {1.0f, 10.0f}, {10.0f, 1.0f}, {0, 0, 0, 255}, m_camera);
+    m_renderer.drawCross(cfa_.m_pos, {1, 10}, {10, 1}, {0, 0, 0, 255}, m_camera);
 }
 
 void RenderSystem::drawHealth(const ComponentTransform &trans_, const HealthRendererCommonWRT &howner_)
@@ -312,7 +312,7 @@ void RenderSystem::drawHealth(const ComponentTransform &trans_, const HealthRend
     Vector2<float> worldPos = trans_.m_pos + howner_.m_offset;
 
     if (gamedata::debug::drawHealthPos)
-        m_renderer.drawCross(worldPos, {1.0f, 5.0f}, {5.0f, 1.0f}, {255, 0, 0, 255}, m_camera);
+        m_renderer.drawCross(worldPos, {1, 5}, {5, 1}, {255, 0, 0, 255}, m_camera);
 
     if (!howner_.m_heartAnims.empty() && howner_.m_heartAnims[0])
     {

@@ -102,7 +102,7 @@ void HudSystem::drawPlayerDebug()
     for (int i = 0; i < 4; ++i)
     {
         auto &spr = (isValid[i] ? m_arrowIn : m_arrowOut);
-        SDL_FPoint sdlcenter = {spr->m_w / 2.0f, spr->m_h / 2.0f};
+        SDL_Point sdlcenter = {spr->m_w / 2, spr->m_h / 2};
 
         m_renderer.renderTexture(spr->getSprite(),
         arrowPos[i].x - sdlcenter.x, arrowPos[i].y - sdlcenter.y, spr->m_w, spr->m_h, angles[i], &sdlcenter, SDL_FLIP_NONE);

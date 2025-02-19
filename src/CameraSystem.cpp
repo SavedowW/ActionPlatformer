@@ -20,14 +20,14 @@ void CameraSystem::update()
     if (m_cameraStopped)
         return;
 
-    Vector2<float> target;
+    Vector2<int> target;
     auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(m_playerId);
 
     if (phys.m_appliedOffset.x != 0)
     {
         auto targetoffset = utils::signof(phys.m_appliedOffset.x) * std::min(abs(phys.m_appliedOffset.x * 30.0f), 100.0f);
         auto delta = (targetoffset - dtar.m_offset.x) * dtar.m_lookaheadSpeedSensitivity.x;
-        float realOffset = 0.0f;
+        int realOffset = 0.0f;
         if (abs(delta) <= 1.0f)
         {
             realOffset = delta;
@@ -44,7 +44,7 @@ void CameraSystem::update()
     {
         if (m_hResetDelay.update())
         {
-            dtar.m_offset.x -= utils::signof(dtar.m_offset.x) * utils::clamp(H_RESET_OFFSET, 0.0f, abs(dtar.m_offset.x));
+            dtar.m_offset.x -= utils::signof(dtar.m_offset.x) * utils::clamp(H_RESET_OFFSET, 0, abs(dtar.m_offset.x));
         }
     }
 
@@ -57,7 +57,7 @@ void CameraSystem::update()
             vprio = 1.5f;
         auto targetoffset = utils::signof(phys.m_appliedOffset.y) * std::min(abs(phys.m_appliedOffset.y * vprio * 20.0f), 100.0f);
         auto delta = (targetoffset - dtar.m_offset.y) * dtar.m_lookaheadSpeedSensitivity.y;
-        float realOffset = 0.0f;
+        int realOffset = 0.0f;
         if (abs(delta) <= 1.0f)
         {
             realOffset = delta;
@@ -74,14 +74,15 @@ void CameraSystem::update()
     {
         if (m_vResetDelay.update())
         {
-            dtar.m_offset.y -= utils::signof(dtar.m_offset.y) * utils::clamp(V_RESET_OFFSET, 0.0f, abs(dtar.m_offset.y));
+            dtar.m_offset.y -= utils::signof(dtar.m_offset.y) * utils::clamp(V_RESET_OFFSET, 0, abs(dtar.m_offset.y));
         }
     }
 
     if (phys.m_onSlopeWithAngle == 0.0f)
-        dtar.m_offset.y = utils::signof(dtar.m_offset.y) * utils::clamp(abs(dtar.m_offset.y), 0.0f, 20.0f);
+        dtar.m_offset.y = utils::signof(dtar.m_offset.y) * utils::clamp(abs(dtar.m_offset.y), 0, 20);
 
     target = Vector2<int>{trans.m_pos} + BODY_OFFSET + Vector2<int>{dtar.m_offset};
+    //std::cout << dtar.m_offset << std::endl;
 
     if (updateFocus(phys.m_pushbox + trans.m_pos))
     {

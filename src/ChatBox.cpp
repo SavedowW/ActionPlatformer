@@ -87,7 +87,7 @@ void ChatboxSystem::endSequence(size_t seqId_)
     m_sequences.erase(m_sequences.begin() + seqId_);
 }
 
-void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<float> &tl_)
+void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<int> &tl_)
 {
     auto &ren = *m_app.getRenderer();
 
@@ -113,7 +113,7 @@ void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<float> &
             bool applyAppearOffset = i >= seq_.m_currentMessage->m_firstCharacterForFadingIn;
             float progress = (applyAppearOffset ?  seq_.m_currentMessage->m_symbolAppearTimers[i].getProgressNormalized() : 1.0f);
             progress = Easing::circ(progress);
-            ren.renderTexture(sym->m_tex, pos.x, pos.y - 5.0f + (5.0f * progress), sym->m_w, sym->m_h);
+            ren.renderTexture(sym->m_tex, pos.x, pos.y - 5 + (5 * progress), sym->m_w, sym->m_h);
             pos.x += sym->m_advance;
         }
     }
@@ -174,7 +174,7 @@ void ChatboxSystem::draw()
         screenPos.x = screenPos.x / camSize.x * gamedata::global::hudLayerResolution.x;
         screenPos.y = screenPos.y / camSize.y * gamedata::global::hudLayerResolution.y;
 
-        ren.fillRectangle(screenPos - Vector2{1.0f, 1.0f}, {2.0f, 2.0f}, {255, 0, 0, 150});
+        ren.fillRectangle(screenPos - Vector2{1, 1}, {2, 2}, {255, 0, 0, 150});
 
         if (seq.m_fitScreen)
         {
@@ -186,7 +186,7 @@ void ChatboxSystem::draw()
             screenPos.x = utils::clamp(screenPos.x, m_edgeGap + m_chatboxEdge->m_w + m_chatboxPointer->m_w / 2 + 1, gamedata::global::hudLayerResolution.x - m_edgeGap - m_chatboxEdge->m_w - m_chatboxPointer->m_w / 2 - 1);
         }
 
-        ren.fillRectangle(screenPos - Vector2{1.0f, 1.0f}, {2.0f, 2.0f}, {0, 255, 0, 150});
+        ren.fillRectangle(screenPos - Vector2{1, 1}, {2, 2}, {0, 255, 0, 150});
 
         Vector2<int> iScreenPos = screenPos;
 

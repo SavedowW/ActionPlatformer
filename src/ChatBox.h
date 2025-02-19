@@ -64,7 +64,7 @@ public:
 
     void endSequence(size_t seqId_);
 
-    void renderText(ChatMessageSequence &seq_, const Vector2<float> &tl_);
+    void renderText(ChatMessageSequence &seq_, const Vector2<int> &tl_);
 
     void draw();
 

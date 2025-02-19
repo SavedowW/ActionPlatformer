@@ -8,7 +8,7 @@
 //Texture array structure
 struct TextureArr
 {
-	TextureArr(SDL_Texture** tex_, SDL_Texture** whiteTex_, SDL_Texture** borderTex_, int amount_, int totalDuration_, const std::vector<int> &framesData_, int w_, int h_, const Vector2<float> &origin_) :
+	TextureArr(SDL_Texture** tex_, SDL_Texture** whiteTex_, SDL_Texture** borderTex_, int amount_, int totalDuration_, const std::vector<int> &framesData_, int w_, int h_, const Vector2<int> &origin_) :
 		m_tex(tex_), m_whiteTex(whiteTex_), m_borderTex(borderTex_), m_amount(amount_), m_totalDuration(totalDuration_), m_framesData(framesData_), m_w(w_), m_h(h_), m_origin(origin_)
 	{
 	}
@@ -35,7 +35,7 @@ struct TextureArr
 	int m_amount;
 	int m_w, m_h;
 	int m_totalDuration;
-	Vector2<float> m_origin;
+	Vector2<int> m_origin;
 	std::vector<int> m_framesData;
 
 	//Properly removes texture
@@ -100,8 +100,8 @@ public:
 	bool isFinished();
 	void switchDir();
 	void setDir(int dir_);
-	Vector2<float> getSize();
-	Vector2<float> getOrigin();
+	Vector2<int> getSize();
+	Vector2<int> getOrigin();
 	void reset(int beginFrame_ = -1, int beginDirection_ = 1);
 	int getDirection() const;
 
