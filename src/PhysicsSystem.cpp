@@ -127,7 +127,8 @@ void PhysicsSystem::updateOverlappedObstacles()
 
 void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_)
 {
-    auto oldPos = trans_.m_pos;
+    const auto oldPos = trans_.m_pos;
+    auto oldPosXOnly = trans_.m_pos; // Set once X offset is applied
 
     // Common stuff
     phys_.m_velocity += phys_.m_gravity;
@@ -135,7 +136,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
     if (phys_.m_inertia.x != 0)
     {
         auto absInertia = abs(phys_.m_inertia.x);
-        auto m_inertiaSign = utils::signof(phys_.m_inertia.x / abs(phys_.m_inertia.x));
+        const auto m_inertiaSign = utils::signof(phys_.m_inertia.x / abs(phys_.m_inertia.x));
         absInertia = std::max(absInertia - phys_.m_drag.x, 0.0f);
         phys_.m_inertia.x = m_inertiaSign * absInertia;
     }
@@ -143,7 +144,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
     if (phys_.m_inertia.y != 0)
     {
         auto absInertia = abs(phys_.m_inertia.y);
-        auto m_inertiaSign = utils::signof(phys_.m_inertia.y / abs(phys_.m_inertia.y));
+        const auto m_inertiaSign = utils::signof(phys_.m_inertia.y / abs(phys_.m_inertia.y));
         absInertia = std::max(absInertia - phys_.m_drag.y, 0.0f);
         phys_.m_inertia.y = m_inertiaSign * absInertia;
     }
@@ -162,10 +163,10 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
     phys_.m_calculatedOffset = offset;
     bool noLanding = phys_.m_noLanding;
 
-    auto oldHeight = trans_.m_pos.y;
-    auto oldTop = pb.getTopEdge();
-    auto oldRightEdge = pb.getRightEdge();
-    auto oldLeftEdge = pb.getLeftEdge();
+    const auto oldHeight = trans_.m_pos.y;
+    const auto oldTop = pb.getTopEdge();
+    const auto oldRightEdge = pb.getRightEdge();
+    const auto oldLeftEdge = pb.getLeftEdge();
 
     entt::entity onGround = entt::null;
     float touchedSlope = 0.0f;
@@ -180,7 +181,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
         auto overlap = csc_.m_resolved.checkOverlap(pb, highest);
         if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
         {
-            if (csc_.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(csc_.m_obstacleId) || oldHeight - highest > 0))
+            if (csc_.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(csc_.m_obstacleId) || oldPosXOnly.y - highest > 0))
                 return;
 
             std::cout << "Touched slope top, teleporting on top, offset.y > 0\n";
@@ -374,6 +375,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
 
     // Y axis movement handling
     {
+        oldPosXOnly = trans_.m_pos;
         trans_.m_pos.y += offset.y;
         pb = phys_.m_pushbox + trans_.m_pos;
 
@@ -424,7 +426,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_,
     phys_.applyDrag();
 
     // Prepare vars for collision detection
-    auto offset = phys_.claimOffset();
+    const auto offset = phys_.claimOffset();
     trans_.m_pos += offset;
 }
 

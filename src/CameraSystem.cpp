@@ -82,7 +82,7 @@ void CameraSystem::update()
         dtar.m_offset.y = utils::signof(dtar.m_offset.y) * utils::clamp(abs(dtar.m_offset.y), 0, 20);
 
     target = Vector2<int>{trans.m_pos} + BODY_OFFSET + Vector2<int>{dtar.m_offset};
-    //std::cout << dtar.m_offset << std::endl;
+    std::cout << dtar.m_offset << std::endl;
 
     if (updateFocus(phys.m_pushbox + trans.m_pos))
     {
