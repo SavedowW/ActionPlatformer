@@ -414,8 +414,10 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
         }
     }
 
-    phys_.m_appliedOffset = trans_.m_pos - oldPos;
+    std::cout << phys_.m_pushedOffset << std::endl;
+    phys_.m_appliedOffset = trans_.m_pos - oldPos + phys_.m_pushedOffset;
     phys_.m_extraoffset = {0.0f, 0.0f};
+    phys_.m_pushedOffset = {0, 0};
 }
 
 void PhysicsSystem::proceedEntity(const auto &clds_, ComponentTransform &trans_, ComponentParticlePhysics &phys_)

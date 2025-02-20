@@ -141,7 +141,7 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                 continue;
         }
 
-        Vector2<int> oldpos = trans.m_pos;
+        const Vector2<int> oldpos = trans.m_pos;
         auto pb = phys.m_pushbox + trans.m_pos;
         auto oldTop = pb.getTopEdge();
         auto oldRightEdge = pb.getRightEdge();
@@ -191,6 +191,7 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                     // Teleport on top
                     trans.m_pos.y = newHighest - 1;
                     pb = phys.m_pushbox + trans.m_pos;
+                    phys.m_onMovingPlatform = true;
                 }
 
                 // If was below and now overlaps
@@ -303,6 +304,7 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
         }
 
         phys.m_enforcedOffset = (trans.m_pos - oldpos) + phys.m_extraoffset;
+        phys.m_pushedOffset = (trans.m_pos - oldpos).mulComponents(Vector2{1, 10});
         //std::cout << phys.m_extraoffset << std::endl;
     }
 
