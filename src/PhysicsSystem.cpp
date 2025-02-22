@@ -414,7 +414,6 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
         }
     }
 
-    std::cout << phys_.m_pushedOffset << std::endl;
     phys_.m_appliedOffset = trans_.m_pos - oldPos + phys_.m_pushedOffset;
     phys_.m_extraoffset = {0.0f, 0.0f};
     phys_.m_pushedOffset = {0, 0};

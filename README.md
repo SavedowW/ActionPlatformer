@@ -23,11 +23,12 @@ If you are not using conan, make sure to provide dependencies to CMake manually
 - Level enter - leave behavior, transitions
 - Menus
 - Serialize input system, make inputs configurable
-- Add gamepad support (is it really necessary?)
+- [DONE] Add gamepad support (is it really necessary?)
 - Make so that tile layers are automatically handled the last
 - Simplify World component, it shouldn't provide access to camera or navigation system
 ### Optional stuff
 - Fade-out with resize or dithering instead of alpha - not necessary, might be worse, but worth trying
+- Gamepad rumble - on hard landing, hit, whenever the screen is shaking, etc
 ### Optimizations
 - Multithreading - should be at least possible with ECS
 - Render only tiles within camera scope - shouldn't be too hard and probably will become necessary anyway

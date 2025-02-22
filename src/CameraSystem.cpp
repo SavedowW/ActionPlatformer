@@ -55,7 +55,7 @@ void CameraSystem::update()
             vprio = 3.0f;
         else if (phys.m_onSlopeWithAngle != 0.0f)
             vprio = 1.5f;
-        auto targetoffset = utils::signof(phys.m_appliedOffset.y) * std::min(abs(phys.m_appliedOffset.y * vprio * 20.0f), 100.0f);
+        auto targetoffset = utils::signof(phys.m_appliedOffset.y) * std::min(abs(phys.m_appliedOffset.y * vprio * 20.0f), 40.0f);
         auto delta = (targetoffset - dtar.m_offset.y) * dtar.m_lookaheadSpeedSensitivity.y;
         int realOffset = 0.0f;
         if (abs(delta) <= 1.0f)
@@ -82,18 +82,17 @@ void CameraSystem::update()
         dtar.m_offset.y = utils::signof(dtar.m_offset.y) * utils::clamp(abs(dtar.m_offset.y), 0, 20);
 
     target = Vector2<int>{trans.m_pos} + BODY_OFFSET + Vector2<int>{dtar.m_offset};
-    //std::cout << dtar.m_offset << std::endl;
+    //std::cout << "dtar.m_offset: " << dtar.m_offset << std::endl;
 
     if (updateFocus(phys.m_pushbox + trans.m_pos))
     {
         auto &area = m_reg.get<CameraFocusArea>(*m_currentFocusArea);
-        m_cam.smoothMoveAxisTowards(area.getCameraTargetPosition(target), {1.0f, 1.0f}, {0.0f, 0.0f}, 1.3f, 20.0f);
+        m_cam.smoothMoveAxisTowards(area.getCameraTargetPosition(target), {1.0f, 1.0f}, {0.0f, 0.0f}, {10.0f, 10.0f});
         m_cam.smoothScaleTowards(area.getScale());
     }
     else
     {
-        float spdpow = utils::clamp(float(0.03f * phys.m_appliedOffset.getLen()) + 1.28f, 1.6f, 3.0f);
-        m_cam.smoothMoveAxisTowards(target, {1.0f, 0.5f}, {1.0f, 1.0f}, spdpow, 80.0f);
+        m_cam.smoothMoveAxisTowards(target, {1.0f, 0.5f}, {1.0f, 1.0f}, {10.0f, 10.0f});
         m_cam.smoothScaleTowards(gamedata::global::baseCameraScale);
     }
 }

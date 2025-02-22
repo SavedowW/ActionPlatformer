@@ -35,6 +35,8 @@ Application::Application()
     m_textureManager = std::make_unique<TextureManager>(m_renderer.get(), m_appRoot);
     m_animationManager = std::make_unique<AnimationManager>(m_renderer.get(), m_appRoot);
     m_textManager = std::make_unique<TextManager>(m_renderer.get(), m_appRoot);
+
+    m_inputSystem->initiateControllers();
 }
 
 Application::~Application()

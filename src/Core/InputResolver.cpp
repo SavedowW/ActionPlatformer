@@ -25,23 +25,23 @@ void InputResolver::receiveInput(EVENTS event_, const float scale_)
     switch(event_)
     {
         case (EVENTS::UP):
-            m_currentInput.m_inputs[INPUT_BUTTON::UP] = (scale_ == 1.0f ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::RELEASED);
+            m_currentInput.m_inputs[INPUT_BUTTON::UP] = (scale_ > 0.0f ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::RELEASED);
             break;
 
         case (EVENTS::DOWN):
-            m_currentInput.m_inputs[INPUT_BUTTON::DOWN] = (scale_ == 1.0f ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::RELEASED);
+            m_currentInput.m_inputs[INPUT_BUTTON::DOWN] = (scale_ > 0.0f ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::RELEASED);
             break;
 
         case (EVENTS::LEFT):
-            m_currentInput.m_inputs[INPUT_BUTTON::LEFT] = (scale_ == 1.0f ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::RELEASED);
+            m_currentInput.m_inputs[INPUT_BUTTON::LEFT] = (scale_ > 0.0f ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::RELEASED);
             break;
 
         case (EVENTS::RIGHT):
-            m_currentInput.m_inputs[INPUT_BUTTON::RIGHT] = (scale_ == 1.0f ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::RELEASED);
+            m_currentInput.m_inputs[INPUT_BUTTON::RIGHT] = (scale_ > 0.0f ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::RELEASED);
             break;
         
         case (EVENTS::ATTACK):
-            m_currentInput.m_inputs[INPUT_BUTTON::ATTACK] = (scale_ == 1.0f ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::RELEASED);
+            m_currentInput.m_inputs[INPUT_BUTTON::ATTACK] = (scale_ > 0.0f ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::RELEASED);
             break;
     }
 }
