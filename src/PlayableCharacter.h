@@ -3,6 +3,7 @@
 #include "CoreComponents.h"
 #include "StateMachine.h"
 #include "InputComparators.h"
+#include "EnumMapping.hpp"
 #include <map>
 #include <string>
 
@@ -23,21 +24,22 @@ enum class CharacterState : CharState {
     NONE
 };
 
-inline const std::map<CharacterState, std::string> CharacterStateNames {
-    {CharacterState::IDLE, "IDLE"},
-    {CharacterState::FLOAT, "FLOAT"},
-    {CharacterState::PRERUN, "PRERUN"},
-    {CharacterState::RUN, "RUN"},
-    {CharacterState::RUN_RECOVERY, "RUN_RECOVERY"},
-    {CharacterState::PREJUMP, "PREJUMP"},
-    {CharacterState::PREJUMP_FORWARD, "PREJUMP_FORWARD"},
-    {CharacterState::LANDING_RECOVERY, "LANDING_RECOVERY"},
-    {CharacterState::HARD_LANDING_RECOVERY, "HARD_LANDING_RECOVERY"},
-    {CharacterState::WALL_CLING, "WALL_CLING"},
-    {CharacterState::WALL_CLING_PREJUMP, "WALL_CLING_PREJUMP"},
-    {CharacterState::ATTACK_1, "ATTACK_1"},
-    {CharacterState::ATTACK_1_CHAIN, "ATTACK_1_CHAIN"}
-};
+SERIALIZE_ENUM(CharacterState, {
+    ENUM_AUTO(CharacterState, IDLE),
+    ENUM_AUTO(CharacterState, FLOAT),
+    ENUM_AUTO(CharacterState, PRERUN),
+    ENUM_AUTO(CharacterState, RUN),
+    ENUM_AUTO(CharacterState, RUN_RECOVERY),
+    ENUM_AUTO(CharacterState, PREJUMP),
+    ENUM_AUTO(CharacterState, PREJUMP_FORWARD),
+    ENUM_AUTO(CharacterState, LANDING_RECOVERY),
+    ENUM_AUTO(CharacterState, HARD_LANDING_RECOVERY),
+    ENUM_AUTO(CharacterState, WALL_CLING),
+    ENUM_AUTO(CharacterState, WALL_CLING_PREJUMP),
+    ENUM_AUTO(CharacterState, ATTACK_1),
+    ENUM_AUTO(CharacterState, ATTACK_1_CHAIN),
+    ENUM_AUTO(CharacterState, NONE),
+})
 
 template<bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN>
 inline ORIENTATION attemptInput(const InputComparator &cmpL_, const InputComparator &cmpR_, ORIENTATION currentOrientation_, const InputQueue &iq_, int val_)
@@ -77,7 +79,7 @@ class PlayerState : public PhysicalState
 {
 public:
     PlayerState(CharacterState actionState_, StateMarker &&transitionableFrom_, int anim_) :
-        PhysicalState(actionState_, CharacterStateNames.at(actionState_), std::move(transitionableFrom_), anim_)
+        PhysicalState(actionState_, std::move(transitionableFrom_), anim_)
     {
     }
 

@@ -33,7 +33,7 @@ struct RenderSystem : public InputReactor
 
     void drawColliderRoute(const ColliderPointRouting &route_);
 
-    void receiveInput(EVENTS event_, const float scale_) override;
+    void receiveEvents(GAMEPLAY_EVENTS event_, const float scale_) override;
 
     entt::registry &m_reg;
     Renderer &m_renderer;

@@ -12,8 +12,8 @@ ChatboxSystem::ChatboxSystem(entt::registry &reg_, Application &app_, Camera &ca
     m_app(app_),
     m_camera(camera_)
 {
-    subscribe(EVENTS::ATTACK);
-    setInputEnabled(true);
+    subscribe(HUD_EVENTS::PROCEED);
+    setInputEnabled();
 
     auto &texman = *app_.getTextureManager();
 
@@ -37,17 +37,16 @@ void ChatboxSystem::addSequence(ChatMessageSequence &&seq_)
     if (m_sequences.back().m_claimInputs)
     {
         auto &resolver = *m_reg.get<ComponentPlayerInput>(m_playerId).m_inputResolver;
-        resolver.setInputEnabled(false);
+        resolver.setInputDisabled();
         resolver.nullifyCurrentInput();
     }
 }
 
-void ChatboxSystem::receiveInput(EVENTS event, const float scale_)
+void ChatboxSystem::receiveEvents(HUD_EVENTS event, const float scale_)
 {
-    std::cout << "EVENT\n";
     switch (event)
     {
-        case (EVENTS::ATTACK):
+        case (HUD_EVENTS::PROCEED):
             if (scale_ > 0)
             {
                 int seqid = 0;
@@ -80,7 +79,7 @@ void ChatboxSystem::endSequence(size_t seqId_)
     if (m_sequences[seqId_].m_returnInputs)
     {
         auto &resolver = *m_reg.get<ComponentPlayerInput>(m_playerId).m_inputResolver;
-        resolver.setInputEnabled(true);
+        resolver.setInputEnabled();
         resolver.nullifyCurrentInput();
     }
 

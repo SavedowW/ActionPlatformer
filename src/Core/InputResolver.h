@@ -10,11 +10,11 @@
 class InputResolver : public InputReactor
 {
 public:
-    InputResolver(InputSystem *input_);
+    InputResolver(InputSystem &input_);
 
     void subscribePlayer();
     void unsubscribePlayer();
-    void receiveInput(EVENTS event_, const float scale_) override;
+    void receiveEvents(GAMEPLAY_EVENTS event_, const float scale_) override;
     const InputQueue &getInputQueue() const;
 
     Vector2<int> getCurrentInputDir() const;

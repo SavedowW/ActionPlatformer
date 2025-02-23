@@ -60,7 +60,7 @@ public:
     void setPlayerEntity(entt::entity playerId_);
 
     void addSequence(ChatMessageSequence &&seq_);
-    void receiveInput(EVENTS event, const float scale_) override;
+    void receiveEvents(HUD_EVENTS event, const float scale_) override;
 
     void endSequence(size_t seqId_);
 

@@ -48,7 +48,7 @@ void PlayerSystem::setup(entt::entity playerId_)
 
 
     inp.m_inputResolver->subscribePlayer();
-    inp.m_inputResolver->setInputEnabled(true);
+    inp.m_inputResolver->setInputEnabled();
 
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerActionWallPrejump(

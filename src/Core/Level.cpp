@@ -11,12 +11,12 @@ Level::Level(Application *application_, const Vector2<int> &size_, int lvlId_) :
 	m_timeForFrame(nanoseconds(1000000000) / static_cast<long long>(gamedata::global::framerate)),
 	m_lastFrameTimeMS{0}
 {
-	subscribe(EVENTS::QUIT);
-	subscribe(EVENTS::FN3);
-	subscribe(EVENTS::FN2);
-	subscribe(EVENTS::FN1);
+	subscribe(GAMEPLAY_EVENTS::QUIT);
+	subscribe(GAMEPLAY_EVENTS::FN3);
+	subscribe(GAMEPLAY_EVENTS::FN2);
+	subscribe(GAMEPLAY_EVENTS::FN1);
 
-	setInputEnabled(false);
+	setInputDisabled();
 }
 
 //Runs when enter the function
@@ -25,12 +25,12 @@ void Level::enter()
 	m_state = STATE::RUNNING;
 	m_returnVal = { -1 };
 	m_frameTimer.begin();
-	setInputEnabled(true);
+	setInputEnabled();
 }
 
 void Level::leave()
 {
-	setInputEnabled(false);
+	setInputDisabled();
 }
 
 LevelResult Level::proceed()
@@ -46,7 +46,7 @@ LevelResult Level::proceed()
 		profiler.cleanFrame();
 		fullFrameTime.begin();
 
-		m_input->handleInput();
+		m_input.handleInput();
 
 		if (!m_globalPause || m_globalPause && m_allowIter || m_forcerun)
 		{
@@ -78,26 +78,26 @@ LevelResult Level::proceed()
 	return m_returnVal;
 }
 
-void Level::receiveInput(EVENTS event, const float scale_)
+void Level::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
 {
 	switch (event)
 	{		
-		case (EVENTS::QUIT):
+		case (GAMEPLAY_EVENTS::QUIT):
 			m_returnVal = { -1 };
 			m_state = STATE::LEAVE;
 			break;
 
-		case (EVENTS::FN3):
+		case (GAMEPLAY_EVENTS::FN3):
 			if (scale_ > 0)
 				m_globalPause = !m_globalPause;
 			break;
 
-		case (EVENTS::FN2):
+		case (GAMEPLAY_EVENTS::FN2):
 			if (scale_ > 0)
 				m_allowIter = true;
 			break;
 
-		case (EVENTS::FN1):
+		case (GAMEPLAY_EVENTS::FN1):
 			if (scale_ > 0)
 			{
 				m_timeForFrame = nanoseconds(1000000000) / static_cast<long long>(gamedata::global::dbgslowdownfps);

@@ -29,7 +29,7 @@ public:
     BattleLevel(Application *application_, const Vector2<float>& size_, int lvlId_);
     virtual void enter() override;
 
-    void receiveInput(EVENTS event, const float scale_) override;
+    void receiveEvents(GAMEPLAY_EVENTS event, const float scale_) override;
 
     virtual ~BattleLevel() = default;
 

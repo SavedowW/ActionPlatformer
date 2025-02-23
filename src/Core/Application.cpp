@@ -73,9 +73,9 @@ Renderer *Application::getRenderer()
     return m_renderer.get();
 }
 
-InputSystem *Application::getInputSystem()
+InputSystem &Application::getInputSystem()
 {
-    return m_inputSystem.get();
+    return *m_inputSystem.get();
 }
 
 TextureManager *Application::getTextureManager()

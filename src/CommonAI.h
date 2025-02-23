@@ -18,8 +18,8 @@ class AIState: public GenericState
 {
 public:
     template<typename PLAYER_STATE_T>
-    AIState(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_) :
-        GenericState(stateId_, stateName_, std::move(transitionableFrom_))
+    AIState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_) :
+        GenericState(stateId_, std::move(transitionableFrom_))
     {}
 
     virtual void enter(EntityAnywhere owner_, CharState from_) override;
@@ -36,8 +36,8 @@ class AIStateNull: public GenericState
 {
 public:
     template<typename PLAYER_STATE_T>
-    AIStateNull(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_) :
-        GenericState(stateId_, stateName_, std::move(transitionableFrom_))
+    AIStateNull(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_) :
+        GenericState(stateId_, std::move(transitionableFrom_))
     {}
 
     virtual void enter(EntityAnywhere owner_, CharState from_) override;
@@ -51,9 +51,9 @@ class RandomRoamState: public NodeState
 {
 public:
     template<typename PLAYER_STATE_T>
-    RandomRoamState(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_,
+    RandomRoamState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_,
     PLAYER_STATE_T idle_, PLAYER_STATE_T walk_, std::pair<uint32_t, uint32_t> idleDurationRange_, std::pair<uint32_t, uint32_t> walkDurationRange_) :
-        NodeState(stateId_, stateName_, std::move(transitionableFrom_)),
+        NodeState(stateId_, std::move(transitionableFrom_)),
         m_idle(static_cast<CharState>(idle_)),
         m_walk(static_cast<CharState>(walk_)),
         m_idleDuration(idleDurationRange_),
@@ -77,9 +77,9 @@ class BlindChaseState: public AIState
 {
 public:
     template<typename PLAYER_STATE_T>
-    BlindChaseState(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_,
+    BlindChaseState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_,
     PLAYER_STATE_T idle_, PLAYER_STATE_T walk_, float idleRange_) :
-        AIState(stateId_, stateName_, std::move(transitionableFrom_)),
+        AIState(stateId_, std::move(transitionableFrom_)),
         m_idle(static_cast<CharState>(idle_)),
         m_walk(static_cast<CharState>(walk_)),
         m_idleRange(idleRange_)
@@ -98,9 +98,9 @@ class ProxySelectionState: public NodeState
 {
 public:
     template<typename PLAYER_STATE_T>
-    ProxySelectionState(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_,
+    ProxySelectionState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_,
     const std::vector<PLAYER_STATE_T> states_, std::vector<float> &&rangeLimits_, EntityAnywhere target_) :
-        NodeState(stateId_, stateName_, std::move(transitionableFrom_)),
+        NodeState(stateId_, std::move(transitionableFrom_)),
         m_rangeLimits(std::move(rangeLimits_)),
         m_target(std::move(target_))
     {
@@ -122,9 +122,9 @@ class MoveTowards : public AIState
 {
 public:
     template<typename PLAYER_STATE_T>
-    MoveTowards(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_,
+    MoveTowards(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_,
         PLAYER_STATE_T walk_) :
-        AIState(stateId_, stateName_, std::move(transitionableFrom_)),
+        AIState(stateId_, std::move(transitionableFrom_)),
         m_walk(static_cast<CharState>(walk_))
     {}
 
@@ -139,9 +139,9 @@ class JumpTowards : public AIState
 {
 public:
     template<typename PLAYER_STATE_T>
-    JumpTowards(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_,
+    JumpTowards(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_,
         PLAYER_STATE_T prejump_) :
-        AIState(stateId_, stateName_, std::move(transitionableFrom_)),
+        AIState(stateId_, std::move(transitionableFrom_)),
         m_prejump(static_cast<CharState>(prejump_))
     {}
 
@@ -155,9 +155,9 @@ class NavigateGraphChase : public NodeState
 {
 public:
     template<typename PLAYER_STATE_T>
-    NavigateGraphChase(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_,
+    NavigateGraphChase(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_,
         PLAYER_STATE_T moveTowards_, PLAYER_STATE_T jumpTowards, PLAYER_STATE_T noConnection_, PLAYER_STATE_T onSuccess_) :
-        NodeState(stateId_, stateName_, std::move(transitionableFrom_)),
+        NodeState(stateId_, std::move(transitionableFrom_)),
         m_moveTowards(static_cast<CharState>(moveTowards_)),
         m_jumpTowards(static_cast<CharState>(jumpTowards)),
         m_noConnection(static_cast<CharState>(noConnection_)),

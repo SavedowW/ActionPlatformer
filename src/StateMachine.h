@@ -5,6 +5,7 @@
 #include "World.h"
 #include "Hit.h"
 #include "CoreComponents.h"
+#include "EnumMapping.hpp"
 #include "StateCommon.h"
 
 class GenericState;
@@ -61,9 +62,9 @@ class GenericState
 {
 public:
     template<typename PLAYER_STATE_T>
-    GenericState(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_) :
+    GenericState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_) :
         m_stateId(static_cast<CharState>(stateId_)),
-        m_stateName(stateName_),
+        m_stateName(serialize<PLAYER_STATE_T>(stateId_)),
         m_transitionableFrom(std::move(transitionableFrom_))
     {}
 
@@ -115,8 +116,8 @@ class PhysicalState: public GenericState
 {
 public:
     template<typename PLAYER_STATE_T>
-    PhysicalState(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_, int anim_) :
-        GenericState(stateId_, stateName_, std::move(transitionableFrom_)),
+    PhysicalState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_, int anim_) :
+        GenericState(stateId_, std::move(transitionableFrom_)),
         m_anim(anim_),
         m_drag({1.0f, 0.0f}),
         m_appliedInertiaMultiplier({1.0f, 1.0f}),
@@ -229,8 +230,8 @@ class NodeState: public StateMachine, public GenericState
 {
 public:
     template<typename PLAYER_STATE_T>
-    NodeState(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_) :
-        GenericState(stateId_, stateName_, std::move(transitionableFrom_))
+    NodeState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_) :
+        GenericState(stateId_, std::move(transitionableFrom_))
     {}
 
     virtual std::string getName(uint32_t framesInState_) const override;

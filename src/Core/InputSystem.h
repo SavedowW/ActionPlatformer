@@ -2,17 +2,16 @@
 #define INPUT_H_
 #include <SDL.h>
 #include <SDL_Image.h>
+#include "EnumMapping.hpp"
 #include <map>
 #include <vector>
 #include <functional>
 #include <memory>
 #include <set>
 
-
-
-//List of possible events
+//List of possible gameplay events
 //Anything that is inherited from InputReactor can subscribe to them
-enum class EVENTS
+enum class GAMEPLAY_EVENTS
 {
     QUIT,
     UP,
@@ -29,6 +28,63 @@ enum class EVENTS
     NONE
 };
 
+// Events used for menus and hud in general
+enum class HUD_EVENTS
+{
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
+    PROCEED,
+    NONE
+};
+
+SERIALIZE_ENUM(SDL_GameControllerButton, {
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_INVALID, "INVALID"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_A, "A"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_B, "B"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_X, "X"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_Y, "Y"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_BACK, "BACK"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_GUIDE, "GUIDE"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_START, "START"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_LEFTSTICK, "LEFTSTICK"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_RIGHTSTICK, "RIGHTSTICK"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, "LEFTSHOULDER"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, "RIGHTSHOULDER"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_DPAD_UP, "DPAD_UP"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_DPAD_DOWN, "DPAD_DOWN"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_DPAD_LEFT, "DPAD_LEFT"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, "DPAD_RIGHT"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_MISC1, "MISC1"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_PADDLE1, "PADDLE1"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_PADDLE2, "PADDLE2"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_PADDLE3, "PADDLE3"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_PADDLE4, "PADDLE4"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_TOUCHPAD, "TOUCHPAD"),
+    ENUM_INIT(SDL_GameControllerButton, SDL_CONTROLLER_BUTTON_MAX, "MAX")
+})
+
+SERIALIZE_ENUM(SDL_GameControllerAxis, {
+    ENUM_INIT(SDL_GameControllerAxis, SDL_CONTROLLER_AXIS_INVALID, "INVALID"),
+    ENUM_INIT(SDL_GameControllerAxis, SDL_CONTROLLER_AXIS_LEFTX, "LEFTX"),
+    ENUM_INIT(SDL_GameControllerAxis, SDL_CONTROLLER_AXIS_LEFTY, "LEFTY"),
+    ENUM_INIT(SDL_GameControllerAxis, SDL_CONTROLLER_AXIS_RIGHTX, "RIGHTX"),
+    ENUM_INIT(SDL_GameControllerAxis, SDL_CONTROLLER_AXIS_RIGHTY, "RIGHTY"),
+    ENUM_INIT(SDL_GameControllerAxis, SDL_CONTROLLER_AXIS_TRIGGERLEFT, "TRIGGERLEFT"),
+    ENUM_INIT(SDL_GameControllerAxis, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, "TRIGGERRIGHT"),
+    ENUM_INIT(SDL_GameControllerAxis, SDL_CONTROLLER_AXIS_MAX, "MAX")
+})
+
+template<typename EventT>
+struct EventBinding
+{
+    std::map<SDL_Keycode, EventT> m_keyboardBindings;
+    std::map<SDL_GameControllerButton, EventT> m_gamepadBindings;
+    std::map<SDL_GameControllerAxis, EventT> m_gamepadPositiveAxisBindings;
+    std::map<SDL_GameControllerAxis, EventT> m_gamepadNegativeAxisBindings;
+};
+
 class InputReactor;
 
 typedef InputReactor* subscriber;
@@ -43,52 +99,27 @@ class InputSystem
 public:
     InputSystem();
     void handleInput();
-    void subscribe(EVENTS ev_, subscriber sub_);
-    void unsubscribe(EVENTS ev_, subscriber sub_);
+    void subscribe(GAMEPLAY_EVENTS ev_, subscriber sub_);
+    void unsubscribe(GAMEPLAY_EVENTS ev_, subscriber sub_);
+    void subscribe(HUD_EVENTS ev_, subscriber sub_);
+    void unsubscribe(HUD_EVENTS ev_, subscriber sub_);
 
     void initiateControllers();
 
+
 private:
-    void send(EVENTS ev_, float val_);
-    std::vector<subscriber> m_subscribers[(int)EVENTS::NONE];
+    void send(GAMEPLAY_EVENTS ev_, float val_);
+    void send(HUD_EVENTS ev_, float val_);
+    std::vector<subscriber> m_gameplaySubscribers[(int)GAMEPLAY_EVENTS::NONE];
+    std::vector<subscriber> m_hudSubscribers[(int)HUD_EVENTS::NONE];
 
-    std::map<SDL_Keycode, EVENTS> m_keyboardBindings = {
-        {SDLK_w, EVENTS::UP},
-        {SDLK_d, EVENTS::RIGHT},
-        {SDLK_s, EVENTS::DOWN},
-        {SDLK_a, EVENTS::LEFT},
-        {SDLK_i, EVENTS::ATTACK},
-        {SDLK_MINUS, EVENTS::FN1},
-        {SDLK_EQUALS, EVENTS::FN2},
-        {SDLK_0, EVENTS::FN3},
-        {SDLK_SPACE, EVENTS::CAM_STOP},
-        {SDLK_BACKSPACE, EVENTS::FN4},
-        {SDLK_SLASH, EVENTS::REN_DBG_1}
-    };
+    template<typename InputT, typename ButtonT, typename EventT>
+    void resolveBinding(const std::map<InputT, EventT> &bindings_, const ButtonT &input_, float value_);
 
-    std::map<Uint8, EVENTS> m_gamepadBindings = {
-        {SDL_CONTROLLER_BUTTON_A, EVENTS::UP},
-        {SDL_CONTROLLER_BUTTON_DPAD_RIGHT, EVENTS::RIGHT},
-        {SDL_CONTROLLER_BUTTON_DPAD_DOWN, EVENTS::DOWN},
-        {SDL_CONTROLLER_BUTTON_DPAD_LEFT, EVENTS::LEFT},
-        {SDL_CONTROLLER_BUTTON_X, EVENTS::ATTACK},
-        {SDL_CONTROLLER_BUTTON_RIGHTSTICK, EVENTS::FN1},
-        {SDL_CONTROLLER_BUTTON_START, EVENTS::FN2},
-        {SDL_CONTROLLER_BUTTON_BACK, EVENTS::FN3},
-        {SDL_CONTROLLER_BUTTON_LEFTSHOULDER, EVENTS::CAM_STOP},
-        {SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, EVENTS::FN4},
-        {SDL_CONTROLLER_BUTTON_LEFTSTICK, EVENTS::REN_DBG_1}
-    };
+    void setupDefaultMapping();
 
-    std::map<Uint8, EVENTS> m_gamepadPositiveAxisBindings = {
-        {SDL_CONTROLLER_AXIS_LEFTX, EVENTS::RIGHT},
-        {SDL_CONTROLLER_AXIS_LEFTY, EVENTS::DOWN}
-    };
-
-    std::map<Uint8, EVENTS> m_gamepadNegativeAxisBindings = {
-        {SDL_CONTROLLER_AXIS_LEFTX, EVENTS::LEFT},
-        {SDL_CONTROLLER_AXIS_LEFTY, EVENTS::UP}
-    };
+    EventBinding<GAMEPLAY_EVENTS> m_gameplayBindings;
+    EventBinding<HUD_EVENTS> m_hudBindings;
 
     std::map<Uint8, Sint16> m_lastAxisValue = {
         {SDL_CONTROLLER_AXIS_LEFTX, 0},
@@ -107,57 +138,31 @@ class InputReactor
 {
 public:
     //Input reactor needs pointer to  InputSystem
-    InputReactor(InputSystem *input_) :
-        m_input(input_)
-    {
-    }
+    InputReactor(InputSystem &input_);
 
-    virtual void receiveInput(EVENTS event, const float scale_);
+    virtual void receiveEvents(GAMEPLAY_EVENTS event, const float scale_);
+    virtual void receiveEvents(HUD_EVENTS event, const float scale_);
 
-    //All events reactor is subscribed at
-    std::set<EVENTS> subscribed_at;
-
-    void setInputEnabled(bool inputEnabled_);
+    void setInputEnabled();
+    void setInputDisabled();
     bool isInputEnabled();
 
     //InputReactor automatically removes itself from subscribers
-    virtual ~InputReactor()
-    {
-        while(!subscribed_at.empty())
-        {
-            unsubscribe(*subscribed_at.begin());
-        }
-    }
+    virtual ~InputReactor();
 
 protected:
-    void subscribe(EVENTS ev_)
-    {
-        if (subscribed_at.contains(ev_))
-            return;
-        
-        m_input->subscribe(ev_, this);
-        subscribed_at.insert(ev_);
-    }
+    void subscribe(GAMEPLAY_EVENTS ev_);
+    void subscribe(HUD_EVENTS ev_);
+    void unsubscribe(GAMEPLAY_EVENTS ev_);
+    void unsubscribe(HUD_EVENTS ev_);
+    void unsubscribeFromAll();
 
-    void unsubscribe(EVENTS ev_)
-    {
-        if (!subscribed_at.contains(ev_))
-            return;
-        
-        m_input->unsubscribe(ev_, this);
-        subscribed_at.erase(ev_);
-    }
-
-    void unsubscribeFromAll()
-    {
-        while(!subscribed_at.empty())
-        {
-            unsubscribe(*subscribed_at.begin());
-        }
-    }
-
-    InputSystem * m_input;
+    InputSystem &m_input;
     bool m_inputEnabled = false;
+
+    //All GAMEPLAY_EVENTS reactor is subscribed at
+    std::set<GAMEPLAY_EVENTS> m_gameplaySubscriptions;
+    std::set<HUD_EVENTS> m_hudSubscriptions;
 
 };
 

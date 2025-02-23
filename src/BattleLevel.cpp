@@ -50,7 +50,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
 
     m_chatBoxSys.setPlayerEntity(m_playerId);
 
-    subscribe(EVENTS::FN4);
+    subscribe(GAMEPLAY_EVENTS::FN4);
 
     /*auto newcld = m_registry.create();
     m_registry.emplace<ComponentTransform>(newcld, getTilePos(Vector2{20.0f, 21.0f}), ORIENTATION::RIGHT);
@@ -78,11 +78,11 @@ void BattleLevel::enter()
     m_camera.setPos({0.0f, 0.0f});
 }
 
-void BattleLevel::receiveInput(EVENTS event, const float scale_)
+void BattleLevel::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
 {
-    Level::receiveInput(event, scale_);
+    Level::receiveEvents(event, scale_);
 
-    if (event == EVENTS::FN4 && scale_ > 0)
+    if (event == GAMEPLAY_EVENTS::FN4 && scale_ > 0)
     {
         ChatMessageSequence seq{m_playerId, ChatBoxSide::PREFER_TOP, true, true, true, true};
         seq.m_messages.emplace_back("Hello, chat\nHow are you?", 3);

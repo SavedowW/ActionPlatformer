@@ -3,6 +3,7 @@
 #include "CoreComponents.h"
 #include "StateMachine.h"
 #include "CommonAI.h"
+#include "EnumMapping.hpp"
 #include <map>
 
 enum class Enemy1State : CharState
@@ -19,25 +20,25 @@ enum class Enemy1State : CharState
     NONE
 };
 
-inline const std::map<Enemy1State, std::string> Enemy1StateNames {
-    {Enemy1State::META_ROAM, "META_ROAM"},
-    {Enemy1State::META_BLIND_CHASE, "META_BLIND_CHASE"},
-    {Enemy1State::META_PROXY_SWITCH, "META_PROXY_SWITCH"},
-    {Enemy1State::META_MOVE_TOWARDS, "META_MOVE_TOWARDS"},
-    {Enemy1State::META_NAVIGATE_GRAPH_CHASE, "META_NAVIGATE_GRAPH_CHASE"},
-    {Enemy1State::IDLE, "IDLE"},
-    {Enemy1State::FLOAT, "FLOAT"},
-    {Enemy1State::PREJUMP, "PREJUMP"},
-    {Enemy1State::RUN, "RUN"},
-};
+SERIALIZE_ENUM(Enemy1State, {
+    ENUM_AUTO(Enemy1State, META_ROAM),
+    ENUM_AUTO(Enemy1State, META_BLIND_CHASE),
+    ENUM_AUTO(Enemy1State, META_PROXY_SWITCH),
+    ENUM_AUTO(Enemy1State, META_MOVE_TOWARDS),
+    ENUM_AUTO(Enemy1State, META_NAVIGATE_GRAPH_CHASE),
+    ENUM_AUTO(Enemy1State, IDLE),
+    ENUM_AUTO(Enemy1State, FLOAT),
+    ENUM_AUTO(Enemy1State, PREJUMP),
+    ENUM_AUTO(Enemy1State, RUN)
+})
 
 template<bool REQUESTED_ONLY, bool HOLD_WHILE_REQUESTED>
 class NPCState : public PhysicalState
 {
 public:
     template<typename PLAYER_STATE_T>
-    NPCState(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_, int anim_) :
-        PhysicalState(stateId_, stateName_, std::move(transitionableFrom_), anim_)
+    NPCState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_, int anim_) :
+        PhysicalState(stateId_, std::move(transitionableFrom_), anim_)
     {
     }
 
@@ -97,8 +98,8 @@ class AimedPrejump : public NPCState<true, false>
 {
 public:
     template<typename PLAYER_STATE_T>
-    AimedPrejump(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_, int anim_, float gravity_, float maxInitialHorSpd_) :
-        NPCState<true, false>(stateId_, stateName_, std::move(transitionableFrom_), anim_),
+    AimedPrejump(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_, int anim_, float gravity_, float maxInitialHorSpd_) :
+        NPCState<true, false>(stateId_, std::move(transitionableFrom_), anim_),
         m_gravity(gravity_),
         m_maxInitialHorSpd(maxInitialHorSpd_)
     {}
@@ -115,8 +116,8 @@ class AimedFloat : public NPCState<false, false>
 {
 public:
     template<typename PLAYER_STATE_T>
-    AimedFloat(PLAYER_STATE_T stateId_, const std::string &stateName_, StateMarker &&transitionableFrom_, int anim_) :
-        NPCState<false, false>(stateId_, stateName_, std::move(transitionableFrom_), anim_)
+    AimedFloat(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_, int anim_) :
+        NPCState<false, false>(stateId_, std::move(transitionableFrom_), anim_)
     {}
 
     virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;

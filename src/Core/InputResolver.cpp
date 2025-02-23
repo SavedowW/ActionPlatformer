@@ -1,6 +1,6 @@
 #include "InputResolver.h"
 
-InputResolver::InputResolver(InputSystem *input_) :
+InputResolver::InputResolver(InputSystem &input_) :
     InputReactor(input_)
 {
 
@@ -8,11 +8,11 @@ InputResolver::InputResolver(InputSystem *input_) :
 
 void InputResolver::subscribePlayer()
 {
-    subscribe(EVENTS::UP);
-    subscribe(EVENTS::RIGHT);
-    subscribe(EVENTS::DOWN);
-    subscribe(EVENTS::LEFT);
-    subscribe(EVENTS::ATTACK);
+    subscribe(GAMEPLAY_EVENTS::UP);
+    subscribe(GAMEPLAY_EVENTS::RIGHT);
+    subscribe(GAMEPLAY_EVENTS::DOWN);
+    subscribe(GAMEPLAY_EVENTS::LEFT);
+    subscribe(GAMEPLAY_EVENTS::ATTACK);
 }
 
 void InputResolver::unsubscribePlayer()
@@ -20,27 +20,27 @@ void InputResolver::unsubscribePlayer()
     unsubscribeFromAll();
 }
 
-void InputResolver::receiveInput(EVENTS event_, const float scale_)
+void InputResolver::receiveEvents(GAMEPLAY_EVENTS event_, const float scale_)
 {
     switch(event_)
     {
-        case (EVENTS::UP):
+        case (GAMEPLAY_EVENTS::UP):
             m_currentInput.m_inputs[INPUT_BUTTON::UP] = (scale_ > 0.0f ? (m_currentInput.m_inputs[INPUT_BUTTON::UP]  != INPUT_BUTTON_STATE::HOLD ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::HOLD) : INPUT_BUTTON_STATE::RELEASED);
             break;
 
-        case (EVENTS::DOWN):
+        case (GAMEPLAY_EVENTS::DOWN):
             m_currentInput.m_inputs[INPUT_BUTTON::DOWN] = (scale_ > 0.0f ? (m_currentInput.m_inputs[INPUT_BUTTON::DOWN]  != INPUT_BUTTON_STATE::HOLD ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::HOLD) : INPUT_BUTTON_STATE::RELEASED);
             break;
 
-        case (EVENTS::LEFT):
+        case (GAMEPLAY_EVENTS::LEFT):
             m_currentInput.m_inputs[INPUT_BUTTON::LEFT] = (scale_ > 0.0f ? (m_currentInput.m_inputs[INPUT_BUTTON::LEFT]  != INPUT_BUTTON_STATE::HOLD ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::HOLD) : INPUT_BUTTON_STATE::RELEASED);
             break;
 
-        case (EVENTS::RIGHT):
+        case (GAMEPLAY_EVENTS::RIGHT):
             m_currentInput.m_inputs[INPUT_BUTTON::RIGHT] = (scale_ > 0.0f ? (m_currentInput.m_inputs[INPUT_BUTTON::RIGHT]  != INPUT_BUTTON_STATE::HOLD ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::HOLD) : INPUT_BUTTON_STATE::RELEASED);
             break;
         
-        case (EVENTS::ATTACK):
+        case (GAMEPLAY_EVENTS::ATTACK):
             m_currentInput.m_inputs[INPUT_BUTTON::ATTACK] = (scale_ > 0.0f ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::RELEASED);
             break;
     }

@@ -8,8 +8,8 @@ RenderSystem::RenderSystem(entt::registry &reg_, Application &app_, Camera &came
     m_camera(camera_),
     m_routesCollection(rtCol_)
 {
-    subscribe(EVENTS::REN_DBG_1);
-    setInputEnabled(true);
+    subscribe(GAMEPLAY_EVENTS::REN_DBG_1);
+    setInputEnabled();
 }
 
 void RenderSystem::update()
@@ -380,11 +380,11 @@ void RenderSystem::drawColliderRoute(const ColliderPointRouting &route_)
     }
 }
 
-void RenderSystem::receiveInput(EVENTS event_, const float scale_)
+void RenderSystem::receiveEvents(GAMEPLAY_EVENTS event_, const float scale_)
 {
     switch (event_)
     {
-        case EVENTS::REN_DBG_1:
+        case GAMEPLAY_EVENTS::REN_DBG_1:
             if (scale_ > 0)
                 for (auto &el : m_routesCollection.m_routes)
                     el.second.m_dbgIter = (el.second.m_dbgIter + 1 > el.second.m_links.size() ? 0 : el.second.m_dbgIter + 1);

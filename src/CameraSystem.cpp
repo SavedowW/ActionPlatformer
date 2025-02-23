@@ -9,8 +9,8 @@ CameraSystem::CameraSystem(entt::registry &reg_, Application &app_, Camera &cam_
     m_reg(reg_),
     m_cam(cam_)
 {
-    subscribe(EVENTS::CAM_STOP);
-    setInputEnabled(true);
+    subscribe(GAMEPLAY_EVENTS::CAM_STOP);
+    setInputEnabled();
 }
 
 void CameraSystem::update()
@@ -132,11 +132,11 @@ void CameraSystem::debugDraw(Renderer &ren_, Camera &cam_)
     }
 }
 
-void CameraSystem::receiveInput(EVENTS event, const float scale_)
+void CameraSystem::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
 {
     switch (event)
     {
-        case (EVENTS::CAM_STOP):
+        case (GAMEPLAY_EVENTS::CAM_STOP):
             if (scale_ > 0)
                 m_cameraStopped = !m_cameraStopped;
             break;

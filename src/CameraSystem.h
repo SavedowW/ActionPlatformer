@@ -16,7 +16,7 @@ struct CameraSystem : public InputReactor
     bool updateFocus(const Collider &playerPb_);
     void debugDraw(Renderer &ren_, Camera &cam_);
 
-    void receiveInput(EVENTS event, const float scale_) override;
+    void receiveEvents(GAMEPLAY_EVENTS event, const float scale_) override;
 
     entt::registry &m_reg;
     entt::entity m_playerId;

@@ -25,7 +25,7 @@ public:
     void setLevel(int levelId_, Level *level_);
 
     Renderer *getRenderer();
-    InputSystem *getInputSystem();
+    InputSystem &getInputSystem();
     TextureManager *getTextureManager();
     AnimationManager *getAnimationManager();
     TextManager *getTextManager();

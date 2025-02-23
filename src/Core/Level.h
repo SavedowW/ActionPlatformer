@@ -24,7 +24,7 @@ public:
 	virtual void leave();
     LevelResult proceed();
 
-    void receiveInput(EVENTS event, const float scale_) override;
+    void receiveEvents(GAMEPLAY_EVENTS event, const float scale_) override;
 
     virtual ~Level() = default;
 
