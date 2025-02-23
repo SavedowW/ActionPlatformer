@@ -116,21 +116,28 @@ void InputSystem::handleInput()
 
         case (SDL_CONTROLLERAXISMOTION):
         {
-            float posValue, negValue;
-            if (e.caxis.value > 0)
+            auto resolvedValue = e.caxis.value;
+            if (abs(resolvedValue) < m_stickDeadzone)
+                resolvedValue = 0;
+
+            auto lastValueRes = m_lastAxisValue.find(e.caxis.axis);
+            if (lastValueRes != m_lastAxisValue.end())
             {
-                if (e.caxis.value < m_stickDeadzone)
-                    posValue = 0;
-                else
-                    posValue = e.caxis.value / 32767.0f;
+                if (lastValueRes->second == resolvedValue)
+                    break;
+
+                lastValueRes->second = resolvedValue;
+            }
+
+            float posValue, negValue;
+            if (resolvedValue >= 0)
+            {
+                posValue = resolvedValue / 32767.0f;
                 negValue = 0;
             }
             else
             {
-                if (-e.caxis.value < m_stickDeadzone)
-                    negValue = 0;
-                else
-                    negValue = e.caxis.value / -32768.0f;
+                negValue = resolvedValue / -32768.0f;
                 posValue = 0;
             }
 
@@ -142,7 +149,7 @@ void InputSystem::handleInput()
             if (resNeg != m_gamepadNegativeAxisBindings.end())
                 send(resNeg->second, negValue);
 
-            std::cout << "Controller axis motion " << gamepadAxisNames.at(e.caxis.axis) << " : " << int(e.caxis.value) << std::endl;
+            //std::cout << "Controller axis motion " << gamepadAxisNames.at(e.caxis.axis) << " : " << int(e.caxis.value) << std::endl;
         }
         break;
 

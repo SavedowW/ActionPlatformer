@@ -89,7 +89,7 @@ public:
 
         const auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
         auto &compFallthrough = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
-        if (m_canFallThrough[currentFrame_] && compInput.m_inputResolver->getInputQueue()[0].m_inputs.at(INPUT_BUTTON::DOWN) == INPUT_BUTTON_STATE::PRESSED)
+        if (m_canFallThrough[currentFrame_] && compInput.m_inputResolver->getInputQueue()[0].isInputActive(INPUT_BUTTON::DOWN))
             compFallthrough.setIgnoringObstacles();
 
         if (!res)

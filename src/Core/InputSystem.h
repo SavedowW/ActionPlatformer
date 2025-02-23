@@ -86,12 +86,20 @@ private:
     };
 
     std::map<Uint8, EVENTS> m_gamepadNegativeAxisBindings = {
-        {SDL_CONTROLLER_AXIS_LEFTX, EVENTS::LEFT}
+        {SDL_CONTROLLER_AXIS_LEFTX, EVENTS::LEFT},
+        {SDL_CONTROLLER_AXIS_LEFTY, EVENTS::UP}
+    };
+
+    std::map<Uint8, Sint16> m_lastAxisValue = {
+        {SDL_CONTROLLER_AXIS_LEFTX, 0},
+        {SDL_CONTROLLER_AXIS_LEFTY, 0},
+        {SDL_CONTROLLER_AXIS_RIGHTX, 0},
+        {SDL_CONTROLLER_AXIS_RIGHTY, 0}
     };
 
     std::map<int, ControllerDescription> m_controllers;
 
-    const Sint16 m_stickDeadzone = 8000;
+    const Sint16 m_stickDeadzone = 16000;
 };
 
 
