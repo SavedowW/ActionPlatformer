@@ -54,7 +54,7 @@ namespace fonts
 class TextManager
 {
 public:
-    TextManager(Renderer *renderer_, const std::string &basePath_);
+    TextManager(Renderer *renderer_);
 
     void renderText(const std::string &text_, int fontid_, Vector2<int> pos_, fonts::HOR_ALIGN horAlign_ = fonts::HOR_ALIGN::LEFT, Camera *cam_ = nullptr);
 

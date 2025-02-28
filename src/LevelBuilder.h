@@ -21,7 +21,6 @@ private:
     Traverse::TraitT lineToTraverse(const std::string &line_) const;
 
     Application &m_app;
-    const std::string m_root;
     entt::registry &m_reg;
 
     TilesetBase m_tilebase;

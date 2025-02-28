@@ -59,7 +59,7 @@ struct ContainedAnimationData
 class AnimationManager
 {
 public:
-	AnimationManager(Renderer* renderer_, const std::string &rootPath_);
+	AnimationManager(Renderer* renderer_);
 	std::shared_ptr<TextureArr> getTextureArr(int id_);
 	void preload(const std::string &toPreload_);
 	void preload(int toPreload_);
@@ -67,7 +67,6 @@ public:
 	int getAnimID(const std::string &animName_) const;
 
 private:
-	std::string m_rootPath;
 	Renderer* m_renderer;
 
 	std::map<std::string, int> m_ids;

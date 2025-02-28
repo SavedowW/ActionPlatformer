@@ -1,41 +1,29 @@
 #include "Application.h"
 #include "AnimationManager.h"
+#include "FilesystemUtils.h"
 #include <cassert>
 
-AnimationManager::AnimationManager(Renderer* renderer_, const std::string &rootPath_) :
-	m_renderer(renderer_),
-	m_rootPath(rootPath_ + "/")
+AnimationManager::AnimationManager(Renderer* renderer_) :
+	m_renderer(renderer_)
 {
-	auto sprPath = rootPath_ + "/Resources/Sprites/";
-	std::filesystem::path basePath(sprPath);
-	/*for (const auto &entry : std::filesystem::recursive_directory_iterator(sprPath))
-	{
-		std::filesystem::path dirpath = entry.path();
-		std::filesystem::path filepath(entry.path().string() + "/animinfo.txt");
-		if (entry.is_directory() && std::filesystem::exists(filepath))
-		{
-			ContainedAnimationData cad;
-			cad.m_path = dirpath.string();
-			m_textureArrs.push_back(cad);
-			auto idstring = utils::getRelativePath(sprPath, dirpath.string());
-			m_ids[idstring] = m_textureArrs.size() - 1;
-		}
-	}*/
+	auto sprDirectory = Filesystem::getRootDirectory() + "Resources/Sprites/";
+	std::filesystem::path sprPath(sprDirectory);
 
 	std::cout << "=== LISTING FOUND ANIMATIONS ===\n";
-	for (const auto &entry : std::filesystem::recursive_directory_iterator(sprPath))
+	for (const auto &entry : std::filesystem::recursive_directory_iterator(sprDirectory))
 	{
 		std::filesystem::path dirpath = entry.path();
 		if (entry.is_regular_file() && dirpath.extension() == ".panm")
 		{
-			auto path = utils::getRelativePath(sprPath, dirpath.string());
-			std::cout << utils::removeExtention(path) << std::endl;
+			auto path = Filesystem::getRelativePath(sprDirectory, dirpath);
+			auto noExtension = Filesystem::removeExtention(path);
+			std::cout << noExtension << std::endl;
 
 			ContainedAnimationData cad;
 			cad.m_path = dirpath.string();
 
 			m_textureArrs.push_back(cad);
-			m_ids[utils::removeExtention(path)] = m_textureArrs.size() - 1;
+			m_ids[noExtension] = m_textureArrs.size() - 1;
 		}
 	}
 	std::cout << "=== LISTING ENDS HERE ===\n";

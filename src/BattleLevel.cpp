@@ -46,7 +46,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
 
     m_enemysys.makeEnemy();
 
-    m_lvlBuilder.buildLevel("Resources/Sprites/Tiles/tilemap.json", playerId, m_graph, m_cldRoutesCollection);
+    m_lvlBuilder.buildLevel("Tilemaps/tilemap.json", playerId, m_graph, m_cldRoutesCollection);
 
     m_chatBoxSys.setPlayerEntity(m_playerId);
 

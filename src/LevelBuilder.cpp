@@ -5,6 +5,7 @@
 #include "CameraFocusArea.h"
 #include "StateMachine.h"
 #include "ColliderRouting.h"
+#include "FilesystemUtils.h"
 #include <fstream>
 #include <limits>
 #include <sstream>
@@ -17,15 +18,14 @@ void addTrigger(entt::registry &reg_, const Trigger &trg_)
 
 LevelBuilder::LevelBuilder(Application &app_, entt::registry &reg_) :
     m_app(app_),
-    m_root(app_.getBasePath()),
     m_reg(reg_),
     m_tilebase(app_)
 {
 }
 
-void LevelBuilder::buildLevel(const std::string &mapDescr_,entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_)
+void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_)
 {
-    auto fullpath = m_root + "/" + mapDescr_;
+    auto fullpath = Filesystem::getRootDirectory() + mapDescr_;
 
     std::map<int, entt::entity> idToEntity;
 

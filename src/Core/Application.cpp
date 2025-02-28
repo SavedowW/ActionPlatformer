@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "FilesystemUtils.h"
 
 Application::Application()
 {
@@ -25,16 +26,20 @@ Application::Application()
 	{
 		std::cout << "MIX ititialization error: " << Mix_GetError() << std::endl;
 	}
+    Filesystem::setRootDirectory(getBasePath());
 
-
-    m_appRoot = getBasePath();
+    Filesystem::ensureDirectoryRelative("Resources");
+	Filesystem::ensureDirectoryRelative("Resources/Sprites");
+	Filesystem::ensureDirectoryRelative("Resources/Fonts");
+	Filesystem::ensureDirectoryRelative("Tilemaps");
+	Filesystem::ensureDirectoryRelative("Configs");
 
     m_window = std::make_unique<Window>(Vector2{1600.0f, 900.0f}, "GameName");
     m_renderer = std::make_unique<Renderer>(*m_window.get());
-    m_inputSystem = std::make_unique<InputSystem>(m_appRoot);
-    m_textureManager = std::make_unique<TextureManager>(m_renderer.get(), m_appRoot);
-    m_animationManager = std::make_unique<AnimationManager>(m_renderer.get(), m_appRoot);
-    m_textManager = std::make_unique<TextManager>(m_renderer.get(), m_appRoot);
+    m_inputSystem = std::make_unique<InputSystem>();
+    m_textureManager = std::make_unique<TextureManager>(m_renderer.get());
+    m_animationManager = std::make_unique<AnimationManager>(m_renderer.get());
+    m_textManager = std::make_unique<TextManager>(m_renderer.get());
 
     m_inputSystem->initiateControllers();
 }

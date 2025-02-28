@@ -30,9 +30,9 @@ public:
     AnimationManager *getAnimationManager();
     TextManager *getTextManager();
 
+private:
     std::string getBasePath();
 
-private:
     std::unique_ptr<Window> m_window;
     std::unique_ptr<Renderer> m_renderer;
     std::unique_ptr<InputSystem> m_inputSystem;
@@ -42,8 +42,6 @@ private:
 
     Level* m_levels[gamedata::global::numberOfLevels] {nullptr};
     LevelResult m_levelResult = {gamedata::global::initialLevelId};
-
-    std::string m_appRoot;
 };
 
 #endif

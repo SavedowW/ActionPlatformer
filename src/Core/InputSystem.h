@@ -376,7 +376,7 @@ struct ControllerDescription
 class InputSystem
 {
 public:
-    InputSystem(const std::string &rootPath_);
+    InputSystem();
     void handleInput();
     void subscribe(GAMEPLAY_EVENTS ev_, subscriber sub_);
     void unsubscribe(GAMEPLAY_EVENTS ev_, subscriber sub_);

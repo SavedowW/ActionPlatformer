@@ -5,6 +5,7 @@
 #include "Utils.h"
 #include <type_traits>
 #include <map>
+#include <sstream>
 
 enum class ORIENTATION : int8_t
 {

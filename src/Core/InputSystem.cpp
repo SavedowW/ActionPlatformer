@@ -1,17 +1,16 @@
 #include "InputSystem.h"
 #include "JsonUtils.hpp"
+#include "FilesystemUtils.h"
 #include <iostream>
 #include <filesystem>
 #include <fstream>
 
-InputSystem::InputSystem(const std::string &rootPath_) :
-    m_rootPath(rootPath_ + "/Configs"),
-    m_defaultsPath(rootPath_ + "/Configs/defaults.json"),
-    m_configPath(rootPath_ + "/Configs/inputs.json")
+InputSystem::InputSystem() :
+    m_rootPath(Filesystem::getRootDirectory() + "Configs"),
+    m_defaultsPath(Filesystem::getRootDirectory() + "Configs/defaults.json"),
+    m_configPath(Filesystem::getRootDirectory() + "Configs/inputs.json")
 
 {
-    std::filesystem::create_directory(m_rootPath);
-
     if (!std::filesystem::exists(m_defaultsPath))
     {
         std::cout << m_defaultsPath << " was not found, initializing default inputs and inputs config" << std::endl;
@@ -48,11 +47,6 @@ void InputSystem::handleInput()
 
         case (SDL_KEYDOWN):
         {
-            if (isSerializable(e.key.keysym.sym))
-                std::cout << serialize(e.key.keysym.sym) << std::endl;
-            else
-                std::cout << int(e.key.keysym.sym) << std::endl;
-
             if (e.key.repeat)
                 break;
 

@@ -15,7 +15,7 @@ struct ContainedTextureData
 class TextureManager
 {
 public:
-	TextureManager(Renderer* renderer_, const std::string &rootPath_);
+	TextureManager(Renderer* renderer_);
 	std::shared_ptr<Texture> getTexture(int id_);
 	void preload(const std::string &toPreload_);
 	void preload(int toPreload_);
@@ -23,7 +23,6 @@ public:
 	int getTexID(const std::string &texName_) const;
 
 private:
-	std::string m_rootPath;
 	Renderer* m_renderer;
 	std::map<std::string, int> m_ids;
 	std::vector<ContainedTextureData> m_textures_;

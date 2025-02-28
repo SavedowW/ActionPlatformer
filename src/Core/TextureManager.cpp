@@ -1,10 +1,10 @@
 #include "TextureManager.h"
+#include "FilesystemUtils.h"
 
-TextureManager::TextureManager(Renderer* renderer_, const std::string &rootPath_) :
-	m_renderer(renderer_),
-	m_rootPath(rootPath_)
+TextureManager::TextureManager(Renderer* renderer_) :
+	m_renderer(renderer_)
 {
-	auto sprPath = rootPath_ + "/Resources/Sprites/";
+	auto sprPath = Filesystem::getRootDirectory() + "Resources/Sprites/";
 	std::filesystem::path basePath(sprPath);
 
 	std::cout << "=== LISTING FOUND TEXTURES ===\n";
@@ -13,14 +13,15 @@ TextureManager::TextureManager(Renderer* renderer_, const std::string &rootPath_
 		std::filesystem::path dirpath = entry.path();
 		if (entry.is_regular_file() && dirpath.extension() == ".png")
 		{
-			auto path = utils::getRelativePath(sprPath, dirpath.string());
-			std::cout << utils::removeExtention(path) << std::endl;
+			auto path = Filesystem::getRelativePath(basePath, dirpath);
+			auto noExtension = Filesystem::removeExtention(path);
+			std::cout << noExtension << std::endl;
 
-			ContainedTextureData cad;
-			cad.m_path = dirpath.string();
+			ContainedTextureData ctd;
+			ctd.m_path = dirpath.string();
 
-			m_textures_.push_back(cad);
-			m_ids[utils::removeExtention(path)] = m_textures_.size() - 1;
+			m_textures_.push_back(ctd);
+			m_ids[noExtension] = m_textures_.size() - 1;
 		}
 	}
 	std::cout << "=== LISTING ENDS HERE ===\n";
