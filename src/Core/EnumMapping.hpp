@@ -25,6 +25,14 @@ const std::string serialize(const T &value_)
 }
 
 template<typename T>
+const bool isSerializable(const T &value_)
+{
+    static const std::map<T, std::string> m(makeDirectMap<T>());
+
+    return m.contains(value_);
+}
+
+template<typename T>
 const T deserialize(const std::string &value_)
 {
     static const std::map<std::string, T> m(makeReversedMap<T>());
@@ -50,6 +58,7 @@ inline const std::map<std::string, EnumType> makeReversedMap<EnumType>() \
 }
 
 #define ENUM_INIT(EnumType, Value, Line) {EnumType::Value, Line}
+#define ENUM_INIT_NODOTS(Value, Line) {Value, Line}
 #define ENUM_AUTO(EnumType, Value) {EnumType::Value, #Value}
 
 #endif

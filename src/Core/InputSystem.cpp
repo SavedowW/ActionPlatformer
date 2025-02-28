@@ -1,9 +1,38 @@
 #include "InputSystem.h"
+#include "JsonUtils.hpp"
 #include <iostream>
+#include <filesystem>
+#include <fstream>
 
-InputSystem::InputSystem()
+InputSystem::InputSystem(const std::string &rootPath_) :
+    m_rootPath(rootPath_ + "/Configs"),
+    m_defaultsPath(rootPath_ + "/Configs/defaults.json"),
+    m_configPath(rootPath_ + "/Configs/inputs.json")
+
 {
-    setupDefaultMapping();
+    std::filesystem::create_directory(m_rootPath);
+
+    if (!std::filesystem::exists(m_defaultsPath))
+    {
+        std::cout << m_defaultsPath << " was not found, initializing default inputs and inputs config" << std::endl;
+        setupDefaultMapping();
+        exportMappingAs(m_defaultsPath);
+        exportMappingAs(m_configPath);
+    }
+    else
+    {
+        if (!std::filesystem::exists(m_configPath))
+        {
+            std::cout << m_configPath << " was not found, initializing inputs config" << std::endl;
+            importMappingEnsureUnique(m_defaultsPath);
+            exportMappingAs(m_configPath);
+        }
+        else
+        {
+            std::cout << "Loading config from " << m_configPath << std::endl;
+            importMappingEnsureUnique(m_configPath);
+        }
+    }
 }
 
 void InputSystem::handleInput()
@@ -19,8 +48,14 @@ void InputSystem::handleInput()
 
         case (SDL_KEYDOWN):
         {
+            if (isSerializable(e.key.keysym.sym))
+                std::cout << serialize(e.key.keysym.sym) << std::endl;
+            else
+                std::cout << int(e.key.keysym.sym) << std::endl;
+
             if (e.key.repeat)
                 break;
+
             resolveBinding(m_gameplayBindings.m_keyboardBindings, e.key.keysym.sym, 1);
             resolveBinding(m_hudBindings.m_keyboardBindings, e.key.keysym.sym, 1);
             
@@ -240,6 +275,64 @@ void InputSystem::setupDefaultMapping()
         {SDL_CONTROLLER_AXIS_LEFTX, HUD_EVENTS::LEFT},
         {SDL_CONTROLLER_AXIS_LEFTY, HUD_EVENTS::UP}
     };
+}
+
+void InputSystem::exportMappingAs(const std::string &fileName_)
+{
+    nlohmann::json out;
+
+    utils::exportMap(out["GameplayKeyboard"], m_gameplayBindings.m_keyboardBindings);
+    utils::exportMap(out["GameplayGamepad"], m_gameplayBindings.m_gamepadBindings);
+    utils::exportMap(out["GameplayAxisPos"], m_gameplayBindings.m_gamepadPositiveAxisBindings);
+    utils::exportMap(out["GameplayAxisNeg"], m_gameplayBindings.m_gamepadNegativeAxisBindings);
+
+    utils::exportMap(out["HudKeyboard"], m_hudBindings.m_keyboardBindings);
+    utils::exportMap(out["HudGamepad"], m_hudBindings.m_gamepadBindings);
+    utils::exportMap(out["HudAxisPos"], m_hudBindings.m_gamepadPositiveAxisBindings);
+    utils::exportMap(out["HudAxisNeg"], m_hudBindings.m_gamepadNegativeAxisBindings);
+
+    std::ofstream fout(fileName_);
+    fout << out;
+}
+
+void InputSystem::importMappingEnsureUnique(const std::string &fileName_)
+{
+    bool result = false;
+
+    std::ifstream injson(fileName_);
+    if (!injson.is_open())
+    {
+        std::cout << "Failed to open mapping at \"" << fileName_ << "\"\n";
+        return;
+    }
+
+    nlohmann::json in = nlohmann::json::parse(injson);
+    injson.close();
+
+    m_gameplayBindings.m_keyboardBindings.clear();
+    m_gameplayBindings.m_gamepadBindings.clear();
+    m_gameplayBindings.m_gamepadPositiveAxisBindings.clear();
+    m_gameplayBindings.m_gamepadNegativeAxisBindings.clear();
+    m_hudBindings.m_keyboardBindings.clear();
+    m_hudBindings.m_gamepadBindings.clear();
+    m_hudBindings.m_gamepadPositiveAxisBindings.clear();
+    m_hudBindings.m_gamepadNegativeAxisBindings.clear();
+
+    result = utils::importMapEnsureUnique(in["GameplayKeyboard"], m_gameplayBindings.m_keyboardBindings, result);
+    result = utils::importMapEnsureUnique(in["GameplayGamepad"], m_gameplayBindings.m_gamepadBindings, result);
+    result = utils::importMapEnsureUnique(in["GameplayAxisPos"], m_gameplayBindings.m_gamepadPositiveAxisBindings, result);
+    result = utils::importMapEnsureUnique(in["GameplayAxisNeg"], m_gameplayBindings.m_gamepadNegativeAxisBindings, result);
+
+    result = utils::importMapEnsureUnique(in["HudKeyboard"], m_hudBindings.m_keyboardBindings, result);
+    result = utils::importMapEnsureUnique(in["HudGamepad"], m_hudBindings.m_gamepadBindings, result);
+    result = utils::importMapEnsureUnique(in["HudAxisPos"], m_hudBindings.m_gamepadPositiveAxisBindings, result);
+    result = utils::importMapEnsureUnique(in["HudAxisNeg"], m_hudBindings.m_gamepadNegativeAxisBindings, result);
+
+    if (result)
+    {
+        std::cout << fileName_ << " included duplicated values, resaving file" << std::endl;
+        exportMappingAs(fileName_);
+    }
 }
 
 template <typename InputT, typename ButtonT, typename EventT>

@@ -31,7 +31,7 @@ Application::Application()
 
     m_window = std::make_unique<Window>(Vector2{1600.0f, 900.0f}, "GameName");
     m_renderer = std::make_unique<Renderer>(*m_window.get());
-    m_inputSystem = std::make_unique<InputSystem>();
+    m_inputSystem = std::make_unique<InputSystem>(m_appRoot);
     m_textureManager = std::make_unique<TextureManager>(m_renderer.get(), m_appRoot);
     m_animationManager = std::make_unique<AnimationManager>(m_renderer.get(), m_appRoot);
     m_textManager = std::make_unique<TextManager>(m_renderer.get(), m_appRoot);
