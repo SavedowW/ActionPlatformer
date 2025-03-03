@@ -65,5 +65,12 @@ float FrameTimer<RESULT_IF_INACTIVE>::getProgressNormalized() const
     return (float)m_currentFrame / m_framesToWait;
 }
 
+template <bool RESULT_IF_INACTIVE>
+void FrameTimer<RESULT_IF_INACTIVE>::forceOver()
+{
+    m_framesToWait = 1;
+    m_currentFrame = 1;
+}
+
 template class FrameTimer<true>;
 template class FrameTimer<false>;

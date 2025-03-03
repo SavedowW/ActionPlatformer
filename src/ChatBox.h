@@ -20,36 +20,47 @@ struct ChatMessage
     std::vector<const fonts::Symbol*> m_symbols;
     std::vector<FrameTimer<false>> m_symbolAppearTimers;
     std::vector<int> m_lineHeights;
+
     uint32_t m_defaultCharacterDelay = 2;
     uint32_t m_defaultAppearDuration = 12;
     uint32_t m_currentProceedingCharacter = 0;
     uint32_t m_firstCharacterForFadingIn = 0;
-    enum class State { APPEAR, IDLE } m_currentState = State::APPEAR;
+
+    enum class MessageState { APPEAR, IDLE } m_currentState = MessageState::APPEAR;
 
     Vector2<int> compileAndGetSize(const TextManager &textMan_);
+    void skip();
 };
 
 struct ChatMessageSequence
 {
     ChatMessageSequence(entt::entity src_, const ChatBoxSide &side_, bool fitScreen_, bool proceedByInput_, bool claimInputs_, bool returnInputs_);
     void compileAndSetSize(const TextManager &textMan_);
+    void takeInput();
 
     entt::entity m_source;
     Vector2<int> m_oldSize;
     Vector2<int> m_currentSize;
     Vector2<int> m_targetSize;
-    FrameTimer<true> m_timer;
-    FrameTimer<true> m_characterTimer;
     ChatBoxSide m_side;
     bool m_fitScreen;
 
+    // Timer for box appear / disappear animation and delay between character
+    FrameTimer<true> m_timer;
+
+    // Progress with inputs
     bool m_proceedByInput = false;
+
+    // Disable inputs for the player when the sequence begins
     bool m_claimInputs = false;
+
+    // Return inputs to the player once the sequence is over
     bool m_returnInputs = false;
+
+    enum class BoxState { APPEAR, IDLE, DISAPPEAR } m_currentState = BoxState::APPEAR;
 
     std::vector<ChatMessage> m_messages;
     ChatMessage *m_currentMessage = nullptr;
-
 };
 
 class ChatboxSystem : public InputReactor
@@ -62,10 +73,9 @@ public:
     void addSequence(ChatMessageSequence &&seq_);
     void receiveEvents(HUD_EVENTS event, const float scale_) override;
 
-    void endSequence(size_t seqId_);
-
     void renderText(ChatMessageSequence &seq_, const Vector2<int> &tl_);
 
+    void update();
     void draw();
 
 private:

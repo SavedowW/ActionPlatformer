@@ -44,7 +44,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_hudsys.m_playerId = playerId;
     m_enemysys.m_playerId = playerId;
 
-    m_enemysys.makeEnemy();
+    //m_enemysys.makeEnemy();
 
     m_lvlBuilder.buildLevel("Tilemaps/tilemap.json", playerId, m_graph, m_cldRoutesCollection);
 
@@ -180,6 +180,9 @@ void BattleLevel::update()
         Navigatable - read / write
     */
     m_navsys.update();
+
+    // Not actually an ECS system
+    m_chatBoxSys.update();
 
     /*
         Just updates camera shake logic, but many systems can cause shake

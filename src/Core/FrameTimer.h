@@ -14,6 +14,7 @@ public:
 	bool isActive() const;
 	uint32_t getCurrentFrame() const;
 	float getProgressNormalized() const;
+	void forceOver();
 
 private:
 	uint32_t m_framesToWait;
