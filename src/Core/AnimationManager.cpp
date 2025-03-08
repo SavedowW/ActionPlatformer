@@ -7,7 +7,6 @@ AnimationManager::AnimationManager(Renderer* renderer_) :
 	m_renderer(renderer_)
 {
 	auto sprDirectory = Filesystem::getRootDirectory() + "Resources/Sprites/";
-	std::filesystem::path sprPath(sprDirectory);
 
 	std::cout << "=== LISTING FOUND ANIMATIONS ===\n";
 	for (const auto &entry : std::filesystem::recursive_directory_iterator(sprDirectory))

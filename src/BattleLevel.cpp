@@ -44,7 +44,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_hudsys.m_playerId = playerId;
     m_enemysys.m_playerId = playerId;
 
-    //m_enemysys.makeEnemy();
+    m_enemysys.makeEnemy();
 
     m_lvlBuilder.buildLevel("Tilemaps/tilemap.json", playerId, m_graph, m_cldRoutesCollection);
 
