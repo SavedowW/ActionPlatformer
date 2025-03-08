@@ -22,6 +22,7 @@
 #include "BattleSystem.h"
 #include "ChatBox.h"
 #include "ColliderRouting.h"
+#include "EnvironmentSystem.h"
 
 class BattleLevel : public Level
 {
@@ -53,6 +54,7 @@ protected:
     ParticleSystem m_partsys;
     BattleSystem m_battlesys;
     ChatboxSystem m_chatBoxSys;
+    EnvironmentSystem m_envSystem;
 
     NavGraph m_graph;
 

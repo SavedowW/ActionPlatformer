@@ -23,7 +23,7 @@ LevelBuilder::LevelBuilder(Application &app_, entt::registry &reg_) :
 {
 }
 
-void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_)
+void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_, EnvironmentSystem &env_)
 {
     auto fullpath = Filesystem::getRootDirectory() + mapDescr_;
 
@@ -43,6 +43,8 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
     {
         auto firstgid = static_cast<int>(jsonTileset["firstgid"]);
         auto filename = static_cast<std::string>(jsonTileset["source"]);
+        if (filename.substr(0, 4) == "util")
+            continue;
         filename = filename.substr(0, filename.size() - 4);
         filename = "Tiles/" + filename;
         m_tilebase.addTileset(filename, firstgid);
@@ -139,6 +141,36 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
                             static_cast<float>(obj["x"]),
                             static_cast<float>(obj["y"])
                         });
+                }
+            }
+            else if (layer["name"] == "Environment")
+            {
+                auto depth = layerId;
+
+                if (layer.contains("properties"))
+                {
+                    for (const auto &prop : layer["properties"])
+                    {
+                        if (prop["name"] == "layer")
+                            depth = static_cast<int>(prop["value"]);
+                    }
+                }
+
+                for (const auto &obj : layer["objects"])
+                {
+                    int gid = static_cast<int>(obj["gid"]);
+                    Vector2<int> pos = {static_cast<int>(obj["x"]), static_cast<int>(obj["y"])};
+                    switch (gid)
+                    {
+                        case 65:
+                            pos.x += 15;
+                            pos.y -= 4;
+                            env_.makeGrassTop(pos);
+                            break;
+
+                        default:
+                            std::cout << "Unknown object with gid " << gid << std::endl;
+                    }
                 }
             }
             else if (layer["name"] == "Collision")

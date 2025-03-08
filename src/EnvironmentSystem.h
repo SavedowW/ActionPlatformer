@@ -8,7 +8,9 @@ class EnvironmentSystem
 public:
     EnvironmentSystem(Application &app_, entt::registry &reg_);
 
-    void makeGrassTop(const Vector2<float> &pos_);
+    void makeGrassTop(const Vector2<int> &pos_);
+
+    void update(entt::entity playerId_);
 
 private:
     Application &m_app;

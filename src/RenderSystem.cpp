@@ -1,5 +1,6 @@
 #include "RenderSystem.h"
 #include "Profile.h"
+#include "EnvComponents.h"
 
 RenderSystem::RenderSystem(entt::registry &reg_, Application &app_, Camera &camera_, ColliderRoutesCollection &rtCol_) :
     InputReactor(app_.getInputSystem()),
@@ -56,10 +57,8 @@ void RenderSystem::draw()
 {
     const auto viewColliders = m_reg.view<ComponentStaticCollider>();
     const auto viewTriggers = m_reg.view<ComponentTrigger>();
-    const auto viewPhysical = m_reg.view<ComponentTransform, ComponentPhysical>();
     auto viewFocuses = m_reg.view<CameraFocusArea>();
     const auto viewTransforms = m_reg.view<ComponentTransform>();
-    const auto viewBtlAct = m_reg.view<ComponentTransform, BattleActor>();
     const auto viewHealthOwners = m_reg.view<ComponentTransform, HealthRendererCommonWRT>();
 
     const auto renderable = m_reg.view<RenderLayer>();
@@ -89,11 +88,23 @@ void RenderSystem::draw()
 
     if constexpr (gamedata::debug::drawColliders)
     {
+        const auto viewPhysical = m_reg.view<ComponentTransform, ComponentPhysical>();
+        const auto viewBtlAct = m_reg.view<ComponentTransform, BattleActor>();
+        const auto viewGrassTop = m_reg.view<ComponentTransform, GrassTopComp>();
+
         for (auto [idx, trans, phys] : viewPhysical.each())
             drawCollider(trans, phys);
 
         for (auto [idx, trans, btl] : viewBtlAct.each())
             drawBattleActorColliders(trans, btl);
+
+        for (auto [idx, trans, grass] : viewGrassTop.each())
+        {
+            auto pbl = grass.m_colliderLeft + trans.m_pos;
+            auto pbr = grass.m_colliderRight + trans.m_pos;
+            m_renderer.drawCollider(pbl, {238, 195, 154, 50}, m_camera);
+            m_renderer.drawCollider(pbr, {238, 195, 154, 50}, m_camera);
+        }
     }
 
     if constexpr (gamedata::debug::drawFocusAreas)

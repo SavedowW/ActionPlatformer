@@ -3,6 +3,7 @@
 #include "ColliderRouting.h"
 #include "Application.h"
 #include "Tileset.h"
+#include "EnvironmentSystem.h"
 #include "StateMachine.h"
 #include <entt/entt.hpp>
 #include <nlohmann/json.hpp>
@@ -13,7 +14,7 @@ class LevelBuilder
 {
 public:
     LevelBuilder(Application &app_, entt::registry &reg_);
-    void buildLevel(const std::string &mapDescr_, entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_);
+    void buildLevel(const std::string &mapDescr_, entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_, EnvironmentSystem &env_);
 
 
 private:

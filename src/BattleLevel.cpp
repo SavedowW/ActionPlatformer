@@ -20,7 +20,8 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_partsys(m_registry, *application_),
     m_battlesys(m_registry, *application_, m_camera),
     m_chatBoxSys(m_registry, *application_, m_camera),
-    m_lvlBuilder(*application_, m_registry)
+    m_lvlBuilder(*application_, m_registry),
+    m_envSystem(*application_, m_registry)
 {
     auto playerId = m_registry.create();
     m_registry.emplace<ComponentTransform>(playerId, Vector2{313, 352}, ORIENTATION::RIGHT);
@@ -45,8 +46,9 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_enemysys.m_playerId = playerId;
 
     m_enemysys.makeEnemy();
+    //m_envSystem.makeGrassTop(Vector2{230, 351});
 
-    m_lvlBuilder.buildLevel("Tilemaps/tilemap.json", playerId, m_graph, m_cldRoutesCollection);
+    m_lvlBuilder.buildLevel("Tilemaps/tilemap.json", playerId, m_graph, m_cldRoutesCollection, m_envSystem);
 
     m_chatBoxSys.setPlayerEntity(m_playerId);
 
@@ -167,6 +169,8 @@ void BattleLevel::update()
     */
    m_battlesys.update();
    m_battlesys.handleAttacks();
+
+   m_envSystem.update(m_playerId);
 
     /*
         ComponentDynamicCameraTarget (player) - read / write

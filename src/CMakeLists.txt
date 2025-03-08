@@ -37,6 +37,7 @@ BattleSystem.cpp
 ChatBox.cpp
 ColliderRouting.cpp
 EnvironmentSystem.cpp
+EnvComponents.cpp
 )
 
 set(INCLUDE_DIRS
