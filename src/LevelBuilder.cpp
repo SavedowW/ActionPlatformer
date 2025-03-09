@@ -59,6 +59,8 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
         std::cout << "Loading " << layer["name"] << " of type " << layer["type"] << std::endl;
         if (layer["type"] == "tilelayer")
         {
+            auto depth = layerId;
+
             Vector2<int> pos;
             pos.y = (layer.contains("offsety") ? static_cast<int>(layer["offsety"]) : 0);
             pos.x = (layer.contains("offsetx") ? static_cast<int>(layer["offsetx"]) : 0);
@@ -97,6 +99,8 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
                         entity = idToEntity[static_cast<int>(prop["value"])];
                         existingEntity = true;
                     }
+                    else if (prop["name"] == "layer")
+                        depth = static_cast<int>(prop["value"]);
                 }
             }
 
@@ -112,7 +116,7 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
                 tilelayer.m_posOffset = pos - trans.m_pos;
             }
 
-            m_reg.emplace<RenderLayer>(entity, layerId);
+            m_reg.emplace<RenderLayer>(entity, depth);
 
             int tileLinearPos = 0;
             for (const uint32_t tile : layer["data"])
