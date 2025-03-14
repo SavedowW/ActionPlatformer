@@ -16,7 +16,7 @@ EnemySystem::EnemySystem(entt::registry &reg_, Application &app_, NavSystem &nav
 void EnemySystem::makeEnemy()
 {
     auto enemyId = m_reg.create();
-    m_reg.emplace<ComponentTransform>(enemyId, Vector2{170.0f, 300.0f}, ORIENTATION::RIGHT);
+    m_reg.emplace<ComponentTransform>(enemyId, Vector2{312.0f, 300.0f}, ORIENTATION::RIGHT);
     m_reg.emplace<PhysicalEvents>(enemyId);
     m_reg.emplace<BattleActor>(enemyId, BattleTeams::ENEMIES);
 

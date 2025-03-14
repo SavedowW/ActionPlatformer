@@ -14,7 +14,7 @@
 class TimeStatistic
 {
 public:
-    TimeStatistic(const milliseconds &def_ = milliseconds::zero()) :
+    TimeStatistic(const nanoseconds &def_ = nanoseconds::zero()) :
         m_sum(def_)
     {
     }
@@ -26,14 +26,14 @@ public:
         return *this;
     }
 
-    milliseconds avg() const
+    nanoseconds avg() const
     {
-        return std::chrono::duration_cast<milliseconds>(m_sum) / m_cnt;
+        return std::chrono::duration_cast<nanoseconds>(m_sum) / m_cnt;
     }
 
-    milliseconds sum() const
+    nanoseconds sum() const
     {
-        return std::chrono::duration_cast<milliseconds>(m_sum);
+        return std::chrono::duration_cast<nanoseconds>(m_sum);
     }
 
     int count() const
