@@ -128,9 +128,9 @@ public:
     virtual void leave(EntityAnywhere owner_, CharState to_) override;
 
     template<typename PLAYER_STATE_T>
-    PhysicalState &setTransitionOnTouchedGround(PLAYER_STATE_T state_)
+    PhysicalState &addTransitionOnTouchedGround(uint32_t sinceFrame_, PLAYER_STATE_T transition_)
     {
-        m_transitionOnLand = static_cast<CharState>(state_);
+        m_transitionsOnLand.addPropertyValue(sinceFrame_, std::optional<CharState>(static_cast<CharState>(transition_)));
         return *this;
     }
 
@@ -179,7 +179,7 @@ public:
 
 protected:
     int m_anim;
-    std::optional<CharState> m_transitionOnLand;
+    TimelineProperty<std::optional<CharState>> m_transitionsOnLand;
     std::optional<CharState> m_transitionOnLostGround;
     TimelineProperty<Vector2<float>> m_gravity;
 

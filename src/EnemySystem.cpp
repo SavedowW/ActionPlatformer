@@ -223,7 +223,7 @@ void EnemySystem::makeEnemy()
                 )
             }
         })
-        .setTransitionOnTouchedGround(Enemy1State::IDLE)
+        .addTransitionOnTouchedGround(0, Enemy1State::IDLE)
         .setNoLanding(TimelineProperty<bool>({{0, true}, {4, false}}))
     ));
 

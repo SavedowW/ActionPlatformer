@@ -303,6 +303,8 @@ void PhysicalState::leave(EntityAnywhere owner_, CharState to_)
 {
     auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
     physical.m_velocity = physical.m_velocity.mulComponents(physical.m_stateLeaveVelocityMultiplier);
+
+    GenericState::leave(owner_, to_);
 }
 
 void PhysicalState::enter(EntityAnywhere owner_, CharState from_)
@@ -432,9 +434,10 @@ void GenericState::onOutdated(EntityAnywhere owner_)
 
 void PhysicalState::onTouchedGround(EntityAnywhere owner_)
 {
-    if (m_transitionOnLand.has_value())
+    const auto &transition = m_transitionsOnLand[m_parent->m_framesInState];
+    if (transition.has_value())
     {
-        m_parent->switchCurrentState(owner_, *m_transitionOnLand);
+        m_parent->switchCurrentState(owner_, *transition);
     }
 }
 

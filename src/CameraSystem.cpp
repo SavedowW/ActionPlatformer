@@ -92,7 +92,15 @@ void CameraSystem::update()
     }
     else
     {
-        m_cam.smoothMoveAxisTowards(target, {1.0f, 0.5f}, {1.0f, 1.0f}, {10.0f, 10.0f});
+        const Vector2<float> rangesForMax{10.0f, 10.0f};
+        const Vector2<float> rangesForMin{200.0f, 100.0f};
+        auto dst = target - m_cam.getPos();
+
+        const auto ranges = rangesForMin - rangesForMax;
+        const auto dstRanged = dst.abs() - rangesForMax;
+        const Vector2<float> alphas{1 - utils::clamp(dstRanged.x / ranges.x, 0.0f, 1.0f), 1 - utils::clamp(dstRanged.y / ranges.y, 0.0f, 1.0f)};
+
+        m_cam.smoothMoveAxisTowards(target, {1.0f, 0.5f}, {1.0f, 1.0f}, {utils::lerp(2.0f, 10.0f, alphas.x), utils::lerp(2.0f, 10.0f, alphas.y)});
         m_cam.smoothScaleTowards(gamedata::global::baseCameraScale);
     }
 }

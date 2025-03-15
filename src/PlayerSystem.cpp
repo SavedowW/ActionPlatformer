@@ -29,6 +29,7 @@ void PlayerSystem::setup(entt::entity playerId_)
     animrnd.m_animations[m_animManager.getAnimID("Char1/landing_recovery")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/landing_recovery"), LOOPMETHOD::NOLOOP);
     animrnd.m_animations[m_animManager.getAnimID("Char1/attack1")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/attack1"), LOOPMETHOD::NOLOOP);
     animrnd.m_animations[m_animManager.getAnimID("Char1/attack1_chain")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/attack1_chain"), LOOPMETHOD::NOLOOP);
+    animrnd.m_animations[m_animManager.getAnimID("Char1/air_attack")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/air_attack"), LOOPMETHOD::NOLOOP);
 
     animrnd.m_currentAnimation = animrnd.m_animations[m_animManager.getAnimID("Char1/float")].get();
     animrnd.m_currentAnimation->reset();
@@ -41,6 +42,7 @@ void PlayerSystem::setup(entt::entity playerId_)
     m_animManager.preload("Char1/particles/particle_wall_slide");
     m_animManager.preload("Char1/particles/attack1_trace");
     m_animManager.preload("Char1/particles/attack1_chain_trace");
+    m_animManager.preload("Char1/particles/air_attack_trace");
 
 
     phys.m_pushbox = {Vector2{-7.0f, -32.0f}, Vector2{14.0f, 32.0f}};
@@ -55,7 +57,7 @@ void PlayerSystem::setup(entt::entity playerId_)
             m_animManager.getAnimID("Char1/wall_prejump"), {CharacterState::NONE, {CharacterState::WALL_CLING}},
             std::move(ParticleTemplate{1, Vector2<float>{-8.00f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_jump"), 21,
                 2}.setTiePosRules(TiePosRule::TIE_TO_WALL))))
-        ->setTransitionOnTouchedGround(CharacterState::IDLE)
+        ->addTransitionOnTouchedGround(0, CharacterState::IDLE)
         .setHurtboxes({
             {
                 HurtboxGroup(
@@ -80,7 +82,7 @@ void PlayerSystem::setup(entt::entity playerId_)
             {0, {1.0f, 0.2f}},
             {1, {1.0f, 0.4f}},
             }))
-        .setTransitionOnTouchedGround(CharacterState::IDLE)
+        .addTransitionOnTouchedGround(0, CharacterState::IDLE)
         .setHurtboxes({
             {
                 HurtboxGroup(
@@ -464,9 +466,52 @@ void PlayerSystem::setup(entt::entity playerId_)
     ));
 
     sm.addState(std::unique_ptr<GenericState>(
+        &(new PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>(
+            CharacterState::AIR_ATTACK, {CharacterState::NONE, {CharacterState::FLOAT}}, m_animManager.getAnimID("Char1/air_attack")))
+        ->allowAirDrift()
+        .setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>({
+                    {0, {0.1f, 1.0f}},
+                    {5, {0.2f, 1.0f}},
+                    {10, {0.3f, 1.0f}},
+                    {20, {1.0f, 1.0f}}
+                }))
+        .setCanFallThrough(TimelineProperty<bool>(false))
+        .setGravity({{0.0f, 0.5f}})
+        .setConvertVelocityOnSwitch(false, true)
+        .setMagnetLimit(TimelineProperty<float>(0.0f))
+        .setNoLanding(TimelineProperty<bool>(false))
+        .setHurtboxes({
+            {
+                HurtboxGroup(
+                    {
+                        {
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                        }
+                    }, HurtTrait::NORMAL
+                )
+            }
+        })
+        .addTransitionOnTouchedGround(0, CharacterState::HARD_LANDING_RECOVERY)
+        .addTransitionOnTouchedGround(26, CharacterState::LANDING_RECOVERY)
+        .addHit(HitGeneration::hitPlayerAirAttack())
+        .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+        .setParticlesSingle(TimelineProperty<ParticleTemplate>({
+            {0, {}},
+            {7, ParticleTemplate{1, Vector2<float>{4.0f, 42.0f}, m_animManager.getAnimID("Char1/particles/air_attack_trace"), 14,
+                -1}
+                .setTiePosRules(TiePosRule::TIE_TO_SOURCE)
+                .setTieLifetimeRules(TieLifetimeRule::DESTROY_ON_STATE_LEAVE)
+                .setNotDependOnGroundAngle()},
+            {8, {}},
+        }))
+        .setOutdatedTransition(CharacterState::FLOAT, 35)
+    ));
+
+    sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerActionFloat(
             m_animManager.getAnimID("Char1/float"), {CharacterState::NONE, {}}))
-        ->setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>({
+        ->allowAirDrift()
+        .setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>({
                     {0, {0.5f, 0.5f}},
                     {6, {1.0f, 1.0f}}
                 }))

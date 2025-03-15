@@ -146,6 +146,7 @@ namespace HitGeneration
 
 HitboxGroup hitPlayerLight();
 HitboxGroup hitPlayerChain();
+HitboxGroup hitPlayerAirAttack();
 
 }
 

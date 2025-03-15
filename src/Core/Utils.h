@@ -188,6 +188,12 @@ namespace utils
             return -1;
     }
 
+    template <typename T, typename aT>
+    inline T lerp(const T &min, const T &max, const aT &alpha)
+    {
+        return {min + (max - min) * alpha};
+    }
+
     template <typename T>
     inline T reverseLerp(const T& val, const T &min, const T &max)
     {

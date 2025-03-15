@@ -21,6 +21,7 @@ enum class CharacterState : CharState {
     WALL_CLING_PREJUMP,
     ATTACK_1,
     ATTACK_1_CHAIN,
+    AIR_ATTACK,
     NONE
 };
 
@@ -38,6 +39,7 @@ SERIALIZE_ENUM(CharacterState, {
     ENUM_AUTO(CharacterState, WALL_CLING_PREJUMP),
     ENUM_AUTO(CharacterState, ATTACK_1),
     ENUM_AUTO(CharacterState, ATTACK_1_CHAIN),
+    ENUM_AUTO(CharacterState, AIR_ATTACK),
     ENUM_AUTO(CharacterState, NONE),
 })
 
@@ -94,6 +96,34 @@ public:
         if (m_canFallThrough[currentFrame_] && compInput.m_inputResolver->getInputQueue()[0].isInputActive(INPUT_BUTTON::DOWN))
             compFallthrough.setIgnoringObstacles();
 
+        InputComparatorHoldLeft leftDrift;
+        InputComparatorHoldRight rightDrift;
+        InputComparatorHoldUp upDrift;
+
+        auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
+        const auto &inq = compInput.m_inputResolver->getInputQueue();
+
+        if (m_allowAirDrift)
+        {
+            if (leftDrift(inq, 0))
+            {
+                if (phys.m_velocity.x > -2.5f)
+                    phys.m_velocity.x -= 0.15f;
+            }
+
+            if (rightDrift(inq, 0))
+            {
+                if (phys.m_velocity.x < 2.5f)
+                    phys.m_velocity.x += 0.15f;
+            }
+
+            if (phys.m_velocity.y < 0 && upDrift(inq, 0))
+            {
+                if (m_parent->m_framesInState < 10.0f)
+                    phys.m_velocity.y -= 0.4f;
+            }
+        }
+
         if (!res)
             return false;
 
@@ -101,13 +131,11 @@ public:
             return true;
 
         const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
-        const auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
 
         auto orientation = transform.m_orientation;
-        const auto &inq = compInput.m_inputResolver->getInputQueue();
 
-        bool possibleToLeft = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle <= 0 || physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
-        bool possibleToRight = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle >= 0 || -physical.m_onSlopeWithAngle <= m_alignedSlopeMax);
+        bool possibleToLeft = (!m_alignedSlopeMax.has_value() || phys.m_onSlopeWithAngle <= 0 || phys.m_onSlopeWithAngle <= m_alignedSlopeMax);
+        bool possibleToRight = (!m_alignedSlopeMax.has_value() || phys.m_onSlopeWithAngle >= 0 || -phys.m_onSlopeWithAngle <= m_alignedSlopeMax);
 
         InputComparatorFail failin;
 
@@ -116,7 +144,6 @@ public:
 
         auto inres = attemptInput<true, false>(lInput, rInput, orientation, inq, 0);
         return inres == ORIENTATION::UNSPECIFIED;
-
     }
 
     inline virtual void enter(EntityAnywhere owner_, CharState from_) override
@@ -180,6 +207,13 @@ public:
         return *this;
     }
 
+    inline PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
+        &allowAirDrift()
+    {
+        m_allowAirDrift = true;
+        return *this;
+    }
+
 protected:
     const Collider m_pushbox;
     CMP_LEFT m_cmpLeft;
@@ -192,6 +226,8 @@ protected:
     TimelineProperty<Vector2<float>> m_lookaheadSpeedSensitivity;
 
     uint32_t m_extendedBuffer = 0;
+
+    bool m_allowAirDrift = false;
 };
 
 
@@ -218,27 +254,8 @@ public:
     {
         auto res = ParentAction::update(owner_, currentFrame_);
 
-        const auto &inq = owner_.reg->get<ComponentPlayerInput>(owner_.idx).m_inputResolver->getInputQueue();
         auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
         auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
-
-        if (m_driftLeftInput(inq, 0))
-        {
-            if (phys.m_velocity.x > -2.5f)
-                phys.m_velocity.x -= 0.15f;
-        }
-
-        if (m_driftRightInput(inq, 0))
-        {
-            if (phys.m_velocity.x < 2.5f)
-                phys.m_velocity.x += 0.15f;
-        }
-
-        if (phys.m_velocity.y < 0 && m_driftUpInput(inq, 0))
-        {
-            if (m_parent->m_framesInState < 10.0f)
-                phys.m_velocity.y -= 0.4f;
-        }
 
         auto total = phys.m_velocity.x + phys.m_inertia.x;
         if (total > 0)
@@ -271,10 +288,6 @@ public:
 
 protected:
     using ParentAction = PlayerState<false, true, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>;
-    InputComparatorHoldLeft m_driftLeftInput;
-    InputComparatorHoldRight m_driftRightInput;
-    InputComparatorHoldUp m_driftUpInput;
-
 };
 
 class PlayerActionWallCling: public PlayerState<false, true, false, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail>
