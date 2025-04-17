@@ -125,10 +125,187 @@ void PhysicsSystem::updateOverlappedObstacles()
     }
 }
 
+bool PhysicsSystem::attemptOffsetDown(const auto &clds_, const entt::entity &idx_, const Vector2<float> &originalPos_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_, unsigned int offset_,
+    bool noLanding_, float &touchedSlope_, entt::entity &onGround_)
+{
+    const auto oldPos = originalPos_;
+    const auto newPos = originalPos_ + Vector2<int>(0, offset_);
+
+    const auto oldPb = phys_.m_pushbox + oldPos;
+    const auto newPb = phys_.m_pushbox + newPos;
+
+    int highest = 0;
+
+    for (auto [idx, cld] : clds_.each())
+    {
+        if (!cld.m_isEnabled)
+            continue;
+
+        auto overlap = cld.m_resolved.checkOverlap(newPb, highest);
+        if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
+        {
+            if (cld.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(cld.m_obstacleId) || oldPos.y - highest > 0))
+                continue;
+
+            std::cout << "Touched slope top, stopping at top, offset.y > 0\n";
+
+            if (!noLanding_)
+            {
+                if (cld.m_resolved.m_topAngleCoef != 0)
+                    touchedSlope_ = cld.m_resolved.m_topAngleCoef;
+                onGround_ = idx;
+            }
+
+            if (phys_.m_velocity.y > 0)
+                phys_.m_velocity.y = 0;
+            if (phys_.m_inertia.y > 0)
+                phys_.m_inertia.y = 0;
+
+            return false;
+        }
+    }
+
+    trans_.m_pos = newPos;
+
+    return true;
+}
+
+bool PhysicsSystem::attemptOffsetUp(const auto &clds_, const entt::entity &idx_, const Vector2<float> &originalPos_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_, unsigned int offset_)
+{
+    const auto oldPos = originalPos_;
+    const auto newPos = originalPos_ - Vector2<int>(0, offset_);
+
+    const auto oldPb = phys_.m_pushbox + oldPos;
+    const auto newPb = phys_.m_pushbox + newPos;
+
+    for (auto [idx, cld] : clds_.each())
+    {
+        if (!cld.m_isEnabled)
+            continue;
+
+        auto overlap = cld.m_resolved.checkOverlap(newPb);
+        if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
+        {
+            if (cld.m_obstacleId && !obsFallthrough_.touchedObstacleBottom(cld.m_obstacleId))
+                continue;
+
+            std::cout << "Touched ceiling, stopping at bottom, offset.y < 0\n";
+
+            auto overlapPortion = utils::getOverlapPortion(newPb.getLeftEdge(), newPb.getRightEdge(), cld.m_resolved.m_points[0].x, cld.m_resolved.m_points[1].x);
+
+            if (overlapPortion >= 0.7f)
+            {
+                phys_.m_velocity.y = 0;
+                phys_.m_inertia.y = 0;
+            }
+
+            return false;
+        }
+    }
+
+    trans_.m_pos = newPos;
+
+    return true;
+}
+
+bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, const entt::entity &idx_, const Vector2<float> &originalPos_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_, int offset_,
+    int originalY_, int maxYOffset_, int naturalYOffset_, float &touchedSlope_, entt::entity &onGround_)
+{
+    const auto oldPos = trans_.m_pos;
+    const auto newPos = trans_.m_pos + Vector2<int>(offset_, 0);
+
+    const auto oldPb = phys_.m_pushbox + oldPos;
+    const auto newPb = phys_.m_pushbox + newPos;
+
+    bool mustRise = false;
+    int completeHighest = std::numeric_limits<int>::max();
+
+    entt::entity onGround = entt::null;
+    float touchedSlope = 0.0f;
+
+    for (auto [idx, cld] : clds_.each())
+    {
+        if (!cld.m_isEnabled)
+            continue;
+
+        int highest = std::numeric_limits<int>::max();
+
+        auto overlap = cld.m_resolved.checkOverlap(newPb, highest);
+
+        // If we touched collider
+        if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
+        {
+            highest--;
+
+            // If we can rise on top of it
+            if (originalY_ - highest <= maxYOffset_)
+            {
+                if (cld.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(cld.m_obstacleId))
+                    continue;
+
+                std::cout << "Touched slope, (potentially) getting at it's top, offset.x > 0\n";
+
+                if (!mustRise || highest < completeHighest)
+                {
+                    completeHighest = highest;
+                    mustRise = true;
+                    onGround = idx;
+                    touchedSlope = cld.m_resolved.m_topAngleCoef;
+                }
+            }
+            // If its an actual wall
+            else
+            {
+                if (cld.m_obstacleId && !obsFallthrough_.touchedObstacleSide(cld.m_obstacleId))
+                    continue;
+
+                auto overlapPortion = utils::getOverlapPortion(newPb.getTopEdge(), newPb.getBottomEdge(), highest, cld.m_resolved.m_points[2].y);
+
+                if (overlapPortion >= 0.15)
+                {
+                    std::cout << "Touched edge, stopping at it (hard), offset.x > 0\n";
+                    if (phys_.m_velocity.x + phys_.m_inertia.x > 0)
+                    {
+                        phys_.m_velocity.x = 0;
+                        phys_.m_inertia.x = 0;
+                    }
+                }
+                else
+                    std::cout << "Touched edge, stopping at it (soft), offset.x > 0\n";
+
+                return false;
+            }
+        }
+    }
+
+    if (mustRise)
+    {
+        if (attemptOffsetUp(clds_, idx_, newPos, trans_, phys_, obsFallthrough_, ev_, newPos.y - completeHighest))
+        {
+            if (naturalYOffset_ >= 0)
+            {
+                if (touchedSlope != 0)
+                    touchedSlope_ = touchedSlope;
+                onGround_ = onGround;
+            }
+
+            if (phys_.m_velocity.y > 0)
+                phys_.m_velocity.y = 0;
+            if (phys_.m_inertia.y > 0)
+                phys_.m_inertia.y = 0;
+        }
+    }
+    else
+    {
+        trans_.m_pos = newPos;
+    }
+
+    return true;
+}
+
 void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_)
 {
     const auto oldPos = trans_.m_pos;
-    auto oldPosXOnly = trans_.m_pos; // Set once X offset is applied
 
     // Common stuff
     phys_.m_velocity += phys_.m_gravity;
@@ -172,217 +349,37 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
     float touchedSlope = 0.0f;
     int highest = m_levelSize.y;
 
-    // Fall collision detection - single collider vs single entity
-    auto resolveFall = [&](entt::entity idx_, const ComponentStaticCollider &csc_)
-    {
-        if (!csc_.m_isEnabled)
-            return;
-
-        auto overlap = csc_.m_resolved.checkOverlap(pb, highest);
-        if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
-        {
-            if (csc_.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(csc_.m_obstacleId) || oldPosXOnly.y - highest > 0))
-                return;
-
-            std::cout << "Touched slope top, teleporting on top, offset.y > 0\n";
-
-            trans_.m_pos.y = highest - 1;
-
-            if (!noLanding)
-            {
-                if (csc_.m_resolved.m_topAngleCoef != 0)
-                    touchedSlope = csc_.m_resolved.m_topAngleCoef;
-                onGround = idx_;
-            }
-
-            pb = phys_.m_pushbox + trans_.m_pos;
-
-            if (phys_.m_velocity.y > 0)
-                phys_.m_velocity.y = 0;
-            if (phys_.m_inertia.y > 0)
-                phys_.m_inertia.y = 0;
-        }
-    };
-
-    // Rise collision detection
-    auto resolveRise = [&](const ComponentStaticCollider &csc_)
-    {
-        if (!csc_.m_isEnabled)
-            return;
-
-        auto overlap = csc_.m_resolved.checkOverlap(pb, highest);
-        if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
-        {
-            if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleBottom(csc_.m_obstacleId))
-                return;
-
-            std::cout << "Touched ceiling, teleporting to bottom, offset.y < 0\n";
-
-            auto overlapPortion = utils::getOverlapPortion(pb.getLeftEdge(), pb.getRightEdge(), csc_.m_resolved.m_points[0].x, csc_.m_resolved.m_points[1].x);
-
-            if (overlapPortion >= 0.7f)
-            {
-                phys_.m_velocity.y = 0;
-                phys_.m_inertia.y = 0;
-            }
-
-            trans_.m_pos.y = csc_.m_resolved.m_points[2].y + pb.m_size.y;
-            pb = phys_.m_pushbox + trans_.m_pos;
-        }
-    };
-    
-    // Movement to right collision detection
-    auto resolveRight = [&](entt::entity idx_, const ComponentStaticCollider &csc_)
-    {
-        if (!csc_.m_isEnabled)
-            return;
-
-        auto overlap = csc_.m_resolved.checkOverlap(pb, highest);
-
-        // If we touched collider
-        if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
-        {
-            // If we can rise on top of it
-            if (oldPos.y - highest <= (1.3f * abs(trans_.m_pos.x - oldPos.x)))
-            {
-                if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
-                    return;
-
-                std::cout << "Touched slope, teleporting on top, offset.x > 0\n";
-
-                trans_.m_pos.y = highest - 1;
-                pb = phys_.m_pushbox + trans_.m_pos;
-
-                if (offset.y >= 0)
-                {
-                    if (csc_.m_resolved.m_topAngleCoef != 0)
-                        touchedSlope = csc_.m_resolved.m_topAngleCoef;
-                    onGround = idx_;
-                }
-
-                if (phys_.m_velocity.y > 0)
-                    phys_.m_velocity.y = 0;
-                if (phys_.m_inertia.y > 0)
-                    phys_.m_inertia.y = 0;
-            }
-            // If its an actual wall
-            else
-            {
-                if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSide(csc_.m_obstacleId))
-                    return;
-
-                auto overlapPortion = utils::getOverlapPortion(pb.getTopEdge(), pb.getBottomEdge(), highest, csc_.m_resolved.m_points[2].y);
-
-                if (overlapPortion >= 0.1 || !phys_.m_onSlopeWithAngle != 0)
-                {
-                    std::cout << "Touched edge, teleporting to it, offset.x > 0\n";
-                    trans_.m_pos.x = csc_.m_resolved.m_tlPos.x - pb.m_size.x / 2 - 1;
-                    pb = phys_.m_pushbox + trans_.m_pos;
-                }
-
-                if (overlapPortion >= 0.15)
-                {
-                    //std::cout << "Hard collision, limiting speed\n";
-                    if (phys_.m_velocity.x + phys_.m_inertia.x > 0)
-                    {
-                        phys_.m_velocity.x = 0;
-                        phys_.m_inertia.x = 0;
-                    }
-                }
-            }
-        }
-    };
-
-    // Movement to left collision detection
-    auto resolveLeft = [&](entt::entity idx_, const ComponentStaticCollider &csc_)
-    {
-        if (!csc_.m_isEnabled)
-            return;
-
-        auto overlap = csc_.m_resolved.checkOverlap(pb, highest);
-
-        // If we touched collider
-        if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
-        {
-            // If we can rise on top of it
-            if (oldPos.y - highest <= (1.3f * abs(trans_.m_pos.x - oldPos.x)))
-            {
-                if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(csc_.m_obstacleId))
-                    return;
-
-                std::cout << "Touched slope, teleporting on top, offset.x < 0\n";
-
-                trans_.m_pos.y = highest - 1;
-                pb = phys_.m_pushbox + trans_.m_pos;
-
-                if (offset.y >= 0)
-                {
-                    if (csc_.m_resolved.m_topAngleCoef != 0)
-                        touchedSlope = csc_.m_resolved.m_topAngleCoef;
-                    onGround = idx_;
-                }
-
-                if (phys_.m_velocity.y > 0)
-                    phys_.m_velocity.y = 0;
-                if (phys_.m_inertia.y > 0)
-                    phys_.m_inertia.y = 0;
-            }
-            // If its an actual wall
-            else
-            {
-                if (csc_.m_obstacleId && !obsFallthrough_.touchedObstacleSide(csc_.m_obstacleId))
-                    return;
-
-                auto overlapPortion = utils::getOverlapPortion(pb.getTopEdge(), pb.getBottomEdge(), highest, csc_.m_resolved.m_points[2].y);
-
-                if (overlapPortion >= 0.1 || !phys_.m_onSlopeWithAngle != 0)
-                {
-                    std::cout << "Touched edge, teleporting to it, offset.x < 0\n";
-                    trans_.m_pos.x = csc_.m_resolved.m_points[1].x + pb.m_size.x / 2;
-                    pb = phys_.m_pushbox + trans_.m_pos;
-                }
-
-                if (overlapPortion >= 0.15)
-                {
-                    //std::cout << "Hard collision, limiting speed\n";
-                    if (phys_.m_velocity.x + phys_.m_inertia.x < 0)
-                    {
-                        phys_.m_velocity.x = 0;
-                        phys_.m_inertia.x = 0;
-                    }
-                }
-            }
-        }
-    };
-
     // X axis movement handling
     {
-        trans_.m_pos.x += offset.x;
-        pb = phys_.m_pushbox + trans_.m_pos;
+        int originalY = trans_.m_pos.y;
+        int maxOffsetY = 1.3f * abs(offset.x);
 
         // Moving to the right
-
         if (offset.x > 0)
         {
-            clds_.each(resolveRight); // NOTE: foreach loops are slightly faster, maybe its worth it to move lambdas code here
+            for (int i = 0; i < offset.x; ++i)
+                if (!attemptOffsetHorizontal(clds_, idx_, trans_.m_pos, trans_, phys_, obsFallthrough_, ev_, 1, originalY, maxOffsetY, offset.y, touchedSlope, onGround))
+                    break;
         }
         // Moving to the left
         else if (offset.x < 0)
         {
-            clds_.each(resolveLeft);
+            for (int i = 0; i > offset.x; --i)
+                if (!attemptOffsetHorizontal(clds_, idx_, trans_.m_pos, trans_, phys_, obsFallthrough_, ev_, -1, originalY, maxOffsetY, offset.y, touchedSlope, onGround))
+                    break;
         }
     }
 
     // Y axis movement handling
     {
-        oldPosXOnly = trans_.m_pos;
-        trans_.m_pos.y += offset.y;
-        pb = phys_.m_pushbox + trans_.m_pos;
-
         // Falling / staying in place
         if (offset.y >= 0)
         {
-            clds_.each(resolveFall);
+            for (int i = 0; i < offset.y; ++i)
+                if (!attemptOffsetDown(clds_, idx_, trans_.m_pos, trans_, phys_, obsFallthrough_, ev_, 1, noLanding, touchedSlope, onGround))
+                    break;
+
+            pb = phys_.m_pushbox + trans_.m_pos;
         }
         // Rising
         else
@@ -392,8 +389,12 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
                 touchedSlope = 0;
                 onGround = entt::null;
             }
+            
+            for (int i = 0; i > offset.y; --i)
+                if (!attemptOffsetUp(clds_, idx_, trans_.m_pos, trans_, phys_, obsFallthrough_, ev_, 1))
+                    break;
 
-            clds_.each(resolveRise);
+            pb = phys_.m_pushbox + trans_.m_pos;
         }
     }
 

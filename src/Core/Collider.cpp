@@ -108,7 +108,7 @@ OverlapResult SlopeCollider::checkOverlap(const Collider &cld_) const
         else
             return OverlapResult::NONE;
         
-        if (bottomEdge <= highesty || topEdge >= m_points[2].y)
+        if (bottomEdge < highesty || topEdge > m_points[2].y)
             return res;
         
         return OverlapResult::OVERLAP_BOTH;
@@ -158,7 +158,7 @@ OverlapResult SlopeCollider::checkOverlap(const Collider &cld_, int &highestPoin
             return OverlapResult::NONE;
         
         highestPoint_ = highesty;
-        if (bottomEdge <= highesty || topEdge >= m_points[2].y)
+        if (bottomEdge < highesty || topEdge > m_points[2].y)
             return res;
         
         return OverlapResult::OVERLAP_BOTH;
@@ -187,7 +187,7 @@ OverlapResult SlopeCollider::checkOverlap(const Collider &cld_, int &highestPoin
             return OverlapResult::NONE;
         
         highestPoint_ = highesty;
-        if (bottomEdge <= highesty || topEdge >= m_points[2].y)
+        if (bottomEdge < highesty || topEdge > m_points[2].y)
             return res;
         
         return OverlapResult::OVERLAP_BOTH;
