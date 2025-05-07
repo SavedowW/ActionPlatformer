@@ -13,13 +13,38 @@ enum class ChatBoxSide
     AUTO // Wherever there is more free space
 };
 
+class ChatMessage;
+
+class TechSymbol : public fonts::Symbol
+{
+public:
+    // Symbol was naturally reached by message, returns true if should proceed further
+    virtual bool onReached(ChatMessage &message_) = 0;
+};
+
+class SymbolDelay : public TechSymbol
+{
+public:
+    SymbolDelay(int delay_);
+
+    virtual bool onReached(ChatMessage &message_) override;
+
+private:
+    int m_delay = 0;
+};
+
 struct ChatMessage
 {
+    ChatMessage(const std::string &textRaw_, int font_);
     std::string m_textRaw;
     int m_baseFont;
     std::vector<const fonts::Symbol*> m_symbols;
     std::vector<FrameTimer<false>> m_symbolAppearTimers;
     std::vector<int> m_lineHeights;
+    std::vector<std::unique_ptr<fonts::Symbol>> m_techSymbols;
+
+    // Timer for delay between characters
+    FrameTimer<true> m_charDelayTimer;
 
     uint32_t m_defaultCharacterDelay = 2;
     uint32_t m_defaultAppearDuration = 12;
@@ -30,6 +55,8 @@ struct ChatMessage
 
     Vector2<int> compileAndGetSize(const TextManager &textMan_);
     void skip();
+
+    void proceedUntilNonTechCharacter();
 };
 
 struct ChatMessageSequence
@@ -37,6 +64,7 @@ struct ChatMessageSequence
     ChatMessageSequence(entt::entity src_, const ChatBoxSide &side_, bool fitScreen_, bool proceedByInput_, bool claimInputs_, bool returnInputs_);
     void compileAndSetSize(const TextManager &textMan_);
     void takeInput();
+    const fonts::Symbol* currentSymbol() const;
 
     entt::entity m_source;
     Vector2<int> m_oldSize;
@@ -45,8 +73,8 @@ struct ChatMessageSequence
     ChatBoxSide m_side;
     bool m_fitScreen;
 
-    // Timer for box appear / disappear animation and delay between character
-    FrameTimer<true> m_timer;
+    // Timer for box appear / disappear animation
+    FrameTimer<true> m_windowTimer;
 
     // Progress with inputs
     bool m_proceedByInput = false;

@@ -1,6 +1,18 @@
 #include "ChatBox.h"
 #include "utf8.h"
 
+std::unique_ptr<fonts::Symbol> processCommand(const std::string &cmd_)
+{
+    auto eqpos = cmd_.find_first_of('=');
+    auto cmd = cmd_.substr(0, eqpos);
+    auto val = cmd_.substr(eqpos + 1);
+
+    if (cmd == "delay")
+        return std::unique_ptr<fonts::Symbol>(new SymbolDelay(std::stoi(val)));
+
+    return nullptr;
+}
+
 namespace ChatConsts
 {
     const int ChatEdgeGap = 4;
@@ -98,26 +110,27 @@ void ChatboxSystem::update()
         auto &seq = m_sequences[0];
         if (seq.m_currentState == ChatMessageSequence::BoxState::APPEAR)
         {
-            if (seq.m_timer.update())
+            if (seq.m_windowTimer.update())
             {
                 seq.m_currentState = ChatMessageSequence::BoxState::IDLE;
                 if (!seq.m_currentMessage->m_symbolAppearTimers.empty())
                 {
-                    seq.m_timer.begin(seq.m_currentMessage->m_defaultCharacterDelay);
+                    seq.m_currentMessage->m_charDelayTimer.begin(seq.m_currentMessage->m_defaultCharacterDelay);
                     seq.m_currentMessage->m_symbolAppearTimers[0].begin(seq.m_currentMessage->m_defaultAppearDuration);
                 }
             }
         }
         else if (seq.m_currentState == ChatMessageSequence::BoxState::DISAPPEAR)
         {
-            if (seq.m_timer.update())
+            if (seq.m_windowTimer.update())
                 removeSequence = true;
         }
-        else
+        else // Proceeding message
         {
             // Updating current message
             if (seq.m_currentMessage)
             {
+                // Full amount of characters in the current message (or specifically number of character-specific timers)
                 size_t vsize = seq.m_currentMessage->m_symbolAppearTimers.size();
 
                 if (seq.m_currentMessage->m_currentState == ChatMessage::MessageState::APPEAR)
@@ -130,10 +143,11 @@ void ChatboxSystem::update()
                     }
 
                     // Handle delay between characters
-                    if (seq.m_timer.update() && seq.m_currentMessage->m_currentProceedingCharacter < vsize)
+                    if (seq.m_currentMessage->m_charDelayTimer.update() && seq.m_currentMessage->m_currentProceedingCharacter < vsize)
                     {
-                        seq.m_timer.begin(seq.m_currentMessage->m_defaultCharacterDelay);
-                        seq.m_currentMessage->m_currentProceedingCharacter++;
+                        seq.m_currentMessage->m_charDelayTimer.begin(seq.m_currentMessage->m_defaultCharacterDelay);
+
+                        seq.m_currentMessage->proceedUntilNonTechCharacter();
 
                         if (seq.m_currentMessage->m_currentProceedingCharacter < vsize)
                             seq.m_currentMessage->m_symbolAppearTimers[seq.m_currentMessage->m_currentProceedingCharacter].begin(seq.m_currentMessage->m_defaultAppearDuration);
@@ -238,7 +252,7 @@ void ChatboxSystem::draw()
 
     Vector2<int> iScreenPos = screenPos;
 
-    float progress = seq.m_timer.getProgressNormalized();
+    float progress = seq.m_windowTimer.getProgressNormalized();
     if (seq.m_currentState == ChatMessageSequence::BoxState::IDLE)
         progress = 1.0f;
     else if (seq.m_currentState == ChatMessageSequence::BoxState::DISAPPEAR)
@@ -246,7 +260,7 @@ void ChatboxSystem::draw()
 
     seq.m_currentSize = utils::lerp(seq.m_oldSize, seq.m_targetSize, progress);
 
-    std::cout << seq.m_timer.getCurrentFrame() << std::endl;
+    std::cout << seq.m_currentMessage->m_charDelayTimer.getCurrentFrame() << std::endl;
     for (auto &el : seq.m_currentMessage->m_symbolAppearTimers)
         std::cout << el.getCurrentFrame() << " ";
     std::cout << std::endl;
@@ -327,7 +341,7 @@ void ChatMessageSequence::compileAndSetSize(const TextManager &textMan_)
     if (!m_messages.empty())
         m_currentMessage = &m_messages[0];
 
-    m_timer.begin(3);
+    m_windowTimer.begin(3);
 }
 
 void ChatMessageSequence::takeInput()
@@ -339,18 +353,32 @@ void ChatMessageSequence::takeInput()
             if (m_messages[0].m_currentState == ChatMessage::MessageState::APPEAR)
                 m_messages[0].skip();
             else if (m_messages[0].m_currentState == ChatMessage::MessageState::IDLE)
+            {
                 m_messages.erase(m_messages.begin());
-            if (m_messages.empty())
-            {
-                m_currentState = BoxState::DISAPPEAR;
-                m_timer.begin(ChatConsts::fadeOutDuration);
-            }
-            else
-            {
-                m_currentMessage = &m_messages[0];
+                if (m_messages.empty())
+                {
+                    m_currentState = BoxState::DISAPPEAR;
+                    m_windowTimer.begin(ChatConsts::fadeOutDuration);
+                }
+                else
+                {
+                    m_currentMessage = &m_messages[0];
+                    m_currentMessage->m_charDelayTimer.begin(m_currentMessage->m_defaultCharacterDelay + 1);
+                }
             }
         }
     }
+}
+
+const fonts::Symbol *ChatMessageSequence::currentSymbol() const
+{
+    return m_currentMessage->m_symbols[m_currentMessage->m_currentProceedingCharacter];
+}
+
+ChatMessage::ChatMessage(const std::string &textRaw_, int font_) :
+    m_textRaw(textRaw_),
+    m_baseFont(font_)
+{
 }
 
 Vector2<int> ChatMessage::compileAndGetSize(const TextManager &textMan_)
@@ -362,36 +390,66 @@ Vector2<int> ChatMessage::compileAndGetSize(const TextManager &textMan_)
 
     bool newLine = true;
 
+    bool readingChunk = false;
+    std::string cmdChunk;
+
     for (auto &ch : wrp)
     {
-        auto sym = textMan_.getSymbol(m_baseFont, ch.getu8());
-
-        if (newLine)
+        if (readingChunk)
         {
-            m_currentLineSize.x = sym->m_minx;
-            m_currentLineSize.y = textMan_.getFontHeight(m_baseFont);
-            newLine = false;
-        }
+            if (ch.m_byteSize > 1)
+                throw std::string("Impossible char size in dialogue command");
 
-        if (*ch.m_ch == '\n')
-        {
-            m_size.y += m_currentLineSize.y;
-            m_size.x = std::max(m_size.x, m_currentLineSize.x);
-            m_lineHeights.push_back(m_currentLineSize.y);
-
-            m_currentLineSize.x = 0;
-            m_currentLineSize.y = 0;
-
-            newLine = true;
-
-            m_symbols.push_back(nullptr);
+            if (*ch.m_ch == '>')
+            {
+                readingChunk = false;
+                m_techSymbols.emplace_back(processCommand(cmdChunk));
+                m_symbols.push_back(m_techSymbols.back().get());
+            }
+            else
+            {
+                if (*ch.m_ch != ' ' && *ch.m_ch != '\t')
+                    cmdChunk += *ch.m_ch;
+            }
         }
         else
         {
-            m_symbols.push_back(sym);
-        }
+            if (ch.m_byteSize == 1 && *ch.m_ch == '<')
+            {
+                readingChunk = true;
+                cmdChunk = "";
+                continue;
+            }
 
-        m_currentLineSize.x += sym->m_advance;
+            auto sym = textMan_.getSymbol(m_baseFont, ch.getu8());
+
+            if (newLine)
+            {
+                m_currentLineSize.x = sym->m_minx;
+                m_currentLineSize.y = textMan_.getFontHeight(m_baseFont);
+                newLine = false;
+            }
+
+            if (*ch.m_ch == '\n')
+            {
+                m_size.y += m_currentLineSize.y;
+                m_size.x = std::max(m_size.x, m_currentLineSize.x);
+                m_lineHeights.push_back(m_currentLineSize.y);
+
+                m_currentLineSize.x = 0;
+                m_currentLineSize.y = 0;
+
+                newLine = true;
+
+                m_symbols.push_back(nullptr);
+            }
+            else
+            {
+                m_symbols.push_back(sym);
+            }
+
+            m_currentLineSize.x += sym->m_advance;
+        }
     }
 
     m_size.y += m_currentLineSize.y;
@@ -412,4 +470,30 @@ void ChatMessage::skip()
         el.forceOver();
     m_currentProceedingCharacter = m_symbolAppearTimers.size();
     m_firstCharacterForFadingIn = m_symbolAppearTimers.size();
+}
+
+void ChatMessage::proceedUntilNonTechCharacter()
+{
+    const TechSymbol* techsym = nullptr;
+    m_currentProceedingCharacter++;
+    while (m_currentProceedingCharacter < m_symbols.size() && (techsym = dynamic_cast<const TechSymbol*>(m_symbols[m_currentProceedingCharacter])))
+    {
+        auto *p = const_cast<TechSymbol*>(techsym);
+        auto res = p->onReached(*this);
+        if (!res)
+            break;
+
+        m_currentProceedingCharacter++;
+    }
+}
+
+SymbolDelay::SymbolDelay(int delay_) :
+    m_delay(delay_)
+{
+}
+
+bool SymbolDelay::onReached(ChatMessage &message_)
+{
+    message_.m_charDelayTimer.begin(m_delay);
+    return false;
 }
