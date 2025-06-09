@@ -27,14 +27,14 @@ namespace fonts
     struct Symbol
     {
         SDL_Texture *m_tex = nullptr;
-        int m_minx, m_maxx, m_miny, m_maxy, m_advance;
-        int m_w, m_h;
+        int m_minx = 0, m_maxx = 0, m_miny = 0, m_maxy = 0, m_advance = 0;
+        int m_w = 0, m_h = 0;
         Symbol() = default;
         Symbol& operator=(Symbol &rhs_) = delete;
         Symbol(Symbol &rhs_) = delete;
         Symbol& operator=(Symbol &&rhs_);
         Symbol(Symbol &&rhs_);
-        ~Symbol();
+        virtual ~Symbol();
     };
 
     class Font
