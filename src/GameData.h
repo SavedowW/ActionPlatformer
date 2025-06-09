@@ -40,7 +40,7 @@ namespace gamedata
         inline constexpr int numberOfLevels = 2;
         inline constexpr int initialLevelId = 1;
         inline constexpr Vector2<int> defaultWindowResolution = {1280, 720};
-        inline constexpr Vector2<int> baseResolution = {320, 180}; // 320 x 180 or 480 x 270
+        inline constexpr Vector2<int> baseResolution = {640, 360}; // 320 x 180 or 480 x 270
         inline constexpr Vector2<int> maxCameraSize = {640, 360};
         inline constexpr Vector2<int> minCameraSize = {320, 180};
         inline constexpr Vector2<int> hudLayerResolution = {640, 360};

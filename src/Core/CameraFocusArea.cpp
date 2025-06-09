@@ -53,7 +53,7 @@ CameraFocusArea::CameraFocusArea(Vector2<int> topLeft_, int scaledSizeX_, int sc
     Collider(topLeft_, Vector2{scaledSizeX_, scaledSizeY_}),
     m_useFocusArea(topLeft_, Vector2{scaledSizeX_, scaledSizeY_}),
     m_renderer(&renderer_),
-    m_scale(std::min(scaledSizeX_/ gamedata::global::baseResolution.x, scaledSizeY_ / gamedata::global::baseResolution.y))
+    m_scale(std::min(static_cast<float>(scaledSizeX_)/ gamedata::global::baseResolution.x, static_cast<float>(scaledSizeY_) / gamedata::global::baseResolution.y))
 {
     auto halfCamSize = gamedata::global::baseResolution * (m_scale / 2.0f);
     m_minCameraPos = m_topLeft + halfCamSize;

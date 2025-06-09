@@ -43,6 +43,7 @@ EnvComponents.cpp
 set(INCLUDE_DIRS
 ${CMAKE_CURRENT_LIST_DIR}
 ${CMAKE_CURRENT_LIST_DIR}/Core
+${CMAKE_SOURCE_DIR}/external/glm
 ${SDL2_mixer_INCLUDE_DIRS}
 ${lz4_INCLUDE_DIRS}
 )

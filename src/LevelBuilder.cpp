@@ -83,9 +83,6 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
             if (layer.contains("parallaxy"))
                 parallaxFactor.y = layer["parallaxy"];
 
-            auto tex = m_app.getRenderer()->createTexture(gamedata::global::maxCameraSize);
-            SDL_SetTextureColorMod(tex, layerCfg.r, layerCfg.g, layerCfg.b);
-            SDL_SetTextureAlphaMod(tex, layerCfg.a);
 
             entt::entity entity = entt::null;
             bool existingEntity = false;
@@ -107,7 +104,7 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
             if (entity == entt::null)
                 entity = m_reg.create();
 
-            auto &tilelayer = m_reg.emplace<TilemapLayer>(entity, tex, size, parallaxFactor);
+            auto &tilelayer = m_reg.emplace<TilemapLayer>(entity, size, parallaxFactor);
             if (!existingEntity)
                 m_reg.emplace<ComponentTransform>(entity, pos, ORIENTATION::RIGHT);
             else

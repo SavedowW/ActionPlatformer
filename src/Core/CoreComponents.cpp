@@ -210,8 +210,7 @@ RenderLayer::~RenderLayer()
     m_dirtyOrder = true;
 }
 
-TilemapLayer::TilemapLayer(SDL_Texture *tex_, const Vector2<int> &size_, const Vector2<float> &parallaxFactor_) :
-    m_tex(tex_),
+TilemapLayer::TilemapLayer(const Vector2<int> &size_, const Vector2<float> &parallaxFactor_) :
     m_parallaxFactor(parallaxFactor_),
     m_tiles(size_.y, std::vector<Tile>(size_.x, Tile{}))
 {

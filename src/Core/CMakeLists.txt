@@ -17,7 +17,6 @@ AnimationManager.cpp
 FrameTimer.cpp
 TextManager.cpp
 TimelineProperty.cpp
-ResourceCounter.cpp
 EngineAnimation.cpp
 ImmediateScreenLog.cpp
 utf8.cpp

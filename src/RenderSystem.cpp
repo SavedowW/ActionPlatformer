@@ -202,9 +202,6 @@ void RenderSystem::drawParticle(const ComponentTransform &trans_, const Componen
 
 void RenderSystem::drawTilemapLayer(const ComponentTransform &trans_, TilemapLayer &tilemap_)
 {
-    auto old = m_renderer.setRenderTarget(tilemap_.m_tex.getSprite());
-    m_renderer.fillRenderer({255, 255, 255, 0});
-
     Vector2<int> camTL = Vector2<int>(m_camera.getPos().mulComponents(tilemap_.m_parallaxFactor)) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
 
     SDL_Rect dst;
@@ -226,8 +223,6 @@ void RenderSystem::drawTilemapLayer(const ComponentTransform &trans_, TilemapLay
         }
         dst.y += gamedata::global::tileSize.y;
     }
-    m_renderer.setRenderTarget(old);
-    m_renderer.renderTexture(tilemap_.m_tex.getSprite(), 0, 0, tilemap_.m_tex.m_w, tilemap_.m_tex.m_h);
 }
 
 void RenderSystem::handleDepthInstance(const entt::entity &idx_, const RenderLayer &layer_)

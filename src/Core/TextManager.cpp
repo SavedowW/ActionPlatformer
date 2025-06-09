@@ -280,6 +280,7 @@ void TextManager::generateSimpleSymbols(std::vector<std::array<fonts::Symbol, fo
     int generated = 0;
 
     auto *sdlrenderer = renderer_.getRenderer();
+
     for (const auto &chunkInitVal : distrib_.m_chunks)
     {
         std::array<fonts::Symbol, fonts::CHUNK_SIZE> symbols_;
