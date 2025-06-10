@@ -1,6 +1,7 @@
 #include "Level.h"
 #include "Application.h"
 #include "Profile.h"
+#include "GameData.h"
 #include <thread>
 
 Level::Level(Application *application_, const Vector2<int> &size_, int lvlId_) :

@@ -1,11 +1,11 @@
 #include "BattleLevel.h"
-#include "TileMapHelper.hpp"
 #include "World.h"
 #include "Profile.h"
+#include "GameData.h"
 
 BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_, int lvlId_) :
     Level(application_, size_, lvlId_),
-    m_camera({0.0f, 0.0f}, gamedata::global::baseResolution, m_size),
+    m_camera({0.0f, 0.0f}, gamedata::global::maxCameraSize, m_size),
     m_playerSystem(m_registry, *application_),
     m_rendersys(m_registry, *application_, m_camera, m_cldRoutesCollection),
     m_inputsys(m_registry),
@@ -76,7 +76,7 @@ void BattleLevel::enter()
 
     m_playerSystem.setup(m_playerId);
 
-    m_camera.setScale(gamedata::global::minCameraScale);
+    m_camera.setScale(2.0f);
     m_camera.setPos({0.0f, 0.0f});
 }
 

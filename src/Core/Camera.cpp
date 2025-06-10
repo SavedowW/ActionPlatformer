@@ -29,7 +29,7 @@ Vector2<float> Camera::getTopLeft() const
 
 Vector2<float> Camera::getSize() const
 {
-    return m_cameraBaseSize * m_scale;
+    return m_cameraBaseSize / m_scale;
 }
 
 Vector2<float> Camera::getBaseSize() const

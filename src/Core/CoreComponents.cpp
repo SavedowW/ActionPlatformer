@@ -210,10 +210,4 @@ RenderLayer::~RenderLayer()
     m_dirtyOrder = true;
 }
 
-TilemapLayer::TilemapLayer(const Vector2<int> &size_, const Vector2<float> &parallaxFactor_) :
-    m_parallaxFactor(parallaxFactor_),
-    m_tiles(size_.y, std::vector<Tile>(size_.x, Tile{}))
-{
-}
-
 bool RenderLayer::m_dirtyOrder = false;

@@ -9,10 +9,18 @@
 #include "AnimationManager.h"
 #include <memory>
 #include <filesystem>
-#include "GameData.h"
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
 #include "TextManager.h"
+
+namespace gamedata
+{
+    namespace levels
+    {
+        inline constexpr int numberOfLevels = 2;
+        inline constexpr int initialLevelId = 1;
+    }
+}
 
 class Application
 {
@@ -40,8 +48,8 @@ private:
     std::unique_ptr<AnimationManager> m_animationManager;
     std::unique_ptr<TextManager> m_textManager;
 
-    Level* m_levels[gamedata::global::numberOfLevels] {nullptr};
-    LevelResult m_levelResult = {gamedata::global::initialLevelId};
+    Level* m_levels[gamedata::levels::numberOfLevels] {nullptr};
+    LevelResult m_levelResult = {gamedata::levels::initialLevelId};
 };
 
 #endif

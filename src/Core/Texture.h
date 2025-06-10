@@ -1,37 +1,39 @@
 #ifndef TEXTURE_H_
 #define TEXTURE_H_
 
+#include "Vector2.h"
+#include <glad/glad.h>
 #include <SDL.h>
-#include <SDL_Image.h>
-#include <memory>
+#include <SDL_opengl.h>
+
+class TextureManager;
+
+namespace fonts
+{
+    struct Symbol;
+}
 
 struct Texture
 {
-	//Makes sure texture actually exist
-	Texture(SDL_Texture* tex_);
-
-	Texture();
-
-	Texture(Texture &tex_) = delete;
-	Texture &operator=(Texture &rhs_) = delete;
-
-	Texture(Texture &&tex_);
-
-	Texture &operator=(Texture &&rhs_);
-
-	void setTexture(SDL_Texture *tex_);
-
-	SDL_Texture* getSprite();
-
-	//Properly removes texture
-	virtual ~Texture();
-
-	int m_w, m_h;
-
-private:
-	SDL_Texture* m_tex;
+    Vector2<int> m_size;
+    unsigned int m_id = 0;
 };
 
-using Texture_t = std::shared_ptr<Texture>;
+class TextureResource : public Texture
+{
+public:
+    TextureResource() = default;
+    TextureResource(const std::string &name_, const Vector2<int> &size_, const unsigned int id_);
+    TextureResource(const TextureResource &tex_) = delete;
+    TextureResource& operator=(const TextureResource &tex_) =delete;
+    TextureResource(TextureResource &&tex_);
+    TextureResource& operator=(TextureResource &&tex_);
+    ~TextureResource();
+
+    void cleanSelf();
+
+private:
+    std::string m_name;
+};
 
 #endif

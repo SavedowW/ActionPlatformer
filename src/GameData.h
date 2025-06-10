@@ -19,7 +19,7 @@ namespace gamedata
 
     namespace debug
     {
-        inline constexpr bool drawColliders = true;
+        inline constexpr bool drawColliders = false;
         inline constexpr bool drawFocusAreas = false;
         inline constexpr bool drawCameraOffset = false;
         inline constexpr bool drawNpsDebug = false;
@@ -36,18 +36,20 @@ namespace gamedata
     {
         inline constexpr float framerate = 60.0f;
         inline constexpr float dbgslowdownfps = 20.0f;
-        inline constexpr Vector2<float> tileSize = {16.0f, 16.0f};
-        inline constexpr int numberOfLevels = 2;
-        inline constexpr int initialLevelId = 1;
-        inline constexpr Vector2<int> defaultWindowResolution = {1280, 720};
+        inline constexpr Vector2<int> defaultWindowResolution = {1600, 900};
         inline constexpr Vector2<int> baseResolution = {640, 360}; // 320 x 180 or 480 x 270
         inline constexpr Vector2<int> maxCameraSize = {640, 360};
         inline constexpr Vector2<int> minCameraSize = {320, 180};
         inline constexpr Vector2<int> hudLayerResolution = {640, 360};
-        inline constexpr float baseCameraScale = 1.0f;
-        inline constexpr float maxCameraScale = maxCameraSize.y / baseResolution.y;
-        inline constexpr float minCameraScale = minCameraSize.y / baseResolution.y;
+        inline constexpr float baseCameraScale = maxCameraSize.y / (float)baseResolution.y;
+        inline constexpr float minCameraScale = (float)maxCameraSize.y / maxCameraSize.y;
+        inline constexpr float maxCameraScale = (float)maxCameraSize.y / minCameraSize.y;
         inline constexpr int inputBufferLength = 4;
+    }
+
+    namespace tiles
+    {
+        inline constexpr Vector2<float> tileSize = {16.0f, 16.0f};
     }
 
     namespace characters

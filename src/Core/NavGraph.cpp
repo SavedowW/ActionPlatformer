@@ -1,4 +1,5 @@
 #include "NavGraph.h"
+#include "GameData.h"
 #include <algorithm>
 
 NavGraph::NavGraph(Application &app_) :

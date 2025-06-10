@@ -4,6 +4,8 @@ project(Core)
 
 set(CORE_SRC_FILES
 Timer.cpp
+EngineAnimation.cpp
+glad.c
 InputSystem.cpp
 TextureManager.cpp
 Texture.cpp
@@ -17,7 +19,6 @@ AnimationManager.cpp
 FrameTimer.cpp
 TextManager.cpp
 TimelineProperty.cpp
-EngineAnimation.cpp
 ImmediateScreenLog.cpp
 utf8.cpp
 InputState.cpp
@@ -33,6 +34,7 @@ Logger.cpp
 Profile.cpp
 RectCollider.cpp
 FilesystemUtils.cpp
+Shader.cpp
 )
 
 add_library (Core ${CORE_SRC_FILES})

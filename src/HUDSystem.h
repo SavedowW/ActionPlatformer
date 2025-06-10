@@ -1,6 +1,7 @@
 #ifndef HUD_SYSTEM_H_
 #define HUD_SYSTEM_H_
 #include "Application.h"
+#include "Texture.h"
 #include "ImmediateScreenLog.h"
 #include "CommonAI.h"
 #include <entt/entt.hpp>
@@ -30,8 +31,8 @@ private:
     ImmediateScreenLog m_commonLog;
     ImmediateScreenLog m_playerLog;
 
-    Texture_t m_arrowIn;
-    Texture_t m_arrowOut;
+    std::shared_ptr<Texture> m_arrowIn;
+    std::shared_ptr<Texture> m_arrowOut;
 };
 
 #endif

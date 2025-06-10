@@ -1,70 +1,49 @@
 #include "Texture.h"
 
-Texture::Texture(SDL_Texture *tex_)
+void TextureResource::cleanSelf()
 {
-    if (tex_ == NULL)
-        throw "Texture does not exist!\n";
-
-    m_tex = tex_;
-
-    SDL_QueryTexture(m_tex, NULL, NULL, &m_w, &m_h);
+    if (m_id != 0)
+    {
+        std::cout << "Deleting loaded TextureResource \"" << m_name << "\"" << std::endl;
+        glDeleteTextures(1, &m_id);
+        m_id = 0;
+    }
 }
 
-Texture::Texture()
+TextureResource::TextureResource(const std::string &name_, const Vector2<int> &size_, const unsigned int id_) :
+    Texture(size_, id_),
+    m_name(name_)
 {
-    m_tex = nullptr;
-
-    m_w = -1;
-    m_h = -1;
 }
 
-Texture::Texture(Texture &&tex_)
+TextureResource::TextureResource(TextureResource &&tex_) :
+    Texture(tex_),
+    m_name(tex_.m_name)
 {
-    m_tex = tex_.m_tex;
-    m_w = tex_.m_w;
-    m_h = tex_.m_h;
+    m_size = tex_.m_size;
+    m_id = tex_.m_id;
 
-    tex_.m_w = -1;
-    tex_.m_h = -1;
-    tex_.m_tex = nullptr;
+    tex_.m_id = 0;
+    tex_.m_size = {0, 0};
+    tex_.m_name = "<DELETED>";
 }
 
-Texture &Texture::operator=(Texture &&rhs_)
+TextureResource &TextureResource::operator=(TextureResource &&tex_)
 {
-    if (m_tex)
-        SDL_DestroyTexture(m_tex);
+    cleanSelf();
+        
+    m_name = tex_.m_name;
+    m_size = tex_.m_size;
+    m_id = tex_.m_id;
 
-    m_tex = rhs_.m_tex;
-    m_w = rhs_.m_w;
-    m_h = rhs_.m_h;
-
-    rhs_.m_w = -1;
-    rhs_.m_h = -1;
-    rhs_.m_tex = nullptr;
+    tex_.m_id = 0;
+    tex_.m_size = {0, 0};
+    tex_.m_name = "<DELETED>";
 
     return *this;
 }
 
-void Texture::setTexture(SDL_Texture *tex_)
+TextureResource::~TextureResource()
 {
-    if (tex_ == nullptr)
-        throw "Texture does not exist!\n";
-
-    if (m_tex != nullptr)
-        SDL_DestroyTexture(m_tex);
-
-    m_tex = tex_;
-
-    SDL_QueryTexture(m_tex, NULL, NULL, &m_w, &m_h);
-}
-
-SDL_Texture *Texture::getSprite()
-{
-    return m_tex;
-}
-
-Texture::~Texture()
-{
-    if (m_tex)
-        SDL_DestroyTexture(m_tex);
+    cleanSelf();
 }

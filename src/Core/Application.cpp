@@ -9,13 +9,12 @@ Application::Application()
 		throw std::runtime_error("Cannot initialize SDL");
 	}
     
-    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
-
-	if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG)
-	{
-		std::cout << "IMG initialization error: " << SDL_GetError() << std::endl;
-		throw std::runtime_error("Cannot initialize SDL image");
-	}
+    if (SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 4 ) < 0)
+        std::cout << SDL_GetError() << std::endl;
+    if (SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 3 ) < 0)
+        std::cout << SDL_GetError() << std::endl;
+    if (SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE ) < 0)
+        std::cout << SDL_GetError() << std::endl;
 
     if (TTF_Init() == -1)
 	{
@@ -35,11 +34,11 @@ Application::Application()
 	Filesystem::ensureDirectoryRelative("Configs");
 
     m_window = std::make_unique<Window>(Vector2{1600.0f, 900.0f}, "GameName");
-    m_renderer = std::make_unique<Renderer>(*m_window.get());
+    m_renderer = std::make_unique<Renderer>(m_window->getWindow());
     m_inputSystem = std::make_unique<InputSystem>();
-    m_textureManager = std::make_unique<TextureManager>(m_renderer.get());
-    m_animationManager = std::make_unique<AnimationManager>(m_renderer.get());
-    m_textManager = std::make_unique<TextManager>(m_renderer.get());
+    m_textureManager = std::make_unique<TextureManager>(*m_renderer);
+    m_animationManager = std::make_unique<AnimationManager>(*m_renderer);
+    m_textManager = std::make_unique<TextManager>(*m_renderer);
 
     m_inputSystem->initiateControllers();
 }
@@ -53,7 +52,6 @@ Application::~Application()
     m_window.reset();
     Mix_Quit();
     TTF_Quit();
-    IMG_Quit();
 	SDL_Quit();
 }
 

@@ -1,6 +1,7 @@
 #ifndef CHATBOX_H_
 #define CHATBOX_H_
 #include "Application.h"
+#include "Texture.h"
 #include "CoreComponents.h"
 #include <entt/entt.hpp>
 
@@ -114,8 +115,8 @@ private:
 
     entt::entity m_playerId;
 
-    Texture_t m_chatboxEdge;
-    Texture_t m_chatboxPointer;
+    std::shared_ptr<Texture> m_chatboxEdge;
+    std::shared_ptr<Texture> m_chatboxPointer;
 
     const int m_edgeGap = 6;
 };

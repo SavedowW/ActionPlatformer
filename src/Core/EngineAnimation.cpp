@@ -1,4 +1,5 @@
 #include "EngineAnimation.h"
+#include <SDL_Image.h>
 
 bool isPixelInSurface(int x_, int y_, SDL_Surface *sur_)
 {
@@ -64,7 +65,7 @@ bool EngineAnimation::saveAnimation(const std::string &path_, int blurRange_, Re
     return true;
 }
 
-bool EngineAnimation::loadAnimation(const std::string &path_, Renderer &ren_)
+bool EngineAnimation::loadAnimation(const std::string &path_)
 {
     m_rw = SDL_RWFromFile(path_.c_str(), "r+b");
 
@@ -81,11 +82,11 @@ bool EngineAnimation::loadAnimation(const std::string &path_, Renderer &ren_)
     switch(version)
     {
     case (1):
-        loadAnimationV1(ren_);
+        loadAnimationV1();
         break;
     
     case (2):
-        loadAnimationV2(ren_);
+        loadAnimationV2();
         break;
 
     default:
@@ -100,20 +101,17 @@ bool EngineAnimation::loadAnimation(const std::string &path_, Renderer &ren_)
     {
         while (el.m_surfaces.size() < m_frameCount)
             el.m_surfaces.push_back(nullptr);
-
-        while (el.m_textures.size() < m_frameCount)
-            el.m_textures.push_back(nullptr);
     }
 
     return true;
 }
 
-void EngineAnimation::addFrame(const std::string &path_, Renderer &ren_)
+void EngineAnimation::addFrame(const std::string &path_)
 {
     SDL_Surface *frame = IMG_Load(path_.c_str());
-    m_layers[0].addSurface(frame, ren_);
+    m_layers[0].addSurface(frame);
     for (int i = 1; i < m_layers.size(); ++i)
-        m_layers[i].addSurface(nullptr, ren_);
+        m_layers[i].addSurface(nullptr);
 
 
     if (m_frameCount == 0)
@@ -144,11 +142,6 @@ void EngineAnimation::scaleToHeight(int height_)
     m_width = m_realWidth / scale;
 }
 
-SDL_Texture *EngineAnimation::operator()(size_t layer_, uint32_t frame_)
-{
-    return m_layers[layer_].m_textures[m_framesData[frame_ % m_duration]];
-}
-
 void EngineAnimation::generateLayer(size_t layer_, int blurRange_, Renderer &ren_)
 {
     if (layer_ == 1)
@@ -158,13 +151,10 @@ void EngineAnimation::generateLayer(size_t layer_, int blurRange_, Renderer &ren
         {
             std::cout << "Sprite " << i + 1 << " / " << m_frameCount << std::endl;
 
-            if (m_layers[layer_].m_textures[i])
-                SDL_DestroyTexture(m_layers[layer_].m_textures[i]);
             if (m_layers[layer_].m_surfaces[i])
                 SDL_FreeSurface(m_layers[layer_].m_surfaces[i]);
             
             m_layers[layer_].m_surfaces[i] = toPureWhite(m_layers[0].m_surfaces[i], blurRange_);
-            m_layers[layer_].m_textures[i] = ren_.createTextureFromSurface(m_layers[layer_].m_surfaces[i]);
         }
 
         m_layers[layer_].m_isGenerated = true;
@@ -176,13 +166,10 @@ void EngineAnimation::generateLayer(size_t layer_, int blurRange_, Renderer &ren
         {
             std::cout << "Sprite " << i + 1 << " / " << m_frameCount << std::endl;
 
-            if (m_layers[layer_].m_textures[i])
-                SDL_DestroyTexture(m_layers[layer_].m_textures[i]);
             if (m_layers[layer_].m_surfaces[i])
                 SDL_FreeSurface(m_layers[layer_].m_surfaces[i]);
             
             m_layers[layer_].m_surfaces[i] = toEdge(m_layers[0].m_surfaces[i]);
-            m_layers[layer_].m_textures[i] = ren_.createTextureFromSurface(m_layers[layer_].m_surfaces[i]);
         }
 
         m_layers[layer_].m_isGenerated = true;
@@ -337,10 +324,9 @@ SDL_Surface *EngineAnimation::toEdge(SDL_Surface *sur_)
     return nsur;
 }
 
-void EngineAnimation::Layer::addSurface(SDL_Surface *sur_, Renderer &ren_)
+void EngineAnimation::Layer::addSurface(SDL_Surface *sur_)
 {
     m_surfaces.push_back(sur_);
-    m_textures.push_back(sur_ != nullptr ? ren_.createTextureFromSurface(sur_) : nullptr);
 }
 
 void EngineAnimation::Layer::clear()
@@ -348,11 +334,7 @@ void EngineAnimation::Layer::clear()
     for (auto *el : m_surfaces)
         SDL_FreeSurface(el);
 
-    for (auto *el : m_textures)
-        SDL_DestroyTexture(el);
-
     m_surfaces.clear();
-    m_textures.clear();
 
     m_isGenerated = false;
 }
@@ -447,7 +429,7 @@ void EngineAnimation::saveAnimationV2(int blurRange_, Renderer &ren_)
     delete [] m_compressionBuffer;
 }
 
-void EngineAnimation::loadAnimationV1(Renderer &ren_)
+void EngineAnimation::loadAnimationV1()
 {
     SDL_RWread(m_rw, &m_width, sizeof(m_width), 1);
     SDL_RWread(m_rw, &m_height, sizeof(m_height), 1);
@@ -478,13 +460,13 @@ void EngineAnimation::loadAnimationV1(Renderer &ren_)
         for (int i = 0; i < m_frameCount; ++i)
         {
             SDL_Surface *tmp = loadSurfaceLZ4();
-            m_layers[el].addSurface(tmp, ren_);
+            m_layers[el].addSurface(tmp);
         }
         m_layers[el].m_isGenerated = true;
     }
 }
 
-void EngineAnimation::loadAnimationV2(Renderer &ren_)
+void EngineAnimation::loadAnimationV2()
 {
     SDL_RWread(m_rw, &m_width, sizeof(m_width), 1);
     SDL_RWread(m_rw, &m_height, sizeof(m_height), 1);
@@ -514,7 +496,7 @@ void EngineAnimation::loadAnimationV2(Renderer &ren_)
         for (int i = 0; i < m_frameCount; ++i)
         {
             SDL_Surface *tmp = loadSurfaceLZ4();
-            m_layers[el].addSurface(tmp, ren_);
+            m_layers[el].addSurface(tmp);
         }
         m_layers[el].m_isGenerated = true;
     }

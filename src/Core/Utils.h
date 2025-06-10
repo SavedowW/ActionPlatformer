@@ -144,6 +144,12 @@ namespace utils
 
     };
 
+    template<typename T>
+    T degreesToRadians(const T &degrees_)
+    {
+        return degrees_ * 3.14159 / 180;
+    }
+
     template <typename T>
     inline T clamp(const T& val, const T &min, const T &max)
     {

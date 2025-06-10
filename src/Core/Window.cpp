@@ -6,7 +6,7 @@ Window::Window(Vector2<int> resolution_, const std::string &winName_) :
     m_currentResolution(resolution_),
     m_winName(winName_)
 {
-    m_window = SDL_CreateWindow(m_winName.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_currentResolution.x, m_currentResolution.y, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+    m_window = SDL_CreateWindow(m_winName.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_currentResolution.x, m_currentResolution.y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 	if (m_window == NULL)
 	{
 		std::cout << "Window creation error: " << SDL_GetError() << std::endl;

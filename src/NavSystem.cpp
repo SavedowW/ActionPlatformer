@@ -1,6 +1,7 @@
 #include "NavSystem.h"
 #include "CoreComponents.h"
 #include "Profile.h"
+#include "GameData.h"
 #include <limits>
 
 NavSystem::NavSystem(entt::registry &reg_, Application &app_, NavGraph &graph_) :

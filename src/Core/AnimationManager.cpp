@@ -1,212 +1,221 @@
-#include "Application.h"
 #include "AnimationManager.h"
+#include "TimelineProperty.hpp"
+#include "JsonUtils.hpp"
 #include "FilesystemUtils.h"
+#include <nlohmann/json.hpp>
+#include <SDL_Image.h>
 #include <cassert>
 
-AnimationManager::AnimationManager(Renderer* renderer_) :
-	m_renderer(renderer_)
+AnimationManager::AnimationManager(Renderer &renderer_) :
+    m_renderer(renderer_)
 {
-	auto sprDirectory = Filesystem::getRootDirectory() + "Resources/Sprites/";
+    auto sprDirectory = Filesystem::getRootDirectory() + "Resources/Sprites/";
 
-	std::cout << "=== LISTING FOUND ANIMATIONS ===\n";
-	for (const auto &entry : std::filesystem::recursive_directory_iterator(sprDirectory))
-	{
-		std::filesystem::path dirpath = entry.path();
-		if (entry.is_regular_file() && dirpath.extension() == ".panm")
-		{
-			auto path = Filesystem::getRelativePath(sprDirectory, dirpath);
-			auto noExtension = Filesystem::removeExtention(path);
-			std::cout << noExtension << std::endl;
+    std::cout << "=== LISTING FOUND ANIMATIONS ===" << std::endl;
+    for (const auto &entry : std::filesystem::recursive_directory_iterator(sprDirectory))
+    {
+        std::filesystem::path dirpath = entry.path();
+        auto parentPath = dirpath.parent_path();
+        auto fn = entry.path().filename().replace_extension();
+        if (entry.is_regular_file() && dirpath.extension() == ".json" && parentPath.filename() == fn)
+        {
+            auto path = Filesystem::getRelativePath(sprDirectory, parentPath);
+            std::cout << path << std::endl;
 
-			ContainedAnimationData cad;
-			cad.m_path = dirpath.string();
+            ContainedAnimationData cad;
+            cad.m_path = dirpath;
 
-			m_textureArrs.push_back(cad);
-			m_ids[noExtension] = m_textureArrs.size() - 1;
-		}
-	}
-	std::cout << "=== LISTING ENDS HERE ===\n";
+            m_textureArrs.push_back(cad);
+            m_ids[path] = m_textureArrs.size() - 1;
+        }
+    }
+    std::cout << "=== LISTING ENDS HERE ==="  << std::endl;
 
-	//Load preloading textures
-	//preload("Particles/Block");
+    //Load preloading textures
+    //preload("Particles/Block");
 }
 
 std::shared_ptr<TextureArr> AnimationManager::getTextureArr(int id_)
 {
-	if (m_textureArrs[id_].m_preloaded)
-	{
-		//Logger::print("Texture arr is preloaded\n");
-		return m_textureArrs[id_].m_preloaded;
-	}
-	else if (m_textureArrs[id_].m_texArr.expired())
-	{
-		//Logger::print("Texture arr does not exist, creating new\n");
+    if (m_textureArrs[id_].m_preloaded)
+    {
+        //Logger::print("Texture arr is preloaded\n");
+        return m_textureArrs[id_].m_preloaded;
+    }
+    else if (m_textureArrs[id_].m_texArr.expired())
+    {
+        //Logger::print("Texture arr does not exist, creating new\n");
 
-		EngineAnimation anim;
-		anim.loadAnimation(m_textureArrs[id_].m_path, *m_renderer);
-		SDL_Texture **texs = new SDL_Texture*[anim.m_frameCount];
-		SDL_Texture **whiteTexs = new SDL_Texture*[anim.m_frameCount];
-		SDL_Texture **borderTexs = new SDL_Texture*[anim.m_frameCount];
-		for (int i = 0; i < anim.m_frameCount; ++i)
-		{
-			texs[i] = anim.m_layers[0].m_textures[i];
-			anim.m_layers[0].m_textures[i] = nullptr;
-			
-			whiteTexs[i] = anim.m_layers[1].m_textures[i];
-			anim.m_layers[1].m_textures[i] = nullptr;
+        std::ifstream animjson(m_textureArrs[id_].m_path);
+        if (!animjson.is_open())
+        {
+            std::cout << "Failed to open animation description at \"" << m_textureArrs[id_].m_path << "\"\n";
+            return nullptr;
+        }
 
-			borderTexs[i] = anim.m_layers[2].m_textures[i];
-			anim.m_layers[2].m_textures[i] = nullptr;
-		}
+        nlohmann::json animdata = nlohmann::json::parse(animjson);
 
-		std::vector<int> framesData;
-		for (int i = 0; i < anim.m_duration; ++i)
-		{
-			framesData.push_back(anim.m_framesData[i]);
-		}
+        Vector2<int> origin(
+            utils::tryClaim(animdata, "origin_x", 0),
+            utils::tryClaim(animdata, "origin_y", 0));
 
-		//Create TextureArray with loaded textures
-		std::shared_ptr<TextureArr> reqElem(new TextureArr(texs, whiteTexs, borderTexs, anim.m_frameCount, anim.m_duration, framesData, anim.m_width, anim.m_height, anim.m_origin));
-		m_textureArrs[id_].m_texArr = reqElem;
-		return reqElem;
-	}
-	else
-	{
-		//Logger::print("Texture arr already exist\n");
-		return m_textureArrs[id_].m_texArr.lock();
-	}
+        uint32_t duration = utils::tryClaim<uint32_t>(animdata, "duration", 1);
+
+        TimelineProperty<int> timelineFileIds;
+        std::vector<SDL_Surface*> surfaces;
+        std::map<int, size_t> fileIdsToInternal;
+
+        auto idbase = m_textureArrs[id_].m_path;
+        idbase.replace_extension();
+        std::string midfix = utils::tryClaim<std::string>(animdata, "midfix", "");
+
+        for (auto it = animdata["frames"].cbegin(); it != animdata["frames"].cend(); it++)
+        {
+            uint32_t key = std::stoi(it.key());
+            int fileid = it.value();
+            
+            if (!fileIdsToInternal.contains(fileid))
+            {
+                auto imgPath = idbase.string() + midfix + std::to_string(fileid) + ".png";
+                surfaces.emplace_back(IMG_Load( imgPath.c_str() ));
+                fileIdsToInternal[fileid] = surfaces.size() - 1;
+            }
+
+            timelineFileIds.addPropertyValue(key, std::move(fileid));
+        }
+
+        unsigned int *texIds = Renderer::surfacesToTexture(surfaces);
+
+        std::vector<size_t> framesData;
+        
+        for (uint32_t i = 0; i < duration; ++i)
+            framesData.push_back(fileIdsToInternal[timelineFileIds[i]]);
+
+        std::shared_ptr<TextureArr> reqElem(new TextureArr(texIds, surfaces.size(), duration, framesData, surfaces[0]->w, surfaces[0]->h, origin));
+        m_textureArrs[id_].m_texArr = reqElem;
+        return reqElem;
+    }
+    else
+    {
+        //Logger::print("Texture arr already exist\n");
+        return m_textureArrs[id_].m_texArr.lock();
+    }
 }
 
 void AnimationManager::preload(int toPreload_)
 {
-	if (m_textureArrs[toPreload_].m_preloaded == nullptr)
-	{
-		m_textureArrs[toPreload_].m_preloaded = std::shared_ptr<TextureArr>(getTextureArr(toPreload_));
-	}
+    if (m_textureArrs[toPreload_].m_preloaded == nullptr)
+    {
+        m_textureArrs[toPreload_].m_preloaded = std::shared_ptr<TextureArr>(getTextureArr(toPreload_));
+    }
 }
 
 void AnimationManager::preload(const std::string &toPreload_)
 {
-	int id = getAnimID(toPreload_);
+    int id = getAnimID(toPreload_);
 
-	preload(id);
+    preload(id);
 }
 
 int AnimationManager::getAnimID(const std::string &animName_) const
 {
-	try
-	{
-    	return m_ids.at(animName_);
-	}
-	catch (std::out_of_range exc_)
-	{
-		throw std::string("Failed to find animation ") + animName_ + " : " + exc_.what();
-	}
+    try
+    {
+        return m_ids.at(animName_);
+    }
+    catch (std::out_of_range exc_)
+    {
+        return 0;
+        throw std::string("Failed to find animation ") + animName_ + " : " + exc_.what();
+    }
 }
 
 //Properly release all textures
 TextureArr::~TextureArr()
 {
-	//Logger::print("Release " + intToString(amount) + " textures\n");
-	for (int i = 0; i < m_amount; ++i)
-		SDL_DestroyTexture(m_tex[i]);
-	delete[] m_tex;
+    //Logger::print("Release " + intToString(amount) + " textures\n");
+    glDeleteTextures(m_amount, m_tex);
+    delete[] m_tex;
 }
 
 Animation::Animation(AnimationManager &animationManager_, int id_, LOOPMETHOD isLoop_, int beginFrame_, int beginDirection_) :
-	m_isLoop(isLoop_),
-	m_currentFrame(beginFrame_),
-	m_direction(beginDirection_)
+    m_isLoop(isLoop_),
+    m_currentFrame(beginFrame_),
+    m_direction(beginDirection_)
 {
-	m_textures = animationManager_.getTextureArr(id_);
+    m_textures = animationManager_.getTextureArr(id_);
 }
 
 void Animation::update()
 {
-	if (isFinished())
-		animFinished();
-	else
-		m_currentFrame += m_direction;;
+    if (isFinished())
+        animFinished();
+    else
+        m_currentFrame += m_direction;;
 }
 
-SDL_Texture* Animation::getSprite()
-{
-	if (m_currentFrame == -1)
-		m_currentFrame = 0;
-		
-	return (*m_textures)[m_currentFrame];
-}
-
-SDL_Texture* Animation::getWhiteSprite()
-{
-	if (m_currentFrame == -1)
-		m_currentFrame = 0;
-		
-	return m_textures->getWhite(m_currentFrame);
-}
-
-SDL_Texture *Animation::getBorderSprite()
+unsigned int Animation::getSprite()
 {
     if (m_currentFrame == -1)
-		m_currentFrame = 0;
-		
-	return m_textures->getBorder(m_currentFrame);
+        m_currentFrame = 0;
+        
+    return (*m_textures)[m_currentFrame];
 }
 
 bool Animation::isFinished()
 {
-	if (m_direction > 0)
-		return m_currentFrame == m_textures->m_totalDuration - 1;
-	else
-		return !m_currentFrame;
+    if (m_direction > 0)
+        return m_currentFrame == m_textures->m_totalDuration - 1;
+    else
+        return !m_currentFrame;
 }
 
 void Animation::switchDir()
 {
-	m_direction *= -1;
+    m_direction *= -1;
 }
 
 void Animation::setDir(int dir_)
 {
-	assert(dir_ == 1 || dir_ == -1);
+    assert(dir_ == 1 || dir_ == -1);
 
-	m_direction = dir_;
+    m_direction = dir_;
 }
 
 void Animation::reset(int beginFrame_, int beginDirection_)
 {
-	m_currentFrame = beginFrame_;
-	m_direction = beginDirection_;
+    m_currentFrame = beginFrame_;
+    m_direction = beginDirection_;
 }
 
 void Animation::animFinished()
 {
-	switch (m_isLoop)
-	{
-	case (LOOPMETHOD::NOLOOP):
-			m_direction = 0;
-		break;
+    switch (m_isLoop)
+    {
+    case (LOOPMETHOD::NOLOOP):
+            m_direction = 0;
+        break;
 
-	case (LOOPMETHOD::JUMP_LOOP):
-		if (m_currentFrame >= m_textures->m_totalDuration - 1)
-			m_currentFrame = 0;
-		else if (m_currentFrame <= 0)
-			m_currentFrame = m_textures->m_totalDuration - 1;
-		break;
+    case (LOOPMETHOD::JUMP_LOOP):
+        if (m_currentFrame >= m_textures->m_totalDuration - 1)
+            m_currentFrame = 0;
+        else if (m_currentFrame <= 0)
+            m_currentFrame = m_textures->m_totalDuration - 1;
+        break;
 
-	case (LOOPMETHOD::SWITCH_DIR_LOOP):
-		m_direction *= -1;
-		if (m_direction == -1)
-			m_currentFrame = m_textures->m_totalDuration - 1;
-		else
-			m_currentFrame = 0;
-		break;
-	}
+    case (LOOPMETHOD::SWITCH_DIR_LOOP):
+        m_direction *= -1;
+        if (m_direction == -1)
+            m_currentFrame = m_textures->m_totalDuration - 1;
+        else
+            m_currentFrame = 0;
+        break;
+    }
 }
 
 Vector2<int> Animation::getSize()
 {
-	return {m_textures->m_w, m_textures->m_h};
+    return {m_textures->m_w, m_textures->m_h};
 }
 
 Vector2<int> Animation::getOrigin()
@@ -216,23 +225,6 @@ Vector2<int> Animation::getOrigin()
 
 int Animation::getDirection() const
 {
-	return m_direction;
+    return m_direction;
 }
 
-Animation::Animation(Animation &&anim_)
-{
-	m_textures = std::move(anim_.m_textures);
-	m_currentFrame = anim_.m_currentFrame;
-	m_direction = anim_.m_direction;
-	m_isLoop = anim_.m_isLoop;
-}
-
-Animation &Animation::operator=(Animation &&anim_)
-{
-	m_textures = std::move(anim_.m_textures);
-	m_currentFrame = anim_.m_currentFrame;
-	m_direction = anim_.m_direction;
-	m_isLoop = anim_.m_isLoop;
-
-	return *this;
-}

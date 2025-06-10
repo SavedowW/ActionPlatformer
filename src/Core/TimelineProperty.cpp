@@ -27,6 +27,20 @@ TimelinePropertyEditable<T>::TimelinePropertyEditable() :
 }
 
 template <typename T>
+void TimelinePropertyEditable<T>::dump() const
+{
+    std::cout << "    \"frames\": {" << std::endl;
+    for (auto it = TimelineProperty<T>::m_values.begin(); it != TimelineProperty<T>::m_values.end(); ++it)
+    {
+        std::cout << "        \"" << it->first << "\":" << it->second + 1;
+        if (it + 1 != TimelineProperty<T>::m_values.end())
+            std::cout << ',';
+        std::cout << std::endl;
+    }
+    std::cout << "    }" << std::endl;
+}
+
+template <typename T>
 int TimelinePropertyEditable<T>::getValuesCount() const
 {
     return TimelineProperty<T>::m_values.size();
@@ -61,8 +75,5 @@ void TimelinePropertyEditable<T>::clear()
     TimelineProperty<T>::m_isEmpty = true;
 }
 
-template class TimelinePropertyEditable<bool>;
 template class TimelinePropertyEditable<float>;
 template class TimelinePropertyEditable<int>;
-template class TimelinePropertyEditable<Vector2<float>>;
-template class TimelinePropertyEditable<Vector2<int>>;

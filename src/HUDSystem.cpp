@@ -1,6 +1,7 @@
 #include "HUDSystem.h"
 #include "CoreComponents.h"
 #include "StateMachine.h"
+#include "GameData.h"
 
 HudSystem::HudSystem(entt::registry &reg_, Application &app_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, nanoseconds &frameTime_) :
     m_renderer(*app_.getRenderer()),
@@ -102,10 +103,9 @@ void HudSystem::drawPlayerDebug()
     for (int i = 0; i < 4; ++i)
     {
         auto &spr = (isValid[i] ? m_arrowIn : m_arrowOut);
-        SDL_Point sdlcenter = {spr->m_w / 2, spr->m_h / 2};
 
-        m_renderer.renderTexture(spr->getSprite(),
-        arrowPos[i].x - sdlcenter.x, arrowPos[i].y - sdlcenter.y, spr->m_w, spr->m_h, angles[i], &sdlcenter, SDL_FLIP_NONE);
+        m_renderer.renderTexture(spr->m_id,
+        arrowPos[i] - spr->m_size / 2, spr->m_size,SDL_FLIP_NONE, angles[i], spr->m_size / 2);
     }
 }
 
@@ -122,5 +122,5 @@ void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPh
 	Vector2<int> screenOrigin = screenRelPos.mulComponents(gamedata::global::hudLayerResolution);
 
     m_textManager.renderText(txt1, 1, screenOrigin);
-    m_textManager.renderText(txt2, 1, screenOrigin + Vector2{0.0f, 18.0f});
+    m_textManager.renderText(txt2, 1, screenOrigin + Vector2{0.0f, 10.0f});
 }

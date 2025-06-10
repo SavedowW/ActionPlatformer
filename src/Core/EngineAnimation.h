@@ -15,16 +15,13 @@ public:
 
     bool saveAnimation(const std::string &path_, int blurRange_, Renderer &ren_, int version_);
 
-    bool loadAnimation(const std::string &path_, Renderer &ren_);
+    bool loadAnimation(const std::string &path_);
 
-    void addFrame(const std::string &path_, Renderer &ren_);
+    void addFrame(const std::string &path_);
 
     void setFrame(uint32_t frameId_, int spriteId_);
     void setDuration(uint32_t duration_);
     void scaleToHeight(int height_);
-
-    // Using () because current intellisense does not support operator[] with multiple arguments
-    SDL_Texture *operator()(size_t layer_, uint32_t frame_);
 
     void generateLayer(size_t layer_, int blurRange_, Renderer &ren_);
 
@@ -36,11 +33,10 @@ public:
     struct Layer
     {
         std::vector<SDL_Surface *> m_surfaces;
-        std::vector<SDL_Texture *> m_textures;
         bool m_isGenerated = false;
         std::string m_layerName;
 
-        void addSurface(SDL_Surface *sur_, Renderer &ren_);
+        void addSurface(SDL_Surface *sur_);
         void clear();
     };
 
@@ -69,8 +65,8 @@ public:
     void saveAnimationV1(int blurRange_, Renderer &ren_);
     void saveAnimationV2(int blurRange_, Renderer &ren_);
 
-    void loadAnimationV1(Renderer &ren_);
-    void loadAnimationV2(Renderer &ren_);
+    void loadAnimationV1();
+    void loadAnimationV2();
 };
 
 #endif

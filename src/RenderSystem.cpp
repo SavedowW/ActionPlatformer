@@ -1,6 +1,7 @@
 #include "RenderSystem.h"
 #include "Profile.h"
 #include "EnvComponents.h"
+#include "GameData.h"
 
 RenderSystem::RenderSystem(entt::registry &reg_, Application &app_, Camera &camera_, ColliderRoutesCollection &rtCol_) :
     InputReactor(app_.getInputSystem()),
@@ -146,17 +147,13 @@ void RenderSystem::drawInstance(const ComponentTransform &trans_, const Componen
         }
 
         auto spr = ren_.m_currentAnimation->getSprite();
-        auto edge = ren_.m_currentAnimation->getBorderSprite();
 
-        m_renderer.renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, m_camera, 0.0f, flip);
+        m_renderer.renderTextureOutlined(spr, texPos, texSize, flip, m_camera);
 
         if (ren_.m_flash)
         {
             auto col = ren_.m_flash->getFlashColor();
-            auto whitespr = ren_.m_currentAnimation->getWhiteSprite();
-            SDL_SetTextureColorMod(whitespr, col.r, col.g, col.b);
-            SDL_SetTextureAlphaMod(whitespr, col.a);
-            m_renderer.renderTexture(whitespr, texPos.x, texPos.y, texSize.x , texSize.y, m_camera, 0.0f, flip);
+            m_renderer.renderTextureFlash(spr, texPos, texSize, flip, col, m_camera);
         }
 
         if constexpr (gamedata::debug::drawDebugTextures)
@@ -188,9 +185,8 @@ void RenderSystem::drawParticle(const ComponentTransform &trans_, const Componen
             texPos.y -= animorigin.y;
 
         auto spr = ren_.m_currentAnimation->getSprite();
-        auto edge = ren_.m_currentAnimation->getBorderSprite();
 
-        m_renderer.renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, m_camera, partcl_.angle, animorigin, partcl_.m_flip);
+        m_renderer.renderTexture(spr, texPos, texSize, partcl_.m_flip, partcl_.angle, animorigin, m_camera);
 
         if constexpr (gamedata::debug::drawDebugTextures)
         {
@@ -204,24 +200,22 @@ void RenderSystem::drawTilemapLayer(const ComponentTransform &trans_, TilemapLay
 {
     Vector2<int> camTL = Vector2<int>(m_camera.getPos().mulComponents(tilemap_.m_parallaxFactor)) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
 
-    SDL_Rect dst;
-    dst.w = gamedata::global::tileSize.x;
-    dst.h = gamedata::global::tileSize.y;
-    dst.x = trans_.m_pos.x + tilemap_.m_posOffset.x -camTL.x;
-    dst.y = trans_.m_pos.y + tilemap_.m_posOffset.y -camTL.y;
+    Vector2<int> dstPos;
+    dstPos.x = trans_.m_pos.x + tilemap_.m_posOffset.x - camTL.x;
+    dstPos.y = trans_.m_pos.y + tilemap_.m_posOffset.y - camTL.y;
 
     for (auto &row : tilemap_.m_tiles)
     {
-        dst.x = trans_.m_pos.x + tilemap_.m_posOffset.x - camTL.x;
+        dstPos.x = trans_.m_pos.x + tilemap_.m_posOffset.x - camTL.x;
         for (auto &tile : row)
         {
             if (tile.m_tile)
             {
-                m_renderer.renderTexture(tile.m_tile->m_tex, &tile.m_tile->m_src, &dst, 0, nullptr, tile.m_flip);
+                m_renderer.renderTile(tile.m_tile->m_tex, dstPos, gamedata::tiles::tileSize, tile.m_flip, tile.m_tile->m_tilePos);
             }
-            dst.x += gamedata::global::tileSize.x;
+            dstPos.x += gamedata::tiles::tileSize.x;
         }
-        dst.y += gamedata::global::tileSize.y;
+        dstPos.y += gamedata::tiles::tileSize.y;
     }
 }
 
@@ -287,12 +281,14 @@ void RenderSystem::drawCollider(const ComponentTransform &trans_, const Componen
 
 void RenderSystem::drawCollider(const ComponentStaticCollider &cld_)
 {
-    m_renderer.drawCollider(cld_.m_resolved, {255, 0, 0, Uint8(cld_.m_isEnabled ? 100 : 0)}, m_camera);
+    if (cld_.m_isEnabled)
+        m_renderer.drawCollider(cld_.m_resolved, {255, 0, 0, 100}, m_camera);
 }
 
 void RenderSystem::drawObstacle(const ComponentStaticCollider &cld_)
 {
-    m_renderer.drawCollider(cld_.m_resolved, {50, 50, 255, Uint8(cld_.m_isEnabled ? 100 : 0)}, m_camera);
+    if (cld_.m_isEnabled)
+        m_renderer.drawCollider(cld_.m_resolved, {50, 50, 255, 100}, m_camera);
 }
 
 void RenderSystem::drawTrigger(const ComponentTrigger &cld_)
@@ -348,16 +344,7 @@ void RenderSystem::drawHealth(const ComponentTransform &trans_, const HealthRend
             else if (howner_.m_state == HealthRendererCommonWRT::DelayFadeStates::FADE_OUT)
                 alpha *= 1 - howner_.m_delayFadeTimer.getProgressNormalized();
 
-            if (alpha != 255)
-            {
-                uint8_t oldAlpha = 0;
-                SDL_GetTextureAlphaMod(spr, &oldAlpha);
-                SDL_SetTextureAlphaMod(spr, alpha);
-                m_renderer.renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, m_camera, 0.0f, SDL_FLIP_NONE);
-                SDL_SetTextureAlphaMod(spr, oldAlpha);
-            }
-            else
-                m_renderer.renderTexture(spr, texPos.x, texPos.y, texSize.x , texSize.y, m_camera, 0.0f, SDL_FLIP_NONE);
+            m_renderer.renderTexture(spr, texPos, texSize, SDL_FLIP_NONE, alpha / 255.0f, m_camera);
 
             //m_renderer.drawRectangle(texPos, texSize, {0, 0, 0, 255}, m_camera);
 

@@ -290,9 +290,13 @@ struct MoveCollider2Points
 
 struct TilemapLayer
 {
-    TilemapLayer(const Vector2<int> &size_, const Vector2<float> &parallaxFactor_);
-    std::vector<std::vector<Tile>> m_tiles;
+    TilemapLayer(const Vector2<int> &size_, const Vector2<float> &parallaxFactor_) :
+    m_parallaxFactor(parallaxFactor_),
+    m_tiles(size_.y, std::vector<Tile>(size_.x, Tile{}))
+    {
+    }
 
+    std::vector<std::vector<Tile>> m_tiles;
     Vector2<float> m_parallaxFactor;
     Vector2<float> m_posOffset;
 };

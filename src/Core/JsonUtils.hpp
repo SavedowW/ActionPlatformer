@@ -1,10 +1,20 @@
 #ifndef JSON_UTILS_H_
 #define JSON_UTILS_H_
 #include "EnumMapping.hpp"
+#include <set>
 #include <nlohmann/json.hpp>
 
 namespace utils
 {
+    template<typename T>
+    T tryClaim(nlohmann::json &src_, const std::string &field_, const T &default_)
+    {
+        if (src_.contains(field_))
+            return src_[field_];
+
+        return default_;
+    }
+
     template<typename KeyT, typename ValueT>
     void exportMap(nlohmann::json &out_, const std::map<KeyT, ValueT> &map_)
     {

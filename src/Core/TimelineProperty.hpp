@@ -120,6 +120,8 @@ public:
     TimelinePropertyEditable(const T &value_);
     TimelinePropertyEditable();
 
+    void dump() const;
+
     int getValuesCount() const;
     std::pair<uint32_t, T> &getValuePair(int id_);
     void setPairValue(int id_, T &&value_);

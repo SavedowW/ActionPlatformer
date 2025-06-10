@@ -2,6 +2,7 @@
 #define TEXTURE_MANAGER_H_
 
 #include "Renderer.h"
+#include "Texture.h"
 #include <memory>
 #include <map>
 
@@ -15,15 +16,17 @@ struct ContainedTextureData
 class TextureManager
 {
 public:
-	TextureManager(Renderer* renderer_);
+	TextureManager(Renderer &renderer_);
 	std::shared_ptr<Texture> getTexture(int id_);
 	void preload(const std::string &toPreload_);
 	void preload(int toPreload_);
 
 	int getTexID(const std::string &texName_) const;
+    std::shared_ptr<TextureResource> loadTexture(const std::string &path_);
 
 private:
-	Renderer* m_renderer;
+
+	Renderer &m_renderer;
 	std::map<std::string, int> m_ids;
 	std::vector<ContainedTextureData> m_textures_;
 };

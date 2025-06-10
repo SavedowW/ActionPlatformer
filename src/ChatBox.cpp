@@ -1,4 +1,5 @@
 #include "ChatBox.h"
+#include "GameData.h"
 #include "utf8.h"
 
 std::unique_ptr<fonts::Symbol> processCommand(const std::string &cmd_)
@@ -91,12 +92,12 @@ void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<int> &tl
             pos.y += seq_.m_currentMessage->m_lineHeights[currentLine];
             newLine = true;
         }
-        else if (sym->m_tex)
+        else if (sym->m_tex.m_id)
         {
             bool applyAppearOffset = i >= seq_.m_currentMessage->m_firstCharacterForFadingIn;
             float progress = (applyAppearOffset ?  seq_.m_currentMessage->m_symbolAppearTimers[i].getProgressNormalized() : 1.0f);
             progress = Easing::circ(progress);
-            ren.renderTexture(sym->m_tex, pos.x, pos.y - 5 + (5 * progress), sym->m_w, sym->m_h);
+            ren.renderTexture(sym->m_tex.m_id, {pos.x, pos.y - 5 + int(5 * progress)}, sym->m_tex.m_size, SDL_FLIP_NONE, 1.0f);
             pos.x += sym->m_advance;
         }
     }
@@ -205,7 +206,7 @@ void ChatboxSystem::draw()
         auto camSize = m_camera.getSize();
         int screenPosY = worldCamPosY / camSize.y * gamedata::global::hudLayerResolution.y;
 
-        if (screenPosY >= m_edgeGap + m_chatboxPointer->m_h + seq.m_currentSize.y + m_chatboxEdge->m_h * 2)
+        if (screenPosY >= m_edgeGap + m_chatboxPointer->m_size.y + seq.m_currentSize.y + m_chatboxEdge->m_size.y * 2)
             boxTop = true;
     }
     else if (seq.m_side == ChatBoxSide::PREFER_BOTTOM)
@@ -214,7 +215,7 @@ void ChatboxSystem::draw()
         auto camSize = m_camera.getSize();
         int screenPosY = worldCamPosY / camSize.y * gamedata::global::hudLayerResolution.y;
 
-        if (screenPosY > gamedata::global::hudLayerResolution.y - m_edgeGap - m_chatboxPointer->m_h - seq.m_currentSize.y - m_chatboxEdge->m_h * 2)
+        if (screenPosY > gamedata::global::hudLayerResolution.y - m_edgeGap - m_chatboxPointer->m_size.y - seq.m_currentSize.y - m_chatboxEdge->m_size.y * 2)
             boxTop = true;
     }
     else if (seq.m_side == ChatBoxSide::AUTO)
@@ -241,11 +242,11 @@ void ChatboxSystem::draw()
     if (seq.m_fitScreen)
     {
         if (boxTop)
-            screenPos.y = utils::clamp(screenPos.y, m_chatboxPointer->m_h + seq.m_currentSize.y + m_chatboxEdge->m_h * 2 + m_edgeGap, gamedata::global::hudLayerResolution.y - m_edgeGap);
+            screenPos.y = utils::clamp(screenPos.y, m_chatboxPointer->m_size.y + seq.m_currentSize.y + m_chatboxEdge->m_size.y * 2 + m_edgeGap, gamedata::global::hudLayerResolution.y - m_edgeGap);
         else
-            screenPos.y = utils::clamp(screenPos.y, m_edgeGap, gamedata::global::hudLayerResolution.y - m_edgeGap - m_chatboxPointer->m_h - seq.m_currentSize.y + m_chatboxEdge->m_h * 2);
+            screenPos.y = utils::clamp(screenPos.y, m_edgeGap, gamedata::global::hudLayerResolution.y - m_edgeGap - m_chatboxPointer->m_size.y - seq.m_currentSize.y + m_chatboxEdge->m_size.y * 2);
 
-        screenPos.x = utils::clamp(screenPos.x, m_edgeGap + m_chatboxEdge->m_w + m_chatboxPointer->m_w / 2 + 1, gamedata::global::hudLayerResolution.x - m_edgeGap - m_chatboxEdge->m_w - m_chatboxPointer->m_w / 2 - 1);
+        screenPos.x = utils::clamp(screenPos.x, m_edgeGap + m_chatboxEdge->m_size.x + m_chatboxPointer->m_size.x / 2 + 1, gamedata::global::hudLayerResolution.x - m_edgeGap - m_chatboxEdge->m_size.x - m_chatboxPointer->m_size.x / 2 - 1);
     }
 
     ren.fillRectangle(screenPos - Vector2{1, 1}, {2, 2}, {0, 255, 0, 150});
@@ -265,16 +266,16 @@ void ChatboxSystem::draw()
         std::cout << el.getCurrentFrame() << " ";
     std::cout << std::endl;
 
-    if (seq.m_currentSize.x >= m_chatboxPointer->m_w)
+    if (seq.m_currentSize.x >= m_chatboxPointer->m_size.x)
     {
         if (boxTop)
-            ren.renderTexture(m_chatboxPointer->getSprite(), screenPos.x - m_chatboxPointer->m_w / 2, screenPos.y - m_chatboxPointer->m_h, m_chatboxPointer->m_w, m_chatboxPointer->m_h, 0, nullptr, SDL_FLIP_VERTICAL);
+            ren.renderTexture(m_chatboxPointer->m_id, {screenPos.x - m_chatboxPointer->m_size.x / 2, screenPos.y - m_chatboxPointer->m_size.y}, m_chatboxPointer->m_size, SDL_FLIP_VERTICAL, 1.0f);
         else
-            ren.renderTexture(m_chatboxPointer->getSprite(), screenPos.x - m_chatboxPointer->m_w / 2, screenPos.y, m_chatboxPointer->m_w, m_chatboxPointer->m_h, 0, nullptr, SDL_FLIP_NONE);
+            ren.renderTexture(m_chatboxPointer->m_id, {screenPos.x - m_chatboxPointer->m_size.x / 2, screenPos.y}, m_chatboxPointer->m_size, SDL_FLIP_NONE, 1.0f);
     }
 
-    Vector2<int> outerBoundTL(screenPos.x - seq.m_currentSize.x / 2.0f - m_chatboxEdge->m_w, (boxTop ? screenPos.y - m_chatboxPointer->m_h - seq.m_currentSize.y - m_chatboxEdge->m_h * 2 : screenPos.y + m_chatboxPointer->m_h) + int(boxTop));
-    Vector2<int> outerBoundBR(screenPos.x + seq.m_currentSize.x / 2.0f + m_chatboxEdge->m_w, (boxTop ? screenPos.y - m_chatboxPointer->m_h : screenPos.y + m_chatboxPointer->m_h + m_chatboxEdge->m_h * 2 + seq.m_currentSize.y) + int(boxTop));
+    Vector2<int> outerBoundTL(screenPos.x - seq.m_currentSize.x / 2.0f - m_chatboxEdge->m_size.x, (boxTop ? screenPos.y - m_chatboxPointer->m_size.y - seq.m_currentSize.y - m_chatboxEdge->m_size.y * 2 : screenPos.y + m_chatboxPointer->m_size.y) + int(boxTop));
+    Vector2<int> outerBoundBR(screenPos.x + seq.m_currentSize.x / 2.0f + m_chatboxEdge->m_size.x, (boxTop ? screenPos.y - m_chatboxPointer->m_size.y : screenPos.y + m_chatboxPointer->m_size.y + m_chatboxEdge->m_size.y * 2 + seq.m_currentSize.y) + int(boxTop));
 
 
     if (outerBoundTL.x < m_edgeGap)
@@ -292,28 +293,28 @@ void ChatboxSystem::draw()
 
     //ren.drawRectangle(outerBoundTL, outerBoundBR - outerBoundTL, {255, 0, 0, 255});
 
-    ren.fillRectangle(Vector2<float>(outerBoundTL.x + m_chatboxEdge->m_w, outerBoundTL.y), seq.m_currentSize + Vector2{0.0f, (float)m_chatboxEdge->m_h * 2}, gamedata::colors::LVL4);
-    ren.fillRectangle(Vector2<float>(outerBoundTL.x, outerBoundTL.y + m_chatboxEdge->m_h), seq.m_currentSize + Vector2{(float)m_chatboxEdge->m_w * 2, 0.0f}, gamedata::colors::LVL4);
+    ren.fillRectangle(Vector2<float>(outerBoundTL.x + m_chatboxEdge->m_size.x, outerBoundTL.y), seq.m_currentSize + Vector2{0.0f, (float)m_chatboxEdge->m_size.y * 2}, gamedata::colors::LVL4);
+    ren.fillRectangle(Vector2<float>(outerBoundTL.x, outerBoundTL.y + m_chatboxEdge->m_size.y), seq.m_currentSize + Vector2{(float)m_chatboxEdge->m_size.x * 2, 0.0f}, gamedata::colors::LVL4);
 
-    ren.renderTexture(m_chatboxEdge->getSprite(),
-            outerBoundTL.x, outerBoundTL.y,
-            m_chatboxEdge->m_w, m_chatboxEdge->m_h, 0, nullptr, SDL_FLIP_NONE);
+    ren.renderTexture(m_chatboxEdge->m_id,
+            outerBoundTL,
+            m_chatboxEdge->m_size, SDL_FLIP_NONE, 1.0f);
 
-    ren.renderTexture(m_chatboxEdge->getSprite(),
-            outerBoundBR.x - m_chatboxEdge->m_w, outerBoundTL.y,
-            m_chatboxEdge->m_w, m_chatboxEdge->m_h, 0, nullptr, SDL_FLIP_HORIZONTAL);
+    ren.renderTexture(m_chatboxEdge->m_id,
+            {outerBoundBR.x - m_chatboxEdge->m_size.x, outerBoundTL.y},
+            m_chatboxEdge->m_size, SDL_FLIP_HORIZONTAL, 1.0f);
 
-    ren.renderTexture(m_chatboxEdge->getSprite(),
-            outerBoundTL.x, outerBoundBR.y - m_chatboxEdge->m_h,
-            m_chatboxEdge->m_w, m_chatboxEdge->m_h, 0, nullptr, SDL_FLIP_VERTICAL);
+    ren.renderTexture(m_chatboxEdge->m_id,
+            {outerBoundTL.x, outerBoundBR.y - m_chatboxEdge->m_size.y},
+            m_chatboxEdge->m_size, SDL_FLIP_VERTICAL, 1.0f);
 
-    ren.renderTexture(m_chatboxEdge->getSprite(),
-            outerBoundBR.x - m_chatboxEdge->m_w, outerBoundBR.y - m_chatboxEdge->m_h,
-            m_chatboxEdge->m_w, m_chatboxEdge->m_h, 0, nullptr, SDL_RendererFlip(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL));
+    ren.renderTexture(m_chatboxEdge->m_id,
+            outerBoundBR - m_chatboxEdge->m_size,
+            m_chatboxEdge->m_size, SDL_RendererFlip(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL), 1.0f);
 
     std::cout << (int)seq.m_currentState << std::endl;
     if (seq.m_currentMessage && seq.m_currentState == ChatMessageSequence::BoxState::IDLE)
-        renderText(seq, outerBoundTL + Vector2{m_chatboxEdge->m_w + ChatConsts::ChatEdgeGap, m_chatboxEdge->m_h + ChatConsts::ChatEdgeGap});
+        renderText(seq, outerBoundTL + Vector2{m_chatboxEdge->m_size.x + ChatConsts::ChatEdgeGap, m_chatboxEdge->m_size.y + ChatConsts::ChatEdgeGap});
 }
 
 ChatMessageSequence::ChatMessageSequence(entt::entity src_, const ChatBoxSide &side_, bool fitScreen_, bool proceedByInput_, bool claimInputs_, bool returnInputs_) :

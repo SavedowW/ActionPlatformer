@@ -1,6 +1,5 @@
 #include "LevelBuilder.h"
 #include "NavGraph.h"
-#include "TileMapHelper.hpp"
 #include "CoreComponents.h"
 #include "CameraFocusArea.h"
 #include "StateMachine.h"
@@ -19,7 +18,7 @@ void addTrigger(entt::registry &reg_, const Trigger &trg_)
 LevelBuilder::LevelBuilder(Application &app_, entt::registry &reg_) :
     m_app(app_),
     m_reg(reg_),
-    m_tilebase(app_)
+    m_tilebase(*app_.getTextureManager())
 {
 }
 

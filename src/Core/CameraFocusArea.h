@@ -1,9 +1,9 @@
 #ifndef CAMERA_FOCUS_AREA_H_
 #define CAMERA_FOCUS_AREA_H_
 
+#include "RectCollider.h"
 #include "Renderer.h"
 #include "Vector2.h"
-#include "GameData.h"
 
 class CameraFocusArea : public Collider
 {

@@ -1,4 +1,5 @@
 #include "CameraFocusArea.h"
+#include "GameData.h"
 
 Vector2<float> calcTL(Vector2<float> topLeft_, const Vector2<float> &size_)
 {
@@ -53,9 +54,9 @@ CameraFocusArea::CameraFocusArea(Vector2<int> topLeft_, int scaledSizeX_, int sc
     Collider(topLeft_, Vector2{scaledSizeX_, scaledSizeY_}),
     m_useFocusArea(topLeft_, Vector2{scaledSizeX_, scaledSizeY_}),
     m_renderer(&renderer_),
-    m_scale(std::min(static_cast<float>(scaledSizeX_)/ gamedata::global::baseResolution.x, static_cast<float>(scaledSizeY_) / gamedata::global::baseResolution.y))
+    m_scale(std::max(gamedata::global::maxCameraSize.x / static_cast<float>(scaledSizeX_), gamedata::global::maxCameraSize.y / static_cast<float>(scaledSizeY_)))
 {
-    auto halfCamSize = gamedata::global::baseResolution * (m_scale / 2.0f);
+    auto halfCamSize = gamedata::global::maxCameraSize / m_scale / 2.0f;
     m_minCameraPos = m_topLeft + halfCamSize;
     m_maxCameraPos = m_topLeft + m_size - halfCamSize;
 }

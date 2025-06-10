@@ -26,9 +26,8 @@ namespace fonts
 
     struct Symbol
     {
-        SDL_Texture *m_tex = nullptr;
-        int m_minx = 0, m_maxx = 0, m_miny = 0, m_maxy = 0, m_advance = 0;
-        int m_w = 0, m_h = 0;
+        Texture m_tex;
+        int m_minx, m_maxx, m_miny, m_maxy, m_advance;
         Symbol() = default;
         Symbol& operator=(Symbol &rhs_) = delete;
         Symbol(Symbol &rhs_) = delete;
@@ -45,6 +44,7 @@ namespace fonts
         const Symbol &operator[](uint32_t ch_) const;
 
         const int m_height;
+
     private:
         const CharChunkDistribution &m_distrib;
         std::vector<std::array<Symbol, CHUNK_SIZE>> m_symbols;
@@ -54,21 +54,22 @@ namespace fonts
 class TextManager
 {
 public:
-    TextManager(Renderer *renderer_);
+    TextManager(Renderer &renderer_);
 
+    //void renderText(const std::string &text_, int fontid_, Vector2<int> pos_, fonts::HOR_ALIGN horAlign_ = fonts::HOR_ALIGN::LEFT, Camera *cam_ = nullptr);
     void renderText(const std::string &text_, int fontid_, Vector2<int> pos_, fonts::HOR_ALIGN horAlign_ = fonts::HOR_ALIGN::LEFT, Camera *cam_ = nullptr);
 
     const fonts::Symbol *getSymbol(int fontid_, uint32_t ch_) const;
     int getFontHeight(int fontid_) const;
 
 private:
-    static void generateOutlinedTexturedSymbols(std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, Renderer &renderer_, const std::string &basePath_, const std::string &font_, const std::string &texture_, int size_, int outlineWidth_, const SDL_Color &outlineColor_);
-    static void generateOutlinedSymbols(std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, Renderer &renderer_, const std::string &basePath_, const std::string &font_, int size_, int outlineWidth_, const SDL_Color &color_, const SDL_Color &outlineColor_);
+    //static void generateOutlinedTexturedSymbols(std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, Renderer &renderer_, const std::string &basePath_, const std::string &font_, const std::string &texture_, int size_, int outlineWidth_, const SDL_Color &outlineColor_);
+    //static void generateOutlinedSymbols(std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, Renderer &renderer_, const std::string &basePath_, const std::string &font_, int size_, int outlineWidth_, const SDL_Color &color_, const SDL_Color &outlineColor_);
     static void generateSimpleSymbols(std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, Renderer &renderer_, const std::string &basePath_, const std::string &font_, int size_, const SDL_Color &color_);
     static void generateSimpleShadedSymbols(std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, Renderer &renderer_, const std::string &basePath_, const std::string &font_, int size_, const SDL_Color &color_, const SDL_Color &shadeColor_);
 
     fonts::CharChunkDistribution m_charChunks;
-    Renderer *m_renderer;
+    Renderer &m_renderer;
     std::array<fonts::Font, 4> m_fonts;
 
 };

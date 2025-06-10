@@ -16,7 +16,6 @@ BattleLevel.cpp
 Stage1.cpp
 LevelBuilder.cpp
 PlayableCharacter.cpp
-TileMapHelper.cpp
 StateMachine.cpp
 PhysicsSystem.cpp
 PlayerSystem.cpp
