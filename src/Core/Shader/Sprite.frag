@@ -11,8 +11,10 @@ float rand(vec2 co) {
 
 void main()
 {
+    vec4 originalColor = texture(image, TexCoords);
+
     if (rand(TexCoords.xy) < alphaMod)
-        color = texture(image, TexCoords) * vec4(1, 1, 1, alphaMod);
+        color = texture(image, TexCoords) * vec4(1, 1, 1, originalColor.w);
     else
         color = vec4(0);
 }

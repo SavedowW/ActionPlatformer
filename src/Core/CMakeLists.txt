@@ -4,7 +4,6 @@ project(Core)
 
 set(CORE_SRC_FILES
 Timer.cpp
-EngineAnimation.cpp
 glad.c
 InputSystem.cpp
 TextureManager.cpp
