@@ -614,7 +614,7 @@ void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, 
     renderTexture(tex_, pos_ - camTL, size_, flip_, degrees_, pivot_);
 }
 
-void Renderer::renderTextureFlash(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_, SDL_Color flash_)
+void Renderer::renderTextureFlash(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_, uint8_t alpha_)
 {
     glBindVertexArray(m_spriteVAO);
     m_spriteShaderFlash.use();
@@ -654,17 +654,17 @@ void Renderer::renderTextureFlash(const unsigned int tex_, const Vector2<int> &p
     m_spriteShaderFlash.setVector2f("vertices[1]", vertices[1].x, vertices[1].y);
     m_spriteShaderFlash.setVector2f("vertices[2]", vertices[2].x, vertices[2].y);
     m_spriteShaderFlash.setVector2f("vertices[3]", vertices[3].x, vertices[3].y);
-    m_spriteShaderFlash.setVector4f("flashColor", flash_.r / 255.0f, flash_.g / 255.0f, flash_.b / 255.0f, flash_.a / 255.0f);
+    m_spriteShaderFlash.setFloat("alphaMod", alpha_ / 255.0f);
 
     glBindTexture(GL_TEXTURE_2D, tex_);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-void Renderer::renderTextureFlash(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_, SDL_Color flash_, const Camera &cam_)
+void Renderer::renderTextureFlash(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_, uint8_t alpha_, const Camera &cam_)
 {
     Vector2<int> camTL = Vector2<int>(cam_.getPos()) - gamedata::global::maxCameraSize / 2;
-    renderTextureFlash(tex_, pos_ - camTL, size_, flip_, flash_);
+    renderTextureFlash(tex_, pos_ - camTL, size_, flip_, alpha_);
 }
 
 void Renderer::renderTile(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_, const Vector2<int> &tilesetPixelsPos_)

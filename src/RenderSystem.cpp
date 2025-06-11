@@ -152,8 +152,9 @@ void RenderSystem::drawInstance(const ComponentTransform &trans_, const Componen
 
         if (ren_.m_flash)
         {
-            auto col = ren_.m_flash->getFlashColor();
-            m_renderer.renderTextureFlash(spr, texPos, texSize, flip, col, m_camera);
+            auto alpha = ren_.m_flash->getFlashAlpha();
+            std::cout << (int)alpha << std::endl;
+            m_renderer.renderTextureFlash(spr, texPos, texSize, flip, alpha, m_camera);
         }
 
         if constexpr (gamedata::debug::drawDebugTextures)

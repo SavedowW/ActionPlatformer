@@ -39,8 +39,8 @@ void main()
 
         float sum = (isCloseEnough(textureOffset(backi, backPos, ivec2(0, -1)).xyz) ? textureOffset(image, TexCoords, ivec2(0, 1)).w : 0)
                   + (isCloseEnough(textureOffset(backi, backPos, ivec2(0, 1)).xyz) ? textureOffset(image, TexCoords, ivec2(0, -1)).w : 0)
-                  + (isCloseEnough(textureOffset(backi, backPos, ivec2(-1, 0)).xyz) ? textureOffset(image, TexCoords, ivec2(1, 0)).w : 0)
-                  + (isCloseEnough(textureOffset(backi, backPos, ivec2(1, 0)).xyz) ? textureOffset(image, TexCoords, ivec2(-1, 0)).w : 0);
+                  + (isCloseEnough(textureOffset(backi, backPos, ivec2(1, 0)).xyz) ? textureOffset(image, TexCoords, ivec2(1, 0)).w : 0)
+                  + (isCloseEnough(textureOffset(backi, backPos, ivec2(-1, 0)).xyz) ? textureOffset(image, TexCoords, ivec2(-1, 0)).w : 0);
         
         if (sum > 0)
             color = COLOR_LVL3;

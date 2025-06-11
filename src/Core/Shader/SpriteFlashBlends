@@ -1,0 +1,62 @@
+// UNUSED, blends with background
+
+#version 400 core
+in vec2 TexCoords;
+out vec4 color;
+
+uniform sampler2D image;
+
+uniform float alphaMod;
+
+const vec3 COLORS[4] = vec3[](
+    vec3(233.0f / 255.0f, 239.0f / 255.0f, 236.0f / 255.0f),
+    vec3(160.0f / 255.0f, 160.0f / 255.0f, 139.0f / 255.0f),
+    vec3(85.0f / 255.0f, 85.0f / 255.0f, 104.0f / 255.0f),
+    vec3(33.0f / 255.0f, 30.0f / 255.0f, 32.0f / 255.0f)
+);
+
+float rand(vec2 co)
+{
+    return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+bool areCloseEnough(vec3 col_, int index_)
+{
+    vec3 colDiff = col_ - COLORS[index_];
+    return (abs(colDiff.x) + abs(colDiff.y) + abs(colDiff.z)) < 0.01;
+}
+
+int reduceIndex(int index_) 
+{
+    float targetIndex = float(index_) * (1.0 - alphaMod);
+    float r = rand(TexCoords.xy);
+    
+    if (r < fract(targetIndex))
+    {
+        return int(ceil(targetIndex)); // Увеличиваем шанс уменьшения
+    }
+    else
+    {
+        return int(floor(targetIndex)); // Уменьшаем
+    }
+}
+
+void main()
+{
+    int index = 0;
+
+    vec4 currentColor = texture(image, TexCoords).xyzw;
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (areCloseEnough(currentColor.xyz, i))
+        {
+            index = i;
+            break;
+        }
+    }
+
+    index = reduceIndex(index);
+
+    color = vec4(COLORS[index], currentColor.w);
+}

@@ -178,7 +178,7 @@ class Flash
 {
 public:
     Flash(uint32_t duration_, uint32_t firstFrame = 0);
-    virtual SDL_Color getFlashColor() const = 0;
+    virtual uint8_t getFlashAlpha() const = 0;
     bool update();
     virtual std::unique_ptr<Flash> clone() const = 0;
 
@@ -187,15 +187,16 @@ protected:
     uint32_t m_currentFrame;
 };
 
-class FlashLinear : public Flash
+class FlashDelayedLinear : public Flash
 {
 public:
-    FlashLinear(uint32_t duration_, SDL_Color color_, uint32_t firstFrame_ = 0);
-    virtual SDL_Color getFlashColor() const override;
+    FlashDelayedLinear(uint32_t delayDuration, uint32_t fadeDuration_, uint32_t firstFrame_ = 0);
+    virtual uint8_t getFlashAlpha() const override;
     virtual std::unique_ptr<Flash> clone() const override;
 
 private:
-    SDL_Color m_flashColor;
+    uint32_t m_delayDuration;
+    uint32_t m_fadeDuration;
 };
 
 struct ComponentAnimationRenderable

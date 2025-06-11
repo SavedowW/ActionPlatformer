@@ -169,20 +169,24 @@ bool checkCurrentHitstop(entt::registry &reg_, const entt::entity &idx_)
     return phys && phys->m_hitstopLeft;
 }
 
-FlashLinear::FlashLinear(uint32_t duration_, SDL_Color color_, uint32_t firstFrame_) :
-    Flash(duration_, firstFrame_),
-    m_flashColor(color_)
+FlashDelayedLinear::FlashDelayedLinear(uint32_t delayDuration_, uint32_t fadeDuration_, uint32_t firstFrame_) :
+    Flash(delayDuration_ + fadeDuration_, firstFrame_),
+    m_delayDuration(delayDuration_),
+    m_fadeDuration(fadeDuration_)
 {
 }
 
-SDL_Color FlashLinear::getFlashColor() const
+uint8_t FlashDelayedLinear::getFlashAlpha() const
 {
-    return {m_flashColor.r, m_flashColor.g, m_flashColor.b, static_cast<uint8_t>(m_flashColor.a * (1 - static_cast<float>(m_currentFrame) / m_fullDuration))};
+    if (m_currentFrame < m_delayDuration)
+        return 255;
+    else
+        return static_cast<uint8_t>(255 * (1.0f - static_cast<float>(m_currentFrame - m_delayDuration) / m_fadeDuration));
 }
 
-std::unique_ptr<Flash> FlashLinear::clone() const
+std::unique_ptr<Flash> FlashDelayedLinear::clone() const
 {
-    return std::unique_ptr<Flash>(new FlashLinear(m_fullDuration, m_flashColor, m_currentFrame));
+    return std::unique_ptr<Flash>(new FlashDelayedLinear(m_delayDuration, m_fadeDuration, m_currentFrame));
 }
 
 Flash::Flash(uint32_t duration_, uint32_t firstFrame) :
