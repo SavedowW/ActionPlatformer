@@ -29,7 +29,7 @@ void Profiler::dump() const
     {
         auto found = m_calls.find(el.first);
         if (found != m_calls.end())
-            std::cout << el.second << ": avg = " << found->second.avg() << ", sum = " << found->second.sum() << ", calls = " << found->second.count() << std::endl;
+            std::cout << el.second << ": avg = " << found->second.avg().count() / 1000000.0f << "ms, sum = " << found->second.sum().count() / 1000000.0f << "ms, calls = " << found->second.count() << std::endl;
         else
             std::cout << el.second << ": avg = " << 0 << ", sum = " << 0 << ", calls = " << 0 << std::endl;
     }
