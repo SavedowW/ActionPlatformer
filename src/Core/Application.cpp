@@ -28,6 +28,7 @@ Application::Application()
     Filesystem::setRootDirectory(getBasePath());
 
     Filesystem::ensureDirectoryRelative("Resources");
+	Filesystem::ensureDirectoryRelative("Resources/Animations");
 	Filesystem::ensureDirectoryRelative("Resources/Sprites");
 	Filesystem::ensureDirectoryRelative("Resources/Fonts");
 	Filesystem::ensureDirectoryRelative("Tilemaps");

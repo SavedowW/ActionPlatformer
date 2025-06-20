@@ -97,6 +97,7 @@ void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<int> &tl
             bool applyAppearOffset = i >= seq_.m_currentMessage->m_firstCharacterForFadingIn;
             float progress = (applyAppearOffset ?  seq_.m_currentMessage->m_symbolAppearTimers[i].getProgressNormalized() : 1.0f);
             progress = Easing::circ(progress);
+            //ren.drawRectangle({pos.x, pos.y - 5 + int(5 * progress)}, sym->m_tex.m_size, SDL_Color{255, 255, 255, 255});
             ren.renderTexture(sym->m_tex.m_id, {pos.x, pos.y - 5 + int(5 * progress)}, sym->m_tex.m_size, SDL_FLIP_NONE, 1.0f);
             pos.x += sym->m_advance;
         }
@@ -331,11 +332,10 @@ void ChatMessageSequence::compileAndSetSize(const TextManager &textMan_)
 {
     for (auto &msg : m_messages)
     {
-        auto newsz = msg.compileAndGetSize(textMan_);
-        m_targetSize.x = std::max(m_targetSize.x, newsz.x);
-        m_targetSize.y = std::max(m_targetSize.y, newsz.y);
+        msg.compileAndSetSize(textMan_);
     }
 
+    m_targetSize = m_messages[0].m_size;
     m_targetSize.x += ChatConsts::ChatEdgeGap * 2;
     m_targetSize.y += ChatConsts::ChatEdgeGap * 2;
 
@@ -365,6 +365,12 @@ void ChatMessageSequence::takeInput()
                 {
                     m_currentMessage = &m_messages[0];
                     m_currentMessage->m_charDelayTimer.begin(m_currentMessage->m_defaultCharacterDelay + 1);
+                    m_oldSize = m_currentSize;
+
+                    m_targetSize = m_currentMessage->m_size;
+                    m_targetSize.x += ChatConsts::ChatEdgeGap * 2;
+                    m_targetSize.y += ChatConsts::ChatEdgeGap * 2;
+                    m_windowTimer.begin(3);
                 }
             }
         }
@@ -382,10 +388,9 @@ ChatMessage::ChatMessage(const std::string &textRaw_, int font_) :
 {
 }
 
-Vector2<int> ChatMessage::compileAndGetSize(const TextManager &textMan_)
+void ChatMessage::compileAndSetSize(const TextManager &textMan_)
 {
-    Vector2<int> m_size;
-    Vector2<int> m_currentLineSize;
+    Vector2<int> currentLineSize;
 
     U8Wrapper wrp(m_textRaw);
 
@@ -426,19 +431,18 @@ Vector2<int> ChatMessage::compileAndGetSize(const TextManager &textMan_)
 
             if (newLine)
             {
-                m_currentLineSize.x = sym->m_minx;
-                m_currentLineSize.y = textMan_.getFontHeight(m_baseFont);
+                currentLineSize.y = textMan_.getFontHeight(m_baseFont);
                 newLine = false;
             }
 
             if (*ch.m_ch == '\n')
             {
-                m_size.y += m_currentLineSize.y;
-                m_size.x = std::max(m_size.x, m_currentLineSize.x);
-                m_lineHeights.push_back(m_currentLineSize.y);
+                m_size.y += currentLineSize.y;
+                m_size.x = std::max(m_size.x, currentLineSize.x);
+                m_lineHeights.push_back(currentLineSize.y);
 
-                m_currentLineSize.x = 0;
-                m_currentLineSize.y = 0;
+                currentLineSize.x = 0;
+                currentLineSize.y = 0;
 
                 newLine = true;
 
@@ -447,20 +451,18 @@ Vector2<int> ChatMessage::compileAndGetSize(const TextManager &textMan_)
             else
             {
                 m_symbols.push_back(sym);
+                currentLineSize.x += sym->m_advance;
             }
 
-            m_currentLineSize.x += sym->m_advance;
         }
     }
 
-    m_size.y += m_currentLineSize.y;
-    m_size.x = std::max(m_size.x, m_currentLineSize.x);
-    m_lineHeights.push_back(m_currentLineSize.y);
+    m_size.y += currentLineSize.y;
+    m_size.x = std::max(m_size.x, currentLineSize.x);
+    m_lineHeights.push_back(currentLineSize.y);
 
     m_symbolAppearTimers.resize(m_symbols.size());
     m_symbolAppearTimers[0].begin(m_defaultAppearDuration);
-
-    return m_size;
 }
 
 void ChatMessage::skip()

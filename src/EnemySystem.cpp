@@ -13,7 +13,7 @@ EnemySystem::EnemySystem(entt::registry &reg_, Application &app_, NavSystem &nav
 {
 }
 
-void EnemySystem::makeEnemy()
+entt::entity EnemySystem::makeEnemy()
 {
     auto enemyId = m_reg.create();
     m_reg.emplace<ComponentTransform>(enemyId, Vector2{312.0f, 300.0f}, ORIENTATION::RIGHT);
@@ -228,6 +228,8 @@ void EnemySystem::makeEnemy()
     ));
 
     sm.setInitialState(Enemy1State::FLOAT);
+
+    return enemyId;
 }
 
 void EnemySystem::update()

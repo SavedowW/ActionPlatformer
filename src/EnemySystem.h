@@ -10,7 +10,7 @@ struct EnemySystem
 {
     EnemySystem(entt::registry &reg_, Application &app_, NavSystem &navsys_, Camera &cam_, ParticleSystem &partsys_);
 
-    void makeEnemy();
+    entt::entity makeEnemy();
     void update();
 
     entt::registry &m_reg;

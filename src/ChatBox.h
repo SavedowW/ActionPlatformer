@@ -44,6 +44,8 @@ struct ChatMessage
     std::vector<int> m_lineHeights;
     std::vector<std::unique_ptr<fonts::Symbol>> m_techSymbols;
 
+    Vector2<int> m_size;
+
     // Timer for delay between characters
     FrameTimer<true> m_charDelayTimer;
 
@@ -54,7 +56,7 @@ struct ChatMessage
 
     enum class MessageState { APPEAR, IDLE } m_currentState = MessageState::APPEAR;
 
-    Vector2<int> compileAndGetSize(const TextManager &textMan_);
+    void compileAndSetSize(const TextManager &textMan_);
     void skip();
 
     void proceedUntilNonTechCharacter();

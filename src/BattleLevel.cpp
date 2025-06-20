@@ -45,7 +45,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_hudsys.m_playerId = playerId;
     m_enemysys.m_playerId = playerId;
 
-    m_enemysys.makeEnemy();
+    m_enemyId = m_enemysys.makeEnemy();
     //m_envSystem.makeGrassTop(Vector2{230, 351});
 
     m_lvlBuilder.buildLevel("Tilemaps/tilemap.json", playerId, m_graph, m_cldRoutesCollection, m_envSystem);
@@ -88,7 +88,8 @@ void BattleLevel::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
     {
         ChatMessageSequence seq{m_playerId, ChatBoxSide::PREFER_TOP, true, true, true, true};
         //seq.m_messages.emplace_back("Hello, chat\nHow<delay=30> are you?", 3);
-        seq.m_messages.emplace_back("hoo<delay=30>lo", 3);
+        seq.m_messages.emplace_back("hoolo", 3);
+        seq.m_messages.emplace_back("Hey guys, did you know\nthat in terms of male human\nand female Pokemon breeding, Vaporeon\nis the most...<delay=30> compatible", 3);
         seq.m_messages.emplace_back("wololo", 3);
         //seq.m_messages.emplace_back("I've been better", 3);
         m_chatBoxSys.addSequence(std::move(seq));
