@@ -17,8 +17,9 @@ std::unique_ptr<fonts::Symbol> processCommand(const std::string &cmd_)
 namespace ChatConsts
 {
     const int ChatEdgeGap = 4;
-    const uint32_t fadeInDuration = 3;
-    const uint32_t fadeOutDuration = 5;
+    const uint32_t fadeInDuration = 5;
+    const uint32_t fadeBetweenDuration = 5;
+    const uint32_t fadeOutDuration = 7;
 }
 
 ChatboxSystem::ChatboxSystem(entt::registry &reg_, Application &app_, Camera &camera_) :
@@ -129,6 +130,7 @@ void ChatboxSystem::update()
         }
         else // Proceeding message
         {
+            seq.m_windowTimer.update();
             // Updating current message
             if (seq.m_currentMessage)
             {
@@ -255,10 +257,6 @@ void ChatboxSystem::draw()
     Vector2<int> iScreenPos = screenPos;
 
     float progress = seq.m_windowTimer.getProgressNormalized();
-    if (seq.m_currentState == ChatMessageSequence::BoxState::IDLE)
-        progress = 1.0f;
-    else if (seq.m_currentState == ChatMessageSequence::BoxState::DISAPPEAR)
-        progress = 1.0f - progress;
 
     seq.m_currentSize = utils::lerp(seq.m_oldSize, seq.m_targetSize, progress);
 
@@ -342,7 +340,7 @@ void ChatMessageSequence::compileAndSetSize(const TextManager &textMan_)
     if (!m_messages.empty())
         m_currentMessage = &m_messages[0];
 
-    m_windowTimer.begin(3);
+    m_windowTimer.begin(ChatConsts::fadeInDuration);
 }
 
 void ChatMessageSequence::takeInput()
@@ -352,13 +350,18 @@ void ChatMessageSequence::takeInput()
         if (m_currentState == BoxState::IDLE && !m_messages.empty())
         {
             if (m_messages[0].m_currentState == ChatMessage::MessageState::APPEAR)
+            {
                 m_messages[0].skip();
+                m_windowTimer.beginAt(1, 1);
+            }
             else if (m_messages[0].m_currentState == ChatMessage::MessageState::IDLE)
             {
                 m_messages.erase(m_messages.begin());
                 if (m_messages.empty())
                 {
                     m_currentState = BoxState::DISAPPEAR;
+                    m_targetSize = 0;
+                    m_oldSize = m_currentSize;
                     m_windowTimer.begin(ChatConsts::fadeOutDuration);
                 }
                 else
@@ -370,7 +373,7 @@ void ChatMessageSequence::takeInput()
                     m_targetSize = m_currentMessage->m_size;
                     m_targetSize.x += ChatConsts::ChatEdgeGap * 2;
                     m_targetSize.y += ChatConsts::ChatEdgeGap * 2;
-                    m_windowTimer.begin(3);
+                    m_windowTimer.begin(ChatConsts::fadeBetweenDuration);
                 }
             }
         }
