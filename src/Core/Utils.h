@@ -3,6 +3,8 @@
 #include <string>
 #include <SDL.h>
 #include <regex>
+#include <sstream>
+#include <string>
 
 namespace Easing
 {
@@ -14,102 +16,6 @@ namespace Easing
 
 namespace utils
 {
-    template<typename T>
-    class MinMax
-    {
-    public:
-        void addValue(const T &value_)
-        {
-            if (m_valueCount == 0)
-            {
-                m_min = value_;
-                m_max = value_;
-                m_valueCount++;
-            }
-            else
-            {
-                if (value_ < m_min)
-                    m_min = value_;
-
-                if (value_ > m_max)
-                    m_max = value_;
-
-                if (m_valueCount == 1)
-                    m_valueCount++;
-            }
-        }
-
-        const T &getMin() const
-        {
-            return m_min;
-        }
-
-        const T &getMax() const
-        {
-            return m_max;
-        }
-
-        bool isEmpty() const
-        {
-            return !m_valueCount;
-        }
-
-    private:
-        int m_valueCount = 0;
-        T m_min = 0;
-        T m_max = 0;
-    };
-
-    // Way faster than dynamic implementation with base class, operator() and inheritors comparing value under interface
-    template<typename T>
-    class Gate
-    {
-    public:
-        bool fits(const T &val_) const
-        {
-            if (m_min <= m_max)
-                return val_ >= m_min && val_ <= m_max;
-            else
-                return val_ >= m_min || val_ <= m_max;
-        }
-
-        static Gate<T> makeMin(T &&rhs_)
-        {
-            Gate<T> gate;
-            gate.m_min = std::forward<T>(rhs_);
-            gate.m_max = std::numeric_limits<T>::infinity();
-            return gate;
-        }
-
-        static Gate<T> makeMax(T &&rhs_)
-        {
-            Gate<T> gate;
-            gate.m_min = -std::numeric_limits<T>::infinity();
-            gate.m_max = std::forward<T>(rhs_);
-            return gate;
-        }
-
-        static Gate<T> makeMinMax(T &&min_, T &&max_)
-        {
-            Gate<T> gate;
-            gate.m_min = std::forward<T>(min_);
-            gate.m_max = std::forward<T>(max_);
-            return gate;
-        }
-
-        static Gate<T> makeNever()
-        {
-            Gate<T> gate;
-            gate.m_min = std::numeric_limits<T>::infinity();
-            gate.m_max = -std::numeric_limits<T>::infinity();
-            return gate;
-        }
-
-    private:
-        T m_min;
-        T m_max;
-    };
-
     template<typename T>
     class Average
     {
@@ -311,6 +217,27 @@ namespace utils
         }
 
         return true;
+    }
+
+    inline std::vector<std::string> tokenize(const std::string &src_, const char splitter_)
+    {
+        std::stringstream ss(src_);
+        std::vector<std::string> res;
+
+        while (ss.good())
+        {
+            std::string substr;
+            std::getline(ss, substr, ',');
+            res.push_back(substr);
+        }
+
+        return res;
+    }
+
+    inline std::string strip(std::string line_)
+    {
+        //while (!line_.empty() && )
+        return line_;
     }
 
 }

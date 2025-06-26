@@ -58,7 +58,7 @@ TextManager::TextManager(Renderer &renderer_) :
     m_fonts{fonts::Font(generateSimpleShadedSymbols, 12, m_charChunks, renderer_, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  12, SDL_Color{255, 255, 255, 255}, SDL_Color{100, 100, 100, 255}), // Screen debug data
     fonts::Font(generateSimpleSymbols, 10, m_charChunks, renderer_, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  10, gamedata::colors::LVL1), // For npc debug
     fonts::Font(generateSimpleSymbols, 8, m_charChunks, renderer_, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  8, SDL_Color{255, 255, 255, 255}), // For navigation system
-    fonts::Font(generateSimpleSymbols, 16, m_charChunks, renderer_, Filesystem::getRootDirectory(), "/Resources/Fonts/VanillaExtractRegular.ttf",  16, gamedata::colors::LVL1)} // Used for chatbox
+    fonts::Font(generateSimpleSymbols, 16, m_charChunks, renderer_, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  16, gamedata::colors::LVL1)} // Used for chatbox
     //m_fonts{fonts::Font(generateOutlinedSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  24, 2, SDL_Color{0, 0, 0, 255}, SDL_Color{0, 100, 0, 255})}
     //m_fonts{fonts::Font(generateOutlinedTexturedSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf", "/Resources/Fonts/fontBack.png",  24, 2, SDL_Color{0, 0, 0, 255})}
 {

@@ -2,14 +2,85 @@
 #include "GameData.h"
 #include "utf8.h"
 
+uint32_t ChatMessage::m_defaultCharacterDelay = 2;
+uint32_t ChatMessage::m_defaultAppearDuration = 12;
+
+template <>
+inline std::string InlinedValueHandler::getParam<std::string>(int index_)
+{
+    return m_tokens[index_];
+}
+
+template <>
+inline int InlinedValueHandler::getParam<int>(int index_)
+{
+    return std::atoi(m_tokens[index_].c_str());
+}
+
+template <>
+inline std::string InlinedValueHandler::getParam<std::string>(int index_, const std::string &default_)
+{
+    if (index_ >= m_tokens.size() || m_tokens[index_] == "default")
+        return default_;
+
+    return m_tokens[index_];
+}
+
+template <>
+inline int InlinedValueHandler::getParam<int>(int index_, const int &default_)
+{
+    if (index_ >= m_tokens.size() || m_tokens[index_] == "default")
+        return default_;
+
+    return std::atoi(m_tokens[index_].c_str());
+}
+
+template <>
+inline uint32_t InlinedValueHandler::getParam<uint32_t>(int index_, const uint32_t &default_)
+{
+    if (index_ >= m_tokens.size() || m_tokens[index_] == "default")
+        return default_;
+
+    return std::atoi(m_tokens[index_].c_str());
+}
+
+template <>
+inline float InlinedValueHandler::getParam<float>(int index_, const float &default_)
+{
+    if (index_ >= m_tokens.size() || m_tokens[index_] == "default")
+        return default_;
+
+    return std::stof(m_tokens[index_].c_str());
+}
+
 std::unique_ptr<fonts::Symbol> processCommand(const std::string &cmd_)
 {
     auto eqpos = cmd_.find_first_of('=');
-    auto cmd = cmd_.substr(0, eqpos);
-    auto val = cmd_.substr(eqpos + 1);
+    auto cmd = eqpos != std::string::npos ? cmd_.substr(0, eqpos) : cmd_;
+    InlinedValueHandler val(eqpos != std::string::npos ? cmd_.substr(eqpos + 1) : "");
 
     if (cmd == "delay")
-        return std::unique_ptr<fonts::Symbol>(new SymbolDelay(std::stoi(val)));
+        return std::unique_ptr<fonts::Symbol>(new SymbolDelay(val.getParam<int>(0)));
+    else if (cmd == "charspd")
+    {
+        return std::unique_ptr<fonts::Symbol>(new SymbolSetCharacterSpeed(
+            val.getParam(0, ChatMessage::m_defaultCharacterDelay),
+            val.getParam(1, ChatMessage::m_defaultAppearDuration)
+        ));
+    }
+    else if (cmd == "shake")
+    {
+        return std::unique_ptr<fonts::Symbol>(new SymbolRenderShake(
+            val.getParam(0, 0),
+            val.getParam(1, 0),
+            val.getParam(2, 1.0f)
+        ));
+    }
+
+    else if (cmd == "/shake")
+    {
+        return std::unique_ptr<fonts::Symbol>(new RenderDropSymbol<SymbolRenderShake>);
+    }
 
     return nullptr;
 }
@@ -76,6 +147,8 @@ void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<int> &tl
 {
     auto &ren = *m_app.getRenderer();
 
+    std::apply([](auto&... ptrs) { ((ptrs = nullptr), ...); }, seq_.m_renderEffects);
+
     auto pos = tl_;
     bool newLine = true;
     int currentLine = 0;
@@ -84,7 +157,7 @@ void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<int> &tl
         auto &sym = seq_.m_currentMessage->m_symbols[i];
         if (newLine)
         {
-            pos.x = tl_.x + seq_.m_currentMessage->m_symbols[0]->m_minx;
+            pos.x = tl_.x - seq_.m_currentMessage->m_symbols[0]->m_minx;
             currentLine++;
             newLine = false;
         }
@@ -98,9 +171,18 @@ void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<int> &tl
             bool applyAppearOffset = i >= seq_.m_currentMessage->m_firstCharacterForFadingIn;
             float progress = (applyAppearOffset ?  seq_.m_currentMessage->m_symbolAppearTimers[i].getProgressNormalized() : 1.0f);
             progress = Easing::circ(progress);
+
+            Vector2<int> offset;
+            if (auto *shakeEffect = std::get<SymbolRenderShake*>(seq_.m_renderEffects))
+                offset = shakeEffect->getOffset();
+
             //ren.drawRectangle({pos.x, pos.y - 5 + int(5 * progress)}, sym->m_tex.m_size, SDL_Color{255, 255, 255, 255});
-            ren.renderTexture(sym->m_tex.m_id, {pos.x, pos.y - 5 + int(5 * progress)}, sym->m_tex.m_size, SDL_FLIP_NONE, 1.0f);
+            ren.renderTexture(sym->m_tex.m_id, Vector2{pos.x, pos.y - 5 + int(5 * progress)} + offset, sym->m_tex.m_size, SDL_FLIP_NONE, progress);
             pos.x += sym->m_advance;
+        }
+        else if (auto renSym = const_cast<IRenderSymbol*>(dynamic_cast<const IRenderSymbol*>(sym)))
+        {
+            renSym->onRenderReached(seq_);
         }
     }
 }
@@ -118,8 +200,8 @@ void ChatboxSystem::update()
                 seq.m_currentState = ChatMessageSequence::BoxState::IDLE;
                 if (!seq.m_currentMessage->m_symbolAppearTimers.empty())
                 {
-                    seq.m_currentMessage->m_charDelayTimer.begin(seq.m_currentMessage->m_defaultCharacterDelay);
-                    seq.m_currentMessage->m_symbolAppearTimers[0].begin(seq.m_currentMessage->m_defaultAppearDuration);
+                    seq.m_currentMessage->m_charDelayTimer.begin(seq.m_currentMessage->m_characterDelay);
+                    seq.m_currentMessage->m_symbolAppearTimers[0].begin(seq.m_currentMessage->m_appearDuration);
                 }
             }
         }
@@ -149,12 +231,12 @@ void ChatboxSystem::update()
                     // Handle delay between characters
                     if (seq.m_currentMessage->m_charDelayTimer.update() && seq.m_currentMessage->m_currentProceedingCharacter < vsize)
                     {
-                        seq.m_currentMessage->m_charDelayTimer.begin(seq.m_currentMessage->m_defaultCharacterDelay);
-
                         seq.m_currentMessage->proceedUntilNonTechCharacter();
 
+                        seq.m_currentMessage->m_charDelayTimer.begin(seq.m_currentMessage->m_characterDelay);
+                        
                         if (seq.m_currentMessage->m_currentProceedingCharacter < vsize)
-                            seq.m_currentMessage->m_symbolAppearTimers[seq.m_currentMessage->m_currentProceedingCharacter].begin(seq.m_currentMessage->m_defaultAppearDuration);
+                            seq.m_currentMessage->m_symbolAppearTimers[seq.m_currentMessage->m_currentProceedingCharacter].begin(seq.m_currentMessage->m_appearDuration);
                     }
 
                     if (seq.m_currentMessage->m_firstCharacterForFadingIn == seq.m_currentMessage->m_symbolAppearTimers.size())
@@ -322,7 +404,8 @@ ChatMessageSequence::ChatMessageSequence(entt::entity src_, const ChatBoxSide &s
     m_fitScreen(fitScreen_),
     m_proceedByInput(proceedByInput_),
     m_claimInputs(claimInputs_),
-    m_returnInputs(returnInputs_)
+    m_returnInputs(returnInputs_),
+    m_renderEffects(nullptr)
 {
 }
 
@@ -367,7 +450,7 @@ void ChatMessageSequence::takeInput()
                 else
                 {
                     m_currentMessage = &m_messages[0];
-                    m_currentMessage->m_charDelayTimer.begin(m_currentMessage->m_defaultCharacterDelay + 1);
+                    m_currentMessage->m_charDelayTimer.begin(m_currentMessage->m_characterDelay + 1);
                     m_oldSize = m_currentSize;
 
                     m_targetSize = m_currentMessage->m_size;
@@ -434,6 +517,7 @@ void ChatMessage::compileAndSetSize(const TextManager &textMan_)
 
             if (newLine)
             {
+                currentLineSize.x = -sym->m_minx;
                 currentLineSize.y = textMan_.getFontHeight(m_baseFont);
                 newLine = false;
             }
@@ -465,7 +549,7 @@ void ChatMessage::compileAndSetSize(const TextManager &textMan_)
     m_lineHeights.push_back(currentLineSize.y);
 
     m_symbolAppearTimers.resize(m_symbols.size());
-    m_symbolAppearTimers[0].begin(m_defaultAppearDuration);
+    m_symbolAppearTimers[0].begin(m_appearDuration);
 }
 
 void ChatMessage::skip()
@@ -498,8 +582,54 @@ SymbolDelay::SymbolDelay(int delay_) :
 {
 }
 
+SymbolSetCharacterSpeed::SymbolSetCharacterSpeed(uint32_t characterDelay_, uint32_t appearDuration_) :
+    m_characterDelay(characterDelay_),
+    m_appearDuration(appearDuration_)
+{
+}
+
 bool SymbolDelay::onReached(ChatMessage &message_)
 {
     message_.m_charDelayTimer.begin(m_delay);
     return false;
+}
+
+bool IRenderSymbol::onReached(ChatMessage &message_)
+{
+    return true;
+}
+
+void TechSymbol::onRenderReached(ChatMessageSequence &sequence_)
+{
+}
+
+bool SymbolSetCharacterSpeed::onReached(ChatMessage &message_)
+{
+    message_.m_characterDelay = m_characterDelay;
+    message_.m_appearDuration = m_appearDuration;
+    return false;
+}
+
+SymbolRenderShake::SymbolRenderShake(int xAmp_, int yAmp_, float prob_) :
+    m_xAmp(xAmp_),
+    m_yAmp(yAmp_),
+    m_prob(prob_)
+{
+}
+
+Vector2<int> SymbolRenderShake::getOffset() const
+{
+    float roll = (rand() % 10000) / 10000.0f;
+    if (roll >= m_prob)
+        return {};
+
+    return Vector2<int>(
+        (rand() % m_xAmp) - m_xAmp / 2,
+        (rand() % m_yAmp) - m_yAmp / 2
+    );
+}
+
+InlinedValueHandler::InlinedValueHandler(const std::string &s_) :
+    m_tokens(utils::tokenize(s_, ','))
+{
 }

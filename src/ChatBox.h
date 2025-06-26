@@ -15,14 +15,61 @@ enum class ChatBoxSide
 };
 
 class ChatMessage;
+class ChatMessageSequence;
+
+class InlinedValueHandler
+{
+public:
+    InlinedValueHandler(const std::string &s_);
+
+    template<typename T>
+    T getParam(int index_);
+
+    template<typename T>
+    T getParam(int index_, const T &default_);
+
+private:
+    std::vector<std::string> m_tokens;
+};
 
 class TechSymbol : public fonts::Symbol
 {
 public:
     // Symbol was naturally reached by message, returns true if should proceed further
     virtual bool onReached(ChatMessage &message_) = 0;
+
+    // Symbol was naturally reached by sequence while rendering
+    virtual void onRenderReached(ChatMessageSequence &sequence_);
 };
 
+class IRenderSymbol : public TechSymbol
+{
+public:
+    virtual bool onReached(ChatMessage &message_) override;
+
+    // Symbol was naturally reached by sequence while rendering
+    virtual void onRenderReached(ChatMessageSequence &sequence_) = 0;
+};
+
+// Add itself to the sequence (which keeps current rendering state)
+template<typename OwnT>
+class RenderSymbol : public IRenderSymbol
+{
+public:
+    virtual void onRenderReached(ChatMessageSequence &sequence_) override;
+};
+
+// Remove actual symbol from the sequence (which keeps current rendering state)
+template<typename OwnT>
+class RenderDropSymbol : public IRenderSymbol
+{
+public:
+    virtual void onRenderReached(ChatMessageSequence &sequence_) override;
+};
+
+/*
+    <delay=30>
+*/
 class SymbolDelay : public TechSymbol
 {
 public:
@@ -33,6 +80,42 @@ public:
 private:
     int m_delay = 0;
 };
+
+/*
+    shake = chardelay, appearDuration
+    <charspd=5,15>
+    <charspd=5,default>
+    <charspd=default,default>
+*/
+class SymbolSetCharacterSpeed : public TechSymbol
+{
+public:
+    SymbolSetCharacterSpeed(uint32_t characterDelay_, uint32_t appearDuration_);
+
+    virtual bool onReached(ChatMessage &message_) override;
+
+private:
+    uint32_t m_characterDelay = 0;
+    uint32_t m_appearDuration = 0;
+};
+
+/*
+    shake = xAmp, yAmp
+    <shake=4,6>
+*/
+class SymbolRenderShake : public RenderSymbol<SymbolRenderShake>
+{
+public:
+    SymbolRenderShake(int xAmp_, int yAmp_, float prob_);
+
+    Vector2<int> getOffset() const;
+
+private:
+    int m_xAmp;
+    int m_yAmp;
+    float m_prob;
+};
+
 
 struct ChatMessage
 {
@@ -49,8 +132,11 @@ struct ChatMessage
     // Timer for delay between characters
     FrameTimer<true> m_charDelayTimer;
 
-    uint32_t m_defaultCharacterDelay = 2;
-    uint32_t m_defaultAppearDuration = 12;
+    static uint32_t m_defaultCharacterDelay;
+    static uint32_t m_defaultAppearDuration;
+
+    uint32_t m_characterDelay = m_defaultCharacterDelay;
+    uint32_t m_appearDuration = m_defaultAppearDuration;
     uint32_t m_currentProceedingCharacter = 0;
     uint32_t m_firstCharacterForFadingIn = 0;
 
@@ -92,6 +178,8 @@ struct ChatMessageSequence
 
     std::vector<ChatMessage> m_messages;
     ChatMessage *m_currentMessage = nullptr;
+
+    std::tuple<SymbolRenderShake*> m_renderEffects;
 };
 
 class ChatboxSystem : public InputReactor
@@ -122,5 +210,17 @@ private:
 
     const int m_edgeGap = 6;
 };
+
+template<typename OwnT>
+void RenderSymbol<OwnT>::onRenderReached(ChatMessageSequence &sequence_)
+{
+    std::get<OwnT*>(sequence_.m_renderEffects) = dynamic_cast<OwnT*>(this);
+}
+
+template<typename OwnT>
+void RenderDropSymbol<OwnT>::onRenderReached(ChatMessageSequence &sequence_)
+{
+    std::get<OwnT*>(sequence_.m_renderEffects) = nullptr;
+}
 
 #endif
