@@ -220,7 +220,7 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
                             }
                             else
                             {
-                                throw std::exception("Failed to read polygon vertex for collider: x coord is not min or max");
+                                throw std::string("Failed to read polygon vertex for collider: x coord is not min or max");
                             }
                         }
 

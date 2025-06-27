@@ -1,0 +1,8 @@
+{
+    "dbg_localization": "RU: ру локализация",
+    "test_dlg1":"Хе-хе~",
+    "test_dlg2":"<shake=2, 2, 0.0005>Полагаю, я должен\nответить на твой<charspd=8,default>... <charspd=default,default><shake=2,2,0.5>запрос</shake>.</shake>",
+    "test_dlg3":"Вулулу",
+    "test_dlg4":"Мой \"запрос\" должен остаться неотвеченным,",
+    "test_dlg5":"и я об этом позабочусь."
+}

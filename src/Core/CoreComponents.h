@@ -16,6 +16,8 @@
 #include <memory>
 #include <utility>
 
+class NavPath;
+
 struct ComponentTransform
 {
     ComponentTransform() = default;

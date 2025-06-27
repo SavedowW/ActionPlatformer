@@ -143,11 +143,17 @@ void ChatboxSystem::receiveEvents(HUD_EVENTS event, const float scale_)
     }
 }
 
+template<typename T>
+void clearStack(std::stack<T> &stack_)
+{
+    stack_ = std::stack<T>();
+}
+
 void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<int> &tl_)
 {
     auto &ren = *m_app.getRenderer();
 
-    std::apply([](auto&... ptrs) { ((ptrs = nullptr), ...); }, seq_.m_renderEffects);
+    std::apply([](auto&... ptrs) { ((clearStack(ptrs)), ...); }, seq_.m_renderEffects);
 
     auto pos = tl_;
     bool newLine = true;
@@ -173,8 +179,11 @@ void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<int> &tl
             progress = Easing::circ(progress);
 
             Vector2<int> offset;
-            if (auto *shakeEffect = std::get<SymbolRenderShake*>(seq_.m_renderEffects))
-                offset = shakeEffect->getOffset();
+            {
+                auto &stack = std::get<std::stack<SymbolRenderShake*>>(seq_.m_renderEffects);
+                if (!stack.empty())
+                    offset = stack.top()->getOffset();
+            }
 
             //ren.drawRectangle({pos.x, pos.y - 5 + int(5 * progress)}, sym->m_tex.m_size, SDL_Color{255, 255, 255, 255});
             ren.renderTexture(sym->m_tex.m_id, Vector2{pos.x, pos.y - 5 + int(5 * progress)} + offset, sym->m_tex.m_size, SDL_FLIP_NONE, progress);
@@ -239,7 +248,7 @@ void ChatboxSystem::update()
                             seq.m_currentMessage->m_symbolAppearTimers[seq.m_currentMessage->m_currentProceedingCharacter].begin(seq.m_currentMessage->m_appearDuration);
                     }
 
-                    if (seq.m_currentMessage->m_firstCharacterForFadingIn == seq.m_currentMessage->m_symbolAppearTimers.size())
+                    if (seq.m_currentMessage->m_firstCharacterForFadingIn >= seq.m_currentMessage->m_symbolAppearTimers.size())
                         seq.m_currentMessage->m_currentState = ChatMessage::MessageState::IDLE;
                 }
             }
@@ -275,10 +284,12 @@ void ChatboxSystem::draw()
         return;
     auto &seq = m_sequences[0];
     std::cout << "Drawing sequence" << std::endl;
-    auto [srcpoint, srctransform] = m_reg.get<HUDPoint, ComponentTransform>(seq.m_source);
+    const auto &srcpoint = m_reg.get<HUDPoint>(seq.m_source);
     Vector2<float> worldPos = srcpoint.m_pos;
     if (srcpoint.m_posRule == HUDPosRule::REL_TRANSFORM)
-        worldPos += srctransform.m_pos;
+    {
+        worldPos += m_reg.get<ComponentTransform>(seq.m_source).m_pos;
+    }
 
     bool boxTop = false;
     if (seq.m_side == ChatBoxSide::STRICT_TOP)
@@ -404,8 +415,7 @@ ChatMessageSequence::ChatMessageSequence(entt::entity src_, const ChatBoxSide &s
     m_fitScreen(fitScreen_),
     m_proceedByInput(proceedByInput_),
     m_claimInputs(claimInputs_),
-    m_returnInputs(returnInputs_),
-    m_renderEffects(nullptr)
+    m_returnInputs(returnInputs_)
 {
 }
 
@@ -568,6 +578,7 @@ void ChatMessage::proceedUntilNonTechCharacter()
     m_currentProceedingCharacter++;
     while (m_currentProceedingCharacter < m_symbols.size() && (techsym = dynamic_cast<const TechSymbol*>(m_symbols[m_currentProceedingCharacter])))
     {
+        m_symbolAppearTimers[m_currentProceedingCharacter].beginAt(1, 1);
         auto *p = const_cast<TechSymbol*>(techsym);
         auto res = p->onReached(*this);
         if (!res)

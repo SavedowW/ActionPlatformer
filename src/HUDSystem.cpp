@@ -2,6 +2,7 @@
 #include "CoreComponents.h"
 #include "StateMachine.h"
 #include "GameData.h"
+#include "Localization/LocalizationGen.h"
 
 HudSystem::HudSystem(entt::registry &reg_, Application &app_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, nanoseconds &frameTime_) :
     m_renderer(*app_.getRenderer()),
@@ -46,6 +47,7 @@ void HudSystem::drawCommonDebug()
     m_commonLog.addRecord("Real frame time (ns): " + std::to_string(m_frameTime.count()));
     m_commonLog.addRecord("Framerate: " + std::to_string( 1000000000.0f / m_frameTime.count()));
     m_commonLog.addRecord("UTF-8: Кириллица работает");
+    m_commonLog.addRecord(ll::dbg_localization());
 
     m_commonLog.dump({1.0f, 1.0f});
 }

@@ -95,8 +95,8 @@ void Camera::smoothMoveAxisTowards(const Vector2<float> &pos_, const Vector2<flo
     realAbsOffset.y = realAbsOffset.y / dividers_.y;
 
     Vector2<float> offset;
-    offset.x = utils::signof(deltaVec.x) * utils::clampMaxPriority(realAbsOffset.x, 0.25f, abs(deltaVec.x));
-    offset.y = utils::signof(deltaVec.y) * utils::clampMaxPriority(realAbsOffset.y, 0.25f, abs(deltaVec.y));
+    offset.x = utils::signof(deltaVec.x) * utils::clampMaxPriority<float>(realAbsOffset.x, 0.25f, abs(deltaVec.x));
+    offset.y = utils::signof(deltaVec.y) * utils::clampMaxPriority<float>(realAbsOffset.y, 0.25f, abs(deltaVec.y));
 
     //m_pos += offset;
     setPos(m_pos + offset);
@@ -121,8 +121,8 @@ void Camera::smoothMoveTowards(const Vector2<float> &pos_, const Vector2<float> 
     
     offset *= offsetLen;
 
-    offset.x = utils::signof(offset.x) * utils::clampMaxPriority(abs(offset.x), 0.25f, abs(deltaVec.x));
-    offset.y = utils::signof(offset.y) * utils::clampMaxPriority(abs(offset.y), 0.25f, abs(deltaVec.y));
+    offset.x = utils::signof(offset.x) * utils::clampMaxPriority<float>(abs(offset.x), 0.25f, abs(deltaVec.x));
+    offset.y = utils::signof(offset.y) * utils::clampMaxPriority<float>(abs(offset.y), 0.25f, abs(deltaVec.y));
 
     //m_pos += offset;
     setPos(m_pos + offset);

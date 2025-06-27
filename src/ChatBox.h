@@ -4,6 +4,7 @@
 #include "Texture.h"
 #include "CoreComponents.h"
 #include <entt/entt.hpp>
+#include <stack>
 
 enum class ChatBoxSide
 {
@@ -120,6 +121,8 @@ private:
 struct ChatMessage
 {
     ChatMessage(const std::string &textRaw_, int font_);
+    ChatMessage(ChatMessage &&rhs_) = default;
+    ChatMessage &operator=(ChatMessage &&rhs_) = default;
     std::string m_textRaw;
     int m_baseFont;
     std::vector<const fonts::Symbol*> m_symbols;
@@ -151,6 +154,8 @@ struct ChatMessage
 struct ChatMessageSequence
 {
     ChatMessageSequence(entt::entity src_, const ChatBoxSide &side_, bool fitScreen_, bool proceedByInput_, bool claimInputs_, bool returnInputs_);
+    ChatMessageSequence(ChatMessageSequence &&) = default;
+    ChatMessageSequence &operator=(ChatMessageSequence &&) = default;
     void compileAndSetSize(const TextManager &textMan_);
     void takeInput();
     const fonts::Symbol* currentSymbol() const;
@@ -179,7 +184,7 @@ struct ChatMessageSequence
     std::vector<ChatMessage> m_messages;
     ChatMessage *m_currentMessage = nullptr;
 
-    std::tuple<SymbolRenderShake*> m_renderEffects;
+    std::tuple<std::stack<SymbolRenderShake*>> m_renderEffects;
 };
 
 class ChatboxSystem : public InputReactor
@@ -214,13 +219,13 @@ private:
 template<typename OwnT>
 void RenderSymbol<OwnT>::onRenderReached(ChatMessageSequence &sequence_)
 {
-    std::get<OwnT*>(sequence_.m_renderEffects) = dynamic_cast<OwnT*>(this);
+    std::get<std::stack<OwnT*>>(sequence_.m_renderEffects).push(dynamic_cast<OwnT*>(this));
 }
 
 template<typename OwnT>
 void RenderDropSymbol<OwnT>::onRenderReached(ChatMessageSequence &sequence_)
 {
-    std::get<OwnT*>(sequence_.m_renderEffects) = nullptr;
+    std::get<std::stack<OwnT*>>(sequence_.m_renderEffects).pop();
 }
 
 #endif

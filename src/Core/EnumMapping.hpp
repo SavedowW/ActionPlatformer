@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <typeinfo>
 
 template<typename T>
 const std::map<T, std::string> &makeDirectMap()
@@ -44,7 +45,7 @@ const T deserialize(const std::string &value_)
 template<> \
 inline const std::map<EnumType, std::string> &makeDirectMap<EnumType>() \
 { \
-    const static std::map<EnumType, std::string> m##__VA_ARGS__ ; \
+    const static std::map<EnumType, std::string> m __VA_ARGS__ ; \
     return m; \
 } \
 template<> \

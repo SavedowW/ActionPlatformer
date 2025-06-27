@@ -1,0 +1,8 @@
+{
+    "dbg_localization": "EN: en localization",
+    "test_dlg1":"Hee-hee~",
+    "test_dlg2":"<shake=2,2,0.0005>I believe I shall\nanswer your<charspd=8,default>... <charspd=default,default><shake=2,2,0.5>request</shake>.</shake>",
+    "test_dlg3":"Wololo",
+    "test_dlg4":"My request shall remain unanswered,",
+    "test_dlg5":"and I will ensure it"
+}

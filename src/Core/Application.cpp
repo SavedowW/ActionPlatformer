@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "FilesystemUtils.h"
+#include "Localization/LocalizationGen.h"
 
 Application::Application()
 {
@@ -33,6 +34,9 @@ Application::Application()
 	Filesystem::ensureDirectoryRelative("Resources/Fonts");
 	Filesystem::ensureDirectoryRelative("Tilemaps");
 	Filesystem::ensureDirectoryRelative("Configs");
+
+    ll::load();
+    ll::setLang("en");
 
     m_window = std::make_unique<Window>(Vector2{1600.0f, 900.0f}, "GameName");
     m_renderer = std::make_unique<Renderer>(m_window->getWindow());

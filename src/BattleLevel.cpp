@@ -2,6 +2,7 @@
 #include "World.h"
 #include "Profile.h"
 #include "GameData.h"
+#include "Localization/LocalizationGen.h"
 
 BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_, int lvlId_) :
     Level(application_, size_, lvlId_),
@@ -87,17 +88,17 @@ void BattleLevel::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
     if (event == GAMEPLAY_EVENTS::FN4 && scale_ > 0)
     {
         ChatMessageSequence seq{m_playerId, ChatBoxSide::PREFER_TOP, true, true, true, true};
-        seq.m_messages.emplace_back("hoolo", 3);
+        seq.m_messages.emplace_back(ll::test_dlg1(), 3);
+        seq.m_messages.emplace_back(ll::test_dlg2(), 3);
+        seq.m_messages.emplace_back(ll::test_dlg3(), 3);
         // TODO: doesn't work with first tech symbol
         //seq.m_messages.emplace_back("<shake=2, 2, 0.001>I believe I shall\nanswer your<charspd=8,default>...</shake> <charspd=default,default><shake=2,2, 0.5>request</shake>.", 3);
-        seq.m_messages.emplace_back("I<shake=2, 2, 0.0005> believe I shall\nanswer your<charspd=8,default>...</shake> <charspd=default,default><shake=2,2, 0.5>request</shake>.", 3);
-        seq.m_messages.emplace_back("wololo", 3);
         m_chatBoxSys.addSequence(std::move(seq));
 
-        /*ChatMessageSequence seq2{m_enemyId, ChatBoxSide::PREFER_TOP, true, true, true, true};
-        seq.m_messages.emplace_back("I am responsible for responding...", 3);
-        seq.m_messages.emplace_back("...Responding to your...<delay=30> request.", 3);
-        m_chatBoxSys.addSequence(std::move(seq));*/
+        ChatMessageSequence seq2{m_enemyId, ChatBoxSide::PREFER_BOTTOM, true, true, true, true};
+        seq2.m_messages.emplace_back(ll::test_dlg4(), 3);
+        seq2.m_messages.emplace_back(ll::test_dlg5(), 3);
+        m_chatBoxSys.addSequence(std::move(seq2));
     }
 }
 

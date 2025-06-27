@@ -16,6 +16,7 @@ EnemySystem::EnemySystem(entt::registry &reg_, Application &app_, NavSystem &nav
 entt::entity EnemySystem::makeEnemy()
 {
     auto enemyId = m_reg.create();
+    m_reg.emplace<HUDPoint>(enemyId, HUDPosRule::REL_TRANSFORM, Vector2{0.0f, -16.0f}, 16.0f);
     m_reg.emplace<ComponentTransform>(enemyId, Vector2{312.0f, 300.0f}, ORIENTATION::RIGHT);
     m_reg.emplace<PhysicalEvents>(enemyId);
     m_reg.emplace<BattleActor>(enemyId, BattleTeams::ENEMIES);

@@ -27,7 +27,7 @@ namespace fonts
     struct Symbol
     {
         Texture m_tex;
-        int m_minx, m_maxx, m_miny, m_maxy, m_advance;
+        int m_minx = 0, m_maxx = 0, m_miny = 0, m_maxy = 0, m_advance = 0;
         Symbol() = default;
         Symbol& operator=(Symbol &rhs_) = delete;
         Symbol(Symbol &rhs_) = delete;
