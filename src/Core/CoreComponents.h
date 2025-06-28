@@ -213,6 +213,7 @@ struct ComponentAnimationRenderable
     std::map<int, std::unique_ptr<Animation>> m_animations;
     Animation *m_currentAnimation;
     std::unique_ptr<Flash> m_flash;
+    bool m_drawOutline = false;
 };
 
 struct ComponentPlayerInput
@@ -281,6 +282,7 @@ struct RenderLayer
     ~RenderLayer();
 
     int m_depth;
+    bool m_visible = true;
     static bool m_dirtyOrder;
 };
 

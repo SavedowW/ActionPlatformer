@@ -65,7 +65,8 @@ void RenderSystem::draw()
     const auto renderable = m_reg.view<RenderLayer>();
 
     for (auto [idx, renlayer] : renderable.each())
-        handleDepthInstance(idx, renlayer);
+        if (renlayer.m_visible)
+            handleDepthInstance(idx, renlayer);
 
     for (auto [idx, trans, hren] : viewHealthOwners.each())
         drawHealth(trans, hren);
@@ -148,7 +149,10 @@ void RenderSystem::drawInstance(const ComponentTransform &trans_, const Componen
 
         auto spr = ren_.m_currentAnimation->getSprite();
 
-        m_renderer.renderTextureOutlined(spr, texPos, texSize, flip, m_camera);
+        if (ren_.m_drawOutline)
+            m_renderer.renderTextureOutlined(spr, texPos, texSize, flip, m_camera);
+        else
+            m_renderer.renderTexture(spr, texPos, texSize, flip, 1.0f, m_camera);
 
         if (ren_.m_flash)
         {

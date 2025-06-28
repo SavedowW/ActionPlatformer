@@ -56,7 +56,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         &(new PlayerActionWallPrejump(
             m_animManager.getAnimID("Char1/wall_prejump"), {CharacterState::NONE, {CharacterState::WALL_CLING}},
             std::move(ParticleTemplate{1, Vector2<float>{-8.00f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_jump"), 21,
-                2}.setTiePosRules(TiePosRule::TIE_TO_WALL))))
+                7}.setTiePosRules(TiePosRule::TIE_TO_WALL))))
         ->addTransitionOnTouchedGround(0, CharacterState::IDLE)
         .setHurtboxes({
             {
@@ -77,7 +77,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         &(new PlayerActionWallCling(
             m_animManager.getAnimID("Char1/wall_cling"), {CharacterState::NONE, {CharacterState::FLOAT}},
         std::move(ParticleTemplate{1, Vector2<float>{0.0f, 25.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_slide"), 21,
-                2}.setTiePosRules(TiePosRule::TIE_TO_WALL))))
+                7}.setTiePosRules(TiePosRule::TIE_TO_WALL))))
         ->setDrag(TimelineProperty<Vector2<float>>({
             {0, {1.0f, 0.2f}},
             {1, {1.0f, 0.4f}},
@@ -141,7 +141,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {1, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_jump"), 22,
-                2}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
+                7}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {2, {}},
             }))
     ));
@@ -188,7 +188,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {1, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_jump"), 22,
-                2}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
+                7}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {2, {}},
             }))
     ));
@@ -257,7 +257,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {4, ParticleTemplate{1, Vector2<float>{3.0f, 3.0f}, m_animManager.getAnimID("Char1/particles/attack1_trace"), 10,
-                -1}
+                3}
                 .setTiePosRules(TiePosRule::TIE_TO_SOURCE)
                 .setTieLifetimeRules(TieLifetimeRule::DESTROY_ON_STATE_LEAVE)
                 .setNotDependOnGroundAngle()},
@@ -307,16 +307,16 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {1, ParticleTemplate{1, Vector2<float>{-10.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_run"), 26,
-                0}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
+                7}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {2, {}},
             }))
         .setParticlesLoopable(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {5, ParticleTemplate{1, Vector2<float>{-13.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_run_loop"), 21,
-                0}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
+                7}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {6, {}},
             {30, ParticleTemplate{1, Vector2<float>{-13.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_run_loop"), 21,
-                0}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
+                7}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {31, {}},
             }), 50)
     ));
@@ -434,7 +434,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setOutdatedTransition(CharacterState::IDLE, 14)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_land"), 36,
-                0}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
+                7}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {1, {}},
             }))
     ));
@@ -460,7 +460,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setOutdatedTransition(CharacterState::IDLE, 14)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_land"), 36,
-                0}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
+                7}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {1, {}},
             }))
     ));
@@ -498,7 +498,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {7, ParticleTemplate{1, Vector2<float>{4.0f, 42.0f}, m_animManager.getAnimID("Char1/particles/air_attack_trace"), 14,
-                -1}
+                3}
                 .setTiePosRules(TiePosRule::TIE_TO_SOURCE)
                 .setTieLifetimeRules(TieLifetimeRule::DESTROY_ON_STATE_LEAVE)
                 .setNotDependOnGroundAngle()},

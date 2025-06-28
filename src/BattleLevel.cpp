@@ -28,8 +28,8 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_registry.emplace<ComponentTransform>(playerId, Vector2{313, 352}, ORIENTATION::RIGHT);
     m_registry.emplace<ComponentPhysical>(playerId);
     m_registry.emplace<ComponentObstacleFallthrough>(playerId);
-    m_registry.emplace<ComponentAnimationRenderable>(playerId);
-    m_registry.emplace<RenderLayer>(playerId, 1);
+    m_registry.emplace<ComponentAnimationRenderable>(playerId).m_drawOutline = true;
+    m_registry.emplace<RenderLayer>(playerId, 6);
     m_registry.emplace<ComponentPlayerInput>(playerId, std::unique_ptr<InputResolver>(new InputResolver(application_->getInputSystem())));
     m_registry.emplace<ComponentDynamicCameraTarget>(playerId);
     m_registry.emplace<World>(playerId, m_registry, m_camera, m_partsys, m_navsys);

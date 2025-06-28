@@ -200,9 +200,9 @@ bool Shader::validateProgram(unsigned int object_)
     return true;
 }
 
-GLint Shader::claimUniformLoc(const std::string &name_)
+GLint Shader::claimUniformLoc(const char *name_)
 {
-    auto res = glGetUniformLocation(m_id, name_.c_str());
+    auto res = glGetUniformLocation(m_id, name_);
     if (res == -1)
     {
         std::cout << "Failed to retrieve \"" << name_ << "\" uniform." << std::endl;

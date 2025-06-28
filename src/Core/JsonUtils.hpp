@@ -7,7 +7,7 @@
 namespace utils
 {
     template<typename T>
-    T tryClaim(nlohmann::json &src_, const std::string &field_, const T &default_)
+    T tryClaim(const nlohmann::json &src_, const std::string &field_, const T &default_)
     {
         if (src_.contains(field_))
             return src_[field_];

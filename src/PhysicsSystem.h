@@ -30,6 +30,8 @@ struct PhysicsSystem
     
     bool magnetEntity(const auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, const ComponentObstacleFallthrough &obsFallthrough_);
     std::pair<entt::entity, const SlopeCollider*> getHighestVerticalMagnetCoord(const auto &clds_, const Collider &cld_, int &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_);
+
+    // Evil, iterates over all entities for a selected entity
     bool isInsidePushbox(const Collider &pb_, const entt::entity &idx_);
 
     void resetEntityObstacles(const ComponentTransform &trans_, const ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, const auto &clds_);

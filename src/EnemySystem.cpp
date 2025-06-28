@@ -101,7 +101,8 @@ entt::entity EnemySystem::makeEnemy()
 
 
     auto &animrnd = m_reg.emplace<ComponentAnimationRenderable>(enemyId);
-    m_reg.emplace<RenderLayer>(enemyId, 3);
+    animrnd.m_drawOutline = true;
+    m_reg.emplace<RenderLayer>(enemyId, 6);
 
     animrnd.m_animations[m_animManager.getAnimID("Enemy1/idle")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Enemy1/idle"), LOOPMETHOD::JUMP_LOOP);
     animrnd.m_animations[m_animManager.getAnimID("Enemy1/float")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Enemy1/float"), LOOPMETHOD::JUMP_LOOP);
@@ -174,7 +175,7 @@ entt::entity EnemySystem::makeEnemy()
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {1, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_jump"), 22,
-                4}},
+                7}},
             {2, {}},
             }))
     ));

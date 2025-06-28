@@ -38,7 +38,7 @@ private:
 
     bool validateShader(unsigned int object_, const std::string &type_); 
     bool validateProgram(unsigned int object_);
-    GLint claimUniformLoc(const std::string &name_);
+    GLint claimUniformLoc(const char *name_);
 
     unsigned int m_id = 0; 
 };

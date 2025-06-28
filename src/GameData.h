@@ -19,7 +19,7 @@ namespace gamedata
 
     namespace debug
     {
-        inline constexpr bool drawColliders = true;
+        inline constexpr bool drawColliders = false;
         inline constexpr bool drawFocusAreas = false;
         inline constexpr bool drawCameraOffset = false;
         inline constexpr bool drawNpsDebug = false;
@@ -37,7 +37,7 @@ namespace gamedata
         inline constexpr float framerate = 60.0f;
         inline constexpr float dbgslowdownfps = 20.0f;
         inline constexpr Vector2<int> defaultWindowResolution = {1920, 1080};
-        inline constexpr Vector2<int> baseResolution = {640, 360}; // 320 x 180 or 480 x 270
+        inline constexpr Vector2<int> baseResolution = {320, 180}; // 320 x 180 or 480 x 270
         inline constexpr Vector2<int> maxCameraSize = {640, 360};
         inline constexpr Vector2<int> minCameraSize = {320, 180};
         inline constexpr Vector2<int> hudLayerResolution = {640, 360};

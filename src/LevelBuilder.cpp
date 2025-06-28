@@ -1,4 +1,5 @@
 #include "LevelBuilder.h"
+#include "JsonUtils.hpp"
 #include "NavGraph.h"
 #include "CoreComponents.h"
 #include "CameraFocusArea.h"
@@ -41,6 +42,8 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
     for (const auto &jsonTileset : mapdata["tilesets"])
     {
         auto firstgid = static_cast<int>(jsonTileset["firstgid"]);
+
+        // TODO: properly load tsx
         auto filename = static_cast<std::string>(jsonTileset["source"]);
         if (filename.substr(0, 4) == "util")
             continue;
@@ -112,7 +115,7 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
                 tilelayer.m_posOffset = pos - trans.m_pos;
             }
 
-            m_reg.emplace<RenderLayer>(entity, depth);
+            m_reg.emplace<RenderLayer>(entity, depth).m_visible = utils::tryClaim(layer, "visible", true);
 
             int tileLinearPos = 0;
             for (const uint32_t tile : layer["data"])
@@ -162,9 +165,9 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
                     Vector2<int> pos = {static_cast<int>(obj["x"]), static_cast<int>(obj["y"])};
                     switch (gid)
                     {
-                        case 65:
+                        case 513:
                             pos.x += 15;
-                            pos.y -= 4;
+                            pos.y -= 5;
                             env_.makeGrassTop(pos);
                             break;
 
