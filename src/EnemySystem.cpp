@@ -17,7 +17,7 @@ entt::entity EnemySystem::makeEnemy()
 {
     auto enemyId = m_reg.create();
     m_reg.emplace<HUDPoint>(enemyId, HUDPosRule::REL_TRANSFORM, Vector2{0.0f, -16.0f}, 16.0f);
-    m_reg.emplace<ComponentTransform>(enemyId, Vector2{312.0f, 300.0f}, ORIENTATION::RIGHT);
+    m_reg.emplace<ComponentTransform>(enemyId, Vector2{780.0f, 470.0f}, ORIENTATION::RIGHT);
     m_reg.emplace<PhysicalEvents>(enemyId);
     m_reg.emplace<BattleActor>(enemyId, BattleTeams::ENEMIES);
 
@@ -132,7 +132,7 @@ entt::entity EnemySystem::makeEnemy()
             TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
             TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
         .setUpdateSpeedLimitData(
-            TimelineProperty<Vector2<float>>({2.0f, 0.0f}),
+            TimelineProperty<Vector2<float>>({3.5f, 0.0f}),
             TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
         .setTransitionOnLostGround(Enemy1State::FLOAT)
         .setMagnetLimit(TimelineProperty<float>(10.0f))

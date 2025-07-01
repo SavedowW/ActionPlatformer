@@ -288,7 +288,7 @@ void PlayerSystem::setup(entt::entity playerId_)
             TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
             TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
         .setUpdateSpeedLimitData(
-            TimelineProperty<Vector2<float>>({2.5f, 0.0f}),
+            TimelineProperty<Vector2<float>>({2.5f, 0.0f}), // TODO: at speed 4.0f starts falling while running down the slopes
             TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
         .setTransitionOnLostGround(CharacterState::FLOAT)
         .setMagnetLimit(TimelineProperty<float>(4.0f))
