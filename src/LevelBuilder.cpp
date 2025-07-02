@@ -51,11 +51,11 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
     {
         auto firstgid = static_cast<int>(jsonTileset["firstgid"]);
 
-        // TODO: properly load tsx
+        // TODO: properly load json
         auto filename = static_cast<std::string>(jsonTileset["source"]);
         if (filename.substr(0, 4) == "util")
             continue;
-        filename = filename.substr(0, filename.size() - 4);
+        filename = Filesystem::removeExtention(filename);
         filename = "Tiles/" + filename;
         m_tilebase.addTileset(filename, firstgid);
     }

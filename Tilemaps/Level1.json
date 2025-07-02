@@ -1531,7 +1531,7 @@
  "tilesets":[
         {
          "firstgid":1,
-         "source":"tiles.json"
+         "source":"ground_tiles.json"
         }, 
         {
          "firstgid":513,
