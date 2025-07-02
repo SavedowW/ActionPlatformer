@@ -16,15 +16,42 @@ public:
     LevelBuilder(Application &app_, entt::registry &reg_);
     void buildLevel(const std::string &mapDescr_, entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_, EnvironmentSystem &env_);
 
-
 private:
+    /*
+        Used to sort layers and process them in correct order
+
+        1 - Collider routing
+        2 - Colliders
+        3 - Object layers
+        4 - Tilemap layers
+    */
+    struct LayerDescr
+    {
+        LayerDescr(const nlohmann::json &layer_);
+
+        const nlohmann::json *m_layer;
+        int m_priority;
+    };
+
     entt::entity addCollider(const SlopeCollider &worldCld_, int obstacleId_, ColliderPointRouting *route_);
     Traverse::TraitT lineToTraverse(const std::string &line_) const;
+
+    void loadTileLayer(const nlohmann::json &json_);
+    void loadMetaLayer(const nlohmann::json &json_, entt::entity playerId_);
+    void loadEnvLayer(const nlohmann::json &json_, EnvironmentSystem &env_);
+    void loadCollisionLayer(const nlohmann::json &json_, ColliderRoutesCollection &rtCollection_);
+    void loadNavigationLayer(const nlohmann::json &json_, NavGraph &graph_);
+    void loadFocusLayer(const nlohmann::json &json_);
+    void loadColliderRoutingLayer(const nlohmann::json &json_, ColliderRoutesCollection &rtCollection_);
 
     Application &m_app;
     entt::registry &m_reg;
 
     TilesetBase m_tilebase;
+
+    std::map<int, entt::entity> m_colliderIds;
+
+    int m_autoLayer;
 };
 
 #endif

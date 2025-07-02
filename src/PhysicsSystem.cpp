@@ -445,7 +445,7 @@ bool PhysicsSystem::magnetEntity(const auto &clds_, ComponentTransform &trans_, 
     const auto [found, pcld] = getHighestVerticalMagnetCoord(clds_, pb, height, obsFallthrough_.m_ignoredObstacles, obsFallthrough_.m_isIgnoringObstacles.isActive());
     if ( found != entt::null )
     {
-        int magnetRange = height - trans_.m_pos.y;
+        int magnetRange = height - trans_.m_pos.y - 1;
         if (magnetRange <= phys_.m_magnetLimit)
         {
             //std::cout << "MAGNET: " << magnetRange << std::endl;
