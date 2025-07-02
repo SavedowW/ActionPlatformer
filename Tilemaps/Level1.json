@@ -1531,15 +1531,15 @@
  "tilesets":[
         {
          "firstgid":1,
-         "source":"ground_tiles.tsx"
+         "source":"tiles.json"
         }, 
         {
          "firstgid":513,
-         "source":"utilObjects32x16.tsx"
+         "source":"utilObjects32x16.json"
         }, 
         {
          "firstgid":641,
-         "source":"EnvTiles.tsx"
+         "source":"EnvTiles.json"
         }],
  "tilewidth":16,
  "type":"map",

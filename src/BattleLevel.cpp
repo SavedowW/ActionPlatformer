@@ -49,7 +49,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_enemyId = m_enemysys.makeEnemy();
     //m_envSystem.makeGrassTop(Vector2{230, 351});
 
-    m_lvlBuilder.buildLevel("Tilemaps/tilemap.json", playerId, m_graph, m_cldRoutesCollection, m_envSystem);
+    m_lvlBuilder.buildLevel("Tilemaps/Level1/tilemap.json", playerId, m_graph, m_cldRoutesCollection, m_envSystem);
 
     m_chatBoxSys.setPlayerEntity(m_playerId);
 
