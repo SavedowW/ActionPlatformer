@@ -25,7 +25,7 @@ LevelBuilder::LevelBuilder(Application &app_, entt::registry &reg_) :
 
 void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_, EnvironmentSystem &env_)
 {
-    auto fullpath = Filesystem::getRootDirectory() + mapDescr_;
+    const auto fullpath = Filesystem::getRootDirectory() + mapDescr_;
 
     std::ifstream mapjson(fullpath);
     if (!mapjson.is_open())
@@ -36,6 +36,7 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
 
     nlohmann::json mapdata = nlohmann::json::parse(mapjson);
 
+    // Preparing layer queue
     std::vector<LayerDescr> layers;
     for (const auto &layer : mapdata["layers"])
     {
@@ -49,20 +50,19 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
     // Parsing tilesets
     for (const auto &jsonTileset : mapdata["tilesets"])
     {
-        auto firstgid = static_cast<int>(jsonTileset["firstgid"]);
-
-        // TODO: properly load json
-        auto filename = static_cast<std::string>(jsonTileset["source"]);
-        if (filename.substr(0, 4) == "util")
-            continue;
-        filename = Filesystem::removeExtention(filename);
-        filename = "Tiles/" + filename;
-        m_tilebase.addTileset(filename, firstgid);
+        std::filesystem::path jsonpath(static_cast<std::string>(jsonTileset["source"]));
+        if (jsonpath.filename().string().substr(0, 4) == "util")
+        {
+            loadUtilTileset(std::filesystem::path(fullpath).parent_path() / jsonpath, jsonTileset["firstgid"]);
+        }
+        else
+            loadTileset(std::filesystem::path(fullpath).parent_path() / jsonpath, jsonTileset["firstgid"]);
     }
 
     m_colliderIds.clear();
     m_autoLayer = mapdata.size();
 
+    // Actually parsing layers
     for (const auto &layer : layers)
     {
         m_autoLayer--;
@@ -77,10 +77,6 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
             if ((*layer.m_layer)["name"] == "Meta")
             {
                 loadMetaLayer(*layer.m_layer, playerId_);
-            }
-            else if ((*layer.m_layer)["name"] == "Environment")
-            {
-                loadEnvLayer(*layer.m_layer, env_);
             }
             else if ((*layer.m_layer)["name"] == "Collision")
             {
@@ -97,6 +93,10 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
             else if ((*layer.m_layer)["name"] == "ColliderRouting")
             {
                 loadColliderRoutingLayer(*layer.m_layer, rtCollection_);
+            }
+            else
+            {
+                loadObjectsLayer(*layer.m_layer, env_);
             }
         }
     }
@@ -142,6 +142,81 @@ Traverse::TraitT LevelBuilder::lineToTraverse(const std::string &line_) const
         sig = Traverse::extendSignature(sig, el);
 
     return sig;
+}
+
+void LevelBuilder::loadTileset(const std::filesystem::path &jsonLoc_, uint32_t firstgid_)
+{
+    std::cout << "Loading normal tileset from \"" << jsonLoc_ << "\", first gid: " << firstgid_ << std::endl;
+
+    std::ifstream tilesetjson(jsonLoc_);
+    if (!tilesetjson.is_open())
+    {
+        std::cout << "Failed to open tileset description at \"" << jsonLoc_ << "\"\n";
+        return;
+    }
+
+    nlohmann::json tilesetdata = nlohmann::json::parse(tilesetjson);
+
+    std::filesystem::path imagePath(static_cast<std::string>(tilesetdata["image"]));
+    if (imagePath.is_relative())
+    {
+        imagePath = jsonLoc_.parent_path() / imagePath;
+    }
+
+    imagePath = std::filesystem::weakly_canonical(imagePath);
+    imagePath = std::filesystem::relative(imagePath, Filesystem::getRootDirectory() + "Resources/");
+    std::cout << imagePath.string() << std::endl;
+
+    auto type = imagePath.begin()->string();
+
+    if (type == "Sprites")
+    {
+        std::string internalPath;
+        bool first = true;
+        for (const auto &el : imagePath)
+        {
+            if (!first)
+            {
+                if (!internalPath.empty())
+                    internalPath += "/";
+
+                internalPath += el.string();
+            }
+
+            first = false;
+        }
+
+        internalPath = Filesystem::removeExtention(internalPath);
+
+        m_tilebase.addTileset(internalPath, firstgid_);
+    }
+    else if (type == "Animations")
+    {
+        throw std::string("Animated tilesets are not implemented yet");
+    }
+    else
+    {
+        throw std::string("Tileset image is in neither animations nor sprites directory");
+    }
+}
+
+void LevelBuilder::loadUtilTileset(const std::filesystem::path &jsonLoc_, uint32_t firstgid_)
+{
+    std::cout << "Loading utility tileset from \"" << jsonLoc_ << "\", first gid: " << firstgid_ << std::endl;
+
+    std::ifstream tilesetjson(jsonLoc_);
+    if (!tilesetjson.is_open())
+    {
+        std::cout << "Failed to open utility tileset description at \"" << jsonLoc_ << "\"\n";
+        return;
+    }
+
+    nlohmann::json tilesetdata = nlohmann::json::parse(tilesetjson);
+
+    for (const auto &tile : tilesetdata["tiles"])
+    {
+        m_utilTileset[firstgid_ + tile["id"]] = deserialize<ObjectClass>(tile["type"]);
+    }
 }
 
 void LevelBuilder::loadTileLayer(const nlohmann::json &json_)
@@ -218,37 +293,6 @@ void LevelBuilder::loadMetaLayer(const nlohmann::json &json_, entt::entity playe
                 static_cast<float>(obj["x"]),
                 static_cast<float>(obj["y"])
             });
-    }
-}
-
-void LevelBuilder::loadEnvLayer(const nlohmann::json &json_, EnvironmentSystem &env_)
-{
-    auto depth = m_autoLayer;
-
-    if (json_.contains("properties"))
-    {
-        for (const auto &prop : json_["properties"])
-        {
-            if (prop["name"] == "layer")
-                depth = static_cast<int>(prop["value"]);
-        }
-    }
-
-    for (const auto &obj : json_["objects"])
-    {
-        int gid = static_cast<int>(obj["gid"]);
-        Vector2<int> pos = {static_cast<int>(obj["x"]), static_cast<int>(obj["y"])};
-        switch (gid)
-        {
-            case 513:
-                pos.x += 15;
-                pos.y -= 5;
-                env_.makeGrassTop(pos);
-                break;
-
-            default:
-                std::cout << "Unknown object with gid " << gid << std::endl;
-        }
     }
 }
 
@@ -497,6 +541,28 @@ void LevelBuilder::loadColliderRoutingLayer(const nlohmann::json &json_, Collide
                     currentLink = "";
             }
         }
+    }
+}
+
+void LevelBuilder::loadObjectsLayer(const nlohmann::json &json_, EnvironmentSystem &env_)
+{
+    auto depth = m_autoLayer;
+
+    if (json_.contains("properties"))
+    {
+        for (const auto &prop : json_["properties"])
+        {
+            if (prop["name"] == "layer")
+                depth = static_cast<int>(prop["value"]);
+        }
+    }
+
+    for (const auto &obj : json_["objects"])
+    {
+        int gid = obj["gid"];
+        Vector2<int> pos = {static_cast<int>(obj["x"]), static_cast<int>(obj["y"])};
+        bool visible = obj["visible"];
+        env_.makeObject(m_utilTileset[gid], pos, visible, depth);
     }
 }
 

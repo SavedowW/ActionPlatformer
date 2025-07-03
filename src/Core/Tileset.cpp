@@ -55,6 +55,7 @@ SDL_RendererFlip TilesetBase::flagsToFlip(uint32_t gid_)
 
 void TilesetBase::addTileset(const std::string &spritesheet_, uint32_t firstgid_)
 {
+    std::cout << "Loading tileset from sprite \"" << spritesheet_ << "\" with first gid " << firstgid_ << std::endl;
     m_tilesets.emplace_back(m_texManager, firstgid_);
     m_tilesets.back().load(spritesheet_);
 

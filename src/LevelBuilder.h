@@ -36,6 +36,9 @@ private:
     entt::entity addCollider(const SlopeCollider &worldCld_, int obstacleId_, ColliderPointRouting *route_);
     Traverse::TraitT lineToTraverse(const std::string &line_) const;
 
+    void loadTileset(const std::filesystem::path &jsonLoc_, uint32_t firstgid_);
+    void loadUtilTileset(const std::filesystem::path &jsonLoc_, uint32_t firstgid_);
+
     void loadTileLayer(const nlohmann::json &json_);
     void loadMetaLayer(const nlohmann::json &json_, entt::entity playerId_);
     void loadEnvLayer(const nlohmann::json &json_, EnvironmentSystem &env_);
@@ -43,6 +46,7 @@ private:
     void loadNavigationLayer(const nlohmann::json &json_, NavGraph &graph_);
     void loadFocusLayer(const nlohmann::json &json_);
     void loadColliderRoutingLayer(const nlohmann::json &json_, ColliderRoutesCollection &rtCollection_);
+    void loadObjectsLayer(const nlohmann::json &json_, EnvironmentSystem &env_);
 
     Application &m_app;
     entt::registry &m_reg;
@@ -50,6 +54,7 @@ private:
     TilesetBase m_tilebase;
 
     std::map<int, entt::entity> m_colliderIds;
+    std::unordered_map<int, ObjectClass> m_utilTileset;
 
     int m_autoLayer;
 };

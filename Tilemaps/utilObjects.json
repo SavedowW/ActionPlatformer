@@ -1,0 +1,25 @@
+{ "columns":0,
+ "grid":
+    {
+     "height":1,
+     "orientation":"orthogonal",
+     "width":1
+    },
+ "margin":0,
+ "name":"utilObjects",
+ "spacing":0,
+ "tilecount":1,
+ "tiledversion":"1.11.0",
+ "tileheight":18,
+ "tiles":[
+        {
+         "id":0,
+         "image":"..\/Resources\/Animations\/Environment\/grass_single_top\/grass_single_top1.png",
+         "imageheight":18,
+         "imagewidth":26,
+         "type":"GRASS_TOUCHABLE"
+        }],
+ "tilewidth":26,
+ "type":"tileset",
+ "version":"1.10"
+}
