@@ -93,15 +93,12 @@ void DynamicColliderSystem::solveRouteIter(ComponentStaticCollider &scld_, MoveC
 {
     bool firstTime = !m2p_.m_timer.isActive() && !m2p_.m_timer.isOver();
 
-    if (firstTime)
-        iter_.m_offset = scld_.m_resolved.m_tlPos + scld_.m_resolved.m_size / 2.0f - iter_.m_route.m_origin.m_pos;
-
     if (firstTime || iter_.m_iter == iter_.m_route.m_links.size() - 1 && m2p_.m_timer.isOver())
     {
         iter_.m_iter = 0;
 
-        m2p_.m_point2 = iter_.m_route.m_origin.m_pos - iter_.m_offset;
-        m2p_.m_point1 = iter_.m_route.m_links[0].m_target.m_pos - iter_.m_offset;
+        m2p_.m_point2 = iter_.m_route.m_origin.m_pos - m2p_.m_offset;
+        m2p_.m_point1 = iter_.m_route.m_links[0].m_target.m_pos - m2p_.m_offset;
         m2p_.m_timer.begin(iter_.m_route.m_links[0].m_duration);
 
         //std::cout << "Starting movement at " << iter_.m_iter << ": (" << m2p_.m_point1 << ") - (" << m2p_.m_point2 << ")" << std::endl;
@@ -110,8 +107,8 @@ void DynamicColliderSystem::solveRouteIter(ComponentStaticCollider &scld_, MoveC
     {
         iter_.m_iter++;
 
-        m2p_.m_point2 = iter_.m_route.m_links[iter_.m_iter - 1].m_target.m_pos - iter_.m_offset;
-        m2p_.m_point1 = iter_.m_route.m_links[iter_.m_iter].m_target.m_pos - iter_.m_offset;
+        m2p_.m_point2 = iter_.m_route.m_links[iter_.m_iter - 1].m_target.m_pos - m2p_.m_offset;
+        m2p_.m_point1 = iter_.m_route.m_links[iter_.m_iter].m_target.m_pos - m2p_.m_offset;
         m2p_.m_timer.begin(iter_.m_route.m_links[iter_.m_iter].m_duration);
 
         //std::cout << "Continuing movement at " << iter_.m_iter << ": (" << m2p_.m_point1 << ") - (" << m2p_.m_point2 << ")" << std::endl;

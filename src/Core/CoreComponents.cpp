@@ -215,3 +215,8 @@ RenderLayer::~RenderLayer()
 }
 
 bool RenderLayer::m_dirtyOrder = false;
+
+MoveCollider2Points::MoveCollider2Points(const Vector2<float> offset_) :
+    m_offset(offset_)
+{
+}

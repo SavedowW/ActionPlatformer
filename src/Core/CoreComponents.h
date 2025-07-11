@@ -288,8 +288,10 @@ struct RenderLayer
 
 struct MoveCollider2Points
 {
+    MoveCollider2Points(const Vector2<float> offset_);
     Vector2<float> m_point1;
     Vector2<float> m_point2;
+    const Vector2<float> m_offset;
     FrameTimer<false> m_timer;
 };
 

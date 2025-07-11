@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <stack>
+
 int main(int argc, char* args[])
 {       
     Application app;

@@ -37,6 +37,7 @@ ChatBox.cpp
 ColliderRouting.cpp
 EnvironmentSystem.cpp
 EnvComponents.cpp
+ResetHandlers.cpp
 )
 
 set(INCLUDE_DIRS

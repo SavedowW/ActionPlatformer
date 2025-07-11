@@ -54,6 +54,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_chatBoxSys.setPlayerEntity(m_playerId);
 
     subscribe(GAMEPLAY_EVENTS::FN4);
+    subscribe(GAMEPLAY_EVENTS::RESET_DBG);
 
     /*auto newcld = m_registry.create();
     m_registry.emplace<ComponentTransform>(newcld, getTilePos(Vector2{20.0f, 21.0f}), ORIENTATION::RIGHT);
@@ -99,6 +100,10 @@ void BattleLevel::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
         seq2.m_messages.emplace_back(ll::test_dlg4(), 3);
         seq2.m_messages.emplace_back(ll::test_dlg5(), 3);
         m_chatBoxSys.addSequence(std::move(seq2));
+    }
+    else if (event == GAMEPLAY_EVENTS::RESET_DBG && scale_ > 0)
+    {
+        handleReset();
     }
 }
 
@@ -226,4 +231,21 @@ void BattleLevel::draw()
     m_chatBoxSys.draw();
 
     renderer.updateScreen(m_camera);
+}
+
+template <typename... Components>
+inline void BattleLevel::handleResetEmptyHandler()
+{
+    auto view = m_registry.view<Components..., ComponentReset<Components...>>();
+
+    ComponentReset<Components...> handler;
+
+    view.each(&ComponentReset<Components...>::resetComponent);
+}
+
+void BattleLevel::handleReset()
+{
+    std::cout << "Running reset" << std::endl;
+    
+    handleResetEmptyHandler<MoveCollider2Points, ColliderRoutingIterator>();
 }

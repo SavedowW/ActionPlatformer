@@ -4,7 +4,7 @@
 #include "CoreComponents.h"
 #include "CameraFocusArea.h"
 #include "StateMachine.h"
-#include "ColliderRouting.h"
+#include "ResetHandlers.h"
 #include "FilesystemUtils.h"
 #include <fstream>
 #include <limits>
@@ -109,8 +109,9 @@ entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obsta
     m_reg.emplace<ComponentStaticCollider>(newid, ComponentStaticCollider(tr.m_pos, SlopeCollider({0, 0}, worldCld_.m_size, worldCld_.m_topAngleCoef), obstacleId_));
     if (route_)
     {
-        m_reg.emplace<MoveCollider2Points>(newid);
+        m_reg.emplace<MoveCollider2Points>(newid, worldCld_.m_tlPos + worldCld_.m_size / 2.0f - route_->m_origin.m_pos);
         m_reg.emplace<ColliderRoutingIterator>(newid, *route_);
+        m_reg.emplace<ComponentReset<MoveCollider2Points, ColliderRoutingIterator>>(newid);
     }
 
     return newid;

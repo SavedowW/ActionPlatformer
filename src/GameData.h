@@ -25,10 +25,10 @@ namespace gamedata
         inline constexpr bool drawNpsDebug = false;
         inline constexpr bool drawCurrentConnection = false;
         inline constexpr bool drawNavGraph = false;
-        inline constexpr bool drawTransforms = false;
+        inline constexpr bool drawTransforms = true;
         inline constexpr bool drawDebugTextures = false;
         inline constexpr bool drawHealthPos = false;
-        inline constexpr bool drawColliderRoutes = false;
+        inline constexpr bool drawColliderRoutes = true;
         inline constexpr uint32_t debugPathDisplay = 0;
     }
 

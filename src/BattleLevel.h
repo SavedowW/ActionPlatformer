@@ -2,6 +2,7 @@
 #define BATTLE_LEVEL_H_
 
 #include "Level.h"
+#include "ResetHandlers.h"
 #include "Camera.h"
 #include "Application.h"
 #include "ImmediateScreenLog.h"
@@ -37,6 +38,11 @@ public:
 protected:
     void update() override;
     void draw() override;
+
+    void handleReset();
+
+    template<typename... Components>
+    void handleResetEmptyHandler();
 
     Camera m_camera;
 

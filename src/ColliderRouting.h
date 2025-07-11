@@ -43,7 +43,6 @@ struct ColliderRoutingIterator
     ColliderRoutingIterator &operator=(ColliderRoutingIterator &&rhs_) = default;
 
     ColliderPointRouting &m_route;
-    Vector2<float> m_offset;
     size_t m_iter = 0;
 };
 
