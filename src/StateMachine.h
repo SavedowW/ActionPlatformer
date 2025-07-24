@@ -40,6 +40,9 @@ public:
         if (static_cast<CharState>(stateId_) != std::numeric_limits<CharState>::max())
             switchCurrentState(owner_, m_states[m_stateIds[static_cast<CharState>(stateId_)]].get());
     }
+
+    void switchCurrentState(EntityAnywhere owner_, const std::vector<CharState>::iterator &current_,
+        const std::vector<CharState>::iterator &end_);
     
     template<typename PLAYER_STATE_T>
     inline void setInitialState(PLAYER_STATE_T state_)

@@ -281,7 +281,7 @@ inline std::pair<float, float> overlaps(const std::pair<Vector2<float>, Vector2<
     auto diff = con2_.first - con1_.first;
     auto divider = r.cross(s);
 
-    if (divider == 0) // lines are parallel (and possible collinear)
+    if (divider == 0) // lines are parallel (and possibly collinear)
         return {-1.0f, -1.0f};
 
     auto u = (diff).cross(r) / divider;

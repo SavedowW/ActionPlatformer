@@ -29,7 +29,7 @@ void HudSystem::draw()
     drawCommonDebug();
     drawPlayerDebug();
 
-    if constexpr (gamedata::debug::drawNpsDebug)
+    if constexpr (gamedata::debug::drawNpcDebug)
     {
         for (const auto [idx, trans, phys, sm, ai] : npcs.each())
         {

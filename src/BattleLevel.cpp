@@ -25,21 +25,37 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_envSystem(*application_, m_registry)
 {
     auto playerId = m_registry.create();
-    m_registry.emplace<ComponentTransform>(playerId, Vector2{313, 352}, ORIENTATION::RIGHT);
+
+    const auto &ptrans = m_registry.emplace<ComponentTransform>(playerId, Vector2{313, 352}, ORIENTATION::RIGHT);
+    m_registry.emplace<ComponentReset<ComponentTransform>>(playerId, ptrans.m_pos, ptrans.m_orientation);
+
     m_registry.emplace<ComponentPhysical>(playerId);
+    m_registry.emplace<ComponentResetStatic<ComponentPhysical>>(playerId);
+
     m_registry.emplace<ComponentObstacleFallthrough>(playerId);
+    
     m_registry.emplace<ComponentAnimationRenderable>(playerId).m_drawOutline = true;
+    m_registry.emplace<ComponentResetStatic<ComponentAnimationRenderable>>(playerId);
+
     m_registry.emplace<RenderLayer>(playerId, 6);
     m_registry.emplace<ComponentPlayerInput>(playerId, std::unique_ptr<InputResolver>(new InputResolver(application_->getInputSystem())));
+
     m_registry.emplace<ComponentDynamicCameraTarget>(playerId);
+    m_registry.emplace<ComponentResetStatic<ComponentDynamicCameraTarget>>(playerId);
+
     m_registry.emplace<World>(playerId, m_registry, m_camera, m_partsys, m_navsys);
+
     m_registry.emplace<StateMachine>(playerId);
+    m_registry.emplace<ComponentReset<StateMachine>>(playerId);
+
     m_registry.emplace<Navigatable>(playerId);
     m_registry.emplace<PhysicalEvents>(playerId);
     m_registry.emplace<BattleActor>(playerId, BattleTeams::PLAYER);
     m_registry.emplace<HUDPoint>(playerId, HUDPosRule::REL_TRANSFORM, Vector2{0.0f, -16.0f}, 16.0f);
     m_registry.emplace<HealthOwner>(playerId, 3);
     m_registry.emplace<HealthRendererCommonWRT>(playerId, 3, *application_->getAnimationManager(), Vector2{0.0f, -28.0f});
+    
+    
 
     m_playerId = playerId;
     m_camsys.m_playerId = playerId;
@@ -78,8 +94,8 @@ void BattleLevel::enter()
 
     m_playerSystem.setup(m_playerId);
 
-    m_camera.setScale(2.0f);
-    m_camera.setPos({0.0f, 0.0f});
+    m_camera.setScale(1.0f);
+    m_camera.setPos({320.0f, 383.0f});
 }
 
 void BattleLevel::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
@@ -234,18 +250,47 @@ void BattleLevel::draw()
 }
 
 template <typename... Components>
-inline void BattleLevel::handleResetEmptyHandler()
+inline void BattleLevel::handleResetStaticHandler()
 {
-    auto view = m_registry.view<Components..., ComponentReset<Components...>>();
+    auto view = m_registry.view<Components..., ComponentResetStatic<Components...>>();
 
-    ComponentReset<Components...> handler;
+    ComponentResetStatic<Components...> handler;
 
-    view.each(&ComponentReset<Components...>::resetComponent);
+    view.each(&ComponentResetStatic<Components...>::resetComponent);
+}
+
+template <typename Component>
+inline void BattleLevel::handleResetHandler()
+{
+    auto view = m_registry.view<Component, ComponentReset<Component>>();
+
+    for (auto [idx, comp, handler] : view.each())
+    {
+        handler.resetComponent(idx, comp);
+    }
+}
+
+template <>
+inline void BattleLevel::handleResetHandler<StateMachine>()
+{
+    auto view = m_registry.view<StateMachine, ComponentReset<StateMachine>>();
+
+    for (auto [idx, comp, handler] : view.each())
+    {
+        handler.resetComponent(EntityAnywhere{&m_registry, idx}, comp);
+    }
 }
 
 void BattleLevel::handleReset()
 {
     std::cout << "Running reset" << std::endl;
     
-    handleResetEmptyHandler<MoveCollider2Points, ColliderRoutingIterator>();
+    handleResetStaticHandler<MoveCollider2Points>();
+    handleResetStaticHandler<ColliderRoutingIterator>();
+    handleResetStaticHandler<ComponentPhysical>();
+    handleResetStaticHandler<ComponentDynamicCameraTarget>();
+    handleResetStaticHandler<ComponentAnimationRenderable>();
+
+    handleResetHandler<ComponentTransform>();
+    handleResetHandler<StateMachine>();
 }

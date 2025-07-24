@@ -288,7 +288,7 @@ void InputSystem::exportMappingAs(const std::string &fileName_)
     utils::exportMap(out["HudAxisNeg"], m_hudBindings.m_gamepadNegativeAxisBindings);
 
     std::ofstream fout(fileName_);
-    fout << out;
+    fout << out.dump(4);
 }
 
 void InputSystem::importMappingEnsureUnique(const std::string &fileName_)

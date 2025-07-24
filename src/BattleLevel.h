@@ -42,7 +42,10 @@ protected:
     void handleReset();
 
     template<typename... Components>
-    void handleResetEmptyHandler();
+    void handleResetStaticHandler();
+
+    template<typename Component>
+    void handleResetHandler();
 
     Camera m_camera;
 

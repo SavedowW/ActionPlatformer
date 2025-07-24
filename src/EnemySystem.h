@@ -12,6 +12,7 @@ struct EnemySystem
 
     entt::entity makeEnemy();
     void update();
+    void setPlayerId(const entt::entity &playerId_);
 
     entt::registry &m_reg;
     entt::entity m_playerId;

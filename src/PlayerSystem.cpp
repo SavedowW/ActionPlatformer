@@ -1,4 +1,5 @@
 #include "PlayerSystem.h"
+#include "ResetHandlers.h"
 
 PlayerSystem::PlayerSystem(entt::registry &reg_, Application &app_) :
     m_reg(reg_),
@@ -9,7 +10,8 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, Application &app_) :
 
 void PlayerSystem::setup(entt::entity playerId_)
 {
-    auto [trans, phys, inp, animrnd, sm, nav] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentPlayerInput, ComponentAnimationRenderable, StateMachine, Navigatable>(playerId_);
+    auto [trans, phys, inp, animrnd, sm, nav, transreset, smreset] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentPlayerInput, ComponentAnimationRenderable, StateMachine, Navigatable,
+        ComponentReset<ComponentTransform>, ComponentReset<StateMachine>>(playerId_);
 
     if (m_reg.all_of<ComponentSpawnLocation>(playerId_))
     {
@@ -17,6 +19,9 @@ void PlayerSystem::setup(entt::entity playerId_)
     }
 
     trans.m_orientation = ORIENTATION::RIGHT;
+
+    transreset.m_defaultPos = trans.m_pos;
+    transreset.m_defaultOrientation = trans.m_orientation;
 
     animrnd.m_animations[m_animManager.getAnimID("Char1/idle")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/idle"), LOOPMETHOD::JUMP_LOOP);
     animrnd.m_animations[m_animManager.getAnimID("Char1/run")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Char1/run"), LOOPMETHOD::JUMP_LOOP);
@@ -533,6 +538,7 @@ void PlayerSystem::setup(entt::entity playerId_)
     ));
 
     sm.setInitialState(CharacterState::FLOAT);
+    smreset.m_defaultStates = {static_cast<CharState>(CharacterState::FLOAT)}; // TODO: allow any type
 
     nav.m_currentOwnConnection = nullptr;
     nav.m_maxRange = 60.0f;

@@ -111,7 +111,8 @@ entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obsta
     {
         m_reg.emplace<MoveCollider2Points>(newid, worldCld_.m_tlPos + worldCld_.m_size / 2.0f - route_->m_origin.m_pos);
         m_reg.emplace<ColliderRoutingIterator>(newid, *route_);
-        m_reg.emplace<ComponentReset<MoveCollider2Points, ColliderRoutingIterator>>(newid);
+        m_reg.emplace<ComponentResetStatic<MoveCollider2Points>>(newid);
+        m_reg.emplace<ComponentResetStatic<ColliderRoutingIterator>>(newid);
     }
 
     return newid;

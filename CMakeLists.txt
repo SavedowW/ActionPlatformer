@@ -6,7 +6,7 @@ cmake_minimum_required (VERSION 3.20)
 
 #set(CMAKE_CXX_FLAGS "-Wall -EHsc")
 #set(CMAKE_CXX_FLAGS_DEBUG "-g")
-#set(CMAKE_CXX_FLAGS_RELEASE "-O2")
+#set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 project (ProjectRoot)
 

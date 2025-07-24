@@ -22,7 +22,7 @@ namespace gamedata
         inline constexpr bool drawColliders = true;
         inline constexpr bool drawFocusAreas = false;
         inline constexpr bool drawCameraOffset = false;
-        inline constexpr bool drawNpsDebug = false;
+        inline constexpr bool drawNpcDebug = false;
         inline constexpr bool drawCurrentConnection = false;
         inline constexpr bool drawNavGraph = false;
         inline constexpr bool drawTransforms = true;

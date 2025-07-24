@@ -64,6 +64,19 @@ std::string StateMachine::getName() const
     return std::string("root") + " -> " + m_currentState->getName(m_framesInState);
 }
 
+void StateMachine::switchCurrentState(EntityAnywhere owner_, const std::vector<CharState>::iterator &current_,
+    const std::vector<CharState>::iterator &end_)
+{
+    switchCurrentState(owner_, *current_);
+    auto next = current_ + 1;
+    if (next != end_)
+    {
+        auto *nextSm = dynamic_cast<StateMachine*>(m_currentState);
+        assert(nextSm);
+        nextSm->switchCurrentState(owner_, next, end_);
+    }
+}
+
 void GenericState::spawnParticle(EntityAnywhere owner_, const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_, SDL_RendererFlip flip_)
 {
     auto offset = phys_.m_velocity + phys_.m_inertia;

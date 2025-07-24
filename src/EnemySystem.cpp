@@ -3,6 +3,7 @@
 #include "StateMachine.h"
 #include "Enemy1.h"
 #include "NavGraph.h"
+#include "ResetHandlers.h"
 
 EnemySystem::EnemySystem(entt::registry &reg_, Application &app_, NavSystem &navsys_, Camera &cam_, ParticleSystem &partsys_) :
     m_reg(reg_),
@@ -17,7 +18,10 @@ entt::entity EnemySystem::makeEnemy()
 {
     auto enemyId = m_reg.create();
     m_reg.emplace<HUDPoint>(enemyId, HUDPosRule::REL_TRANSFORM, Vector2{0.0f, -16.0f}, 16.0f);
-    m_reg.emplace<ComponentTransform>(enemyId, Vector2{780.0f, 470.0f}, ORIENTATION::RIGHT);
+
+    const auto &trans = m_reg.emplace<ComponentTransform>(enemyId, Vector2{780.0f, 470.0f}, ORIENTATION::RIGHT);
+    m_reg.emplace<ComponentReset<ComponentTransform>>(enemyId, trans.m_pos, trans.m_orientation);
+
     m_reg.emplace<PhysicalEvents>(enemyId);
     m_reg.emplace<BattleActor>(enemyId, BattleTeams::ENEMIES);
 
@@ -32,13 +36,14 @@ entt::entity EnemySystem::makeEnemy()
     m_reg.emplace<ComponentObstacleFallthrough>(enemyId);
 
 
-    auto &ai = m_reg.emplace<ComponentAI>(enemyId);
+    auto &ai = m_reg.emplace<ComponentAI>(enemyId); // TODO: reset
     ai.m_requestedState = static_cast<CharState>(Enemy1State::IDLE);
     ai.m_requestedOrientation = ORIENTATION::RIGHT;
     ai.m_navigationTarget = {430, 410};
+    ai.m_chaseTarget = m_playerId;
 
-    m_reg.emplace<HealthOwner>(enemyId, 3);
-    m_reg.emplace<HealthRendererCommonWRT>(enemyId, 3, m_animManager, Vector2{0.0f, -28.0f});
+    m_reg.emplace<HealthOwner>(enemyId, 3); // TODO: reset
+    m_reg.emplace<HealthRendererCommonWRT>(enemyId, 3, m_animManager, Vector2{0.0f, -28.0f}); // TODO: reset
 
     /*auto *proxySwitchState = new ProxySelectionState(
         Enemy1State::META_PROXY_SWITCH, {Enemy1State::NONE, {}}, 
@@ -96,11 +101,12 @@ entt::entity EnemySystem::makeEnemy()
 
 
     auto &phys = m_reg.emplace<ComponentPhysical>(enemyId);
+    m_reg.emplace<ComponentResetStatic<ComponentPhysical>>(enemyId);
     phys.m_pushbox = Collider(Vector2{-15, -30}, Vector2{30, 30});
     phys.m_gravity = {0.0f, 0.2f};
 
-
     auto &animrnd = m_reg.emplace<ComponentAnimationRenderable>(enemyId);
+    m_reg.emplace<ComponentResetStatic<ComponentAnimationRenderable>>(enemyId);
     animrnd.m_drawOutline = true;
     m_reg.emplace<RenderLayer>(enemyId, 6);
 
@@ -230,6 +236,7 @@ entt::entity EnemySystem::makeEnemy()
     ));
 
     sm.setInitialState(Enemy1State::FLOAT);
+    m_reg.emplace<ComponentReset<StateMachine>>(enemyId).m_defaultStates = {static_cast<CharState>(Enemy1State::FLOAT)};
 
     return enemyId;
 }
@@ -237,4 +244,9 @@ entt::entity EnemySystem::makeEnemy()
 void EnemySystem::update()
 {
     
+}
+
+void EnemySystem::setPlayerId(const entt::entity &playerId_)
+{
+    m_playerId = playerId_;
 }
