@@ -22,20 +22,22 @@ If you are not using conan, make sure to provide dependencies to CMake manually
 - More content, mechanics (planned or not) in general (obviously)
 - Level enter - leave behavior, transitions
 - Menus
-- Serialize input system, make inputs configurable
+- [Serialization DONE] Serialize input system, make inputs configurable
 - [DONE] Add gamepad support (is it really necessary?)
-- Make so that tile layers are automatically handled the last
+- [DONE] Make so that tile layers are automatically handled the last
 - Simplify World component, it shouldn't provide access to camera or navigation system
+- Configs for debug stuff and settings
+- Rework AI component, split logic for enemies
 ### Optional stuff
 - Fade-out with resize or dithering instead of alpha - not necessary, might be worse, but worth trying
 - Gamepad rumble - on hard landing, hit, whenever the screen is shaking, etc
 ### Optimizations
 - Multithreading - should be at least possible with ECS
-- Render only tiles within camera scope - shouldn't be too hard and probably will become necessary anyway
+- [DONE] Render only tiles within camera scope - shouldn't be too hard and probably will become necessary anyway
 - Collect colliders into chunks to optimize collision detection - it depends
 ### Dreams
 - Automated building of pathfinding graph
 - Reorganize components and systems for multithreaded optimization (the way ECS is supposed to be used)
-- Fade out with dithering mask instead of alpha channel
+- [DONE] Fade out with dithering mask instead of alpha channel
 - 2D lighting, preferably with field of vision or something similar (https://www.redblobgames.com/articles/visibility/) and nes / gb - style pallete gradation instead of just plain brightenss - most likely not in this game, but who knows
-- OpenGL transition - most likely not in this game
+- [DONE] OpenGL transition - most likely not in this game
