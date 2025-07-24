@@ -151,7 +151,7 @@ void Animation::update()
     if (isFinished())
         animFinished();
     else
-        m_currentFrame += m_direction;;
+        m_currentFrame += m_direction;
 }
 
 unsigned int Animation::getSprite()
@@ -213,12 +213,12 @@ void Animation::animFinished()
     }
 }
 
-Vector2<int> Animation::getSize()
+Vector2<int> Animation::getSize() const
 {
     return {m_textures->m_w, m_textures->m_h};
 }
 
-Vector2<int> Animation::getOrigin()
+Vector2<int> Animation::getOrigin() const
 {
     return m_textures->m_origin;
 }

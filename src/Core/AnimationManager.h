@@ -62,7 +62,7 @@ public:
 private:
     Renderer &m_renderer;
 
-    std::map<std::string, int> m_ids;
+    std::unordered_map<std::string, int> m_ids;
     std::vector<ContainedAnimationData> m_textureArrs;
 };
 
@@ -90,8 +90,8 @@ public:
     bool isFinished();
     void switchDir();
     void setDir(int dir_);
-    Vector2<int> getSize();
-    Vector2<int> getOrigin();
+    Vector2<int> getSize() const;
+    Vector2<int> getOrigin() const;
     void reset(int beginFrame_ = -1, int beginDirection_ = 1);
     int getDirection() const;
 
@@ -105,11 +105,9 @@ private:
     std::shared_ptr<TextureArr> m_textures;
     int m_currentFrame;
     int m_direction;
-    LOOPMETHOD m_isLoop;
+    const LOOPMETHOD m_isLoop;
     void animFinished();
 
 };
-
-using Animation_t = std::shared_ptr<Animation>;
 
 #endif

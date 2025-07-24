@@ -209,7 +209,13 @@ struct ComponentAnimationRenderable
     ComponentAnimationRenderable &operator=(const ComponentAnimationRenderable &rhs_) = delete;
     ComponentAnimationRenderable &operator=(ComponentAnimationRenderable &&rhs_) = default;
 
-    std::map<int, std::unique_ptr<Animation>> m_animations;
+    template<typename... Args>
+    void loadAnimation(AnimationManager &animMgmt_, int id_, Args&&... args_)
+    {
+        m_animations.emplace(id_, Animation(animMgmt_, id_, std::forward<Args>(args_)...));
+    }
+
+    std::map<int, Animation> m_animations;
     Animation *m_currentAnimation;
     std::unique_ptr<Flash> m_flash;
     bool m_drawOutline = false;

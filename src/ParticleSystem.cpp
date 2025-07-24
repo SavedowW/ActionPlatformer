@@ -26,8 +26,8 @@ void ParticleSystem::makeParticle(const ParticleRecipe &particle_, std::vector<e
     
         auto &animrnd = m_registry.emplace<ComponentAnimationRenderable>(pid);
         m_registry.emplace<RenderLayer>(pid, particle_.layer);
-        animrnd.m_animations[particle_.anim] = std::make_unique<Animation>(m_animmgmt, particle_.anim, LOOPMETHOD::JUMP_LOOP);
-        animrnd.m_currentAnimation = animrnd.m_animations[particle_.anim].get();
+        animrnd.loadAnimation(m_animmgmt, particle_.anim);
+        animrnd.m_currentAnimation = &animrnd.m_animations.at(particle_.anim);
 
         if (particle_.lifetime)
             pprim.m_lifetime.begin(particle_.lifetime);

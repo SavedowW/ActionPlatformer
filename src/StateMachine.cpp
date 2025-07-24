@@ -329,9 +329,9 @@ void PhysicalState::enter(EntityAnywhere owner_, CharState from_)
 
     // Handle animation
     if (m_uniqueTransitionAnims.contains(from_))
-        renderable.m_currentAnimation = renderable.m_animations[m_uniqueTransitionAnims[from_]].get();
+        renderable.m_currentAnimation = &renderable.m_animations.at(m_uniqueTransitionAnims[from_]);
     else
-        renderable.m_currentAnimation = renderable.m_animations[m_anim].get();
+        renderable.m_currentAnimation = &renderable.m_animations.at(m_anim);
     renderable.m_currentAnimation->reset();
 
     // Convert velocity

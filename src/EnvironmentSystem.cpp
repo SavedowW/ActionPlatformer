@@ -32,14 +32,14 @@ void EnvironmentSystem::makeGrassTop(const Vector2<int> &pos_, bool visible_, in
     auto &renLayer = m_reg.emplace<RenderLayer>(objEnt, layer_);
     renLayer.m_visible = visible_;
 
-    animrnd.m_animations[animManager.getAnimID("Environment/grass_single_top")] = std::make_unique<Animation>(animManager, animManager.getAnimID("Environment/grass_single_top"), LOOPMETHOD::JUMP_LOOP);
-    animrnd.m_animations[animManager.getAnimID("Environment/grass_single_top_flickL")] = std::make_unique<Animation>(animManager, animManager.getAnimID("Environment/grass_single_top_flickL"), LOOPMETHOD::NOLOOP);
-    animrnd.m_animations[animManager.getAnimID("Environment/grass_single_top_flickR")] = std::make_unique<Animation>(animManager, animManager.getAnimID("Environment/grass_single_top_flickR"), LOOPMETHOD::NOLOOP);
+    animrnd.loadAnimation(animManager, animManager.getAnimID("Environment/grass_single_top"));
+    animrnd.loadAnimation(animManager, animManager.getAnimID("Environment/grass_single_top_flickL"), LOOPMETHOD::NOLOOP);
+    animrnd.loadAnimation(animManager, animManager.getAnimID("Environment/grass_single_top_flickR"), LOOPMETHOD::NOLOOP);
 
-    auto animSize = animrnd.m_animations[animManager.getAnimID("Environment/grass_single_top")]->getSize();
-    auto animOrigin = animrnd.m_animations[animManager.getAnimID("Environment/grass_single_top")]->getOrigin();
+    auto animSize = animrnd.m_animations.at(animManager.getAnimID("Environment/grass_single_top")).getSize();
+    auto animOrigin = animrnd.m_animations.at(animManager.getAnimID("Environment/grass_single_top")).getOrigin();
 
-    animrnd.m_currentAnimation = animrnd.m_animations[animManager.getAnimID("Environment/grass_single_top")].get();
+    animrnd.m_currentAnimation = &animrnd.m_animations.at(animManager.getAnimID("Environment/grass_single_top"));
     animrnd.m_currentAnimation->reset();
 
     //trans.m_pos.x += (animSize.x);

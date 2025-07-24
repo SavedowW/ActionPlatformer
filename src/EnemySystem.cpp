@@ -110,12 +110,12 @@ entt::entity EnemySystem::makeEnemy()
     animrnd.m_drawOutline = true;
     m_reg.emplace<RenderLayer>(enemyId, 6);
 
-    animrnd.m_animations[m_animManager.getAnimID("Enemy1/idle")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Enemy1/idle"), LOOPMETHOD::JUMP_LOOP);
-    animrnd.m_animations[m_animManager.getAnimID("Enemy1/float")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Enemy1/float"), LOOPMETHOD::JUMP_LOOP);
-    animrnd.m_animations[m_animManager.getAnimID("Enemy1/run")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Enemy1/run"), LOOPMETHOD::JUMP_LOOP);
-    animrnd.m_animations[m_animManager.getAnimID("Enemy1/prejump")] = std::make_unique<Animation>(m_animManager, m_animManager.getAnimID("Enemy1/prejump"), LOOPMETHOD::JUMP_LOOP);
+    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Enemy1/idle"));
+    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Enemy1/float"));
+    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Enemy1/run"));
+    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Enemy1/prejump"));
 
-    animrnd.m_currentAnimation = animrnd.m_animations[m_animManager.getAnimID("Enemy1/idle")].get();
+    animrnd.m_currentAnimation = &animrnd.m_animations.at(m_animManager.getAnimID("Enemy1/idle"));
     animrnd.m_currentAnimation->reset();
 
     

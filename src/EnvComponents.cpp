@@ -14,14 +14,14 @@ void GrassTopComp::touchedPlayer(const Vector2<float> &velocity_, EntityAnywhere
             if (velocity_.x >= 2.2f)
             {
                 auto &renderable = self_.reg->get<ComponentAnimationRenderable>(self_.idx);
-                renderable.m_currentAnimation = renderable.m_animations[m_flickRightAnimId].get();
+                renderable.m_currentAnimation = &renderable.m_animations.at(m_flickRightAnimId);
                 renderable.m_currentAnimation->reset();
                 m_state = State::FLICK_RIGHT;
             }
             else if (velocity_.x <= -2.2f)
             {
                 auto &renderable = self_.reg->get<ComponentAnimationRenderable>(self_.idx);
-                renderable.m_currentAnimation = renderable.m_animations[m_flickLeftAnimId].get();
+                renderable.m_currentAnimation = &renderable.m_animations.at(m_flickLeftAnimId);
                 renderable.m_currentAnimation->reset();
                 m_state = State::FLICK_LEFT;
             }
@@ -36,7 +36,7 @@ bool GrassTopComp::update(EntityAnywhere self_)
         auto &renderable = self_.reg->get<ComponentAnimationRenderable>(self_.idx);
         if (renderable.m_currentAnimation->isFinished())
         {
-            renderable.m_currentAnimation = renderable.m_animations[m_idleAnimId].get();
+            renderable.m_currentAnimation = &renderable.m_animations.at(m_idleAnimId);
             renderable.m_currentAnimation->reset();
             m_state = State::IDLE;
         }
