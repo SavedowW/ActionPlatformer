@@ -1,11 +1,11 @@
 Just a small action platformer I'm working on in my spare time. Uses SDL2, lz4 (these 2 are resolved via conan), entt, nlohmann-json (git submodules), built with cmake. Tiled is used for tilemap editing, the game only needs JSON map and images of tilesets
 # About animation format
-Detalis are in SavedowW/AnimationEditor, but the way it is right now in this project:
-- There are 3 (hardcoded) layers of LZ4-compressed sprites: RGB, pure white with (optional) glow and white border (not necessary for this project in particular)
-- All individual images have the same resolution, but might have different size after compression
-- Animation speed is tied to the framerate, non-unique frames (images) are shared between respective frames (in time)
+~~Detalis are in SavedowW/AnimationEditor, but the way it is right now in this project:~~
+- ~~There are 3 (hardcoded) layers of LZ4-compressed sprites: RGB, pure white with (optional) glow and white border (not necessary for this project in particular)~~
+- ~~All individual images have the same resolution, but might have different size after compression~~
+- ~~Animation speed is tied to the framerate, non-unique frames (images) are shared between respective frames (in time)~~
 
-All dependencies are included in conanfile except ImGUI, which is included as a git submodule
+Now each directory with json with the same name in animations directory is interpreted as an animation, file postfixes are retrieved from that json.
 # Building on windows
 Assuming that you have CMake and conan installed and configured and you are in the project folder, run this:
 ```
