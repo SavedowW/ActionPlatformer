@@ -417,7 +417,6 @@ private:
 
     const Sint16 m_stickDeadzone = 16000;
     const std::string m_rootPath;
-    const std::string m_defaultsPath;
     const std::string m_configPath;
 };
 

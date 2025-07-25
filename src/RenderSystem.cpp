@@ -311,7 +311,7 @@ void RenderSystem::drawTransform(const ComponentTransform &cfa_)
     m_renderer.drawCross(cfa_.m_pos, {1, 10}, {10, 1}, {0, 0, 0, 255}, m_camera);
 }
 
-void RenderSystem::drawHealth(const ComponentTransform &trans_, const HealthRendererCommonWRT &howner_)
+void RenderSystem::drawHealth(const ComponentTransform &trans_, HealthRendererCommonWRT &howner_)
 {
     if (howner_.m_state == HealthRendererCommonWRT::DelayFadeStates::INACTIVE)
         return;
@@ -321,40 +321,40 @@ void RenderSystem::drawHealth(const ComponentTransform &trans_, const HealthRend
     if (gamedata::debug::drawHealthPos)
         m_renderer.drawCross(worldPos, {1, 5}, {5, 1}, {255, 0, 0, 255}, m_camera);
 
-    if (!howner_.m_heartAnims.empty() && howner_.m_heartAnims[0])
+    assert(!howner_.m_heartAnims.empty());
+
+    auto texSize = howner_.m_heartAnims[0].getSize();
+    auto animorigin = howner_.m_heartAnims[0].getOrigin();
+
+    auto texCenter = worldPos - animorigin;
+    texCenter.y -= (texSize.y - 20);
+
+    float mid = (float)(howner_.m_heartAnims.size() - 1) / 2.0f;
+    int cnt = 0;
+
+    for (auto &el : howner_.m_heartAnims)
     {
-        auto texSize = howner_.m_heartAnims[0]->getSize();
-        auto animorigin = howner_.m_heartAnims[0]->getOrigin();
+        // TODO: make proper "over" check
+        if (!el.getDirection())
+            continue;
 
-        auto texCenter = worldPos - animorigin;
-        texCenter.y -= (texSize.y - 20);
+        auto offsetMul = cnt - mid;
+        auto spr = el.getSprite();
+        auto texPos = texCenter;
+        texPos.x += (texSize.x - 19) * offsetMul;
 
-        float mid = (float)(howner_.m_heartAnims.size() - 1) / 2.0f;
-        int cnt = 0;
+        uint8_t alpha = 255;
+        
+        if (howner_.m_state == HealthRendererCommonWRT::DelayFadeStates::FADE_IN)
+            alpha *= howner_.m_delayFadeTimer.getProgressNormalized();
+        else if (howner_.m_state == HealthRendererCommonWRT::DelayFadeStates::FADE_OUT)
+            alpha *= 1 - howner_.m_delayFadeTimer.getProgressNormalized();
 
-        for (auto &el : howner_.m_heartAnims)
-        {
-            if (!el)
-                continue;
+        m_renderer.renderTexture(spr, texPos, texSize, SDL_FLIP_NONE, alpha / 255.0f, m_camera);
 
-            auto offsetMul = cnt - mid;
-            auto spr = el->getSprite();
-            auto texPos = texCenter;
-            texPos.x += (texSize.x - 19) * offsetMul;
+        //m_renderer.drawRectangle(texPos, texSize, {0, 0, 0, 255}, m_camera);
 
-            uint8_t alpha = 255;
-            
-            if (howner_.m_state == HealthRendererCommonWRT::DelayFadeStates::FADE_IN)
-                alpha *= howner_.m_delayFadeTimer.getProgressNormalized();
-            else if (howner_.m_state == HealthRendererCommonWRT::DelayFadeStates::FADE_OUT)
-                alpha *= 1 - howner_.m_delayFadeTimer.getProgressNormalized();
-
-            m_renderer.renderTexture(spr, texPos, texSize, SDL_FLIP_NONE, alpha / 255.0f, m_camera);
-
-            //m_renderer.drawRectangle(texPos, texSize, {0, 0, 0, 255}, m_camera);
-
-            cnt++;
-        }
+        cnt++;
     }
 }
 

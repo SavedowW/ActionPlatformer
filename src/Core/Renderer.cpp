@@ -1,6 +1,8 @@
 #include "Renderer.h"
 #include "FilesystemUtils.h"
 #include "GameData.h"
+#include "Configuration.h"
+#include "JsonUtils.hpp"
 #include <SDL_Image.h>
 #include <SDL.h>
 #include <chrono>
@@ -324,7 +326,8 @@ void Renderer::fillRenderer(const SDL_Color &col_)
 void Renderer::updateScreen(const Camera &cam_)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, gamedata::global::defaultWindowResolution.x, gamedata::global::defaultWindowResolution.y);
+    auto resolution = utils::tryClaimVector<int>(ConfigurationManager::instance().m_settings.read(), {"video", "window_resolution"}, {1920, 1080});
+    glViewport(0, 0, resolution.x, resolution.y);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 

@@ -1,6 +1,7 @@
 #ifndef JSON_UTILS_H_
 #define JSON_UTILS_H_
 #include "EnumMapping.hpp"
+#include "Vector2.h"
 #include <set>
 #include <nlohmann/json.hpp>
 
@@ -9,8 +10,40 @@ namespace utils
     template<typename T>
     T tryClaim(const nlohmann::json &src_, const std::string &field_, const T &default_)
     {
-        if (src_.contains(field_))
-            return src_[field_];
+        try
+        {
+            if (src_.contains(field_))
+                return src_[field_];
+        }
+        catch(std::exception &ex_)
+        {
+            // Property is invalid
+        }
+
+        return default_;
+    }
+
+    template<typename T>
+    Vector2<T> tryClaimVector(const nlohmann::json &src_, const std::initializer_list<std::string> &path_, const Vector2<T> &default_)
+    {
+        try
+        {
+            const nlohmann::json *current = &src_;;
+            for (const auto &el : path_)
+            {
+                if (!current->contains(el))
+                    return default_;
+
+                current = &((*current)[el]);
+            }
+
+            if (current->contains("x") && current->contains("y"))
+                return Vector2<T>{(*current)["x"], (*current)["y"]};
+        }
+        catch(std::exception &ex_)
+        {
+            // Property is invalid
+        }
 
         return default_;
     }

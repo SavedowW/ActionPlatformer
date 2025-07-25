@@ -148,7 +148,7 @@ HealthRendererCommonWRT::HealthRendererCommonWRT(int realHealth_, AnimationManag
 {
     for (int i = 0; i < realHealth_; ++i)
     {
-        m_heartAnims.push_back(std::move(std::make_unique<Animation>(animationManager_, animationManager_.getAnimID("UI/heart"), LOOPMETHOD::NOLOOP)));
+        m_heartAnims.emplace_back(animationManager_, animationManager_.getAnimID("UI/heart"), LOOPMETHOD::NOLOOP);
     }
 }
 
@@ -173,20 +173,10 @@ void HealthRendererCommonWRT::update()
 
             for (int i = m_realHealth; i < m_heartAnims.size(); ++i)
             {
-
-                if (m_heartAnims[i])
-                {
+                if (!m_heartAnims[i].isFinished())
                     hasActiveAnimations = true;
-
-                    if (m_heartAnims[i]->isFinished())
-                    {
-                        m_heartAnims[i].reset();
-                    }
-                    else
-                    {
-                        m_heartAnims[i]->update();
-                    }
-                }
+                    
+                m_heartAnims[i].update();
             }
 
             if (!hasActiveAnimations)

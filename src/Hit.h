@@ -1,5 +1,6 @@
 #ifndef HIT_H_
 #define HIT_H_
+#include "AnimationManager.h"
 #include "TimelineProperty.hpp"
 #include "RectCollider.h"
 #include "CoreComponents.h"
@@ -126,7 +127,7 @@ struct HealthRendererCommonWRT
     void takeDamage(int newHealth_);
     void touch();
 
-    std::vector<std::unique_ptr<Animation>> m_heartAnims;
+    std::vector<Animation> m_heartAnims;
     int m_realHealth = 0;
     Vector2<float> m_offset;
 

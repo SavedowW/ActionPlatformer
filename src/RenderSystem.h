@@ -29,7 +29,7 @@ struct RenderSystem : public InputReactor
     void drawTrigger(const ComponentTrigger &cld_);
     void drawFocusArea(CameraFocusArea &cfa_);
     void drawTransform(const ComponentTransform &trans_);
-    void drawHealth(const ComponentTransform &trans_, const HealthRendererCommonWRT &howner_);
+    void drawHealth(const ComponentTransform &trans_, HealthRendererCommonWRT &howner_);
 
     void drawColliderRoute(const ColliderPointRouting &route_);
 

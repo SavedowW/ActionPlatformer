@@ -105,7 +105,7 @@ private:
     std::shared_ptr<TextureArr> m_textures;
     int m_currentFrame;
     int m_direction;
-    const LOOPMETHOD m_isLoop;
+    LOOPMETHOD m_isLoop;
     void animFinished();
 
 };

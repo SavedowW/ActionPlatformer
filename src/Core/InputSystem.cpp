@@ -7,30 +7,19 @@
 
 InputSystem::InputSystem() :
     m_rootPath(Filesystem::getRootDirectory() + "Configs"),
-    m_defaultsPath(Filesystem::getRootDirectory() + "Configs/defaults.json"),
     m_configPath(Filesystem::getRootDirectory() + "Configs/inputs.json")
 
 {
-    if (!std::filesystem::exists(m_defaultsPath))
+    if (!std::filesystem::exists(m_configPath))
     {
-        std::cout << m_defaultsPath << " was not found, initializing default inputs and inputs config" << std::endl;
+        std::cout << m_configPath << " was not found, initializing inputs config" << std::endl;
         setupDefaultMapping();
-        exportMappingAs(m_defaultsPath);
         exportMappingAs(m_configPath);
     }
     else
     {
-        if (!std::filesystem::exists(m_configPath))
-        {
-            std::cout << m_configPath << " was not found, initializing inputs config" << std::endl;
-            importMappingEnsureUnique(m_defaultsPath);
-            exportMappingAs(m_configPath);
-        }
-        else
-        {
-            std::cout << "Loading config from " << m_configPath << std::endl;
-            importMappingEnsureUnique(m_configPath);
-        }
+        std::cout << "Loading config from " << m_configPath << std::endl;
+        importMappingEnsureUnique(m_configPath);
     }
 }
 

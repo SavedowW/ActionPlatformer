@@ -9,7 +9,7 @@
 class Window
 {
 public:
-    Window(Vector2<int> resolution_, const std::string &winName_);
+    Window(const std::string &winName_);
     ~Window();
 
     Window& operator=(const Window &rhs) = delete;
@@ -24,7 +24,6 @@ public:
 
 private:
     SDL_Window* m_window = nullptr;
-    Vector2<int> m_currentResolution;
     std::string m_winName;
 
 };

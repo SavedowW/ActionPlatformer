@@ -26,7 +26,6 @@ Application::Application()
 	{
 		std::cout << "MIX ititialization error: " << Mix_GetError() << std::endl;
 	}
-    Filesystem::setRootDirectory(getBasePath());
 
     Filesystem::ensureDirectoryRelative("Resources");
 	Filesystem::ensureDirectoryRelative("Resources/Animations");
@@ -38,7 +37,7 @@ Application::Application()
     ll::load();
     ll::setLang("en");
 
-    m_window = std::make_unique<Window>(Vector2{1600.0f, 900.0f}, "GameName");
+    m_window = std::make_unique<Window>("GameName");
     m_renderer = std::make_unique<Renderer>(m_window->getWindow());
     m_inputSystem = std::make_unique<InputSystem>();
     m_textureManager = std::make_unique<TextureManager>(*m_renderer);
@@ -99,19 +98,4 @@ AnimationManager *Application::getAnimationManager()
 TextManager *Application::getTextManager()
 {
     return m_textManager.get();
-}
-
-std::string Application::getBasePath()
-{
-    auto pathptr = SDL_GetBasePath();
-    if (!pathptr)
-        return "";
-
-    std::string path = pathptr;
-    SDL_free(pathptr);
-    std::filesystem::path ppath(path);
-    
-    for (; ppath.filename() != "build" && !ppath.empty(); ppath = ppath.parent_path());
-
-    return ppath.parent_path().string();
 }

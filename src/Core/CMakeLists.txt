@@ -49,6 +49,7 @@ Profile.cpp
 RectCollider.cpp
 FilesystemUtils.cpp
 Shader.cpp
+Configuration.cpp
 Localization/LocalizationGen.cpp
 )
 
