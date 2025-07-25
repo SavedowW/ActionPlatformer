@@ -26,7 +26,7 @@ If you are not using conan, make sure to provide dependencies to CMake manually
 - [DONE] Add gamepad support (is it really necessary?)
 - [DONE] Make so that tile layers are automatically handled the last
 - Simplify World component, it shouldn't provide access to camera or navigation system
-- Configs for debug stuff and settings
+- BETTER Configs for debug stuff and settings
 - Rework AI component, split logic for enemies
 ### Optional stuff
 - Fade-out with resize or dithering instead of alpha - not necessary, might be worse, but worth trying
