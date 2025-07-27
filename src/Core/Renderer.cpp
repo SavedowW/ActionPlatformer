@@ -326,7 +326,7 @@ void Renderer::fillRenderer(const SDL_Color &col_)
 void Renderer::updateScreen(const Camera &cam_)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    auto resolution = utils::tryClaimVector<int>(ConfigurationManager::instance().m_settings.read(), {"video", "window_resolution"}, {1920, 1080});
+    const auto resolution = utils::tryClaimVector<int>(ConfigurationManager::instance().m_settings.read(), {"video", "window_resolution"}, {1920, 1080});
     glViewport(0, 0, resolution.x, resolution.y);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);

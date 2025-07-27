@@ -22,14 +22,11 @@ void StateMachine::switchCurrentState(EntityAnywhere owner_, GenericState *state
 
 bool StateMachine::update(EntityAnywhere owner_, uint32_t currentFrame_)
 {
-    auto updres = m_currentState->update(owner_, m_framesInState);
+    m_framesInState++;
+    auto updres = m_currentState->update(owner_, m_framesInState - 1);
     auto *untilst = (updres ? nullptr : m_currentState);
 
-    if (!attemptTransition(owner_, untilst))
-    {
-        m_framesInState++;
-    }
-    else
+    if (attemptTransition(owner_, untilst))
         return true;
 
     return false;
@@ -40,7 +37,7 @@ bool StateMachine::attemptTransition(EntityAnywhere owner_, GenericState* until_
     auto currentStateId = m_currentState->m_stateId;
     for (auto &el : m_states)
     {
-        if (el->transitionableFrom(currentStateId) || m_currentState->transitionableInto(el->m_stateId, m_framesInState))
+        if (el->transitionableFrom(currentStateId) || m_currentState->transitionableInto(el->m_stateId, m_framesInState - 1))
         {
             auto res = el->isPossible(owner_);
             if (res != ORIENTATION::UNSPECIFIED)
@@ -324,8 +321,7 @@ void PhysicalState::enter(EntityAnywhere owner_, CharState from_)
 {
     GenericState::enter(owner_, from_);
 
-    auto &renderable = owner_.reg->get<ComponentAnimationRenderable>(owner_.idx);
-    auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
+    auto [renderable, physical] = owner_.reg->get<ComponentAnimationRenderable, ComponentPhysical>(owner_.idx);
 
     // Handle animation
     if (m_uniqueTransitionAnims.contains(from_))
@@ -369,10 +365,11 @@ bool GenericState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     const auto &partemplateLoop = m_particlesLoopable[currentFrame_ % m_loopDuration];
     if (partemplate.count || partemplateLoop.count)
     {
-        const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
-        const auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
-        auto &world = owner_.reg->get<World>(owner_.idx);
-
+        auto &&tpl = owner_.reg->get<ComponentTransform, ComponentPhysical, World>(owner_.idx);
+        const auto &transform = std::get<0>(tpl);
+        const auto &phys = std::get<1>(tpl);
+        auto &world = std::get<2>(tpl);
+        
         if (partemplate.count)
             spawnParticle(owner_, partemplate, transform, phys, world, SDL_FLIP_NONE);
 
@@ -392,8 +389,9 @@ bool GenericState::update(EntityAnywhere owner_, uint32_t currentFrame_)
 
 bool PhysicalState::update(EntityAnywhere owner_, uint32_t currentFrame_)
 {
-    const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
-    auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
+    auto &&tpl = owner_.reg->get<ComponentTransform, ComponentPhysical>(owner_.idx);
+    const auto &transform = std::get<0>(tpl);
+    auto &physical = std::get<1>(tpl);
 
     // Handle velocity and inertia changes
     if (m_usingUpdateMovement)

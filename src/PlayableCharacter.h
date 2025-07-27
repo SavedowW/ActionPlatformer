@@ -119,7 +119,7 @@ public:
 
             if (phys.m_velocity.y < 0 && upDrift(inq, 0))
             {
-                if (m_parent->m_framesInState < 10.0f)
+                if (m_parent->m_framesInState < 10)
                     phys.m_velocity.y -= 0.4f;
             }
         }
