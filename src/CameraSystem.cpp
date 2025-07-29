@@ -3,6 +3,7 @@
 #include "CoreComponents.h"
 #include "GameData.h"
 #include "Profile.h"
+#include "Configuration.h"
 
 CameraSystem::CameraSystem(entt::registry &reg_, Application &app_, Camera &cam_) :
     InputReactor(app_.getInputSystem()),
@@ -132,7 +133,7 @@ bool CameraSystem::updateFocus(const Collider &playerPb_)
 
 void CameraSystem::debugDraw(Renderer &ren_, Camera &cam_)
 {
-    if constexpr (gamedata::debug::drawCameraOffset)
+    if (ConfigurationManager::instance().m_debug.m_drawCameraOffset)
     {
         auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(m_playerId);
         ren_.drawLine(trans.m_pos, trans.m_pos + dtar.m_offset, {188, 74, 155, 255}, cam_);

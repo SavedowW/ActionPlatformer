@@ -5,6 +5,19 @@
 #include <set>
 #include <nlohmann/json.hpp>
 
+template<typename T>
+void to_json(nlohmann::json& j_, const Vector2<T>& v_)
+{
+    j_ = nlohmann::json{ {"x", v_.x}, {"y", v_.y} };
+}
+
+template<typename T>
+void from_json(const nlohmann::json& j, Vector2<T>& v_)
+{
+    j.at("x").get_to(v_.x);
+    j.at("y").get_to(v_.y);
+}
+
 namespace utils
 {
     template<typename T>

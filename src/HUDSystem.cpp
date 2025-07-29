@@ -3,6 +3,7 @@
 #include "StateMachine.h"
 #include "GameData.h"
 #include "Localization/LocalizationGen.h"
+#include "Configuration.h"
 
 HudSystem::HudSystem(entt::registry &reg_, Application &app_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, nanoseconds &frameTime_) :
     m_renderer(*app_.getRenderer()),
@@ -29,7 +30,7 @@ void HudSystem::draw()
     drawCommonDebug();
     drawPlayerDebug();
 
-    if constexpr (gamedata::debug::drawNpcDebug)
+    if (ConfigurationManager::instance().m_debug.m_drawNpcDebug)
     {
         for (const auto [idx, trans, phys, sm, ai] : npcs.each())
         {

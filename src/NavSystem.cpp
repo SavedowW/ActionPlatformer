@@ -1,7 +1,7 @@
 #include "NavSystem.h"
 #include "CoreComponents.h"
 #include "Profile.h"
-#include "GameData.h"
+#include "Configuration.h"
 #include <limits>
 
 NavSystem::NavSystem(entt::registry &reg_, Application &app_, NavGraph &graph_) :
@@ -39,7 +39,7 @@ void NavSystem::update()
 
 void NavSystem::draw(Camera &cam_)
 {
-    if constexpr (gamedata::debug::drawCurrentConnection)
+    if (ConfigurationManager::instance().m_debug.m_drawCurrentConnection)
     {
         const auto view = m_reg.view<ComponentTransform, Navigatable>();
         for (const auto [idx, trans, nav] : view.each())
@@ -56,9 +56,9 @@ void NavSystem::draw(Camera &cam_)
         }
     }
 
-    if constexpr (gamedata::debug::debugPathDisplay)
+    if (ConfigurationManager::instance().m_debug.m_debugPathDisplay)
     {
-        auto ipath = m_paths.find(gamedata::debug::debugPathDisplay);
+        auto ipath = m_paths.find(ConfigurationManager::instance().m_debug.m_debugPathDisplay);
         if (ipath != m_paths.end() && !ipath->second.expired())
         {
             auto path = ipath->second.lock().get();

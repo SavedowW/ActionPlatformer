@@ -2,6 +2,7 @@
 #include "Profile.h"
 #include "EnvComponents.h"
 #include "GameData.h"
+#include "Configuration.h"
 
 RenderSystem::RenderSystem(entt::registry &reg_, Application &app_, Camera &camera_, ColliderRoutesCollection &rtCol_) :
     InputReactor(app_.getInputSystem()),
@@ -56,8 +57,7 @@ void RenderSystem::updateDepth()
 
 void RenderSystem::draw()
 {
-    const auto viewColliders = m_reg.view<ComponentStaticCollider>();
-    const auto viewTriggers = m_reg.view<ComponentTrigger>();
+    const auto &conf = ConfigurationManager::instance();
     auto viewFocuses = m_reg.view<CameraFocusArea>();
     const auto viewTransforms = m_reg.view<ComponentTransform>();
     const auto viewHealthOwners = m_reg.view<ComponentTransform, HealthRendererCommonWRT>();
@@ -71,8 +71,14 @@ void RenderSystem::draw()
     for (auto [idx, trans, hren] : viewHealthOwners.each())
         drawHealth(trans, hren);
 
-    if constexpr (gamedata::debug::drawColliders)
+    if (conf.m_debug.m_drawColliders)
     {
+        const auto viewColliders = m_reg.view<ComponentStaticCollider>();
+        const auto viewTriggers = m_reg.view<ComponentTrigger>();
+        const auto viewPhysical = m_reg.view<ComponentTransform, ComponentPhysical>();
+        const auto viewBtlAct = m_reg.view<ComponentTransform, BattleActor>();
+        const auto viewGrassTop = m_reg.view<ComponentTransform, GrassTopComp>();
+
         for (auto [idx, scld] : viewColliders.each())
         {
             if (scld.m_obstacleId)
@@ -80,19 +86,9 @@ void RenderSystem::draw()
             else
                 drawCollider(scld);
         }
-    }
 
-    if constexpr (gamedata::debug::drawColliders)
-    {
         for (auto [idx, trg] : viewTriggers.each())
             drawTrigger(trg);
-    }
-
-    if constexpr (gamedata::debug::drawColliders)
-    {
-        const auto viewPhysical = m_reg.view<ComponentTransform, ComponentPhysical>();
-        const auto viewBtlAct = m_reg.view<ComponentTransform, BattleActor>();
-        const auto viewGrassTop = m_reg.view<ComponentTransform, GrassTopComp>();
 
         for (auto [idx, trans, phys] : viewPhysical.each())
             drawCollider(trans, phys);
@@ -109,19 +105,19 @@ void RenderSystem::draw()
         }
     }
 
-    if constexpr (gamedata::debug::drawFocusAreas)
+    if (conf.m_debug.m_drawFocusAreas)
     {
         for (auto [idx, area] : viewFocuses.each())
             drawFocusArea(area);
     }
 
-    if constexpr (gamedata::debug::drawTransforms)
+    if (conf.m_debug.m_drawTransforms)
     {
         for (auto [idx, trans] : viewTransforms.each())
             drawTransform(trans);
     }
 
-    if constexpr (gamedata::debug::drawColliderRoutes)
+    if (conf.m_debug.m_drawColliderRoutes)
     {
         for (const auto &el : m_routesCollection.m_routes)
             drawColliderRoute(el.second);
@@ -161,7 +157,7 @@ void RenderSystem::drawInstance(const ComponentTransform &trans_, const Componen
             m_renderer.renderTextureFlash(spr, texPos, texSize, flip, alpha, m_camera);
         }
 
-        if constexpr (gamedata::debug::drawDebugTextures)
+        if (ConfigurationManager::instance().m_debug.m_drawDebugTextures)
         {
             m_renderer.drawRectangle(texPos, texSize, {100, 0, 100, 255}, m_camera);
             m_renderer.fillRectangle(texPos + animorigin - Vector2{2, 2}, {5, 5}, {100, 0, 100, 255}, m_camera);
@@ -193,7 +189,7 @@ void RenderSystem::drawParticle(const ComponentTransform &trans_, const Componen
 
         m_renderer.renderTexture(spr, texPos, texSize, partcl_.m_flip, partcl_.angle, animorigin, m_camera);
 
-        if constexpr (gamedata::debug::drawDebugTextures)
+        if (ConfigurationManager::instance().m_debug.m_drawDebugTextures)
         {
             m_renderer.drawRectangle(texPos, texSize, {100, 0, 100, 255}, m_camera);
             m_renderer.fillRectangle(texPos + animorigin - Vector2{2, 2}, {5, 5}, {100, 0, 100, 255}, m_camera);
@@ -318,7 +314,7 @@ void RenderSystem::drawHealth(const ComponentTransform &trans_, HealthRendererCo
 
     Vector2<float> worldPos = trans_.m_pos + howner_.m_offset;
 
-    if (gamedata::debug::drawHealthPos)
+    if (ConfigurationManager::instance().m_debug.m_drawHealthPos)
         m_renderer.drawCross(worldPos, {1, 5}, {5, 1}, {255, 0, 0, 255}, m_camera);
 
     assert(!howner_.m_heartAnims.empty());

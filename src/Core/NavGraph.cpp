@@ -1,5 +1,5 @@
 #include "NavGraph.h"
-#include "GameData.h"
+#include "Configuration.h"
 #include <algorithm>
 
 NavGraph::NavGraph(Application &app_) :
@@ -48,7 +48,7 @@ std::pair<Connection *, float> NavGraph::findClosestConnection(const Vector2<flo
 
 void NavGraph::draw(Camera &cam_)
 {
-    if constexpr (gamedata::debug::drawNavGraph)
+    if (ConfigurationManager::instance().m_debug.m_drawNavGraph)
     {
         const Vector2<float> nodeSize{5.0f, 5.0f};
         for (int i = 0; i < m_nodes.size(); ++i)

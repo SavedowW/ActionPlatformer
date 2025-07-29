@@ -17,18 +17,18 @@ namespace gamedata
         inline constexpr SDL_Color LVL4 = {33, 30, 32, 255};
     }
 
-    namespace debug
+    namespace debug_defaults
     {
-        inline constexpr bool drawColliders = true;
+        inline constexpr bool drawColliders = false;
         inline constexpr bool drawFocusAreas = false;
         inline constexpr bool drawCameraOffset = false;
         inline constexpr bool drawNpcDebug = false;
         inline constexpr bool drawCurrentConnection = false;
         inline constexpr bool drawNavGraph = false;
-        inline constexpr bool drawTransforms = true;
+        inline constexpr bool drawTransforms = false;
         inline constexpr bool drawDebugTextures = false;
         inline constexpr bool drawHealthPos = false;
-        inline constexpr bool drawColliderRoutes = true;
+        inline constexpr bool drawColliderRoutes = false;
         inline constexpr uint32_t debugPathDisplay = 0;
     }
 

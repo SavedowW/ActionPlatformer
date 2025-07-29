@@ -1,0 +1,15 @@
+{
+    "video": {
+        "draw_colliders": false,
+        "draw_focus_areas": true,
+        "draw_camera_offset": false,
+        "draw_npc_debug": false,
+        "draw_current_connection": false,
+        "draw_nav_graph": false,
+        "draw_transforms": true,
+        "draw_debug_textures": false,
+        "draw_health_pos": false,
+        "draw_collider_routes": false,
+        "path_display": 0
+    }
+}

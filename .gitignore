@@ -3,6 +3,7 @@
 /.vscode/*
 /.vs/*
 /CMakeUserPresets.json
-/Configs/
+/Configs/*
+!Configs/debug.json
 *.tiled-session
 *.tiled-session.lock
