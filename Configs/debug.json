@@ -1,7 +1,7 @@
 {
     "video": {
-        "draw_colliders": false,
-        "draw_focus_areas": true,
+        "draw_colliders": true,
+        "draw_focus_areas": false,
         "draw_camera_offset": false,
         "draw_npc_debug": false,
         "draw_current_connection": false,

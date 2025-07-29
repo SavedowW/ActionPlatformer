@@ -32,7 +32,6 @@ Level.cpp
 AnimationManager.cpp
 FrameTimer.cpp
 TextManager.cpp
-TimelineProperty.cpp
 ImmediateScreenLog.cpp
 utf8.cpp
 InputState.cpp

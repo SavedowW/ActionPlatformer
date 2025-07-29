@@ -111,22 +111,4 @@ protected:
     bool m_isEmpty;
 };
 
-template<typename T>
-class TimelinePropertyEditable: public TimelineProperty<T>
-{
-public:
-    TimelinePropertyEditable(std::vector<std::pair<uint32_t, T>> &&values_);
-    TimelinePropertyEditable(T &&value_);
-    TimelinePropertyEditable(const T &value_);
-    TimelinePropertyEditable();
-
-    void dump() const;
-
-    int getValuesCount() const;
-    std::pair<uint32_t, T> &getValuePair(int id_);
-    void setPairValue(int id_, T &&value_);
-    bool deletePair(int id_);
-    void clear();
-};
-
 #endif
