@@ -48,13 +48,22 @@ private:
     void loadColliderRoutingLayer(const nlohmann::json &json_, ColliderRoutesCollection &rtCollection_);
     void loadObjectsLayer(const nlohmann::json &json_, EnvironmentSystem &env_);
 
+
+    // Object factories
+    template<typename T>
+    void makeObject(const Vector2<int> &pos_, bool visible_, int layer_) = delete;
+
+    using FactoryMethod = decltype(&LevelBuilder::makeObject<void>);
+
+    std::map<std::string, FactoryMethod> m_factories;
+
     Application &m_app;
     entt::registry &m_reg;
 
     TilesetBase m_tilebase;
 
     std::map<int, entt::entity> m_colliderIds;
-    std::unordered_map<int, ObjectClass> m_utilTileset;
+    std::unordered_map<int, FactoryMethod> m_utilTilesetFactories;
 
     int m_autoLayer;
 };

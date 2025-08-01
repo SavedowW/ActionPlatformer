@@ -278,4 +278,7 @@ protected:
 // Evil, but use this instead of bool for TimelineProperty due to std::vector<bool>
 using TBool = uint8_t;
 
+template<>
+class TimelineProperty<bool>;
+
 #endif

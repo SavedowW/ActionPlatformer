@@ -1,4 +1,5 @@
 #include "LevelBuilder.h"
+#include "EnvComponents.h"
 #include "JsonUtils.hpp"
 #include "NavGraph.h"
 #include "CoreComponents.h"
@@ -9,6 +10,39 @@
 #include <fstream>
 #include <limits>
 #include <sstream>
+
+template <>
+void LevelBuilder::makeObject<GrassTopComp>(const Vector2<int> &pos_, bool visible_, int layer_)
+{
+    auto &animManager = *m_app.getAnimationManager();
+
+    auto objEnt = m_reg.create();
+    auto &trans = m_reg.emplace<ComponentTransform>(objEnt, pos_, ORIENTATION::RIGHT);
+
+    auto &animrnd = m_reg.emplace<ComponentAnimationRenderable>(objEnt);
+    auto &renLayer = m_reg.emplace<RenderLayer>(objEnt, layer_);
+    renLayer.m_visible = visible_;
+
+    animrnd.loadAnimation(animManager, animManager.getAnimID("Environment/grass_single_top"));
+    animrnd.loadAnimation(animManager, animManager.getAnimID("Environment/grass_single_top_flickL"), LOOPMETHOD::NOLOOP);
+    animrnd.loadAnimation(animManager, animManager.getAnimID("Environment/grass_single_top_flickR"), LOOPMETHOD::NOLOOP);
+
+    auto animSize = animrnd.m_animations.at(animManager.getAnimID("Environment/grass_single_top")).getSize();
+    auto animOrigin = animrnd.m_animations.at(animManager.getAnimID("Environment/grass_single_top")).getOrigin();
+
+    animrnd.m_currentAnimation = &animrnd.m_animations.at(animManager.getAnimID("Environment/grass_single_top"));
+    animrnd.m_currentAnimation->reset();
+
+    //trans.m_pos.x += (animSize.x);
+    //trans.m_pos.y -= (animSize.y);
+    trans.m_pos.x += (animOrigin.x - 1);
+    trans.m_pos.y -= (animSize.y + 1 - animOrigin.y);
+
+    m_reg.emplace<GrassTopComp>(objEnt);
+    GrassTopComp::m_idleAnimId = animManager.getAnimID("Environment/grass_single_top");
+    GrassTopComp::m_flickRightAnimId = animManager.getAnimID("Environment/grass_single_top_flickR");
+    GrassTopComp::m_flickLeftAnimId = animManager.getAnimID("Environment/grass_single_top_flickL");
+}
 
 void addTrigger(entt::registry &reg_, const Trigger &trg_)
 {
@@ -21,6 +55,9 @@ LevelBuilder::LevelBuilder(Application &app_, entt::registry &reg_) :
     m_reg(reg_),
     m_tilebase(*app_.getTextureManager())
 {
+#define ADD_NAME_FACTORY_PAIR(classname) m_factories.emplace(#classname , &LevelBuilder::makeObject<classname>)
+
+    ADD_NAME_FACTORY_PAIR(GrassTopComp);
 }
 
 void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_, EnvironmentSystem &env_)
@@ -217,7 +254,7 @@ void LevelBuilder::loadUtilTileset(const std::filesystem::path &jsonLoc_, uint32
 
     for (const auto &tile : tilesetdata["tiles"])
     {
-        m_utilTileset[firstgid_ + tile["id"]] = deserialize<ObjectClass>(tile["type"]);
+        m_utilTilesetFactories[firstgid_ + tile["id"]] = m_factories[tile["type"]];
     }
 }
 
@@ -564,7 +601,7 @@ void LevelBuilder::loadObjectsLayer(const nlohmann::json &json_, EnvironmentSyst
         int gid = obj["gid"];
         Vector2<int> pos = {static_cast<int>(obj["x"]), static_cast<int>(obj["y"])};
         bool visible = obj["visible"];
-        env_.makeObject(m_utilTileset[gid], pos, visible, depth);
+        (this->*m_utilTilesetFactories.at(gid))(pos, visible, depth);
     }
 }
 
