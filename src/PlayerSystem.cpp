@@ -68,7 +68,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -93,7 +93,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -136,7 +136,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -183,7 +183,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -205,7 +205,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                     {0, {0.0f, 1.0f}},
                     {8, {1.0f, 1.0f}}
                 }))
-        .setCanFallThrough(TimelineProperty<bool>(false))
+        .setCanFallThrough(TimelineProperty<TBool>(false))
         .setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
@@ -243,7 +243,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -302,13 +302,13 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
             }
         })
-        .setCanFallThrough(TimelineProperty(true))
+        .setCanFallThrough(TimelineProperty<TBool>(true))
         .setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
             {1, ParticleTemplate{1, Vector2<float>{-10.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_run"), 26,
@@ -352,7 +352,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -384,7 +384,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -406,13 +406,13 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
             }
         })
-        .setCanFallThrough(TimelineProperty(true))
+        .setCanFallThrough(TimelineProperty<TBool>(true))
         .setUpdateSpeedLimitData(
             TimelineProperty<Vector2<float>>({9999.9f, 0.0f}),
             TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
@@ -430,7 +430,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -456,7 +456,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -480,17 +480,17 @@ void PlayerSystem::setup(entt::entity playerId_)
                     {10, {0.3f, 1.0f}},
                     {20, {1.0f, 1.0f}}
                 }))
-        .setCanFallThrough(TimelineProperty<bool>(false))
+        .setCanFallThrough(TimelineProperty<TBool>(false))
         .setGravity({{0.0f, 0.5f}})
         .setConvertVelocityOnSwitch(false, true)
         .setMagnetLimit(TimelineProperty<float>(0.0f))
-        .setNoLanding(TimelineProperty<bool>(false))
+        .setNoLanding(TimelineProperty<TBool>(false))
         .setHurtboxes({
             {
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -522,13 +522,13 @@ void PlayerSystem::setup(entt::entity playerId_)
                 }))
         .setGravity({{0.0f, 0.5f}})
         .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
-        .setNoLanding(TimelineProperty<bool>({{0, true}, {4, false}}))
+        .setNoLanding(TimelineProperty<TBool>({{0, true}, {4, false}}))
         .setHurtboxes({
             {
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )

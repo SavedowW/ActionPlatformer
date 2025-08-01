@@ -159,8 +159,8 @@ public:
     PhysicalState &setGravity(TimelineProperty<Vector2<float>> &&gravity_);
     PhysicalState &setDrag(TimelineProperty<Vector2<float>> &&drag_);
     PhysicalState &setMulInsidePushbox(TimelineProperty<std::optional<Vector2<float>>> &&mulInsidePushbox_);
-    PhysicalState &setCanFallThrough(TimelineProperty<bool> &&fallThrough_);
-    PhysicalState &setNoLanding(TimelineProperty<bool> &&noLanding_);
+    PhysicalState &setCanFallThrough(TimelineProperty<TBool> &&fallThrough_);
+    PhysicalState &setNoLanding(TimelineProperty<TBool> &&noLanding_);
     PhysicalState &setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>> &&inerMul_);
     PhysicalState &setTransitionVelocityMultiplier(TimelineProperty<Vector2<float>> &&convRate_);
     PhysicalState &setConvertVelocityOnSwitch(bool convertVelocity_, bool convertEnforced_);
@@ -206,7 +206,7 @@ protected:
 
     TimelineProperty<float> m_magnetLimit;
 
-    TimelineProperty<bool> m_canFallThrough;
+    TimelineProperty<TBool> m_canFallThrough;
 
     FrameTimer<true> *m_cooldown = nullptr;
     uint32_t m_cooldownTime = 0;
@@ -215,7 +215,7 @@ protected:
 
     std::map<CharState, int> m_uniqueTransitionAnims;
 
-    TimelineProperty<bool> m_noLanding;
+    TimelineProperty<TBool> m_noLanding;
     bool m_convertEnforcedVelocity = false;
 
     bool m_hasHurtboxes = false;

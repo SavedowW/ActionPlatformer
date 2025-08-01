@@ -22,7 +22,7 @@ enum class BattleTeams {
 struct TemporaryCollider
 {
     Collider m_collider;
-    TimelineProperty<bool> m_timeline;
+    TimelineProperty<TBool> m_timeline;
 };
 
 struct HurtboxGroup

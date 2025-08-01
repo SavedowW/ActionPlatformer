@@ -200,6 +200,13 @@ public:
 
     const T &operator[](uint32_t timeMark_) const
     {
+        iterateLastTo(timeMark_);
+        return m_values.at(m_last);
+    }
+
+protected:
+    void iterateLastTo(uint32_t timeMark_) const
+    {
         if (m_keys.empty() || m_values.empty())
             throw std::runtime_error("Trying to index a moved-from timeline");
 
@@ -227,11 +234,8 @@ public:
             else
                 m_last = binarySearch(timeMark_);
         }
-
-        return m_values.at(m_last);
     }
 
-protected:
     const size_t binarySearch(uint32_t timeMark_) const
     {
         const auto size = m_keys.size();
@@ -270,5 +274,8 @@ protected:
 
     static constexpr int m_stepThreshold = 5;
 };
+
+// Evil, but use this instead of bool for TimelineProperty due to std::vector<bool>
+using TBool = uint8_t;
 
 #endif
