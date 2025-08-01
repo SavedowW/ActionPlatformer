@@ -474,5 +474,5 @@ fonts::CharChunkDistribution::CharChunkDistribution(const std::string &charlist_
 
     int i = 0;
     for (auto &el : m_chunks)
-        m_chunkSearch.addPropertyValue(el * CHUNK_SIZE, i++);
+        m_chunkSearch.addPair(el * CHUNK_SIZE, i++);
 }

@@ -59,7 +59,7 @@ void TilesetBase::addTileset(const std::string &spritesheet_, uint32_t firstgid_
     m_tilesets.emplace_back(m_texManager, firstgid_);
     m_tilesets.back().load(spritesheet_);
 
-    m_tilesetMapping.addPropertyValue(firstgid_, m_tilesets.size() - 1);
+    m_tilesetMapping.addPair(firstgid_, m_tilesets.size() - 1);
 }
 
 Tile TilesetBase::getTile(uint32_t gid_)

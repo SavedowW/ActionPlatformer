@@ -133,7 +133,7 @@ public:
     template<typename PLAYER_STATE_T>
     PhysicalState &addTransitionOnTouchedGround(uint32_t sinceFrame_, PLAYER_STATE_T transition_)
     {
-        m_transitionsOnLand.addPropertyValue(sinceFrame_, std::optional<CharState>(static_cast<CharState>(transition_)));
+        m_transitionsOnLand.addPair(sinceFrame_, std::optional<CharState>(static_cast<CharState>(transition_)));
         return *this;
     }
 

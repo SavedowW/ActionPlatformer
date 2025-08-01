@@ -81,7 +81,7 @@ std::shared_ptr<TextureArr> AnimationManager::getTextureArr(int id_)
                 fileIdsToInternal[fileid] = surfaces.size() - 1;
             }
 
-            timelineFileIds.addPropertyValue(key, std::move(fileid));
+            timelineFileIds.addPair(key, fileid);
         }
 
         unsigned int *texIds = Renderer::surfacesToTexture(surfaces);
