@@ -8,20 +8,14 @@ template <typename... T>
 class ComponentResetStatic
 {
 public:
-    static void resetComponent(const entt::entity &ent_, T&... comp_)
-    {
-        throw std::string("Component reset for type \"") + typeid(T).name() + "\" wasn't implemented";
-    }
+    static void resetComponent(const entt::entity &ent_, T&... comp_);
 };
 
 template <typename... T>
 class ComponentReset
 {
 public:
-    void resetComponent(const entt::entity &ent_, T&... comp_)
-    {
-        throw std::string("Component reset for type \"") + typeid(T).name() + "\" wasn't implemented";
-    }
+    void resetComponent(const entt::entity &ent_, T&... comp_);
 };
 
 template <>

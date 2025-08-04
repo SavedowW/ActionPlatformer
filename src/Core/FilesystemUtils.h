@@ -12,7 +12,7 @@ namespace Filesystem
     /*
         Takes relative path ("Resources")
         Expects parent directory to exist
-            Example: "Resporces/Sprites" will throw an exception if "Resources" does not exist
+            Example: "Resources/Sprites" will throw an exception if "Resources" does not exist
     */
     void ensureDirectoryRelative(const std::string &directory_);
 

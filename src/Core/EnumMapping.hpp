@@ -6,16 +6,10 @@
 #include <typeinfo>
 
 template<typename T>
-const std::map<T, std::string> &makeDirectMap()
-{
-    throw std::string("makeDirectMap is not implemented for type ") + typeid(T).name();
-}
+const std::map<T, std::string> &makeDirectMap();
 
 template<typename T>
-const std::map<std::string, T> &makeReversedMap()
-{
-    throw std::string("makeReversedMap is not implemented for type ") + typeid(T).name();
-}
+const std::map<std::string, T> &makeReversedMap();
 
 template<typename T>
 const std::string serialize(const T &value_)

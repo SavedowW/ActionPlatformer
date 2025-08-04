@@ -198,7 +198,13 @@ public:
         return *this;
     }
 
-    const T &operator[](uint32_t timeMark_) const
+    const T &operator[](uint32_t timeMark_) const requires (!std::same_as<T, bool>)
+    {
+        iterateLastTo(timeMark_);
+        return m_values.at(m_last);
+    }
+
+    T operator[](uint32_t timeMark_) const requires (std::same_as<T, bool>)
     {
         iterateLastTo(timeMark_);
         return m_values.at(m_last);
@@ -274,11 +280,5 @@ protected:
 
     static constexpr int m_stepThreshold = 5;
 };
-
-// Evil, but use this instead of bool for TimelineProperty due to std::vector<bool>
-using TBool = uint8_t;
-
-template<>
-class TimelineProperty<bool>;
 
 #endif

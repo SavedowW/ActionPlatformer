@@ -20,6 +20,18 @@ void FrameTimer<RESULT_IF_INACTIVE>::beginAt(uint32_t framesToWait_, float progr
     m_framesToWait = framesToWait_;
 }
 
+template <bool RESULT_IF_INACTIVE>
+void FrameTimer<RESULT_IF_INACTIVE>::setCurrentFrame(uint32_t frame_)
+{
+    m_currentFrame = frame_;
+}
+
+template <bool RESULT_IF_INACTIVE>
+uint32_t FrameTimer<RESULT_IF_INACTIVE>::getDuration() const
+{
+    return m_framesToWait;
+}
+
 template<bool RESULT_IF_INACTIVE>
 bool FrameTimer<RESULT_IF_INACTIVE>::update()
 {

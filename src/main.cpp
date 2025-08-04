@@ -8,7 +8,7 @@
 #include <stack>
 
 int main(int argc, char* args[])
-{       
+{
     std::cout << Filesystem::getRootDirectory() << std::endl;
     Application app;
     

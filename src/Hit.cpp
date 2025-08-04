@@ -21,12 +21,12 @@ HitboxGroup HitGeneration::hitPlayerLight()
 
     hit.m_colliders.push_back({
         {{-3, -19}, {16, 8}},
-        TimelineProperty<TBool>({{5, true}, {10, false}})
+        TimelineProperty<bool>({{5, true}, {10, false}})
     });
 
     hit.m_colliders.push_back({
         {{7, -30}, {30, 18}},
-        TimelineProperty<TBool>({{5, true}, {10, false}})
+        TimelineProperty<bool>({{5, true}, {10, false}})
     });
 
     hit.m_activeWindow = {5, 11};
@@ -48,12 +48,12 @@ HitboxGroup HitGeneration::hitPlayerChain()
 
     hit.m_colliders.push_back({
         {{-24, -32}, {48, 24}},
-        TimelineProperty<TBool>({{12, true}, {13, false}})
+        TimelineProperty<bool>({{12, true}, {13, false}})
     });
 
     hit.m_colliders.push_back({
         {{2, -32}, {48, 32}},
-        TimelineProperty<TBool>({{12, true}, {15, false}})
+        TimelineProperty<bool>({{12, true}, {15, false}})
     });
 
     hit.m_activeWindow = {12, 15};
@@ -76,12 +76,12 @@ HitboxGroup HitGeneration::hitPlayerAirAttack()
 
     hit.m_colliders.push_back({
         {{-16, -64}, {56, 98}},
-        TimelineProperty<TBool>({{8, true}, {15, false}})
+        TimelineProperty<bool>({{8, true}, {15, false}})
     });
 
     hit.m_colliders.push_back({
         {{26, -49}, {25, 60}},
-        TimelineProperty<TBool>({{8, true}, {15, false}})
+        TimelineProperty<bool>({{8, true}, {15, false}})
     });
 
     hit.m_activeWindow = {8, 15};

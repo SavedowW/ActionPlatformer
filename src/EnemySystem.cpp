@@ -147,13 +147,13 @@ entt::entity EnemySystem::makeEnemy()
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
             }
         })
-        .setCanFallThrough(TimelineProperty<TBool>(true))
+        .setCanFallThrough(TimelineProperty<bool>(true))
     ));
 
     sm.addState(std::unique_ptr<GenericState>(
@@ -171,7 +171,7 @@ entt::entity EnemySystem::makeEnemy()
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -199,13 +199,13 @@ entt::entity EnemySystem::makeEnemy()
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
             }
         })
-        .setCanFallThrough(TimelineProperty<TBool>(true))
+        .setCanFallThrough(TimelineProperty<bool>(true))
         .setUpdateSpeedLimitData(
             TimelineProperty<Vector2<float>>({9999.9f, 0.0f}),
             TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
@@ -225,14 +225,14 @@ entt::entity EnemySystem::makeEnemy()
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
             }
         })
         .addTransitionOnTouchedGround(0, Enemy1State::IDLE)
-        .setNoLanding(TimelineProperty<TBool>({{0, true}, {4, false}}))
+        .setNoLanding(TimelineProperty<bool>({{0, true}, {4, false}}))
     ));
 
     sm.setInitialState(Enemy1State::FLOAT);

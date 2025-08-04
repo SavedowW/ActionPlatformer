@@ -194,13 +194,13 @@ PhysicalState &PhysicalState::setMulInsidePushbox(TimelineProperty<std::optional
     return *this;
 }
 
-PhysicalState &PhysicalState::setCanFallThrough(TimelineProperty<TBool> &&fallThrough_)
+PhysicalState &PhysicalState::setCanFallThrough(TimelineProperty<bool> &&fallThrough_)
 {
     m_canFallThrough = std::move(fallThrough_);
     return *this;
 }
 
-PhysicalState &PhysicalState::setNoLanding(TimelineProperty<TBool> &&noLanding_)
+PhysicalState &PhysicalState::setNoLanding(TimelineProperty<bool> &&noLanding_)
 {
     m_noLanding = std::move(noLanding_);
     return *this;

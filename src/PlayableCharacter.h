@@ -527,7 +527,7 @@ public:
                     {40, {0.0f, 0.0f}},
                     {45, {1.0f, 1.0f}}
                 }));
-        setCanFallThrough(TimelineProperty<TBool>(false));
+        setCanFallThrough(TimelineProperty<bool>(false));
         setExtendedBuffer(10);
         setGravity({{0.0f, 0.0f}});
         setConvertVelocityOnSwitch(true, false);
@@ -570,8 +570,8 @@ public:
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<TBool>({{0, true}, {12, false}, {28, true}})},
-                            {{{-30, -16}, {32, 16}}, TimelineProperty<TBool>({{12, true}, {28, false}})}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>({{0, true}, {12, false}, {28, true}})},
+                            {{{-30, -16}, {32, 16}}, TimelineProperty<bool>({{12, true}, {28, false}})}
                         }
                     }, HurtTrait::NORMAL
                 )
