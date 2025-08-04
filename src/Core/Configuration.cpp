@@ -78,23 +78,8 @@ Configuration<READ_ONLY>::Configuration(const std::string &configName_) : Config
 }
 
 template <bool READ_ONLY>
-nlohmann::json &Configuration<READ_ONLY>::write()
+void Configuration<READ_ONLY>::save() requires (!READ_ONLY)
 {
-    return m_data;
-}
-
-template <bool READ_ONLY>
-const nlohmann::json &Configuration<READ_ONLY>::read() const
-{
-    return m_data;
-}
-
-template <bool READ_ONLY>
-void Configuration<READ_ONLY>::save()
-{
-    if constexpr (READ_ONLY)
-        throw std::logic_error("Trying to save a read-only config");
-
     if (m_dirty)
     {
         try

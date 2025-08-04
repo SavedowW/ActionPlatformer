@@ -7,7 +7,7 @@
 Window::Window(const std::string &winName_) :
     m_winName(winName_)
 {
-    auto resolution = utils::tryClaimVector<int>(ConfigurationManager::instance().m_settings.read(), {"video", "window_resolution"}, {1920, 1080});
+    auto resolution = ConfigurationManager::instance().m_settings["video"]["window_resolution"].readOrSet<Vector2<int>>({1920, 1080});
 
     m_window = SDL_CreateWindow(m_winName.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, resolution.x, resolution.y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 	if (m_window == NULL)

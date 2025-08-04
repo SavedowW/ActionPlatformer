@@ -12,7 +12,7 @@ public:
     ConfigurationView<READ_ONLY> operator[](const std::string &field_);
 
     template<typename T>
-    T readOrSet(const T &default_);
+    T readOrSet(const T &default_) requires (!READ_ONLY);
 
     template<typename T>
     T readOrDefault(const T &default_) const;
@@ -29,10 +29,8 @@ public:
     // "config" => "C:/Game/Configs/config.json"
     Configuration();
     Configuration(const std::string &configName_);
-    nlohmann::json &write();
-    const nlohmann::json &read() const;
 
-    void save();
+    void save() requires (!READ_ONLY);
 
 private:
     nlohmann::json m_data;
@@ -43,7 +41,7 @@ private:
 class ConfigurationManager
 {
 public:
-    Configuration<true> m_settings;
+    Configuration<false> m_settings;
     struct DebugConf
     {
         bool m_drawColliders;
@@ -62,7 +60,7 @@ public:
 static ConfigurationManager &instance();
 
 private:
-    Configuration<false> m_debugConf;
+    Configuration<true> m_debugConf;
     ConfigurationManager();
 
 };
@@ -70,10 +68,8 @@ private:
 
 template <bool READ_ONLY>
 template <typename T>
-inline T ConfigurationView<READ_ONLY>::readOrSet(const T &default_)
+inline T ConfigurationView<READ_ONLY>::readOrSet(const T &default_) requires (!READ_ONLY)
 {
-    static_assert(!READ_ONLY);
-
     try 
     {
         return m_dataRef.template get<T>();
