@@ -100,7 +100,7 @@ std::shared_ptr<NavPath> NavSystem::makePath(Traverse::TraitT traverseTraits_, e
     auto found = m_paths.find(traverseTraits_);
     if (found == m_paths.end())
     {
-        auto newpath = std::shared_ptr<NavPath>(new NavPath(&m_graph, goal_, m_reg, traverseTraits_));
+        auto newpath = std::shared_ptr<NavPath>(new NavPath(m_graph, goal_, m_reg, traverseTraits_));
         m_paths[traverseTraits_] = newpath;
         return newpath;
     }
@@ -108,7 +108,7 @@ std::shared_ptr<NavPath> NavSystem::makePath(Traverse::TraitT traverseTraits_, e
     {
         if (found->second.expired())
         {
-            auto newpath = std::shared_ptr<NavPath>(new NavPath(&m_graph, goal_, m_reg, traverseTraits_));
+            auto newpath = std::shared_ptr<NavPath>(new NavPath(m_graph, goal_, m_reg, traverseTraits_));
             found->second = newpath;
             return newpath;
         }
@@ -119,31 +119,39 @@ std::shared_ptr<NavPath> NavSystem::makePath(Traverse::TraitT traverseTraits_, e
     }
 }
 
-NavPath::NavPath(NavGraph *graph_, entt::entity target_, entt::registry &reg_, Traverse::TraitT traits_) :
+NavPath::NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &reg_, Traverse::TraitT traits_) :
     m_graph(graph_),
     m_target(target_),
-    m_fullGraph(graph_->m_connections.size()),
     m_traverseTraits(traits_),
     m_reg(reg_)
 {
-    for (int i = 0 ; i < m_fullGraph.size(); ++i)
+    m_fullGraph.reserve(graph_.m_connections.size());
+    const auto graphSize = graph_.m_connections.size();
+
+    for (int i = 0; i < graphSize; ++i)
     {
-        m_fullGraph[i].m_con = &m_graph->m_connections[i];
-        m_fullGraph[i].m_ownCost = m_graph->m_connections[i].m_cost;
-        m_fullGraph[i].m_calculatedCost = std::numeric_limits<float>::max();
-        auto node1 = m_graph->m_connections[i].m_nodes[0];
-        auto node2 = m_graph->m_connections[i].m_nodes[1];
+        ConnectionDescr conDescr(&graph_.m_connections[i]);
+        
+        m_fullGraph.emplace_back(std::move(conDescr));
+        
+    }
+
+    // For each connection description, find all neighbours except it's equivalents (on the same pair of nodes)
+    for (int i = 0; i < graphSize; ++i)
+    {
+        auto &conDescr = m_fullGraph[i];
+        const auto node1 = conDescr.m_con->m_nodes[0];
+        const auto node2 = conDescr.m_con->m_nodes[1];
 
         for (size_t inodeid = 0; inodeid < 2; ++inodeid)
         {
-            auto nodeid = m_graph->m_connections[i].m_nodes[inodeid];
-            for (auto &nb : m_graph->m_nodes[nodeid].connections)
+            const auto nodeid = conDescr.m_con->m_nodes[inodeid];
+            for (const auto &nb : graph_.m_nodes[nodeid].connections)
             {
-                if (!m_graph->m_connections[nb].isOnNodes(m_graph->m_connections[i].m_nodes[0], m_graph->m_connections[i].m_nodes[1]))
-                    m_fullGraph[i].m_neighbourConnections.push_back(&m_fullGraph[m_graph->m_connections[nb].m_ownId]);
+                if (!graph_.m_connections[nb].isOnNodes(node1, node2))
+                    conDescr.m_neighbourConnections.push_back(&m_fullGraph[graph_.m_connections[nb].m_ownId]);
             }
         }
-        
     }
 
     m_currentTarget = reg_.get<Navigatable>(target_).m_currentOwnConnection;
@@ -233,6 +241,13 @@ void NavPath::dump() const
         }
         std::cout << std::endl;
     }
+}
+
+ConnectionDescr::ConnectionDescr(const Connection *con_) :
+    m_con(con_),
+    m_ownCost(con_->m_cost),
+    m_calculatedCost(std::numeric_limits<float>::max())
+{
 }
 
 std::pair<NodeID, NodeID> ConnectionDescr::getOrientedNodes() const

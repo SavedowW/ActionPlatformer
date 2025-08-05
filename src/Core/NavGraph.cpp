@@ -23,12 +23,12 @@ ConnectionID NavGraph::makeConnection(NodeID node1_, NodeID node2_, Traverse::Tr
     return m_connections.size() - 1;
 }
 
-std::pair<Connection *, float> NavGraph::findClosestConnection(const Vector2<float> &pos_, Traverse::TraitT options_)
+std::pair<const Connection *, float> NavGraph::findClosestConnection(const Vector2<float> &pos_, Traverse::TraitT options_)
 {
-    Connection *mincon = nullptr;
+    const Connection *mincon = nullptr;
     float mindst = 0.0f;
 
-    for (auto &con : m_connections)
+    for (const auto &con : m_connections)
     {
         bool hasOverlap = (options_ & con.m_traverses[0] & Traverse::FreeMask) && (options_ & con.m_traverses[1] & Traverse::FreeMask);
         if (hasOverlap)
@@ -58,7 +58,7 @@ void NavGraph::draw(Camera &cam_)
             m_textman.renderText(std::to_string(i), 2, node.m_position - Vector2{0.0f, 12.0f}, fonts::HOR_ALIGN::CENTER, &cam_);
         }
     
-        for (auto &con : m_connections)
+        for (const auto &con : m_connections)
         {
             m_ren.drawLine(m_nodes[con.m_nodes[0]].m_position - Vector2{1.0f, 1.0f}, m_nodes[con.m_nodes[1]].m_position - Vector2{1.0f, 1.0f}, {255, 127, 39, 200}, cam_);
     

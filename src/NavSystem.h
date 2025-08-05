@@ -5,11 +5,17 @@
 #include "Camera.h"
 #include <entt/entt.hpp>
 
+// A view to a selected connection for pathfinding algo
 struct ConnectionDescr
 {
-    const Connection *m_con;
-    float m_ownCost;
+    ConnectionDescr(const Connection *con_);
+
+    const Connection * const m_con;
+    const float m_ownCost;
+
+    // Actual total cost until target
     float m_calculatedCost;
+    
     std::vector<ConnectionDescr *> m_neighbourConnections;
     std::optional<ConnectionDescr *> m_nextConnection;
     int m_nextNode = -1;
@@ -19,13 +25,18 @@ struct ConnectionDescr
 class NavPath
 {
 public:
-    NavPath(NavGraph *graph_, entt::entity target_, entt::registry &reg_, Traverse::TraitT traits_);
+    NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &reg_, Traverse::TraitT traits_);
 
     bool buildUntil(const Connection * const con_);
+
+    /*
+        Read current connection of the target
+        If it's changed - clear current costs and next connections
+    */
     void update();
     void dump() const;
 
-    NavGraph *m_graph;
+    const NavGraph &m_graph;
     entt::entity m_target = entt::null;
     std::vector<ConnectionDescr> m_fullGraph;
     const Connection *m_currentTarget;
@@ -35,6 +46,12 @@ public:
     std::vector<ConnectionDescr *> front;
 };
 
+/*
+    System, responsible for path management
+    Each path is essentially a resource, identified by it's traverse traits and target entity
+        (TODO, currently only traits)
+    It's users share the same path and reuse constructed parts
+*/
 struct NavSystem
 {
     NavSystem(entt::registry &reg_, Application &app_, NavGraph &graph_);
@@ -42,6 +59,7 @@ struct NavSystem
     void update();
     void draw(Camera &cam_);
 
+    // Get existing path instance or create new
     std::shared_ptr<NavPath> makePath(Traverse::TraitT traverseTraits_, entt::entity goal_);
 
     entt::registry &m_reg;

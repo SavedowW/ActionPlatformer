@@ -88,7 +88,10 @@ public:
 
     virtual void enter(EntityAnywhere owner_, CharState from_);
     virtual void leave(EntityAnywhere owner_, CharState to_);
+
+    // Return true if it allows to enter lower priority states
     virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_);
+    
     virtual ORIENTATION isPossible(EntityAnywhere owner_) const;
     virtual std::string getName(uint32_t framesInState_) const;
     bool transitionableFrom(CharState targetStateId_) const;

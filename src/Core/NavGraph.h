@@ -14,6 +14,7 @@ using ConnectionID = size_t;
 
 namespace Traverse
 {
+    // Describes traits necessary to be on or move through a given connection
     using TraitT = uint32_t;
     inline constexpr TraitT ReservedBits = 1;
     inline constexpr TraitT FallthroughBitID = 0;
@@ -62,6 +63,7 @@ struct Connection
     const float m_cost = 0.0f;
     const ConnectionID m_ownId;
 
+    // Does include at least 1 of those nodes?
     bool isOnNodes(NodeID nd1_, NodeID nd2_) const;
 };
 
@@ -78,7 +80,7 @@ public:
 
     NodeID makeNode(const Vector2<float> &pos_);
     ConnectionID makeConnection(NodeID node1_, NodeID node2_, Traverse::TraitT traverseTo2_, Traverse::TraitT traverseTo1_);
-    std::pair<Connection *, float> findClosestConnection(const Vector2<float> &pos_, Traverse::TraitT options_);
+    std::pair<const Connection *, float> findClosestConnection(const Vector2<float> &pos_, Traverse::TraitT options_);
 
     void draw(Camera &cam_);
     Vector2<float> getConnectionCenter(const Connection *con_) const;
