@@ -41,7 +41,7 @@ public:
 
     bool isTargetConnection(ConnectionID id_) const;
 
-    std::vector<ConnectionDescr> m_graphView;
+    std::unordered_map<ConnectionID, ConnectionDescr> m_graphView;
     const NavGraph &m_graph;
     
 private:

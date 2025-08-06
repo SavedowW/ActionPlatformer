@@ -63,7 +63,7 @@ struct Connection
     const float m_cost = 0.0f;
     const ConnectionID m_ownId;
 
-    // Does include at least 1 of those nodes?
+    // Is on both of these nodes?
     bool isOnNodes(NodeID nd1_, NodeID nd2_) const;
 };
 

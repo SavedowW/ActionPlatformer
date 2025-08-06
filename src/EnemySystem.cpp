@@ -19,7 +19,7 @@ entt::entity EnemySystem::makeEnemy()
     auto enemyId = m_reg.create();
     m_reg.emplace<HUDPoint>(enemyId, HUDPosRule::REL_TRANSFORM, Vector2{0.0f, -16.0f}, 16.0f);
 
-    const auto &trans = m_reg.emplace<ComponentTransform>(enemyId, Vector2{780.0f, 470.0f}, ORIENTATION::RIGHT);
+    const auto &trans = m_reg.emplace<ComponentTransform>(enemyId, Vector2{554.0f, 100.0f}, ORIENTATION::RIGHT);
     m_reg.emplace<ComponentReset<ComponentTransform>>(enemyId, trans.m_pos, trans.m_orientation);
 
     m_reg.emplace<PhysicalEvents>(enemyId);

@@ -210,7 +210,7 @@ bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
         // Failed to identify current connection - probably too far from all connections
         return true;
 
-    const auto *currentcon = &nav.m_currentPath->m_graphView[nav.m_currentOwnConnection->m_ownId];
+    const auto *currentcon = &nav.m_currentPath->m_graphView.at(nav.m_currentOwnConnection->m_ownId);
     
     // Check if can start moving along next connection
     if ((!nav.m_checkIfGrounded || (phys.m_onGround != entt::null)) &&

@@ -64,17 +64,17 @@ void NavSystem::draw(Camera &cam_)
             auto path = ipath->second.lock().get();
             for (const auto &con : path->m_graphView)
             {
-                if (path->isTargetConnection(con.m_originalCon.m_ownId))
+                if (path->isTargetConnection(con.second.m_originalCon.m_ownId))
                 {
-                    auto origin = m_graph.getNodePos(con.m_originalCon.m_nodes[0]) - Vector2{1.0f, 1.0f};
-                    auto tar = m_graph.getNodePos(con.m_originalCon.m_nodes[1]) - Vector2{1.0f, 1.0f};
+                    auto origin = m_graph.getNodePos(con.second.m_originalCon.m_nodes[0]) - Vector2{1.0f, 1.0f};
+                    auto tar = m_graph.getNodePos(con.second.m_originalCon.m_nodes[1]) - Vector2{1.0f, 1.0f};
                     m_ren.drawLine(origin, tar, {0, 255, 50, 200}, cam_);
                 }
-                else if (con.m_nextConnection.has_value())
+                else if (con.second.m_nextConnection.has_value())
                 {
 
-                    auto oriented = con.getOrientedNodes();
-                    if (*con.m_nextConnection)
+                    auto oriented = con.second.getOrientedNodes();
+                    if (*con.second.m_nextConnection)
                     {
                         auto origin = m_graph.getNodePos(oriented.first) - Vector2{1.0f, 1.0f};
                         auto tar = m_graph.getNodePos(oriented.second) - Vector2{1.0f, 1.0f};
@@ -125,31 +125,25 @@ NavPath::NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &r
     m_traverseTraits(traits_),
     m_reg(reg_)
 {
-    m_graphView.reserve(graph_.m_connections.size());
-    const auto graphSize = graph_.m_connections.size();
-
-    for (int i = 0; i < graphSize; ++i)
+    for (const auto &el : m_graph.m_connections)
     {
-        ConnectionDescr conDescr(graph_.m_connections[i]);
+        ConnectionDescr conDescr(el);
         
-        m_graphView.emplace_back(std::move(conDescr));
+        m_graphView.emplace(el.m_ownId, std::move(conDescr));
         
     }
 
     // For each connection description, find all neighbours except it's equivalents (on the same pair of nodes)
-    for (int i = 0; i < graphSize; ++i)
+    for (auto &conDescr : m_graphView)
     {
-        auto &conDescr = m_graphView[i];
-        const auto node1 = conDescr.m_originalCon.m_nodes[0];
-        const auto node2 = conDescr.m_originalCon.m_nodes[1];
+        const auto &nodeIds = conDescr.second.m_originalCon.m_nodes;
 
-        for (size_t inodeid = 0; inodeid < 2; ++inodeid)
+        for (const auto &nodeid : nodeIds)
         {
-            const auto nodeid = conDescr.m_originalCon.m_nodes[inodeid];
             for (const auto &nb : graph_.m_nodes[nodeid].connections)
             {
-                if (!graph_.m_connections[nb].isOnNodes(node1, node2))
-                    conDescr.m_neighbourConnections.push_back(&m_graphView[graph_.m_connections[nb].m_ownId]);
+                if (!graph_.m_connections[nb].isOnNodes(nodeIds[0], nodeIds[1]))
+                    conDescr.second.m_neighbourConnections.push_back(&m_graphView.at(nb));
             }
         }
     }
@@ -160,24 +154,24 @@ NavPath::NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &r
 bool NavPath::buildUntil(const Connection * const con_)
 {
     // If path was already calculated, return it's status
-    if (m_graphView[con_->m_ownId].m_nextConnection.has_value())
-        return *m_graphView[con_->m_ownId].m_nextConnection;
+    if (m_graphView.at(con_->m_ownId).m_nextConnection.has_value())
+        return *m_graphView.at(con_->m_ownId).m_nextConnection;
 
     // If there is no target, there is no path
     //TODO - move to the moment m_currentTarget is set
     if (!m_currentTarget)
     {
-        m_graphView[con_->m_ownId].m_nextConnection = nullptr;
-        m_graphView[con_->m_ownId].m_nextNode = 0;
+        m_graphView.at(con_->m_ownId).m_nextConnection = nullptr;
+        m_graphView.at(con_->m_ownId).m_nextNode = 0;
         return false;
     }
 
-    m_graphView[m_currentTarget->m_ownId].m_nextConnection = &m_graphView[m_currentTarget->m_ownId];
+    m_graphView.at(m_currentTarget->m_ownId).m_nextConnection = &m_graphView.at(m_currentTarget->m_ownId);
 
     if (con_ == m_currentTarget)
         return true;
 
-    m_graphView[m_currentTarget->m_ownId].m_calculatedCost = m_graphView[m_currentTarget->m_ownId].m_originalCon.m_cost;
+    m_graphView.at(m_currentTarget->m_ownId).m_calculatedCost = m_graphView.at(m_currentTarget->m_ownId).m_originalCon.m_cost;
 
     while (!m_front.empty())
     {
@@ -222,8 +216,8 @@ bool NavPath::buildUntil(const Connection * const con_)
     }
 
     std::cout << "Failed to find path\n";
-    m_graphView[con_->m_ownId].m_nextConnection = nullptr;
-    m_graphView[con_->m_ownId].m_nextNode = 0;
+    m_graphView.at(con_->m_ownId).m_nextConnection = nullptr;
+    m_graphView.at(con_->m_ownId).m_nextNode = 0;
     return false;
 }
 
@@ -234,12 +228,12 @@ void NavPath::update()
     {
         for (auto &el : m_graphView)
         {
-            el.m_calculatedCost = std::numeric_limits<float>::max();
-            el.m_nextConnection.reset();
+            el.second.m_calculatedCost = std::numeric_limits<float>::max();
+            el.second.m_nextConnection.reset();
         }
         m_currentTarget = newtar;
         if (m_currentTarget)
-            m_front = {&m_graphView[m_currentTarget->m_ownId]};
+            m_front = {&m_graphView.at(m_currentTarget->m_ownId)};
         else
             m_front.clear();
     }
@@ -249,11 +243,11 @@ void NavPath::dump() const
 {
     for (const auto &el : m_graphView)
     {
-        std::cout << el.m_originalCon.m_ownId << " (" << el.m_originalCon.m_nodes[0] << ", " << el.m_originalCon.m_nodes[1] << ") " << el.m_originalCon.m_cost << " / " << el.m_calculatedCost;
-        if (el.m_nextConnection.has_value())
+        std::cout << el.second.m_originalCon.m_ownId << " (" << el.second.m_originalCon.m_nodes[0] << ", " << el.second.m_originalCon.m_nodes[1] << ") " << el.second.m_originalCon.m_cost << " / " << el.second.m_calculatedCost;
+        if (el.second.m_nextConnection.has_value())
         {
-            if (*el.m_nextConnection)
-                std::cout << " -> " << el.m_nextConnection.value()->m_originalCon.m_ownId;
+            if (*el.second.m_nextConnection)
+                std::cout << " -> " << el.second.m_nextConnection.value()->m_originalCon.m_ownId;
             else
                 std::cout << " NOT FOUND";
         }
