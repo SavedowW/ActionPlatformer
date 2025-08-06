@@ -8,17 +8,19 @@
 // A view to a selected connection for pathfinding algo
 struct ConnectionDescr
 {
-    ConnectionDescr(const Connection *con_);
+    // TODO: Specify states (uncalculated, path is known, impossible to build path)
+    ConnectionDescr(const Connection &con_);
 
-    const Connection * const m_con;
-    const float m_ownCost;
+    const Connection &m_originalCon;
 
     // Actual total cost until target
     float m_calculatedCost;
     
     std::vector<ConnectionDescr *> m_neighbourConnections;
-    std::optional<ConnectionDescr *> m_nextConnection;
+    std::optional<const ConnectionDescr *> m_nextConnection;
     int m_nextNode = -1;
+
+    // If next connection is known, return begin, end
     std::pair<NodeID, NodeID> getOrientedNodes() const;
 };
 
@@ -27,6 +29,7 @@ class NavPath
 public:
     NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &reg_, Traverse::TraitT traits_);
 
+    // TODO: by connection ID
     bool buildUntil(const Connection * const con_);
 
     /*
@@ -36,14 +39,18 @@ public:
     void update();
     void dump() const;
 
-    const NavGraph &m_graph;
-    entt::entity m_target = entt::null;
-    std::vector<ConnectionDescr> m_fullGraph;
-    const Connection *m_currentTarget;
-    const Traverse::TraitT m_traverseTraits;
-    entt::registry &m_reg;
+    bool isTargetConnection(ConnectionID id_) const;
 
-    std::vector<ConnectionDescr *> front;
+    std::vector<ConnectionDescr> m_graphView;
+    const NavGraph &m_graph;
+    
+private:
+    const Traverse::TraitT m_traverseTraits;
+    const entt::entity m_target;
+
+    std::vector<ConnectionDescr *> m_front;
+    const Connection *m_currentTarget;
+    entt::registry &m_reg;
 };
 
 /*

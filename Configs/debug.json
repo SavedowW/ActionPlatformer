@@ -10,6 +10,6 @@
         "draw_debug_textures": false,
         "draw_health_pos": false,
         "draw_collider_routes": false,
-        "path_display": 0
+        "path_display": 15
     }
 }
