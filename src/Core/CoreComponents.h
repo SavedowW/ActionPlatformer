@@ -256,7 +256,10 @@ struct Navigatable
 
     const Connection *m_currentOwnConnection = nullptr;
     bool m_checkIfGrounded = false;
-    Traverse::TraitT m_validTraitsOwnLocation;
+
+    // Overcomplication, but might be useful later
+    // Traverse::TraitT m_validTraitsOwnLocation;
+
     Traverse::TraitT m_traverseTraits;
     float m_maxRange = 0.0f;
 

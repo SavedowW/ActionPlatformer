@@ -8,7 +8,14 @@
 // A view to a selected connection for pathfinding algo
 struct ConnectionDescr
 {
-    // TODO: Specify states (uncalculated, path is known, impossible to build path)
+    enum class Status
+    {
+        UNRESOLVED,
+        FOUND,
+        NOT_EXISTS
+    };
+
+    // TODO: make oriented
     ConnectionDescr(const Connection &con_);
 
     const Connection &m_originalCon;
@@ -22,15 +29,28 @@ struct ConnectionDescr
 
     // If next connection is known, return begin, end
     std::pair<NodeID, NodeID> getOrientedNodes() const;
+
+    void resetResults();
+    void setPathFound(const ConnectionDescr *con_, float calculatedCost_, int nextNode_);
+    void setNoPathFound();
+
+    Status getStatus() const;
 };
 
 class NavPath
 {
 public:
+    enum class Status
+    {
+        FOUND,
+        NOT_FOUND,
+        FINISHED // Source and destination have the same connection ID
+    };
+
     NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &reg_, Traverse::TraitT traits_);
 
     // TODO: by connection ID
-    bool buildUntil(const Connection * const con_);
+    Status buildUntil(const Connection * const con_);
 
     /*
         Read current connection of the target
@@ -41,6 +61,7 @@ public:
 
     bool isTargetConnection(ConnectionID id_) const;
 
+    // TODO: unordered_multimap
     std::unordered_map<ConnectionID, ConnectionDescr> m_graphView;
     const NavGraph &m_graph;
     

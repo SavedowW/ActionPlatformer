@@ -30,8 +30,7 @@ std::pair<const Connection *, float> NavGraph::findClosestConnection(const Vecto
 
     for (const auto &con : m_connections)
     {
-        bool hasOverlap = (options_ & con.m_traverses[0] & Traverse::FreeMask) && (options_ & con.m_traverses[1] & Traverse::FreeMask);
-        if (hasOverlap)
+        if (Traverse::canTraverseByPath(options_, con.m_traverses[0]) || Traverse::canTraverseByPath(options_, con.m_traverses[1]))
         {
             auto res = utils::distToLineSegment(m_nodes[con.m_nodes[0]].m_position, m_nodes[con.m_nodes[1]].m_position, pos_);
             if (!mincon || res < mindst)

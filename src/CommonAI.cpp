@@ -204,16 +204,16 @@ bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
         nav.m_currentPath = owner_.reg->get<World>(owner_.idx).getNavsys().makePath(nav.m_traverseTraits, owner_.reg->get<ComponentAI>(owner_.idx).m_chaseTarget);
     }
 
-    if (nav.m_currentOwnConnection)
-        nav.m_currentPath->buildUntil(nav.m_currentOwnConnection);
-    else
+    if (!nav.m_currentOwnConnection)
         // Failed to identify current connection - probably too far from all connections
         return true;
 
     const auto *currentcon = &nav.m_currentPath->m_graphView.at(nav.m_currentOwnConnection->m_ownId);
-    
+
     // Check if can start moving along next connection
+    // TODO: move this logic somewhere else
     if ((!nav.m_checkIfGrounded || (phys.m_onGround != entt::null)) &&
+        currentcon->m_nextConnection.has_value() &&
         *currentcon->m_nextConnection &&
         currentcon->m_nextConnection != currentcon &&
         pb.includesPoint(nav.m_currentPath->m_graph.getNodePos(currentcon->m_originalCon.m_nodes[currentcon->m_nextNode])))
@@ -223,26 +223,26 @@ bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
         nav.m_currentOwnConnection = &currentcon->m_originalCon;
     }
 
+    const auto pathStatus = nav.m_currentPath->buildUntil(nav.m_currentOwnConnection);
+
     auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
-    if (currentcon->m_nextConnection == currentcon)
+
+    switch (pathStatus)
     {
-        if (ai.m_allowLeaveState)
-            if (m_currentState->m_stateId != m_onSuccess)
-                switchCurrentState(owner_, m_onSuccess);
-        
-        return true; 
+        case NavPath::Status::FINISHED:
+            if (ai.m_allowLeaveState)
+                if (m_currentState->m_stateId != m_onSuccess)
+                    switchCurrentState(owner_, m_onSuccess);
+            return true;
+
+        case NavPath::Status::NOT_FOUND:
+            if (ai.m_allowLeaveState)
+                if (m_currentState->m_stateId != m_noConnection)
+                    switchCurrentState(owner_, m_noConnection);
+            return true;
     }
 
-    if (currentcon->m_nextConnection == nullptr)
-    {
-        if (ai.m_allowLeaveState)
-            if (m_currentState->m_stateId != m_noConnection)
-                switchCurrentState(owner_, m_noConnection);
-        return true;
-    }
-
-    const auto nextNodePos = nav.m_currentPath->m_graph.getNodePos(currentcon->m_originalCon.m_nodes[currentcon->m_nextNode]);
-    ai.m_navigationTarget = nextNodePos;
+    ai.m_navigationTarget = nav.m_currentPath->m_graph.getNodePos(currentcon->m_originalCon.m_nodes[currentcon->m_nextNode]);
     if (currentcon->m_originalCon.m_traverses[1 - currentcon->m_nextNode] & (1 << Traverse::FallthroughBitID))
         owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx).setIgnoringObstacles();
 

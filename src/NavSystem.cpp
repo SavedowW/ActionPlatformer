@@ -23,7 +23,7 @@ void NavSystem::update()
             if (m_reg.get<ComponentPhysical>(idx).m_onGround == entt::null)
                 continue;
 
-        auto newCon = m_graph.findClosestConnection(trans.m_pos, nav.m_validTraitsOwnLocation);
+        auto newCon = m_graph.findClosestConnection(trans.m_pos, nav.m_traverseTraits);
         if (newCon.second <= nav.m_maxRange)
             nav.m_currentOwnConnection = newCon.first;
         else
@@ -70,24 +70,27 @@ void NavSystem::draw(Camera &cam_)
                     auto tar = m_graph.getNodePos(con.second.m_originalCon.m_nodes[1]) - Vector2{1.0f, 1.0f};
                     m_ren.drawLine(origin, tar, {0, 255, 50, 200}, cam_);
                 }
-                else if (con.second.m_nextConnection.has_value())
+                else
                 {
-
                     auto oriented = con.second.getOrientedNodes();
-                    if (*con.second.m_nextConnection)
+                    switch (con.second.getStatus())
                     {
-                        auto origin = m_graph.getNodePos(oriented.first) - Vector2{1.0f, 1.0f};
-                        auto tar = m_graph.getNodePos(oriented.second) - Vector2{1.0f, 1.0f};
-                        auto delta = tar - origin;
-                        auto center = tar - delta  / 4.0f;
-                        m_ren.drawLine(center, tar, {0, 255, 0, 200}, cam_);
-                    }
-                    else
-                    {
-                        m_ren.drawLine(
-                            m_graph.getNodePos(oriented.first) - Vector2{1.0f, 1.0f}, 
-                            m_graph.getNodePos(oriented.second) - Vector2{1.0f, 1.0f}, 
-                            {255, 0, 0, 200}, cam_);
+                        case ConnectionDescr::Status::FOUND:
+                        {
+                            auto origin = m_graph.getNodePos(oriented.first) - Vector2{1.0f, 1.0f};
+                            auto tar = m_graph.getNodePos(oriented.second) - Vector2{1.0f, 1.0f};
+                            auto delta = tar - origin;
+                            auto center = tar - delta  / 4.0f;
+                            m_ren.drawLine(center, tar, {0, 255, 0, 200}, cam_);
+                        }
+                            break;
+
+                        case ConnectionDescr::Status::NOT_EXISTS:
+                            m_ren.drawLine(
+                                m_graph.getNodePos(oriented.first) - Vector2{1.0f, 1.0f}, 
+                                m_graph.getNodePos(oriented.second) - Vector2{1.0f, 1.0f}, 
+                                {255, 0, 0, 200}, cam_);
+                            break;
                     }
                 }
             }
@@ -127,6 +130,10 @@ NavPath::NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &r
 {
     for (const auto &el : m_graph.m_connections)
     {
+        if (!Traverse::canTraverseByPath(m_traverseTraits, el.m_traverses[0]) &&
+            !Traverse::canTraverseByPath(m_traverseTraits, el.m_traverses[1]))
+            continue;
+
         ConnectionDescr conDescr(el);
         
         m_graphView.emplace(el.m_ownId, std::move(conDescr));
@@ -151,25 +158,20 @@ NavPath::NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &r
     m_currentTarget = nullptr;
 }
 
-bool NavPath::buildUntil(const Connection * const con_)
+NavPath::Status NavPath::buildUntil(const Connection * const con_)
 {
+    if (!m_currentTarget)
+        return NavPath::Status::NOT_FOUND;
+        
+    if (con_->m_ownId == m_currentTarget->m_ownId)
+        return NavPath::Status::FINISHED;
+
+
     // If path was already calculated, return it's status
     if (m_graphView.at(con_->m_ownId).m_nextConnection.has_value())
-        return *m_graphView.at(con_->m_ownId).m_nextConnection;
-
-    // If there is no target, there is no path
-    //TODO - move to the moment m_currentTarget is set
-    if (!m_currentTarget)
-    {
-        m_graphView.at(con_->m_ownId).m_nextConnection = nullptr;
-        m_graphView.at(con_->m_ownId).m_nextNode = 0;
-        return false;
-    }
+        return (*m_graphView.at(con_->m_ownId).m_nextConnection ? NavPath::Status::FOUND : NavPath::Status::NOT_FOUND);
 
     m_graphView.at(m_currentTarget->m_ownId).m_nextConnection = &m_graphView.at(m_currentTarget->m_ownId);
-
-    if (con_ == m_currentTarget)
-        return true;
 
     m_graphView.at(m_currentTarget->m_ownId).m_calculatedCost = m_graphView.at(m_currentTarget->m_ownId).m_originalCon.m_cost;
 
@@ -194,9 +196,7 @@ bool NavPath::buildUntil(const Connection * const con_)
             if (newcost < con->m_calculatedCost && Traverse::canTraverseByPath(m_traverseTraits, con->m_originalCon.m_traverses[orientation]))
             {
                 //std::cout << "Editing " << con->m_con->m_ownId << ": " << con->m_calculatedCost << " => " << newcost << std::endl;
-                con->m_calculatedCost = newcost;
-                con->m_nextConnection = used;
-                con->m_nextNode = 1 - orientation;
+                con->setPathFound(used, newcost, 1 - orientation);
                 
                 if (&con->m_originalCon == con_)
                     found = true;
@@ -212,13 +212,12 @@ bool NavPath::buildUntil(const Connection * const con_)
             std::sort(m_front.begin(), m_front.end(), [](const ConnectionDescr *c1_, const ConnectionDescr *c2_){return c1_->m_calculatedCost < c2_->m_calculatedCost;});
 
         if (found)
-            return true;
+            return NavPath::Status::FOUND;
     }
 
     std::cout << "Failed to find path\n";
-    m_graphView.at(con_->m_ownId).m_nextConnection = nullptr;
-    m_graphView.at(con_->m_ownId).m_nextNode = 0;
-    return false;
+    m_graphView.at(con_->m_ownId).setNoPathFound();
+    return NavPath::Status::NOT_FOUND;
 }
 
 void NavPath::update()
@@ -226,16 +225,20 @@ void NavPath::update()
     auto newtar = m_reg.get<Navigatable>(m_target).m_currentOwnConnection;
     if (newtar != m_currentTarget)
     {
-        for (auto &el : m_graphView)
-        {
-            el.second.m_calculatedCost = std::numeric_limits<float>::max();
-            el.second.m_nextConnection.reset();
-        }
         m_currentTarget = newtar;
+
         if (m_currentTarget)
+        {
+            for (auto &el : m_graphView)
+                el.second.resetResults();
             m_front = {&m_graphView.at(m_currentTarget->m_ownId)};
+        }
         else
+        {
+            for (auto &el : m_graphView)
+                el.second.setNoPathFound();
             m_front.clear();
+        }
     }
 }
 
@@ -275,4 +278,36 @@ std::pair<NodeID, NodeID> ConnectionDescr::getOrientedNodes() const
         return {m_originalCon.m_nodes[0], m_originalCon.m_nodes[1]};
     else
         return {m_originalCon.m_nodes[1], m_originalCon.m_nodes[0]};
+}
+
+void ConnectionDescr::resetResults()
+{
+    m_nextConnection.reset();
+    m_calculatedCost = std::numeric_limits<float>::max();
+}
+
+void ConnectionDescr::setPathFound(const ConnectionDescr *con_, float calculatedCost_, int nextNode_)
+{
+    assert(con_);
+    m_nextConnection = con_;
+    m_calculatedCost = calculatedCost_;
+    m_nextNode = nextNode_;
+}
+
+void ConnectionDescr::setNoPathFound()
+{
+    m_nextConnection = nullptr;
+}
+
+ConnectionDescr::Status ConnectionDescr::getStatus() const
+{
+    if (m_nextConnection.has_value())
+    {
+        if (*m_nextConnection)
+            return Status::FOUND;
+        else
+            return Status::NOT_EXISTS;
+    }
+    else
+        return Status::UNRESOLVED;
 }
