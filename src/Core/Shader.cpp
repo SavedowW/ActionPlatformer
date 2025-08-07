@@ -74,18 +74,8 @@ void Shader::load(const std::string &vSourcePath_, const std::string &fSourcePat
     std::string vCode;
     std::string fCode;
 
-    if (!loadFile(vSourcePath_, vCode))
-    {
-        std::cout << "Failed to create a shader program" << std::endl;
-        return;
-    }
-
-    if (!loadFile(fSourcePath_, fCode))
-    {
-        std::cout << "Failed to create a shader program" << std::endl;
-        return;
-    }
-
+    loadFile(vSourcePath_, vCode);
+    loadFile(fSourcePath_, fCode);
     compile(vCode.c_str(), fCode.c_str());
 }
 
@@ -103,14 +93,14 @@ void Shader::compile(const char *vertexSource_, const char *fragmentSource_)
     glShaderSource(sVertex, 1, &vertexSource_, NULL);
     glCompileShader(sVertex);
     if (!validateShader(sVertex, "VERTEX"))
-        return;
+        throw std::runtime_error("Failed to validate vertex shader");
 
     // fragment Shader
     sFragment = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(sFragment, 1, &fragmentSource_, NULL);
     glCompileShader(sFragment);
     if (!validateShader(sFragment, "FRAGMENT"))
-        return;
+        throw std::runtime_error("Failed to validate fragment shader");
 
     // shader program
     m_id = glCreateProgram();
@@ -118,7 +108,7 @@ void Shader::compile(const char *vertexSource_, const char *fragmentSource_)
     glAttachShader(m_id, sFragment);
     glLinkProgram(m_id);
     if (!validateProgram(m_id))
-        return;
+        throw std::runtime_error("Failed to validate complete program");
 
     glDeleteShader(sVertex);
     glDeleteShader(sFragment);
@@ -213,20 +203,15 @@ GLint Shader::claimUniformLoc(const char *name_)
 
 }
 
-bool loadFile(const std::string &filePath_, std::string &tar_)
+void loadFile(const std::string &filePath_, std::string &tar_)
 {
     std::ifstream file(filePath_);
 
     if (!file.is_open())
-    {
-        std::cout << "Failed to open file \"" << filePath_ << "\"" << std::endl;
-        return false;
-    }
+        throw std::runtime_error("Failed to open file \"" + filePath_ + "\" for shader");
 
     std::ostringstream tmp;
     tmp << file.rdbuf();
 
     tar_ = tmp.str();
-
-    return true;
 }

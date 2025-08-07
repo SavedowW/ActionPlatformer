@@ -44,8 +44,11 @@ void NavSystem::draw(Camera &cam_)
         const auto view = m_reg.view<ComponentTransform, Navigatable>();
         for (const auto [idx, trans, nav] : view.each())
         {
+            
             if (nav.m_currentOwnConnection)
             {
+                m_ren.drawCircleOutline(trans.m_pos, nav.m_maxRange, {0, 255, 50, 200}, cam_);
+
                 const auto p1 = trans.m_pos;
                 const auto p2 = m_graph.getConnectionCenter(*nav.m_currentOwnConnection);
                 m_ren.drawLine(p1, p2, {255, 150, 100, 255}, cam_);
@@ -53,6 +56,8 @@ void NavSystem::draw(Camera &cam_)
                 const auto range = m_graph.getDistToConnection(*nav.m_currentOwnConnection, trans.m_pos);
                 m_textman.renderText(std::to_string(range), 2, (p1 + p2) / 2.0f - Vector2{0.0f, 12.0f}, fonts::HOR_ALIGN::CENTER, &cam_);
             }
+            else
+                m_ren.drawCircleOutline(trans.m_pos, nav.m_maxRange, {255, 150, 100, 200}, cam_);
         }
     }
 
@@ -95,15 +100,20 @@ void NavSystem::draw(Camera &cam_)
                 }
             }
 
+            const auto tarPos = m_reg.get<ComponentTransform>(path.m_target).m_pos;
+            
             if (path.m_currentTarget)
             {
-                const auto p1 = m_reg.get<ComponentTransform>(path.m_target).m_pos;
                 const auto p2 = m_graph.getConnectionCenter(*path.m_currentTarget);
-                m_ren.drawLine(p1, p2, {255, 150, 100, 255}, cam_);
+                const auto range = m_graph.getDistToConnection(*path.m_currentTarget, tarPos);
                 
-                const auto range = m_graph.getDistToConnection(*path.m_currentTarget, p1);
-                m_textman.renderText(std::to_string(range), 2, (p1 + p2) / 2.0f - Vector2{0.0f, 12.0f}, fonts::HOR_ALIGN::CENTER, &cam_);
+                m_ren.drawCircleOutline(tarPos, path.m_targetMaxConnectionRange, {0, 255, 50, 200}, cam_);
+                
+                m_ren.drawLine(tarPos, p2, {255, 150, 100, 255}, cam_);
+                m_textman.renderText(std::to_string(range), 2, (tarPos + p2) / 2.0f - Vector2{0.0f, 12.0f}, fonts::HOR_ALIGN::CENTER, &cam_);
             }
+            else
+                m_ren.drawCircleOutline(tarPos, path.m_targetMaxConnectionRange, {255, 150, 100, 200}, cam_);
         }
     }
 }

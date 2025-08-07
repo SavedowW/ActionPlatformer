@@ -41,6 +41,8 @@ public:
     void drawLine(const Vector2<int> &p1_, const Vector2<int> &p2_, const SDL_Color& col_, const Camera &cam_);
     void drawCross(const Vector2<int> &center_, const Vector2<int> &vSize_, const Vector2<int> &hSize_, const SDL_Color& col_);
     void drawCross(const Vector2<int> &center_, const Vector2<int> &vSize_, const Vector2<int> &hSize_, const SDL_Color& col_, const Camera &cam_);
+    void drawCircleOutline(const Vector2<int> &center_, float radius_, const SDL_Color& col_);
+    void drawCircleOutline(const Vector2<int> &center_, float radius_, const SDL_Color& col_, const Camera &cam_);
 
     void drawCollider(const Collider &cld_, const SDL_Color &fillCol_, const Camera &cam_);
     void drawCollider(const SlopeCollider &cld_, const SDL_Color &fillCol_, const Camera &cam_);
@@ -74,6 +76,7 @@ private:
     Shader m_spriteOutlinedShader;
     Shader m_spriteShaderFlash;
     Shader m_tileShader;
+    Shader m_circleShader;
 
     unsigned int m_rectVAO;
     unsigned int m_screenVAO;

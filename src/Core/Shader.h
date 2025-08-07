@@ -8,7 +8,7 @@
 #include <string>
 
 // Load file into tar_ string, return true on success
-bool loadFile(const std::string &filePath_, std::string &tar_);
+void loadFile(const std::string &filePath_, std::string &tar_);
 
 void dumpErrors();
 

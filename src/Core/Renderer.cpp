@@ -30,6 +30,7 @@ Renderer::Renderer(SDL_Window *window_) :
     m_spriteShaderRotate.load(Filesystem::getRootDirectory() + "/src/core/Shader/SpriteRotate.vert", Filesystem::getRootDirectory() + "/src/core/Shader/Sprite.frag");
     m_spriteOutlinedShader.load(Filesystem::getRootDirectory() + "/src/core/Shader/Sprite.vert", Filesystem::getRootDirectory() + "/src/core/Shader/SpriteOutlined.frag");
     m_tileShader.load(Filesystem::getRootDirectory() + "/src/core/Shader/Tilemap.vert", Filesystem::getRootDirectory() + "/src/core/Shader/Sprite.frag");
+    m_circleShader.load(Filesystem::getRootDirectory() + "/src/core/Shader/Rect.vert", Filesystem::getRootDirectory() + "/src/core/Shader/Circle.frag");
 
     unsigned int rectVBO;
     uint32_t rectVertices[] = { // TL, TR, BR, BL
@@ -135,6 +136,9 @@ Renderer::Renderer(SDL_Window *window_) :
     m_tileShader.setInteger("image", 0);
     m_tileShader.setMatrix4("projection", projection);
     m_tileShader.setFloat("alphaMod", 1.0f);
+
+    m_circleShader.use();
+    m_circleShader.setMatrix4("projection", projection);
 
 
     // Framebuffers
@@ -409,6 +413,31 @@ void Renderer::drawCross(const Vector2<int> &center_, const Vector2<int> &vSize_
 {
     Vector2<int> camTL = Vector2<int>(cam_.getPos()) - gamedata::global::maxCameraSize / 2;
 	drawCross(center_ - camTL, vSize_, hSize_, col_);
+}
+
+void Renderer::drawCircleOutline(const Vector2<int> &center_, float radius_, const SDL_Color &col_)
+{
+    glBindVertexArray(m_rectVAO);
+    m_circleShader.use();
+
+    m_circleShader.setVector4f("color", col_.r / 255.0f, col_.g / 255.0f, col_.b / 255.0f, col_.a / 255.0f);
+    
+    m_circleShader.setVector2f("vertices[0]", center_.x - radius_, center_.y - radius_);
+    m_circleShader.setVector2f("vertices[1]", center_.x + radius_, center_.y - radius_);
+    m_circleShader.setVector2f("vertices[2]", center_.x + radius_, center_.y + radius_);
+    m_circleShader.setVector2f("vertices[3]", center_.x - radius_, center_.y + radius_);
+
+    m_circleShader.setFloat("radius", radius_);
+
+    m_circleShader.setVector2f("center", center_.x, center_.y);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+void Renderer::drawCircleOutline(const Vector2<int> &center_, float radius_, const SDL_Color &col_, const Camera &cam_)
+{
+    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - gamedata::global::maxCameraSize / 2;
+    drawCircleOutline(center_ - camTL, radius_, col_);
 }
 
 void Renderer::drawCross(const Vector2<int> &center_, const Vector2<int> &vSize_, const Vector2<int> &hSize_, const SDL_Color &col_)
