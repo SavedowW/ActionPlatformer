@@ -126,31 +126,29 @@ void InputSystem::handleInput()
 }
 
 //must be called by InputReactor
-void InputSystem::subscribe(GAMEPLAY_EVENTS ev_, subscriber sub_)
+void InputSystem::subscribe(GAMEPLAY_EVENTS ev_, Subscriber sub_)
 {
-    if (!sub_)
-        throw "Input reactor is nullptr";
+    assert(sub_);
 
     m_gameplaySubscribers[(int)ev_].push_back(sub_);
 }
 
 //Automatically called when InputReactor is destroyed
-void InputSystem::unsubscribe(GAMEPLAY_EVENTS ev_, subscriber sub_)
+void InputSystem::unsubscribe(GAMEPLAY_EVENTS ev_, Subscriber sub_)
 {
-    std::vector<subscriber>& v = m_gameplaySubscribers[(int)ev_];
+    std::vector<Subscriber>& v = m_gameplaySubscribers[(int)ev_];
 }
 
-void InputSystem::subscribe(HUD_EVENTS ev_, subscriber sub_)
+void InputSystem::subscribe(HUD_EVENTS ev_, Subscriber sub_)
 {
-    if (!sub_)
-        throw "Input reactor is nullptr";
+    assert(sub_);
 
     m_hudSubscribers[(int)ev_].push_back(sub_);
 }
 
-void InputSystem::unsubscribe(HUD_EVENTS ev_, subscriber sub_)
+void InputSystem::unsubscribe(HUD_EVENTS ev_, Subscriber sub_)
 {
-    std::vector<subscriber>& v = m_hudSubscribers[(int)ev_];
+    std::vector<Subscriber>& v = m_hudSubscribers[(int)ev_];
 }
 
 void InputSystem::initiateControllers()
@@ -173,7 +171,7 @@ void InputSystem::initiateControllers()
 
 void InputSystem::send(GAMEPLAY_EVENTS ev_, float val_)
 {
-    for (subscriber& sub : m_gameplaySubscribers[(int)ev_])
+    for (auto& sub : m_gameplaySubscribers[(int)ev_])
     {
         if (sub->isInputEnabled())
         {
@@ -184,7 +182,7 @@ void InputSystem::send(GAMEPLAY_EVENTS ev_, float val_)
 
 void InputSystem::send(HUD_EVENTS ev_, float val_)
 {
-    for (subscriber& sub : m_hudSubscribers[(int)ev_])
+    for (auto& sub : m_hudSubscribers[(int)ev_])
     {
         if (sub->isInputEnabled())
         {
@@ -401,12 +399,12 @@ void InputReactor::unsubscribe(HUD_EVENTS ev_)
 
 void InputReactor::unsubscribeFromAll()
 {
-    while(!m_gameplaySubscriptions.empty())
+    while (!m_gameplaySubscriptions.empty())
     {
         unsubscribe(*m_gameplaySubscriptions.begin());
     }
 
-    while(!m_hudSubscriptions.empty())
+    while (!m_hudSubscriptions.empty())
     {
         unsubscribe(*m_hudSubscriptions.begin());
     }

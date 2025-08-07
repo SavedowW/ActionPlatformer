@@ -33,8 +33,8 @@ float CameraFocusArea::getScale() const
 
 void CameraFocusArea::draw(const Camera &cam_)
 {
-    m_renderer->drawCollider(*this, {0, 255, 0, 0}, {0, 255, 0, 255}, cam_);
-    m_renderer->drawCollider(m_useFocusArea, {0, 255, 0, 0}, {0, 255, 0, 50}, cam_);
+    m_renderer.drawCollider(*this, {0, 255, 0, 0}, {0, 255, 0, 255}, cam_);
+    m_renderer.drawCollider(m_useFocusArea, {0, 255, 0, 0}, {0, 255, 0, 50}, cam_);
 }
 
 void CameraFocusArea::overrideFocusArea(const Collider &area_)
@@ -53,7 +53,7 @@ bool CameraFocusArea::checkIfEnters(const Collider &cld_, bool isOwned_) const
 CameraFocusArea::CameraFocusArea(Vector2<int> topLeft_, int scaledSizeX_, int scaledSizeY_, Renderer &renderer_) :
     Collider(topLeft_, Vector2{scaledSizeX_, scaledSizeY_}),
     m_useFocusArea(topLeft_, Vector2{scaledSizeX_, scaledSizeY_}),
-    m_renderer(&renderer_),
+    m_renderer(renderer_),
     m_scale(std::max(gamedata::global::maxCameraSize.x / static_cast<float>(scaledSizeX_), gamedata::global::maxCameraSize.y / static_cast<float>(scaledSizeY_)))
 {
     auto halfCamSize = gamedata::global::maxCameraSize / m_scale / 2.0f;

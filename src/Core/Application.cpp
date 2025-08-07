@@ -75,27 +75,27 @@ void Application::setLevel(int levelId_, Level *level_)
     m_levels[levelId_] = level_;
 }
 
-Renderer *Application::getRenderer()
+Renderer &Application::getRenderer()
 {
-    return m_renderer.get();
+    return *m_renderer;
 }
 
 InputSystem &Application::getInputSystem()
 {
-    return *m_inputSystem.get();
+    return *m_inputSystem;
 }
 
-TextureManager *Application::getTextureManager()
+TextureManager &Application::getTextureManager()
 {
-    return m_textureManager.get();
+    return *m_textureManager;
 }
 
-AnimationManager *Application::getAnimationManager()
+AnimationManager &Application::getAnimationManager()
 {
-    return m_animationManager.get();
+    return *m_animationManager;
 }
 
-TextManager *Application::getTextManager()
+TextManager &Application::getTextManager()
 {
-    return m_textManager.get();
+    return *m_textManager;
 }

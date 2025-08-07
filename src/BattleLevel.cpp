@@ -4,25 +4,25 @@
 #include "GameData.h"
 #include "Localization/LocalizationGen.h"
 
-BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_, int lvlId_) :
+BattleLevel::BattleLevel(Application &application_, const Vector2<float>& size_, int lvlId_) :
     Level(application_, size_, lvlId_),
     m_camera({0.0f, 0.0f}, gamedata::global::maxCameraSize, m_size),
-    m_playerSystem(m_registry, *application_),
-    m_rendersys(m_registry, *application_, m_camera, m_cldRoutesCollection),
+    m_playerSystem(m_registry, application_),
+    m_rendersys(m_registry, application_, m_camera, m_cldRoutesCollection),
     m_inputsys(m_registry),
     m_physsys(m_registry, size_),
-    m_camsys(m_registry, *application_, m_camera),
-    m_hudsys(m_registry, *application_, m_camera, lvlId_, size_, m_lastFullFrameTime),
-    m_enemysys(m_registry, *application_, m_navsys, m_camera, m_partsys),
+    m_camsys(m_registry, application_, m_camera),
+    m_hudsys(m_registry, application_, m_camera, lvlId_, size_, m_lastFullFrameTime),
+    m_enemysys(m_registry, application_, m_navsys, m_camera, m_partsys),
     m_aisys(m_registry),
-    m_navsys(m_registry, *application_, m_graph),
+    m_navsys(m_registry, application_, m_graph),
     m_colsys(m_registry),
-    m_graph(*application_),
-    m_partsys(m_registry, *application_),
-    m_battlesys(m_registry, *application_, m_camera),
-    m_chatBoxSys(m_registry, *application_, m_camera),
-    m_lvlBuilder(*application_, m_registry),
-    m_envSystem(*application_, m_registry)
+    m_graph(application_),
+    m_partsys(m_registry, application_),
+    m_battlesys(m_registry, application_, m_camera),
+    m_chatBoxSys(m_registry, application_, m_camera),
+    m_lvlBuilder(application_, m_registry),
+    m_envSystem(application_, m_registry)
 {
     auto playerId = m_registry.create();
 
@@ -38,7 +38,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_registry.emplace<ComponentResetStatic<ComponentAnimationRenderable>>(playerId);
 
     m_registry.emplace<RenderLayer>(playerId, 6);
-    m_registry.emplace<ComponentPlayerInput>(playerId, std::unique_ptr<InputResolver>(new InputResolver(application_->getInputSystem())));
+    m_registry.emplace<ComponentPlayerInput>(playerId, std::unique_ptr<InputResolver>(new InputResolver(application_.getInputSystem())));
 
     m_registry.emplace<ComponentDynamicCameraTarget>(playerId);
     m_registry.emplace<ComponentResetStatic<ComponentDynamicCameraTarget>>(playerId);
@@ -52,7 +52,7 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_registry.emplace<BattleActor>(playerId, BattleTeams::PLAYER);
     m_registry.emplace<HUDPoint>(playerId, HUDPosRule::REL_TRANSFORM, Vector2{0.0f, -16.0f}, 16.0f);
     m_registry.emplace<HealthOwner>(playerId, 3);
-    m_registry.emplace<HealthRendererCommonWRT>(playerId, 3, *application_->getAnimationManager(), Vector2{0.0f, -28.0f});
+    m_registry.emplace<HealthRendererCommonWRT>(playerId, 3, application_.getAnimationManager(), Vector2{0.0f, -28.0f});
     
     
 
@@ -230,7 +230,7 @@ void BattleLevel::draw()
 {
     PROFILE_FUNCTION;
 
-    auto &renderer = *m_application->getRenderer();
+    auto &renderer = m_application.getRenderer();
     renderer.prepareRenderer(gamedata::colors::LVL2);
 
     m_rendersys.draw();

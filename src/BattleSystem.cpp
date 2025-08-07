@@ -68,7 +68,7 @@ void BattleSystem::handleAttacks()
 
 void BattleSystem::debugDraw()
 {
-    auto &rnd = *m_app.getRenderer();
+    auto &rnd = m_app.getRenderer();
     for (int i = 0; i < m_appliedHits.getFilled(); ++i)
     {
         const auto &el = m_appliedHits[i];

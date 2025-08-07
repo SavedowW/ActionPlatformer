@@ -24,7 +24,7 @@ public:
 private:
     CameraFocusArea(Vector2<int> topLeft_, int scaledSizeX_, int scaledSizeY_, Renderer &renderer_);
     
-    Renderer *m_renderer;
+    Renderer &m_renderer;
     float m_scale;
 
     Vector2<float> m_minCameraPos;

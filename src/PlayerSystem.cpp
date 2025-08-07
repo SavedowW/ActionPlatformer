@@ -3,7 +3,7 @@
 
 PlayerSystem::PlayerSystem(entt::registry &reg_, Application &app_) :
     m_reg(reg_),
-    m_animManager(*app_.getAnimationManager())
+    m_animManager(app_.getAnimationManager())
 {
     
 }

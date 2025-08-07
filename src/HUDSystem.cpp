@@ -6,8 +6,8 @@
 #include "Configuration.h"
 
 HudSystem::HudSystem(entt::registry &reg_, Application &app_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, nanoseconds &frameTime_) :
-    m_renderer(*app_.getRenderer()),
-    m_textManager(*app_.getTextManager()),
+    m_renderer(app_.getRenderer()),
+    m_textManager(app_.getTextManager()),
     m_reg(reg_),
     m_cam(cam_),
     m_lvlId(lvlId_),
@@ -16,7 +16,7 @@ HudSystem::HudSystem(entt::registry &reg_, Application &app_, Camera &cam_, int 
     m_commonLog(app_, 0, fonts::HOR_ALIGN::LEFT, 12),
     m_playerLog(app_, 0, fonts::HOR_ALIGN::RIGHT, 12)
 {
-    auto &texman = *app_.getTextureManager();
+    auto &texman = app_.getTextureManager();
 
     m_arrowIn = texman.getTexture(texman.getTexID("UI/Arrow2"));
     m_arrowOut = texman.getTexture(texman.getTexID("UI/Arrow1"));

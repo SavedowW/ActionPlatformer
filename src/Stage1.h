@@ -6,7 +6,7 @@
 class Stage1 : public BattleLevel
 {
 public:
-    Stage1(Application *application_, const Vector2<float>& size_, int lvlId_);
+    Stage1(Application &application_, const Vector2<float>& size_, int lvlId_);
 
     virtual void enter() override;
 

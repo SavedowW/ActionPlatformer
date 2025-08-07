@@ -102,7 +102,7 @@ ChatboxSystem::ChatboxSystem(entt::registry &reg_, Application &app_, Camera &ca
     subscribe(HUD_EVENTS::PROCEED);
     setInputEnabled();
 
-    auto &texman = *app_.getTextureManager();
+    auto &texman = app_.getTextureManager();
 
     m_chatboxEdge = texman.getTexture(texman.getTexID("UI/chatbox_edge"));
     m_chatboxPointer = texman.getTexture(texman.getTexID("UI/chatbox_pointer"));
@@ -116,10 +116,10 @@ void ChatboxSystem::setPlayerEntity(entt::entity playerId_)
 void ChatboxSystem::addSequence(ChatMessageSequence &&seq_)
 {
     if (seq_.m_messages.empty())
-        throw std::string("ChatboxSystem received an empty sequence");
+        throw std::runtime_error("ChatboxSystem received an empty sequence");
 
     m_sequences.emplace_back(std::move(seq_));
-    m_sequences.back().compileAndSetSize(*m_app.getTextManager());
+    m_sequences.back().compileAndSetSize(m_app.getTextManager());
 
     if (m_sequences.size() == 1 && m_sequences[0].m_claimInputs)
     {
@@ -151,7 +151,7 @@ void clearStack(std::stack<T> &stack_)
 
 void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<int> &tl_)
 {
-    auto &ren = *m_app.getRenderer();
+    auto &ren = m_app.getRenderer();
 
     std::apply([](auto&... ptrs) { ((clearStack(ptrs)), ...); }, seq_.m_renderEffects);
 
@@ -277,7 +277,7 @@ void ChatboxSystem::update()
 
 void ChatboxSystem::draw()
 {
-    auto &ren = *m_app.getRenderer();
+    auto &ren = m_app.getRenderer();
     if (!m_sequences.empty())
         std::cout << "Draw call" << std::endl;
     else
@@ -500,7 +500,7 @@ void ChatMessage::compileAndSetSize(const TextManager &textMan_)
         if (readingChunk)
         {
             if (ch.m_byteSize > 1)
-                throw std::string("Impossible char size in dialogue command");
+                throw std::runtime_error("Impossible char size in dialogue command");
 
             if (*ch.m_ch == '>')
             {

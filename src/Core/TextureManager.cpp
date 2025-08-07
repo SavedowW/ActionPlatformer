@@ -71,7 +71,7 @@ int TextureManager::getTexID(const std::string &texName_) const
 	}
 	catch (std::out_of_range exc_)
 	{
-		throw std::string("Failed to find texture ") + texName_ + " : " + exc_.what();
+		throw std::runtime_error("Failed to find texture " + texName_ + " : " + exc_.what());
 	}
 }
 

@@ -1,7 +1,7 @@
 #include "ImmediateScreenLog.h"
 
 ImmediateScreenLog::ImmediateScreenLog(Application &application_, int font_, fonts::HOR_ALIGN alignment_, int offsetPerLine_) :
-    m_textManager(*application_.getTextManager()),
+    m_textManager(application_.getTextManager()),
     m_font(font_),
     m_alignment(alignment_),
     m_offsetPerLine(offsetPerLine_)

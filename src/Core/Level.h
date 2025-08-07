@@ -18,7 +18,7 @@ enum class MenuLevels { MAINMENU, NONE };
 class Level : public InputReactor
 {
 public:
-    Level(Application *application_, const Vector2<int> &size_, int lvlId_);
+    Level(Application &application_, const Vector2<int> &size_, int lvlId_);
 
     virtual void enter();
 	virtual void leave();
@@ -38,7 +38,7 @@ protected:
     LevelResult m_returnVal;
     enum class STATE {ENTER, RUNNING, LEAVE} m_state;
     Timer m_frameTimer;
-    Application *m_application;
+    Application &m_application;
 
     nanoseconds m_timeForFrame;
     nanoseconds m_lastFrameTimeMS;

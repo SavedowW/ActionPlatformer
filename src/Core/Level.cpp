@@ -4,8 +4,8 @@
 #include "GameData.h"
 #include <thread>
 
-Level::Level(Application *application_, const Vector2<int> &size_, int lvlId_) :
-	InputReactor(application_->getInputSystem()),
+Level::Level(Application &application_, const Vector2<int> &size_, int lvlId_) :
+	InputReactor(application_.getInputSystem()),
 	m_size(size_),
 	m_levelId(lvlId_),
 	m_application(application_),

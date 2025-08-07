@@ -6,9 +6,9 @@
 
 NavSystem::NavSystem(entt::registry &reg_, Application &app_, NavGraph &graph_) :
     m_reg(reg_),
-    m_ren(*app_.getRenderer()),
+    m_ren(app_.getRenderer()),
     m_graph(graph_),
-    m_textman(*app_.getTextManager())
+    m_textman(app_.getTextManager())
 {
 }
 

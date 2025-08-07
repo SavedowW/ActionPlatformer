@@ -368,7 +368,7 @@ struct EventBinding
 
 class InputReactor;
 
-typedef InputReactor* subscriber;
+using Subscriber = InputReactor*;
 
 struct ControllerDescription
 {
@@ -380,10 +380,10 @@ class InputSystem
 public:
     InputSystem();
     void handleInput();
-    void subscribe(GAMEPLAY_EVENTS ev_, subscriber sub_);
-    void unsubscribe(GAMEPLAY_EVENTS ev_, subscriber sub_);
-    void subscribe(HUD_EVENTS ev_, subscriber sub_);
-    void unsubscribe(HUD_EVENTS ev_, subscriber sub_);
+    void subscribe(GAMEPLAY_EVENTS ev_, Subscriber sub_);
+    void unsubscribe(GAMEPLAY_EVENTS ev_, Subscriber sub_);
+    void subscribe(HUD_EVENTS ev_, Subscriber sub_);
+    void unsubscribe(HUD_EVENTS ev_, Subscriber sub_);
 
     void initiateControllers();
 
@@ -391,8 +391,8 @@ public:
 private:
     void send(GAMEPLAY_EVENTS ev_, float val_);
     void send(HUD_EVENTS ev_, float val_);
-    std::vector<subscriber> m_gameplaySubscribers[(int)GAMEPLAY_EVENTS::NONE];
-    std::vector<subscriber> m_hudSubscribers[(int)HUD_EVENTS::NONE];
+    std::vector<Subscriber> m_gameplaySubscribers[(int)GAMEPLAY_EVENTS::NONE];
+    std::vector<Subscriber> m_hudSubscribers[(int)HUD_EVENTS::NONE];
 
     template<typename InputT, typename ButtonT, typename EventT>
     void resolveBinding(const std::map<InputT, EventT> &bindings_, const ButtonT &input_, float value_);

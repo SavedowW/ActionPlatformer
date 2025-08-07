@@ -7,7 +7,7 @@
 RenderSystem::RenderSystem(entt::registry &reg_, Application &app_, Camera &camera_, ColliderRoutesCollection &rtCol_) :
     InputReactor(app_.getInputSystem()),
     m_reg(reg_),
-    m_renderer(*app_.getRenderer()),
+    m_renderer(app_.getRenderer()),
     m_camera(camera_),
     m_routesCollection(rtCol_)
 {

@@ -28,7 +28,7 @@
 class BattleLevel : public Level
 {
 public:
-    BattleLevel(Application *application_, const Vector2<float>& size_, int lvlId_);
+    BattleLevel(Application &application_, const Vector2<float>& size_, int lvlId_);
     virtual void enter() override;
 
     void receiveEvents(GAMEPLAY_EVENTS event, const float scale_) override;

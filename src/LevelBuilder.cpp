@@ -14,7 +14,7 @@
 template <>
 void LevelBuilder::makeObject<GrassTopComp>(const Vector2<int> &pos_, bool visible_, int layer_)
 {
-    auto &animManager = *m_app.getAnimationManager();
+    auto &animManager = m_app.getAnimationManager();
 
     auto objEnt = m_reg.create();
     auto &trans = m_reg.emplace<ComponentTransform>(objEnt, pos_, ORIENTATION::RIGHT);
@@ -53,7 +53,7 @@ void addTrigger(entt::registry &reg_, const Trigger &trg_)
 LevelBuilder::LevelBuilder(Application &app_, entt::registry &reg_) :
     m_app(app_),
     m_reg(reg_),
-    m_tilebase(*app_.getTextureManager())
+    m_tilebase(app_.getTextureManager())
 {
 #define ADD_NAME_FACTORY_PAIR(classname) m_factories.emplace(#classname , &LevelBuilder::makeObject<classname>)
 
@@ -231,11 +231,11 @@ void LevelBuilder::loadTileset(const std::filesystem::path &jsonLoc_, uint32_t f
     }
     else if (type == "Animations")
     {
-        throw std::string("Animated tilesets are not implemented yet");
+        throw std::logic_error("Animated tilesets are not implemented yet");
     }
     else
     {
-        throw std::string("Tileset image is in neither animations nor sprites directory");
+        throw std::runtime_error("Tileset image is in neither animations nor sprites directory");
     }
 }
 
@@ -382,7 +382,7 @@ void LevelBuilder::loadCollisionLayer(const nlohmann::json &json_, ColliderRoute
                 }
                 else
                 {
-                    throw std::string("Failed to read polygon vertex for collider: x coord is not min or max");
+                    throw std::logic_error("Failed to read polygon vertex for collider: x coord is not min or max");
                 }
             }
 
@@ -484,7 +484,7 @@ void LevelBuilder::loadFocusLayer(const nlohmann::json &json_)
             Vector2<int> size = {area["width"], area["height"]};
 
             auto newfocus = m_reg.create();
-            m_reg.emplace<CameraFocusArea>(newfocus, tl, size, *m_app.getRenderer());
+            m_reg.emplace<CameraFocusArea>(newfocus, tl, size, m_app.getRenderer());
 
             if (area.contains("properties"))
             {

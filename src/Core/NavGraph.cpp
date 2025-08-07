@@ -3,8 +3,8 @@
 #include <algorithm>
 
 NavGraph::NavGraph(Application &app_) :
-    m_ren(*app_.getRenderer()),
-    m_textman(*app_.getTextManager())
+    m_ren(app_.getRenderer()),
+    m_textman(app_.getTextManager())
 {
 }
 

@@ -32,11 +32,11 @@ public:
 
     void setLevel(int levelId_, Level *level_);
 
-    Renderer *getRenderer();
+    Renderer &getRenderer();
     InputSystem &getInputSystem();
-    TextureManager *getTextureManager();
-    AnimationManager *getAnimationManager();
-    TextManager *getTextManager();
+    TextureManager &getTextureManager();
+    AnimationManager &getAnimationManager();
+    TextManager &getTextManager();
 
 private:
     std::unique_ptr<Window> m_window;

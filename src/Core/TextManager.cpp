@@ -456,7 +456,7 @@ fonts::CharChunkDistribution::CharChunkDistribution(const std::string &charlist_
 {
     std::ifstream charlist(charlist_);
     if (!charlist.is_open())
-        throw std::string("Failed to open charlist: \"") + charlist_ + "\"";
+        throw std::runtime_error("Failed to open charlist: \"" + charlist_ + "\"");
 
     std::string s = "";
     while (std::getline(charlist, s))

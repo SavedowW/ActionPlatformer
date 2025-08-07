@@ -126,7 +126,7 @@ int AnimationManager::getAnimID(const std::string &animName_) const
     catch (std::out_of_range exc_)
     {
         return 0;
-        throw std::string("Failed to find animation ") + animName_ + " : " + exc_.what();
+        throw std::runtime_error("Failed to find animation " + animName_ + " : " + exc_.what());
     }
 }
 

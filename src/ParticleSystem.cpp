@@ -4,7 +4,7 @@
 
 ParticleSystem::ParticleSystem(entt::registry &reg_, Application &app_) :
     m_registry(reg_),
-    m_animmgmt(*app_.getAnimationManager())
+    m_animmgmt(app_.getAnimationManager())
 {
 }
 
