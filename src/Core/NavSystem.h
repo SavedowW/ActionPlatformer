@@ -49,6 +49,11 @@ public:
         FINISHED // Source and destination have the same connection ID
     };
 
+    struct Follower
+    {
+        std::shared_ptr<NavPath> m_path;
+    };
+
     NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &reg_, Traverse::TraitT traits_, float targetMaxConnectionRange_);
 
     // TODO: by connection ID
@@ -79,7 +84,7 @@ private:
     const Connection *m_currentTarget = nullptr;
     entt::registry &m_reg;
 
-    friend struct NavSystem;
+    friend struct NavSystem;    
 };
 
 /*
@@ -96,7 +101,7 @@ struct NavSystem
     void draw(Camera &cam_);
 
     // Get existing path instance or create new
-    std::shared_ptr<NavPath> makePath(Traverse::TraitT traverseTraits_, entt::entity goal_, float maxTarRange_);
+    NavPath::Follower makePath(Traverse::TraitT traverseTraits_, entt::entity goal_, float maxTarRange_);
 
     entt::registry &m_reg;
     Renderer &m_ren;

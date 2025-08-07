@@ -8,6 +8,7 @@
 #include "Collider.h"
 #include "AnimationManager.h"
 #include "NavGraph.h"
+#include "NavSystem.h"
 #include "Trigger.h"
 #include "FrameTimer.h"
 #include <entt/entt.hpp>
@@ -15,8 +16,6 @@
 #include <map>
 #include <memory>
 #include <utility>
-
-class NavPath;
 
 struct ComponentTransform
 {
@@ -259,7 +258,7 @@ struct Navigatable
     Traverse::TraitT m_traverseTraits;
     float m_maxRange = 0.0f;
 
-    std::shared_ptr<NavPath> m_currentPath;
+    NavPath::Follower m_pathFollower;
 };
 
 enum class HUDPosRule

@@ -43,6 +43,7 @@ Tileset.cpp
 Trigger.cpp
 CoreComponents.cpp
 NavGraph.cpp
+NavSystem.cpp
 Logger.cpp
 Profile.cpp
 RectCollider.cpp

@@ -192,7 +192,7 @@ bool MoveTowards::update(EntityAnywhere owner_, uint32_t currentFrame_)
 void NavigateGraphChase::enter(EntityAnywhere owner_, CharState from_)
 {
     auto &nav = owner_.reg->get<Navigatable>(owner_.idx);
-    nav.m_currentPath = owner_.reg->get<World>(owner_.idx).getNavsys().makePath(nav.m_traverseTraits, owner_.reg->get<ComponentAI>(owner_.idx).m_chaseTarget, 60.0f);
+    nav.m_pathFollower = owner_.reg->get<World>(owner_.idx).getNavsys().makePath(nav.m_traverseTraits, owner_.reg->get<ComponentAI>(owner_.idx).m_chaseTarget, 60.0f);
 }
 
 bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
@@ -208,7 +208,7 @@ bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
         // Failed to identify current connection - probably too far from all connections
         return true;
 
-    const auto *currentcon = &nav.m_currentPath->m_graphView.at(nav.m_currentOwnConnection->m_ownId);
+    const auto *currentcon = &nav.m_pathFollower.m_path->m_graphView.at(nav.m_currentOwnConnection->m_ownId);
 
     // Check if can start moving along next connection
     // TODO: move this logic somewhere else
@@ -216,14 +216,14 @@ bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
         currentcon->m_nextConnection.has_value() &&
         *currentcon->m_nextConnection &&
         currentcon->m_nextConnection != currentcon &&
-        pb.includesPoint(nav.m_currentPath->m_graph.getNodePos(currentcon->m_originalCon.m_nodes[currentcon->m_nextNode])))
+        pb.includesPoint(nav.m_pathFollower.m_path->m_graph.getNodePos(currentcon->m_originalCon.m_nodes[currentcon->m_nextNode])))
     {
         //std::cout << "Overriding connection" << std::endl;
         currentcon = *currentcon->m_nextConnection;
         nav.m_currentOwnConnection = &currentcon->m_originalCon;
     }
 
-    const auto pathStatus = nav.m_currentPath->buildUntil(nav.m_currentOwnConnection);
+    const auto pathStatus = nav.m_pathFollower.m_path->buildUntil(nav.m_currentOwnConnection);
 
     auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
 
@@ -242,7 +242,7 @@ bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
             return true;
     }
 
-    ai.m_navigationTarget = nav.m_currentPath->m_graph.getNodePos(currentcon->m_originalCon.m_nodes[currentcon->m_nextNode]);
+    ai.m_navigationTarget = nav.m_pathFollower.m_path->m_graph.getNodePos(currentcon->m_originalCon.m_nodes[currentcon->m_nextNode]);
     if (currentcon->m_originalCon.m_traverses[1 - currentcon->m_nextNode] & (1 << Traverse::FallthroughBitID))
         owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx).setIgnoringObstacles();
 

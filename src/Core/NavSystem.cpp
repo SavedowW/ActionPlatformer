@@ -108,14 +108,14 @@ void NavSystem::draw(Camera &cam_)
     }
 }
 
-std::shared_ptr<NavPath> NavSystem::makePath(Traverse::TraitT traverseTraits_, entt::entity goal_, float maxTarRange_)
+NavPath::Follower NavSystem::makePath(Traverse::TraitT traverseTraits_, entt::entity goal_, float maxTarRange_)
 {
     auto found = m_paths.find(traverseTraits_);
     if (found == m_paths.end())
     {
         auto newpath = std::shared_ptr<NavPath>(new NavPath(m_graph, goal_, m_reg, traverseTraits_, maxTarRange_));
         m_paths[traverseTraits_] = newpath;
-        return newpath;
+        return NavPath::Follower{newpath};
     }
     else
     {
@@ -123,11 +123,11 @@ std::shared_ptr<NavPath> NavSystem::makePath(Traverse::TraitT traverseTraits_, e
         {
             auto newpath = std::shared_ptr<NavPath>(new NavPath(m_graph, goal_, m_reg, traverseTraits_, maxTarRange_));
             found->second = newpath;
-            return newpath;
+            return NavPath::Follower{newpath};
         }
         else
         {
-            return found->second.lock();
+            return NavPath::Follower{found->second.lock()};
         }
     }
 }

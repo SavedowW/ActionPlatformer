@@ -28,7 +28,6 @@ EnemySystem.cpp
 Enemy1.cpp
 CommonAI.cpp
 AISystem.cpp
-NavSystem.cpp
 DynamicColliderSystem.cpp
 ParticleSystem.cpp
 Hit.cpp
