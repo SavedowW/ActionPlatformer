@@ -10,7 +10,7 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, Application &app_) :
 
 void PlayerSystem::setup(entt::entity playerId_)
 {
-    auto [trans, phys, inp, animrnd, sm, nav, transreset, smreset] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentPlayerInput, ComponentAnimationRenderable, StateMachine, Navigatable,
+    auto [trans, phys, inp, animrnd, sm, transreset, smreset] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentPlayerInput, ComponentAnimationRenderable, StateMachine,
         ComponentReset<ComponentTransform>, ComponentReset<StateMachine>>(playerId_);
 
     if (m_reg.all_of<ComponentSpawnLocation>(playerId_))
@@ -539,10 +539,6 @@ void PlayerSystem::setup(entt::entity playerId_)
 
     sm.setInitialState(CharacterState::FLOAT);
     smreset.m_defaultStates = {static_cast<CharState>(CharacterState::FLOAT)}; // TODO: allow any type
-
-    nav.m_currentOwnConnection = nullptr;
-    nav.m_maxRange = 60.0f;
-    nav.m_traverseTraits = Traverse::makeSignature(true, TraverseTraits::WALK, TraverseTraits::JUMP, TraverseTraits::FALL);
 }
 
 void PlayerSystem::update()

@@ -80,13 +80,13 @@ public:
 
     NodeID makeNode(const Vector2<float> &pos_);
     ConnectionID makeConnection(NodeID node1_, NodeID node2_, Traverse::TraitT traverseTo2_, Traverse::TraitT traverseTo1_);
-    std::pair<const Connection *, float> findClosestConnection(const Vector2<float> &pos_, Traverse::TraitT options_);
+    std::pair<const Connection *, float> findClosestConnection(const Vector2<float> &pos_, Traverse::TraitT options_) const;
 
     void draw(Camera &cam_);
-    Vector2<float> getConnectionCenter(const Connection *con_) const;
-    float getDistToConnection(const Connection *con_, const Vector2<float> &pos_) const;
+    Vector2<float> getConnectionCenter(const Connection &con_) const;
+    float getDistToConnection(const Connection &con_, const Vector2<float> &pos_) const;
 
-    const Connection *getConnection(ConnectionID con_) const;
+    const Connection &getConnection(ConnectionID con_) const;
     Vector2<float> getNodePos(NodeID nd_) const;
 
 private:

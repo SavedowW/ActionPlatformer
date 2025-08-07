@@ -23,7 +23,7 @@ ConnectionID NavGraph::makeConnection(NodeID node1_, NodeID node2_, Traverse::Tr
     return m_connections.size() - 1;
 }
 
-std::pair<const Connection *, float> NavGraph::findClosestConnection(const Vector2<float> &pos_, Traverse::TraitT options_)
+std::pair<const Connection *, float> NavGraph::findClosestConnection(const Vector2<float> &pos_, Traverse::TraitT options_) const
 {
     const Connection *mincon = nullptr;
     float mindst = 0.0f;
@@ -67,21 +67,21 @@ void NavGraph::draw(Camera &cam_)
     }
 }
 
-Vector2<float> NavGraph::getConnectionCenter(const Connection *con_) const
+Vector2<float> NavGraph::getConnectionCenter(const Connection &con_) const
 {
-    auto p1 = m_nodes[con_->m_nodes[0]].m_position;
-    auto p2 = m_nodes[con_->m_nodes[1]].m_position;
+    auto p1 = m_nodes[con_.m_nodes[0]].m_position;
+    auto p2 = m_nodes[con_.m_nodes[1]].m_position;
     return (p1 + p2) / 2.0f;
 }
 
-float NavGraph::getDistToConnection(const Connection *con_, const Vector2<float> &pos_) const
+float NavGraph::getDistToConnection(const Connection &con_, const Vector2<float> &pos_) const
 {
-    return utils::distToLineSegment(m_nodes[con_->m_nodes[0]].m_position, m_nodes[con_->m_nodes[1]].m_position, pos_);
+    return utils::distToLineSegment(m_nodes[con_.m_nodes[0]].m_position, m_nodes[con_.m_nodes[1]].m_position, pos_);
 }
 
-const Connection *NavGraph::getConnection(ConnectionID con_) const
+const Connection &NavGraph::getConnection(ConnectionID con_) const
 {
-    return &m_connections[con_];
+    return m_connections[con_];
 }
 
 Vector2<float> NavGraph::getNodePos(NodeID nd_) const

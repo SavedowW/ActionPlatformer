@@ -46,11 +46,11 @@ void NavSystem::draw(Camera &cam_)
         {
             if (nav.m_currentOwnConnection)
             {
-                auto p1 = trans.m_pos;
-                auto p2 = m_graph.getConnectionCenter(nav.m_currentOwnConnection);
+                const auto p1 = trans.m_pos;
+                const auto p2 = m_graph.getConnectionCenter(*nav.m_currentOwnConnection);
                 m_ren.drawLine(p1, p2, {255, 150, 100, 255}, cam_);
     
-                auto range = m_graph.getDistToConnection(nav.m_currentOwnConnection, trans.m_pos);
+                const auto range = m_graph.getDistToConnection(*nav.m_currentOwnConnection, trans.m_pos);
                 m_textman.renderText(std::to_string(range), 2, (p1 + p2) / 2.0f - Vector2{0.0f, 12.0f}, fonts::HOR_ALIGN::CENTER, &cam_);
             }
         }
@@ -58,29 +58,29 @@ void NavSystem::draw(Camera &cam_)
 
     if (ConfigurationManager::instance().m_debug.m_debugPathDisplay)
     {
-        auto ipath = m_paths.find(ConfigurationManager::instance().m_debug.m_debugPathDisplay);
+        const auto ipath = m_paths.find(ConfigurationManager::instance().m_debug.m_debugPathDisplay);
         if (ipath != m_paths.end() && !ipath->second.expired())
         {
-            auto path = ipath->second.lock().get();
-            for (const auto &con : path->m_graphView)
+            const auto &path = *ipath->second.lock().get();
+            for (const auto &con : path.m_graphView)
             {
-                if (path->isTargetConnection(con.second.m_originalCon.m_ownId))
+                if (path.isTargetConnection(con.second.m_originalCon.m_ownId))
                 {
-                    auto origin = m_graph.getNodePos(con.second.m_originalCon.m_nodes[0]) - Vector2{1.0f, 1.0f};
-                    auto tar = m_graph.getNodePos(con.second.m_originalCon.m_nodes[1]) - Vector2{1.0f, 1.0f};
+                    const auto origin = m_graph.getNodePos(con.second.m_originalCon.m_nodes[0]) - Vector2{1.0f, 1.0f};
+                    const auto tar = m_graph.getNodePos(con.second.m_originalCon.m_nodes[1]) - Vector2{1.0f, 1.0f};
                     m_ren.drawLine(origin, tar, {0, 255, 50, 200}, cam_);
                 }
                 else
                 {
-                    auto oriented = con.second.getOrientedNodes();
+                    const auto oriented = con.second.getOrientedNodes();
                     switch (con.second.getStatus())
                     {
                         case ConnectionDescr::Status::FOUND:
                         {
-                            auto origin = m_graph.getNodePos(oriented.first) - Vector2{1.0f, 1.0f};
-                            auto tar = m_graph.getNodePos(oriented.second) - Vector2{1.0f, 1.0f};
-                            auto delta = tar - origin;
-                            auto center = tar - delta  / 4.0f;
+                            const auto origin = m_graph.getNodePos(oriented.first) - Vector2{1.0f, 1.0f};
+                            const auto tar = m_graph.getNodePos(oriented.second) - Vector2{1.0f, 1.0f};
+                            const auto delta = tar - origin;
+                            const auto center = tar - delta  / 4.0f;
                             m_ren.drawLine(center, tar, {0, 255, 0, 200}, cam_);
                         }
                             break;
@@ -94,16 +94,26 @@ void NavSystem::draw(Camera &cam_)
                     }
                 }
             }
+
+            if (path.m_currentTarget)
+            {
+                const auto p1 = m_reg.get<ComponentTransform>(path.m_target).m_pos;
+                const auto p2 = m_graph.getConnectionCenter(*path.m_currentTarget);
+                m_ren.drawLine(p1, p2, {255, 150, 100, 255}, cam_);
+                
+                const auto range = m_graph.getDistToConnection(*path.m_currentTarget, p1);
+                m_textman.renderText(std::to_string(range), 2, (p1 + p2) / 2.0f - Vector2{0.0f, 12.0f}, fonts::HOR_ALIGN::CENTER, &cam_);
+            }
         }
     }
 }
 
-std::shared_ptr<NavPath> NavSystem::makePath(Traverse::TraitT traverseTraits_, entt::entity goal_)
+std::shared_ptr<NavPath> NavSystem::makePath(Traverse::TraitT traverseTraits_, entt::entity goal_, float maxTarRange_)
 {
     auto found = m_paths.find(traverseTraits_);
     if (found == m_paths.end())
     {
-        auto newpath = std::shared_ptr<NavPath>(new NavPath(m_graph, goal_, m_reg, traverseTraits_));
+        auto newpath = std::shared_ptr<NavPath>(new NavPath(m_graph, goal_, m_reg, traverseTraits_, maxTarRange_));
         m_paths[traverseTraits_] = newpath;
         return newpath;
     }
@@ -111,7 +121,7 @@ std::shared_ptr<NavPath> NavSystem::makePath(Traverse::TraitT traverseTraits_, e
     {
         if (found->second.expired())
         {
-            auto newpath = std::shared_ptr<NavPath>(new NavPath(m_graph, goal_, m_reg, traverseTraits_));
+            auto newpath = std::shared_ptr<NavPath>(new NavPath(m_graph, goal_, m_reg, traverseTraits_, maxTarRange_));
             found->second = newpath;
             return newpath;
         }
@@ -122,9 +132,10 @@ std::shared_ptr<NavPath> NavSystem::makePath(Traverse::TraitT traverseTraits_, e
     }
 }
 
-NavPath::NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &reg_, Traverse::TraitT traits_) :
+NavPath::NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &reg_, Traverse::TraitT traits_, float targetMaxConnectionRange_) :
     m_graph(graph_),
     m_target(target_),
+    m_targetMaxConnectionRange(targetMaxConnectionRange_),
     m_traverseTraits(traits_),
     m_reg(reg_)
 {
@@ -135,9 +146,9 @@ NavPath::NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &r
             continue;
 
         ConnectionDescr conDescr(el);
+        conDescr.setNoPathFound();
         
         m_graphView.emplace(el.m_ownId, std::move(conDescr));
-        
     }
 
     // For each connection description, find all neighbours except it's equivalents (on the same pair of nodes)
@@ -155,25 +166,20 @@ NavPath::NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &r
         }
     }
 
-    m_currentTarget = nullptr;
+    updateTarget();
 }
 
 NavPath::Status NavPath::buildUntil(const Connection * const con_)
 {
     if (!m_currentTarget)
         return NavPath::Status::NOT_FOUND;
-        
+
     if (con_->m_ownId == m_currentTarget->m_ownId)
         return NavPath::Status::FINISHED;
-
 
     // If path was already calculated, return it's status
     if (m_graphView.at(con_->m_ownId).m_nextConnection.has_value())
         return (*m_graphView.at(con_->m_ownId).m_nextConnection ? NavPath::Status::FOUND : NavPath::Status::NOT_FOUND);
-
-    m_graphView.at(m_currentTarget->m_ownId).m_nextConnection = &m_graphView.at(m_currentTarget->m_ownId);
-
-    m_graphView.at(m_currentTarget->m_ownId).m_calculatedCost = m_graphView.at(m_currentTarget->m_ownId).m_originalCon.m_cost;
 
     while (!m_front.empty())
     {
@@ -222,24 +228,7 @@ NavPath::Status NavPath::buildUntil(const Connection * const con_)
 
 void NavPath::update()
 {
-    auto newtar = m_reg.get<Navigatable>(m_target).m_currentOwnConnection;
-    if (newtar != m_currentTarget)
-    {
-        m_currentTarget = newtar;
-
-        if (m_currentTarget)
-        {
-            for (auto &el : m_graphView)
-                el.second.resetResults();
-            m_front = {&m_graphView.at(m_currentTarget->m_ownId)};
-        }
-        else
-        {
-            for (auto &el : m_graphView)
-                el.second.setNoPathFound();
-            m_front.clear();
-        }
-    }
+    updateTarget();
 }
 
 void NavPath::dump() const
@@ -255,6 +244,36 @@ void NavPath::dump() const
                 std::cout << " NOT FOUND";
         }
         std::cout << std::endl;
+    }
+}
+
+void NavPath::updateTarget()
+{
+    const Connection *newtar = nullptr;
+    auto newCon = m_graph.findClosestConnection(m_reg.get<ComponentTransform>(m_target).m_pos, m_traverseTraits);
+        if (newCon.second <= m_targetMaxConnectionRange)
+            newtar = newCon.first;
+        else
+            newtar = nullptr;
+
+    if (newtar != m_currentTarget)
+    {
+        m_currentTarget = newtar;
+
+        if (m_currentTarget)
+        {
+            for (auto &el : m_graphView)
+                el.second.resetResults();
+            m_front = {&m_graphView.at(m_currentTarget->m_ownId)};
+
+            m_graphView.at(m_currentTarget->m_ownId).m_calculatedCost = m_graphView.at(m_currentTarget->m_ownId).m_originalCon.m_cost;
+        }
+        else
+        {
+            for (auto &el : m_graphView)
+                el.second.setNoPathFound();
+            m_front.clear();
+        }
     }
 }
 

@@ -164,6 +164,7 @@ public:
         m_onSuccess(static_cast<CharState>(onSuccess_))
     {}
     
+    virtual void enter(EntityAnywhere owner_, CharState from_) override;
     virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
 
 private:

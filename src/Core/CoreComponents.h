@@ -249,11 +249,7 @@ struct ComponentDynamicCameraTarget
 
 struct Navigatable
 {
-    Navigatable()
-    {
-        std::cout << "Nav created\n";
-    }
-
+    // TODO: to iterator
     const Connection *m_currentOwnConnection = nullptr;
     bool m_checkIfGrounded = false;
 
@@ -264,11 +260,6 @@ struct Navigatable
     float m_maxRange = 0.0f;
 
     std::shared_ptr<NavPath> m_currentPath;
-
-    ~Navigatable()
-    {
-        std::cout << "Nav destroyed\n";
-    }
 };
 
 enum class HUDPosRule

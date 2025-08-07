@@ -189,6 +189,12 @@ bool MoveTowards::update(EntityAnywhere owner_, uint32_t currentFrame_)
     return true;
 }
 
+void NavigateGraphChase::enter(EntityAnywhere owner_, CharState from_)
+{
+    auto &nav = owner_.reg->get<Navigatable>(owner_.idx);
+    nav.m_currentPath = owner_.reg->get<World>(owner_.idx).getNavsys().makePath(nav.m_traverseTraits, owner_.reg->get<ComponentAI>(owner_.idx).m_chaseTarget, 60.0f);
+}
+
 bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
 {
     NodeState::update(owner_, currentFrame_); 
@@ -197,12 +203,6 @@ bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
     const auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
     const auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
     auto pb = phys.m_pushbox + trans.m_pos;
-
-    // TODO: should be checked and set upon entering state
-    if (!nav.m_currentPath)
-    {
-        nav.m_currentPath = owner_.reg->get<World>(owner_.idx).getNavsys().makePath(nav.m_traverseTraits, owner_.reg->get<ComponentAI>(owner_.idx).m_chaseTarget);
-    }
 
     if (!nav.m_currentOwnConnection)
         // Failed to identify current connection - probably too far from all connections

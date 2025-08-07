@@ -5,6 +5,8 @@
 #include "Camera.h"
 #include <entt/entt.hpp>
 
+struct NavSystem;
+
 // A view to a selected connection for pathfinding algo
 struct ConnectionDescr
 {
@@ -47,7 +49,7 @@ public:
         FINISHED // Source and destination have the same connection ID
     };
 
-    NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &reg_, Traverse::TraitT traits_);
+    NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &reg_, Traverse::TraitT traits_, float targetMaxConnectionRange_);
 
     // TODO: by connection ID
     Status buildUntil(const Connection * const con_);
@@ -58,6 +60,7 @@ public:
     */
     void update();
     void dump() const;
+    void updateTarget();
 
     bool isTargetConnection(ConnectionID id_) const;
 
@@ -69,9 +72,14 @@ private:
     const Traverse::TraitT m_traverseTraits;
     const entt::entity m_target;
 
+    // Max range to be tied to a connection
+    const float m_targetMaxConnectionRange;
+
     std::vector<ConnectionDescr *> m_front;
-    const Connection *m_currentTarget;
+    const Connection *m_currentTarget = nullptr;
     entt::registry &m_reg;
+
+    friend struct NavSystem;
 };
 
 /*
@@ -88,7 +96,7 @@ struct NavSystem
     void draw(Camera &cam_);
 
     // Get existing path instance or create new
-    std::shared_ptr<NavPath> makePath(Traverse::TraitT traverseTraits_, entt::entity goal_);
+    std::shared_ptr<NavPath> makePath(Traverse::TraitT traverseTraits_, entt::entity goal_, float maxTarRange_);
 
     entt::registry &m_reg;
     Renderer &m_ren;

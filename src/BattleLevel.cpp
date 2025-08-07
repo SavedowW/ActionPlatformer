@@ -48,7 +48,6 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_registry.emplace<StateMachine>(playerId);
     m_registry.emplace<ComponentReset<StateMachine>>(playerId);
 
-    m_registry.emplace<Navigatable>(playerId);
     m_registry.emplace<PhysicalEvents>(playerId);
     m_registry.emplace<BattleActor>(playerId, BattleTeams::PLAYER);
     m_registry.emplace<HUDPoint>(playerId, HUDPosRule::REL_TRANSFORM, Vector2{0.0f, -16.0f}, 16.0f);
@@ -62,15 +61,16 @@ BattleLevel::BattleLevel(Application *application_, const Vector2<float>& size_,
     m_hudsys.m_playerId = playerId;
     m_enemysys.m_playerId = playerId;
 
-    m_enemyId = m_enemysys.makeEnemy();
     //m_envSystem.makeGrassTop(Vector2{230, 351});
-
+    
     m_lvlBuilder.buildLevel("Tilemaps/Level1.json", playerId, m_graph, m_cldRoutesCollection, m_envSystem);
-
+    
     m_chatBoxSys.setPlayerEntity(m_playerId);
-
+    
     subscribe(GAMEPLAY_EVENTS::FN4);
     subscribe(GAMEPLAY_EVENTS::RESET_DBG);
+
+    m_enemyId = m_enemysys.makeEnemy();
 
     /*auto newcld = m_registry.create();
     m_registry.emplace<ComponentTransform>(newcld, getTilePos(Vector2{20.0f, 21.0f}), ORIENTATION::RIGHT);
