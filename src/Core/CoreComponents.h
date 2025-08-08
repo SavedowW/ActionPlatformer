@@ -249,7 +249,6 @@ struct ComponentDynamicCameraTarget
 struct Navigatable
 {
     // TODO: to iterator
-    const Connection *m_currentOwnConnection = nullptr;
     bool m_checkIfGrounded = false;
 
     // Overcomplication, but might be useful later
@@ -257,6 +256,7 @@ struct Navigatable
 
     Traverse::TraitT m_traverseTraits;
     float m_maxRange = 0.0f;
+    float m_nodeTransitionRange = 0.0f;
 
     NavPath::Follower m_pathFollower;
 };

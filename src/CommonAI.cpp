@@ -73,8 +73,8 @@ bool BlindChaseState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     const auto &ownTrans = owner_.reg->get<ComponentTransform>(owner_.idx);
     const auto &tarTrans = owner_.reg->get<ComponentTransform>(ai.m_chaseTarget);
 
-    if (nav.m_currentOwnConnection)
-        if ((nav.m_currentOwnConnection->m_traverses[0] & (1 << Traverse::FallthroughBitID)) || (nav.m_currentOwnConnection->m_traverses[1] & (1 << Traverse::FallthroughBitID)))
+    if (nav.m_pathFollower.m_currentOwnConnection)
+        if ((nav.m_pathFollower.m_currentOwnConnection->m_traverses[0] & (1 << Traverse::FallthroughBitID)) || (nav.m_pathFollower.m_currentOwnConnection->m_traverses[1] & (1 << Traverse::FallthroughBitID)))
             owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx).setIgnoringObstacles();
 
     auto delta = tarTrans.m_pos - ownTrans.m_pos;
@@ -102,7 +102,7 @@ void BlindChaseState::enter(EntityAnywhere owner_, CharState from_)
     const auto &ownTrans = owner_.reg->get<ComponentTransform>(owner_.idx);
     const auto &tarTrans = owner_.reg->get<ComponentTransform>(ai.m_chaseTarget);
 
-    if ((nav.m_currentOwnConnection->m_traverses[0] & (1 << Traverse::FallthroughBitID)) || (nav.m_currentOwnConnection->m_traverses[1] & (1 << Traverse::FallthroughBitID)))
+    if ((nav.m_pathFollower.m_currentOwnConnection->m_traverses[0] & (1 << Traverse::FallthroughBitID)) || (nav.m_pathFollower.m_currentOwnConnection->m_traverses[1] & (1 << Traverse::FallthroughBitID)))
         owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx).setIgnoringObstacles();
 
     auto delta = tarTrans.m_pos - ownTrans.m_pos;
@@ -204,26 +204,13 @@ bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
     const auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
     auto pb = phys.m_pushbox + trans.m_pos;
 
-    if (!nav.m_currentOwnConnection)
+    if (!nav.m_pathFollower.m_currentOwnConnection)
         // Failed to identify current connection - probably too far from all connections
         return true;
 
-    const auto *currentcon = &nav.m_pathFollower.m_path->m_graphView.at(nav.m_currentOwnConnection->m_ownId);
+    const auto * const currentcon = &nav.m_pathFollower.m_path->m_graphView.at(nav.m_pathFollower.m_currentOwnConnection->m_ownId);
 
-    // Check if can start moving along next connection
-    // TODO: move this logic somewhere else
-    if ((!nav.m_checkIfGrounded || (phys.m_onGround != entt::null)) &&
-        currentcon->m_nextConnection.has_value() &&
-        *currentcon->m_nextConnection &&
-        currentcon->m_nextConnection != currentcon &&
-        pb.includesPoint(nav.m_pathFollower.m_path->m_graph.getNodePos(currentcon->m_originalCon.m_nodes[currentcon->m_nextNode])))
-    {
-        //std::cout << "Overriding connection" << std::endl;
-        currentcon = *currentcon->m_nextConnection;
-        nav.m_currentOwnConnection = &currentcon->m_originalCon;
-    }
-
-    const auto pathStatus = nav.m_pathFollower.m_path->buildUntil(nav.m_currentOwnConnection);
+    const auto pathStatus = nav.m_pathFollower.m_path->buildUntil(nav.m_pathFollower.m_currentOwnConnection);
 
     auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
 

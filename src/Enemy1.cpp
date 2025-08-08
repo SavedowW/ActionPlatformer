@@ -8,30 +8,36 @@ void AimedPrejump::onOutdated(EntityAnywhere owner_)
 
     ai.m_isNavigating = true;
 
-    auto realspd = phys.m_velocity + phys.m_inertia;
+    const auto currentspd = phys.m_velocity + phys.m_inertia;
 
-    auto peak = 5.0f + (rand() % 10);
-    auto delta = ai.m_navigationTarget - (trans.m_pos - Vector2{0.0f, 8.0f});
-    delta.y -= peak;
+    // Max reached height over the destination
+    const auto peak = 5.0f + (rand() % 10);
+
+    /*
+        Distance from the player to the jump target pos, but at the peak height
+        TODO: 8 px is the usual offset for nodes from the ground, should be a var
+    */
+    const auto delta = (ai.m_navigationTarget + Vector2{0.0f, 8.0f} - Vector2{0.0f, peak}) - trans.m_pos;
     //delta.x += utils::signof(delta.x) * ((rand() % 10));
 
-    auto signx = utils::signof(delta.x);
+    const auto jumpdir = utils::signof(delta.x);
 
     Vector2<float> initialImpulse;
+
+    // Calculated so that with m_gravity the velocity will turn 0 at height delta.y (from starting point)
     initialImpulse.y = -sqrt(2 * m_gravity * abs(delta.y));
 
-    auto duration = abs(initialImpulse.y / m_gravity) + sqrt(2 * peak / m_gravity);
-    auto dx = abs(delta.x);
-    if (duration * (m_maxInitialHorSpd + realspd.x) >= dx)
+    const auto duration = abs(initialImpulse.y / m_gravity) + sqrt(2 * peak / m_gravity);
+    if (utils::isLowerOrGreater(duration * (m_maxInitialHorSpd + currentspd.x), delta.x))
     {
-        initialImpulse.x = signx * dx / duration - realspd.x;
+        initialImpulse.x = delta.x / duration - currentspd.x;
         ai.m_additionalAccel = 0.01f;
     }
     else
     {
-        auto fullrealspd = realspd.x + signx * m_maxInitialHorSpd;
-        initialImpulse.x = signx * m_maxInitialHorSpd;
-        ai.m_additionalAccel = 2 * (dx - fullrealspd * duration) / duration / duration;
+        initialImpulse.x = jumpdir * m_maxInitialHorSpd;
+        const auto realNewSpeed = currentspd.x + initialImpulse.x;
+        ai.m_additionalAccel = 2 * (delta.x - realNewSpeed * duration) / duration / duration;
     }
 
     phys.m_velocity += initialImpulse;

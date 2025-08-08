@@ -52,6 +52,12 @@ public:
     struct Follower
     {
         std::shared_ptr<NavPath> m_path;
+        const Connection *m_currentOwnConnection = nullptr;
+
+        Vector2<float> getNextNodePos() const;
+        bool nextConnectionExists() const;
+        void iterateForward();
+        std::pair<Vector2<float>, Vector2<float>> getCurrentNodes() const;
     };
 
     NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &reg_, Traverse::TraitT traits_, float targetMaxConnectionRange_);

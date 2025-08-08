@@ -27,8 +27,8 @@ entt::entity EnemySystem::makeEnemy()
 
     auto &nav = m_reg.emplace<Navigatable>(enemyId);
     nav.m_traverseTraits = Traverse::makeSignature(true, TraverseTraits::WALK, TraverseTraits::JUMP,  TraverseTraits::FALL);
-    nav.m_currentOwnConnection = nullptr;
     nav.m_maxRange = 60.0f;
+    nav.m_nodeTransitionRange = 10.0f; // Different transitions ranges for different traverse types?
     nav.m_checkIfGrounded = true;
 
     m_reg.emplace<World>(enemyId, m_reg, m_cam, m_partsys, m_navsys);

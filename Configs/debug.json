@@ -3,7 +3,7 @@
         "draw_colliders": true,
         "draw_focus_areas": false,
         "draw_camera_offset": false,
-        "draw_npc_debug": false,
+        "draw_npc_debug": true,
         "draw_current_connection": true,
         "draw_nav_graph": true,
         "draw_transforms": true,

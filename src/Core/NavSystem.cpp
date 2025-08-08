@@ -19,17 +19,48 @@ void NavSystem::update()
     const auto view = m_reg.view<ComponentTransform, Navigatable>();
     for (const auto [idx, trans, nav] : view.each())
     {
+        if (!nav.m_pathFollower.m_path)
+            continue;
+
         if (nav.m_checkIfGrounded)
             if (m_reg.get<ComponentPhysical>(idx).m_onGround == entt::null)
                 continue;
 
-        auto newCon = m_graph.findClosestConnection(trans.m_pos, nav.m_traverseTraits);
-        if (newCon.second <= nav.m_maxRange)
-            nav.m_currentOwnConnection = newCon.first;
-        else
-            nav.m_currentOwnConnection = nullptr;
+        bool possibleLoss = true;
+
+        if (!nav.m_pathFollower.m_currentOwnConnection)
+        {
+            auto newCon = m_graph.findClosestConnection(trans.m_pos, nav.m_traverseTraits);
+            if (newCon.second <= nav.m_maxRange)
+                nav.m_pathFollower.m_currentOwnConnection = newCon.first;
+            else
+                continue;
+
+            possibleLoss = false;
+        }
+
+        while (nav.m_pathFollower.nextConnectionExists() &&
+            (nav.m_pathFollower.getNextNodePos() - trans.m_pos).getSqLen() <= nav.m_nodeTransitionRange * nav.m_nodeTransitionRange)
+        {
+            possibleLoss = false;
+            nav.m_pathFollower.iterateForward();
+        }
+
+        if (possibleLoss)
+        {
+            const auto nodePoses = nav.m_pathFollower.getCurrentNodes();
+            if (utils::distToLineSegment(nodePoses.first, nodePoses.second, trans.m_pos) >= nav.m_maxRange)
+            {
+                auto newCon = m_graph.findClosestConnection(trans.m_pos, nav.m_traverseTraits);
+                if (newCon.second <= nav.m_maxRange)
+                    nav.m_pathFollower.m_currentOwnConnection = newCon.first;
+                else
+                    nav.m_pathFollower.m_currentOwnConnection = nullptr;
+            }
+        }
     }
 
+    // Path rarely will change drammatically, so not much reason to ignore Navigatables for updated path
     for (auto &path : m_paths)
     {
         if (!path.second.expired())
@@ -44,16 +75,17 @@ void NavSystem::draw(Camera &cam_)
         const auto view = m_reg.view<ComponentTransform, Navigatable>();
         for (const auto [idx, trans, nav] : view.each())
         {
-            
-            if (nav.m_currentOwnConnection)
+            m_ren.drawCircleOutline(trans.m_pos, nav.m_nodeTransitionRange, {0, 255, 50, 200}, cam_);
+
+            if (nav.m_pathFollower.m_currentOwnConnection)
             {
                 m_ren.drawCircleOutline(trans.m_pos, nav.m_maxRange, {0, 255, 50, 200}, cam_);
 
                 const auto p1 = trans.m_pos;
-                const auto p2 = m_graph.getConnectionCenter(*nav.m_currentOwnConnection);
+                const auto p2 = m_graph.getConnectionCenter(*nav.m_pathFollower.m_currentOwnConnection);
                 m_ren.drawLine(p1, p2, {255, 150, 100, 255}, cam_);
     
-                const auto range = m_graph.getDistToConnection(*nav.m_currentOwnConnection, trans.m_pos);
+                const auto range = m_graph.getDistToConnection(*nav.m_pathFollower.m_currentOwnConnection, trans.m_pos);
                 m_textman.renderText(std::to_string(range), 2, (p1 + p2) / 2.0f - Vector2{0.0f, 12.0f}, fonts::HOR_ALIGN::CENTER, &cam_);
             }
             else
@@ -260,11 +292,13 @@ void NavPath::dump() const
 void NavPath::updateTarget()
 {
     const Connection *newtar = nullptr;
+
+    // TODO: consider airborne / grounded states
     auto newCon = m_graph.findClosestConnection(m_reg.get<ComponentTransform>(m_target).m_pos, m_traverseTraits);
-        if (newCon.second <= m_targetMaxConnectionRange)
-            newtar = newCon.first;
-        else
-            newtar = nullptr;
+    if (newCon.second <= m_targetMaxConnectionRange)
+        newtar = newCon.first;
+    else
+        newtar = nullptr;
 
     if (newtar != m_currentTarget)
     {
@@ -339,4 +373,41 @@ ConnectionDescr::Status ConnectionDescr::getStatus() const
     }
     else
         return Status::UNRESOLVED;
+}
+
+Vector2<float> NavPath::Follower::getNextNodePos() const
+{
+    assert(m_path);
+    assert(m_currentOwnConnection);
+
+    const auto &descr = m_path->m_graphView.at(m_currentOwnConnection->m_ownId);
+    return m_path->m_graph.getNodePos(descr.m_originalCon.m_nodes[descr.m_nextNode]);
+}
+
+bool NavPath::Follower::nextConnectionExists() const
+{
+    assert(m_path);
+    assert(m_currentOwnConnection);
+
+    const auto &descr = m_path->m_graphView.at(m_currentOwnConnection->m_ownId);
+    return descr.m_nextConnection.has_value() && descr.m_nextConnection.value();
+}
+
+void NavPath::Follower::iterateForward()
+{
+    assert(m_path);
+    assert(m_currentOwnConnection);
+
+    const auto &descr = m_path->m_graphView.at(m_currentOwnConnection->m_ownId);
+    m_currentOwnConnection = &descr.m_nextConnection.value()->m_originalCon;
+}
+
+std::pair<Vector2<float>, Vector2<float>> NavPath::Follower::getCurrentNodes() const
+{
+    assert(m_path);
+    assert(m_currentOwnConnection);
+
+    const auto &descr = m_path->m_graphView.at(m_currentOwnConnection->m_ownId);
+    return {m_path->m_graph.getNodePos(descr.m_originalCon.m_nodes[0]),
+            m_path->m_graph.getNodePos(descr.m_originalCon.m_nodes[1])};
 }

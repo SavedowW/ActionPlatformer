@@ -160,6 +160,13 @@ namespace utils
         return "\"" + src_ + "\"";
     }
 
+    // value_ <= bound_ for bound < 0 or value_ >= bound_ otherwise
+    template<typename T>
+    constexpr inline bool isLowerOrGreater(const T& value_, const T& bound_) noexcept
+    {
+        return bound_ < 0 ? value_ <= bound_ : value_ >= bound_;
+    }
+
     inline std::string normalizeType(const std::string &reg_)
     {
 
