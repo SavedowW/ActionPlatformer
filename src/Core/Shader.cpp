@@ -1,4 +1,5 @@
 #include "Shader.h"
+#include "Logger.h"
 
 #include <iostream>
 #include <fstream>
@@ -92,23 +93,24 @@ void Shader::compile(const char *vertexSource_, const char *fragmentSource_)
     sVertex = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(sVertex, 1, &vertexSource_, NULL);
     glCompileShader(sVertex);
-    if (!validateShader(sVertex, "VERTEX"))
-        throw std::runtime_error("Failed to validate vertex shader");
+    validateShader(sVertex);
 
     // fragment Shader
-    sFragment = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(sFragment, 1, &fragmentSource_, NULL);
-    glCompileShader(sFragment);
-    if (!validateShader(sFragment, "FRAGMENT"))
-        throw std::runtime_error("Failed to validate fragment shader");
+    try
+    {
+        sFragment = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(sFragment, 1, &fragmentSource_, NULL);
+        glCompileShader(sFragment);
+        validateShader(sFragment);
+    }
+    catch_extend("While creating fragment shader")
 
     // shader program
     m_id = glCreateProgram();
     glAttachShader(m_id, sVertex);
     glAttachShader(m_id, sFragment);
     glLinkProgram(m_id);
-    if (!validateProgram(m_id))
-        throw std::runtime_error("Failed to validate complete program");
+    validateProgram(m_id);
 
     glDeleteShader(sVertex);
     glDeleteShader(sFragment);
@@ -156,7 +158,7 @@ void Shader::setMatrix4(const char *name_, const glm::mat4 &matrix_)
 }
 
 
-bool Shader::validateShader(unsigned int object_, const std::string &type_)
+void Shader::validateShader(unsigned int object_)
 {
     int success;
     char infoLog[1024];
@@ -164,16 +166,11 @@ bool Shader::validateShader(unsigned int object_, const std::string &type_)
     if (!success)
     {
         glGetShaderInfoLog(object_, 1024, NULL, infoLog);
-        std::cout << "Failed to compile " << type_  << " shader" << std::endl
-            << infoLog << std::endl;
-
-        return false;
+        throw std::runtime_error(std::string("Failed to compile shader:\n") + infoLog);
     }
-
-    return true;
 }
 
-bool Shader::validateProgram(unsigned int object_)
+void Shader::validateProgram(unsigned int object_)
 {
     int success;
     char infoLog[1024];
@@ -181,13 +178,8 @@ bool Shader::validateProgram(unsigned int object_)
     if (!success)
     {
         glGetProgramInfoLog(object_, 1024, NULL, infoLog);
-        std::cout << "Failed to compile shader program: " << std::endl
-            << infoLog << std::endl;
-
-        return false;
+        throw std::runtime_error(std::string("Failed to compile shader program:\n") + infoLog);
     }
-
-    return true;
 }
 
 GLint Shader::claimUniformLoc(const char *name_)

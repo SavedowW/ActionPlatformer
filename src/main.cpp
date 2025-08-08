@@ -9,11 +9,21 @@
 
 int main(int argc, char* args[])
 {
-    std::cout << Filesystem::getRootDirectory() << std::endl;
-    Application app;
-    
-    app.setLevel(1, new Stage1(app, {2048, 2048}, 1));
-    app.run();
+    try
+    {
+        std::cout << Filesystem::getRootDirectory() << std::endl;
+        Application app;
+        
+        app.setLevel(1, new Stage1(app, {2048, 2048}, 1));
+        app.run();
+    }
+    catch (std::exception &ex_)
+    {
+        std::cout << "Something went horribly wrong!" << std::endl;
+        std::cout << ex_.what() << std::endl;
+
+        return 1;
+    }
 
     return 0;
 }

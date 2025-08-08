@@ -36,8 +36,8 @@ public:
 private:
     void compile(const char *vertexSourcePath_, const char *fragmentSourcePath_);
 
-    bool validateShader(unsigned int object_, const std::string &type_); 
-    bool validateProgram(unsigned int object_);
+    void validateShader(unsigned int object_); 
+    void validateProgram(unsigned int object_);
     GLint claimUniformLoc(const char *name_);
 
     unsigned int m_id = 0; 

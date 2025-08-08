@@ -49,6 +49,7 @@ Application::Application()
 
 Application::~Application()
 {
+    m_textManager.reset();
     m_animationManager.reset();
     m_textureManager.reset();
     m_inputSystem.reset();
@@ -57,6 +58,7 @@ Application::~Application()
     Mix_Quit();
     TTF_Quit();
 	SDL_Quit();
+    std::cout << "Application shut down successfully" << std::endl;
 }
 
 void Application::run()
