@@ -106,7 +106,7 @@ void BlindChaseState::enter(EntityAnywhere owner_, CharState from_)
         owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx).setIgnoringObstacles();
 
     auto delta = tarTrans.m_pos - ownTrans.m_pos;
-    float range = delta.getLen();
+    float range = delta.length();
 
     if (range <= m_idleRange)
     {
@@ -125,7 +125,7 @@ bool ProxySelectionState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     NodeState::update(owner_, currentFrame_);
     const auto &ownTrans = owner_.reg->get<ComponentTransform>(owner_.idx);
     const auto &tarTrans = m_target.reg->get<ComponentTransform>(m_target.idx);
-    auto range = (tarTrans.m_pos - ownTrans.m_pos).getLen();
+    auto range = (tarTrans.m_pos - ownTrans.m_pos).length();
 
     for (size_t i = 0; i < m_rangeLimits.size(); ++i)
     {

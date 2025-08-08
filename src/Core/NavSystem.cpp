@@ -40,7 +40,7 @@ void NavSystem::update()
         }
 
         while (nav.m_pathFollower.nextConnectionExists() &&
-            (nav.m_pathFollower.getNextNodePos() - trans.m_pos).getSqLen() <= nav.m_nodeTransitionRange * nav.m_nodeTransitionRange)
+            (nav.m_pathFollower.getNextNodePos() - trans.m_pos).sqLength()<= nav.m_nodeTransitionRange * nav.m_nodeTransitionRange)
         {
             possibleLoss = false;
             nav.m_pathFollower.iterateForward();

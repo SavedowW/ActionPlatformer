@@ -301,7 +301,7 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
         }
 
         phys.m_enforcedOffset = (trans.m_pos - oldpos) + phys.m_extraoffset;
-        phys.m_pushedOffset = (trans.m_pos - oldpos).mulComponents(Vector2{1, 10});
+        phys.m_pushedOffset = (trans.m_pos - oldpos).mulComponents(1, 10);
         //std::cout << phys.m_extraoffset << std::endl;
     }
 

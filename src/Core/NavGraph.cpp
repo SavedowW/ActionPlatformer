@@ -16,7 +16,7 @@ NodeID NavGraph::makeNode(const Vector2<float> &pos_)
 
 ConnectionID NavGraph::makeConnection(NodeID node1_, NodeID node2_, Traverse::TraitT traverseTo2_, Traverse::TraitT traverseTo1_)
 {
-    m_connections.emplace_back(node1_, node2_, traverseTo2_, traverseTo1_, (m_nodes[node1_].m_position - m_nodes[node2_].m_position).getLen(), m_connections.size());
+    m_connections.emplace_back(node1_, node2_, traverseTo2_, traverseTo1_, (m_nodes[node1_].m_position - m_nodes[node2_].m_position).length(), m_connections.size());
     m_nodes[node1_].connections.push_back(m_connections.size() - 1);
     m_nodes[node2_].connections.push_back(m_connections.size() - 1);
 

@@ -1,10 +1,14 @@
 #ifndef UTILS_H_
 #define UTILS_H_
-#include <string>
 #include <SDL.h>
+#include <string>
 #include <regex>
 #include <sstream>
 #include <string>
+#include <cassert>
+
+template <typename T>
+concept Numeric = std::is_arithmetic_v<T>;
 
 namespace Easing
 {
@@ -16,6 +20,7 @@ namespace Easing
 
 namespace utils
 {
+
     template<typename T>
     class Average
     {
@@ -26,7 +31,7 @@ namespace utils
         }
 
         template<typename T2>
-        Average &operator+=(const T2 &rhs_)
+        Average &operator+=(const T2 &rhs_) noexcept
         {
             sum += rhs_;
             cnt++;
@@ -34,12 +39,13 @@ namespace utils
         }
 
         template<typename T2>
-        operator T2()
+        operator T2() noexcept
         {
+            assert(cnt != 0);
             return sum / cnt;
         }
 
-        inline bool isSet() const
+        inline bool isSet() const noexcept
         {
             return cnt > 0;
         }
@@ -50,14 +56,14 @@ namespace utils
 
     };
 
-    template<typename T>
-    T degreesToRadians(const T &degrees_)
+    template<Numeric T>
+    auto degreesToRadians(const T &degrees_) noexcept -> decltype(degrees_ * 1.0f)
     {
-        return degrees_ * 3.14159 / 180;
+        return degrees_ * 3.14159f / 180;
     }
 
-    template <typename T>
-    inline T clamp(const T& val, const T &min, const T &max)
+    template <Numeric T>
+    inline T clamp(const T& val, const T &min, const T &max) noexcept
     {
     	if (val < min)
     		return min;
@@ -68,8 +74,8 @@ namespace utils
     	return val;
     }
     
-    template <typename T>
-    inline T clampMaxPriority(const T& val, const T &min, const T &max)
+    template <Numeric T>
+    inline T clampMaxPriority(const T& val, const T &min, const T &max) noexcept
     {
         if (val > max)
     		return max;
@@ -85,14 +91,14 @@ namespace utils
     	return val;
     }
 
-    template <bool ON_NULLS = true, typename T1, typename T2>
-    inline bool sameSign(const T1 &v1, const T2 &v2)
+    template <bool ON_NULLS = true, Numeric T1, Numeric T2>
+    inline bool sameSign(const T1 &v1, const T2 &v2) noexcept
     {
     	return (v1 > 0 && v2 > 0 || v1 < 0 && v2 < 0 || v1 == v2 && ON_NULLS);
     }
 
-    template <typename T>
-    inline T signof(const T &val_)
+    template <Numeric T>
+    inline T signof(const T &val_) noexcept
     {
         if (val_ >= 0)
             return 1;
@@ -100,13 +106,13 @@ namespace utils
             return -1;
     }
 
-    template <typename T, typename aT>
-    inline T lerp(const T &min, const T &max, const aT &alpha)
+    template <Numeric T, Numeric aT>
+    inline T lerp(const T &min, const T &max, const aT &alpha) noexcept
     {
         return {min + (max - min) * alpha};
     }
 
-    template <typename T>
+    template <Numeric T>
     inline T reverseLerp(const T& val, const T &min, const T &max)
     {
     	T alpha = (val - min) / (max - min);
@@ -134,8 +140,11 @@ namespace utils
     }
 
     // Gets portion of l1, overlapped by l2, result is in range [0, 1]
-    inline float getOverlapPortion(float l1min_, float l1max_, float l2min_, float l2max_)
+    inline float getOverlapPortion(float l1min_, float l1max_, float l2min_, float l2max_) noexcept
     {
+        assert(l1max_ > l1min_);
+        assert(l2max_ > l2min_);
+
         auto pmin = std::max(l1min_, l2min_);
         auto pmax = std::min(l1max_, l2max_);
 
@@ -161,7 +170,7 @@ namespace utils
     }
 
     // value_ <= bound_ for bound < 0 or value_ >= bound_ otherwise
-    template<typename T>
+    template<Numeric T>
     constexpr inline bool isLowerOrGreater(const T& value_, const T& bound_) noexcept
     {
         return bound_ < 0 ? value_ <= bound_ : value_ >= bound_;
@@ -249,18 +258,9 @@ namespace utils
 
 }
 
-// Assert uniqueness
-template <typename...>
-inline constexpr auto is_unique = std::true_type{};
-
-template <typename T, typename... Rest>
-inline constexpr auto is_unique<T, Rest...> = std::bool_constant<
-    (!std::is_same_v<T, Rest> && ...) && is_unique<Rest...>
->{};
-
 
 template <typename T, size_t len>
-std::ostream& operator<< (std::ostream& out, const std::array<T, len>& arr)
+inline std::ostream& operator<< (std::ostream& out, const std::array<T, len>& arr)
 {
     out << "[";
     for (int i = 0; i < len; ++i)
@@ -274,7 +274,7 @@ std::ostream& operator<< (std::ostream& out, const std::array<T, len>& arr)
 }
 
 template <typename T>
-std::ostream& operator<< (std::ostream& out, const std::vector<T>& vec)
+inline std::ostream& operator<< (std::ostream& out, const std::vector<T>& vec)
 {
     out << "[";
     for (int i = 0; i < vec.size(); ++i)

@@ -108,7 +108,7 @@ void Camera::smoothMoveTowards(const Vector2<float> &pos_, const Vector2<float> 
 {
     auto realTar = getCamPositionInBoundaries(pos_);
     auto deltaVec = (realTar - m_pos).mulComponents(deltaMul_);
-    auto dlen = deltaVec.getLen();
+    auto dlen = deltaVec.length();
     if (dlen <= mindir_)
         return;
 

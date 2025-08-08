@@ -120,7 +120,7 @@ void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPh
 
     Vector2<int> camSize = m_cam.getSize();
     Vector2<int> camTL = m_cam.getTopLeft();
-    auto screenRelPos = (worldOrigin - camTL).mulComponents(Vector2{1.0f / camSize.x, 1.0f / camSize.y});
+    auto screenRelPos = (worldOrigin - camTL).mulComponents(1.0f / camSize.x, 1.0f / camSize.y);
     
 	Vector2<int> screenOrigin = screenRelPos.mulComponents(gamedata::global::hudLayerResolution);
 
