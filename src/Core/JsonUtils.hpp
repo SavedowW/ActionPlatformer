@@ -28,7 +28,7 @@ namespace utils
             if (src_.contains(field_))
                 return src_[field_];
         }
-        catch(std::exception &ex_)
+        catch(std::exception &)
         {
             // Property is invalid
         }

@@ -509,7 +509,7 @@ void LevelBuilder::loadColliderRoutingLayer(const nlohmann::json &json_, Collide
     struct PointDescr
     {
         std::string initialLink;
-        Vector2<float> pos;
+        Vector2<int> pos;
         std::map<std::string, int> links;
         std::map<int, std::string> rules;
     };

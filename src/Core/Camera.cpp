@@ -178,7 +178,7 @@ void Camera::update()
     {
         if (m_xShakeAmp)
         {
-            int realAmp = m_xShakeAmp * (1 - m_shakeTimer.getProgressNormalized());
+            const int realAmp = static_cast<int>(m_xShakeAmp * (1 - m_shakeTimer.getProgressNormalized()));
             if (realAmp)
                 m_thisFrameAmp.x = (rand() % realAmp) - (realAmp / 2.0f);
             else
@@ -188,7 +188,7 @@ void Camera::update()
 
         if (m_yShakeAmp)
         {
-            int realAmp = m_yShakeAmp * (1 - m_shakeTimer.getProgressNormalized());
+            const int realAmp = static_cast<int>(m_yShakeAmp * (1 - m_shakeTimer.getProgressNormalized()));
             if (realAmp)
                 m_thisFrameAmp.y = (rand() % realAmp) - (realAmp / 2.0f);
             else

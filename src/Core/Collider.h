@@ -30,8 +30,8 @@ struct SlopeCollider
     Vector2<int> m_tlPos;
     Vector2<int> m_size;
     float m_topAngleCoef = 0.0f;
-    int m_highestSlopePoint = 0.0f;
-    int m_lowestSlopePoint = 0.0f;
+    int m_highestSlopePoint = 0;
+    int m_lowestSlopePoint = 0;
     bool m_hasSlope = false;
     bool m_hasBox = false;
 

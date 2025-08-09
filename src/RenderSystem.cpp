@@ -339,14 +339,14 @@ void RenderSystem::drawHealth(const ComponentTransform &trans_, HealthRendererCo
         auto texPos = texCenter;
         texPos.x += (texSize.x - 19) * offsetMul;
 
-        uint8_t alpha = 255;
+        float alpha = 1.0f;
         
         if (howner_.m_state == HealthRendererCommonWRT::DelayFadeStates::FADE_IN)
-            alpha *= howner_.m_delayFadeTimer.getProgressNormalized();
+            alpha = howner_.m_delayFadeTimer.getProgressNormalized();
         else if (howner_.m_state == HealthRendererCommonWRT::DelayFadeStates::FADE_OUT)
-            alpha *= 1 - howner_.m_delayFadeTimer.getProgressNormalized();
+            alpha = 1.0f - howner_.m_delayFadeTimer.getProgressNormalized();
 
-        m_renderer.renderTexture(spr, texPos, texSize, SDL_FLIP_NONE, alpha / 255.0f, m_camera);
+        m_renderer.renderTexture(spr, texPos, texSize, SDL_FLIP_NONE, alpha, m_camera);
 
         //m_renderer.drawRectangle(texPos, texSize, {0, 0, 0, 255}, m_camera);
 

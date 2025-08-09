@@ -209,7 +209,7 @@ bool PhysicsSystem::attemptOffsetUp(const auto &clds_, const entt::entity &idx_,
 }
 
 bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, const entt::entity &idx_, const Vector2<float> &originalPos_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_, int offset_,
-    int originalY_, int maxYOffset_, int naturalYOffset_, float &touchedSlope_, entt::entity &onGround_)
+    int originalY_, unsigned int maxYOffset_, int naturalYOffset_, float &touchedSlope_, entt::entity &onGround_)
 {
     const auto oldPos = trans_.m_pos;
     const auto newPos = trans_.m_pos + Vector2<int>(offset_, 0);
@@ -351,8 +351,8 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
 
     // X axis movement handling
     {
-        int originalY = trans_.m_pos.y;
-        int maxOffsetY = 1.3f * abs(offset.x);
+        const int originalY = trans_.m_pos.y;
+        const unsigned int maxOffsetY = static_cast<unsigned int>(1.3f * abs(offset.x));
 
         // Moving to the right
         if (offset.x > 0)

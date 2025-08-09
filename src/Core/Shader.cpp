@@ -116,45 +116,29 @@ void Shader::compile(const char *vertexSource_, const char *fragmentSource_)
     glDeleteShader(sFragment);
 }
 
-void Shader::setFloat(const char *name_, float value_)
-{
-    glUniform1f(claimUniformLoc(name_), value_);
-}
 void Shader::setInteger(const char *name_, int value_)
 {
     glUniform1i(claimUniformLoc(name_), value_);
 }
-void Shader::setVector2f(const char *name_, float x_, float y_)
-{
-    glUniform2f(claimUniformLoc(name_), x_, y_);
-}
+
 void Shader::setVector2f(const char *name_, const glm::vec2 &value_)
 {
     glUniform2f(claimUniformLoc(name_), value_.x, value_.y);
 }
-void Shader::setVector3f(const char *name_, float x_, float y_, float z_)
-{
-    glUniform3f(claimUniformLoc(name_), x_, y_, z_);
-}
+
 void Shader::setVector3f(const char *name_, const glm::vec3 &value_)
 {
     glUniform3f(claimUniformLoc(name_), value_.x, value_.y, value_.z);
 }
-void Shader::setVector4f(const char *name_, float x_, float y_, float z_, float w_)
-{
-    glUniform4f(claimUniformLoc(name_), x_, y_, z_, w_);
-}
+
 void Shader::setVector4f(const char *name_, const glm::vec4 &value_)
 {
     glUniform4f(claimUniformLoc(name_), value_.x, value_.y, value_.z, value_.w);
 }
+
 void Shader::setMatrix4(const char *name_, const glm::mat4 &matrix_)
 {
-    auto uniLoc = claimUniformLoc(name_);
-            dumpErrors();
-    glUniformMatrix4fv(uniLoc, 1, false, glm::value_ptr(matrix_));
-            dumpErrors();
-
+    glUniformMatrix4fv(claimUniformLoc(name_), 1, false, glm::value_ptr(matrix_));
 }
 
 

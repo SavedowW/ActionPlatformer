@@ -26,16 +26,16 @@ void CameraSystem::update()
 
     if (phys.m_appliedOffset.x != 0)
     {
-        auto targetoffset = utils::signof(phys.m_appliedOffset.x) * std::min(abs(phys.m_appliedOffset.x * 30.0f), 100.0f);
+        auto targetoffset = utils::signof(phys.m_appliedOffset.x) * std::min(abs(phys.m_appliedOffset.x * 30), 100);
         auto delta = (targetoffset - dtar.m_offset.x) * dtar.m_lookaheadSpeedSensitivity.x;
-        int realOffset = 0.0f;
+        int realOffset = 0;
         if (abs(delta) <= 1.0f)
         {
-            realOffset = delta;
+            realOffset = static_cast<int>(delta);
         }
         else
         {
-            realOffset = utils::signof(delta) * pow(abs(delta), 2.0f) / 400.0f;
+            realOffset = static_cast<int>(utils::signof(delta) * pow(abs(delta), 2.0f) / 400.0f);
         }
         dtar.m_offset.x += realOffset;
 
@@ -58,14 +58,14 @@ void CameraSystem::update()
             vprio = 1.5f;
         auto targetoffset = utils::signof(phys.m_appliedOffset.y) * std::min(abs(phys.m_appliedOffset.y * vprio * 20.0f), 40.0f);
         auto delta = (targetoffset - dtar.m_offset.y) * dtar.m_lookaheadSpeedSensitivity.y;
-        int realOffset = 0.0f;
+        int realOffset = 0;
         if (abs(delta) <= 1.0f)
         {
-            realOffset = delta;
+            realOffset = static_cast<int>(delta);
         }
         else
         {
-            realOffset = utils::signof(delta) * pow(abs(delta), 2.0f) / 400.0f;
+            realOffset = static_cast<int>(utils::signof(delta) * pow(abs(delta), 2.0f) / 400.0f);
         }
         dtar.m_offset.y += realOffset;
 

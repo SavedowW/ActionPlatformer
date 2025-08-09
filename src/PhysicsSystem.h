@@ -23,7 +23,7 @@ struct PhysicsSystem
         bool noLanding_, float &touchedSlope_, entt::entity &onGround_);
     bool attemptOffsetUp(const auto &clds_, const entt::entity &idx_, const Vector2<float> &originalPos_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_, unsigned int offset_);
     bool attemptOffsetHorizontal(const auto &clds_, const entt::entity &idx_, const Vector2<float> &originalPos_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_, int offset_,
-        int originalY_, int maxYOffset_, int naturalYOffset_, float &touchedSlope_, entt::entity &onGround_);
+        int originalY_, unsigned int maxYOffset_, int naturalYOffset_, float &touchedSlope_, entt::entity &onGround_);
 
     void proceedEntity(const auto &clds_, const entt::entity &idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_);
     void proceedEntity(const auto &clds_, ComponentTransform &trans_, ComponentParticlePhysics &phys_);

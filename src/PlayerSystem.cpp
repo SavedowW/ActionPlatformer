@@ -109,7 +109,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(4.0f))
+        .setMagnetLimit(TimelineProperty<unsigned int>(4))
         .setUpdateMovementData(
             TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
             TimelineProperty<Vector2<float>>(
@@ -157,7 +157,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         ->setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(4.0f))
+        .setMagnetLimit(TimelineProperty<unsigned int>(4))
         .setUpdateMovementData(
             TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
             TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir vel mul
@@ -209,9 +209,9 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>({
-                    {0, 10.0f},
-                    {10, 4.0f}
+        .setMagnetLimit(TimelineProperty<unsigned int>({
+                    {0, 10},
+                    {10, 4}
                 }))
         .setUpdateMovementData(
             TimelineProperty<Vector2<float>>( 
@@ -296,7 +296,7 @@ void PlayerSystem::setup(entt::entity playerId_)
             TimelineProperty<Vector2<float>>({2.5f, 0.0f}),
             TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
         .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(4.0f))
+        .setMagnetLimit(TimelineProperty<unsigned int>(4))
         .setHurtboxes({
             {
                 HurtboxGroup(
@@ -332,7 +332,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         ->setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(4.0f))
+        .setMagnetLimit(TimelineProperty<unsigned int>(4))
         .setUpdateMovementData(
             TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
             TimelineProperty<Vector2<float>>( 
@@ -368,7 +368,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setDrag({{0.5f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(4.0f))
+        .setMagnetLimit(TimelineProperty<unsigned int>(4))
         .setUpdateMovementData(
             TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
             TimelineProperty<Vector2<float>>({0.0f, 0.0f}),  // Dir vel mul
@@ -400,7 +400,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setDrag(TimelineProperty<Vector2<float>>({{0, Vector2{0.1f, 0.1f}}, {3, Vector2{0.5f, 0.5f}}}))
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(4.0f))
+        .setMagnetLimit(TimelineProperty<unsigned int>(4))
         .setHurtboxes({
             {
                 HurtboxGroup(
@@ -424,7 +424,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         ->setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(4.0f))
+        .setMagnetLimit(TimelineProperty<unsigned int>(4))
         .setHurtboxes({
             {
                 HurtboxGroup(
@@ -450,7 +450,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         ->setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(4.0f))
+        .setMagnetLimit(TimelineProperty<unsigned int>(4))
         .setHurtboxes({
             {
                 HurtboxGroup(
@@ -483,7 +483,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setCanFallThrough(TimelineProperty<bool>(false))
         .setGravity({{0.0f, 0.5f}})
         .setConvertVelocityOnSwitch(false, true)
-        .setMagnetLimit(TimelineProperty<float>(0.0f))
+        .setMagnetLimit(TimelineProperty<unsigned int>(0))
         .setNoLanding(TimelineProperty<bool>(false))
         .setHurtboxes({
             {

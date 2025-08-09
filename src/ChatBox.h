@@ -15,8 +15,8 @@ enum class ChatBoxSide
     AUTO // Wherever there is more free space
 };
 
-class ChatMessage;
-class ChatMessageSequence;
+struct ChatMessage;
+struct ChatMessageSequence;
 
 class InlinedValueHandler
 {

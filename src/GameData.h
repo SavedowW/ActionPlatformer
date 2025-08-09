@@ -48,7 +48,7 @@ namespace gamedata
 
     namespace tiles
     {
-        inline constexpr Vector2<float> tileSize = {16.0f, 16.0f};
+        inline constexpr Vector2<int> tileSize = {16, 16};
     }
 
     namespace characters

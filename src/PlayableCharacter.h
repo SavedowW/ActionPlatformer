@@ -532,9 +532,9 @@ public:
         setGravity({{0.0f, 0.0f}});
         setConvertVelocityOnSwitch(true, false);
         setTransitionOnLostGround(CharacterState::FLOAT);
-        setMagnetLimit(TimelineProperty<float>({
-                    {0, 16.0f},
-                    {15, 4.0f}
+        setMagnetLimit(TimelineProperty<unsigned int>({
+                    {0, 16},
+                    {15, 4}
                 }));
         setUpdateMovementData(
             TimelineProperty<Vector2<float>>( 

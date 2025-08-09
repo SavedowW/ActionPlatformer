@@ -170,7 +170,7 @@ public:
     PhysicalState &setUpdateMovementData(
         TimelineProperty<Vector2<float>> &&mulOwnVelUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirVelUpd_, TimelineProperty<Vector2<float>> &&rawAddVelUpd_,
         TimelineProperty<Vector2<float>> &&mulOwnInrUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirInrUpd_, TimelineProperty<Vector2<float>> &&rawAddInrUpd_);
-    PhysicalState &setMagnetLimit(TimelineProperty<float> &&magnetLimit_);
+    PhysicalState &setMagnetLimit(TimelineProperty<unsigned int> &&magnetLimit_);
     PhysicalState &setUpdateSpeedLimitData(TimelineProperty<Vector2<float>> &&ownVelLimitUpd_, TimelineProperty<Vector2<float>> &&ownInrLimitUpd_);
     PhysicalState &setCooldown(FrameTimer<true> *cooldown_, int cooldownTime_);
     PhysicalState &setRecoveryFrames(TimelineProperty<StateMarker> &&recoveryFrames_);
@@ -207,7 +207,7 @@ protected:
     TimelineProperty<Vector2<float>> m_ownVelLimitUpd;
     TimelineProperty<Vector2<float>> m_ownInrLimitUpd;
 
-    TimelineProperty<float> m_magnetLimit;
+    TimelineProperty<unsigned int> m_magnetLimit;
 
     TimelineProperty<bool> m_canFallThrough;
 

@@ -17,9 +17,9 @@ EnemySystem::EnemySystem(entt::registry &reg_, Application &app_, NavSystem &nav
 entt::entity EnemySystem::makeEnemy()
 {
     auto enemyId = m_reg.create();
-    m_reg.emplace<HUDPoint>(enemyId, HUDPosRule::REL_TRANSFORM, Vector2{0.0f, -16.0f}, 16.0f);
+    m_reg.emplace<HUDPoint>(enemyId, HUDPosRule::REL_TRANSFORM, Vector2{0, -16}, 16);
 
-    const auto &trans = m_reg.emplace<ComponentTransform>(enemyId, Vector2{780.0f, 470.0f}, ORIENTATION::RIGHT);
+    const auto &trans = m_reg.emplace<ComponentTransform>(enemyId, Vector2{780, 470}, ORIENTATION::RIGHT);
     m_reg.emplace<ComponentReset<ComponentTransform>>(enemyId, trans.m_pos, trans.m_orientation);
 
     m_reg.emplace<PhysicalEvents>(enemyId);
@@ -88,7 +88,7 @@ entt::entity EnemySystem::makeEnemy()
     navigateChase->addState(std::unique_ptr<GenericState>(
         new BlindChaseState(
             Enemy1State::META_BLIND_CHASE, {Enemy1State::NONE, {}},
-            Enemy1State::IDLE, Enemy1State::RUN, 200.0f)
+            Enemy1State::IDLE, Enemy1State::RUN, 200)
     ));
 
     navigateChase->setInitialState(Enemy1State::IDLE);
@@ -140,7 +140,7 @@ entt::entity EnemySystem::makeEnemy()
             TimelineProperty<Vector2<float>>({3.5f, 0.0f}),
             TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
         .setTransitionOnLostGround(Enemy1State::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(10.0f))
+        .setMagnetLimit(TimelineProperty<unsigned int>(10))
         .setHurtboxes({
             {
                 HurtboxGroup(
@@ -162,7 +162,7 @@ entt::entity EnemySystem::makeEnemy()
         ->setGravity({{0.0f, 0.0f}})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(Enemy1State::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(4.0f))
+        .setMagnetLimit(TimelineProperty<unsigned int>(4))
         .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
         .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
         .setHurtboxes({
@@ -192,7 +192,7 @@ entt::entity EnemySystem::makeEnemy()
         .setDrag(TimelineProperty<Vector2<float>>({{0, Vector2{0.1f, 0.1f}}, {3, Vector2{0.5f, 0.5f}}}))
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(Enemy1State::FLOAT)
-        .setMagnetLimit(TimelineProperty<float>(8.0f))
+        .setMagnetLimit(TimelineProperty<unsigned int>(8))
         .setHurtboxes({
             {
                 HurtboxGroup(

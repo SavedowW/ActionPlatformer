@@ -78,7 +78,7 @@ class BlindChaseState: public AIState
 public:
     template<typename PLAYER_STATE_T>
     BlindChaseState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_,
-    PLAYER_STATE_T idle_, PLAYER_STATE_T walk_, float idleRange_) :
+    PLAYER_STATE_T idle_, PLAYER_STATE_T walk_, const unsigned int idleRange_) :
         AIState(stateId_, std::move(transitionableFrom_)),
         m_idle(static_cast<CharState>(idle_)),
         m_walk(static_cast<CharState>(walk_)),
@@ -91,7 +91,7 @@ public:
 protected:
     CharState m_idle;
     CharState m_walk;
-    float m_idleRange;
+    const unsigned int m_idleRange;
 };
 
 class ProxySelectionState: public NodeState

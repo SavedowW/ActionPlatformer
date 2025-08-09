@@ -48,8 +48,8 @@ struct Vector2
     template <Numeric TR>
     constexpr inline Vector2(const Vector2<TR> &rhs) noexcept
     {
-        x = rhs.x;
-        y = rhs.y;
+        x = static_cast<T>(rhs.x);
+        y = static_cast<T>(rhs.y);
     }
 
     constexpr inline Vector2(ORIENTATION orient_) noexcept
@@ -61,8 +61,8 @@ struct Vector2
     template <Numeric TR>
     constexpr inline Vector2<T> &operator=(const Vector2<TR> &rhs) noexcept
     {
-        x = rhs.x;
-        y = rhs.y;
+        x = static_cast<T>(rhs.x);
+        y = static_cast<T>(rhs.y);
         return *this;
     }
 

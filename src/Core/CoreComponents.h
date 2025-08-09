@@ -79,7 +79,7 @@ struct ComponentPhysical
     Vector2<float> m_inertiaMultiplier;
     Collider m_pushbox;
     bool m_onMovingPlatform = false;
-    int m_magnetLimit = 0.0f;
+    unsigned int m_magnetLimit = 0;
     float m_onSlopeWithAngle = 0.0f;
     float m_lastSlopeAngle = 0.0f;
     uint32_t m_hitstopLeft = 0;
@@ -270,8 +270,8 @@ enum class HUDPosRule
 struct HUDPoint
 {
     HUDPosRule m_posRule = HUDPosRule::POS_WORLD;
-    Vector2<float> m_pos;
-    float m_vOffset = 0.0f;
+    Vector2<int> m_pos;
+    int m_vOffset = 0;
 };
 
 struct RenderLayer
@@ -303,7 +303,7 @@ struct TilemapLayer
 
     std::vector<std::vector<Tile>> m_tiles;
     Vector2<float> m_parallaxFactor;
-    Vector2<float> m_posOffset;
+    Vector2<int> m_posOffset;
 };
 
 Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_);

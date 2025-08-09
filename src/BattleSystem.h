@@ -4,10 +4,10 @@
 #include "FixedQueue.hpp"
 #include <entt/entt.hpp>
 
-class BattleActor;
+struct BattleActor;
 class StateMachine;
-class ComponentTransform;
-class HitboxGroup;
+struct ComponentTransform;
+struct HitboxGroup;
 
 struct ActorDescr
 {

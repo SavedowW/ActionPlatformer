@@ -29,7 +29,7 @@ void SlopeCollider::set(const Vector2<int> (&vertices_)[4])
 
     m_tlPos = m_points[0];
     m_size = m_points[2] - m_points[0];
-    m_topAngleCoef = (m_points[1].y - m_points[0].y) / m_size.x;
+    m_topAngleCoef = static_cast<float>(m_points[1].y - m_points[0].y) / m_size.x;
 
     m_highestSlopePoint = std::min(m_points[0].y, m_points[1].y);
     m_lowestSlopePoint = std::max(m_points[0].y, m_points[1].y);
@@ -87,7 +87,7 @@ OverlapResult SlopeCollider::checkOverlap(const Collider &cld_) const
     }
     else if (m_topAngleCoef < 0)
     {
-        int highesty = 0.0f;
+        int highesty = 0;
         OverlapResult res = OverlapResult::NONE;
 
         if (leftEdge >= m_points[0].x && rightEdge <= m_points[1].x)
@@ -136,7 +136,7 @@ OverlapResult SlopeCollider::checkOverlap(const Collider &cld_, int &highestPoin
 
     if (m_topAngleCoef > 0)
     {
-        int highesty = 0.0f;
+        int highesty = 0;
         OverlapResult res = OverlapResult::NONE;
 
         if (leftEdge >= m_points[0].x && rightEdge <= m_points[1].x)
@@ -165,7 +165,7 @@ OverlapResult SlopeCollider::checkOverlap(const Collider &cld_, int &highestPoin
     }
     else if (m_topAngleCoef < 0)
     {
-        int highesty = 0.0f;
+        int highesty = 0;
         OverlapResult res = OverlapResult::NONE;
 
         if (leftEdge >= m_points[0].x && rightEdge <= m_points[1].x)
@@ -216,7 +216,7 @@ int SlopeCollider::getOrientationDir() const
 
 int SlopeCollider::getHeightAt(int x) const
 {
-    return m_tlPos.y + m_topAngleCoef * (x - m_tlPos.x);
+    return m_tlPos.y + static_cast<int>(m_topAngleCoef * (x - m_tlPos.x));
 }
 
 int SlopeCollider::getMostRightAt(const Collider &cld_) const
@@ -230,7 +230,7 @@ int SlopeCollider::getMostRightAt(const Collider &cld_) const
         auto bot = cld_.getBottomEdge();
         if (bot < m_lowestSlopePoint)
         {
-            return m_tlPos.x + (bot - m_tlPos.y) * m_topAngleCoef;
+            return m_tlPos.x + static_cast<int>((bot - m_tlPos.y) * m_topAngleCoef);
         }
         else
             return m_points[1].x;
@@ -248,7 +248,7 @@ int SlopeCollider::getMostLeftAt(const Collider &cld_) const
         auto bot = cld_.getBottomEdge();
         if (bot < m_lowestSlopePoint)
         {
-            return m_tlPos.x + (bot - m_tlPos.y) * m_topAngleCoef;
+            return m_tlPos.x + static_cast<int>((bot - m_tlPos.y) * m_topAngleCoef);
         }
         else
             return m_points[0].x;

@@ -31,8 +31,8 @@ struct CameraSystem : public InputReactor
     const uint32_t H_DELAY = 60;
     const uint32_t V_DELAY = 60;
 
-    const int H_RESET_OFFSET = 2.0f;
-    const int V_RESET_OFFSET = 2.0f;
+    const int H_RESET_OFFSET = 2;
+    const int V_RESET_OFFSET = 2;
 
     const Vector2<int> BODY_OFFSET{0, -30};
 };

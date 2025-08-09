@@ -280,14 +280,14 @@ unsigned int Renderer::createTextureRGBA(int width_, int height_)
     return texid;
 }
 
-void Renderer::attachTex(unsigned int tex_, const Vector2<float> &size_)
+void Renderer::attachTex(unsigned int tex_, const Vector2<unsigned int> &size_)
 {
     glViewport(0, 0, size_.x, size_.y);
     glBindFramebuffer(GL_FRAMEBUFFER, m_renderTarget);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_, 0); 
 
-    glm::mat4 projection = glm::ortho(0.0f, size_.x, 
-        size_.y, 0.0f, -1.0f, 1.0f);
+    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(size_.x), 
+        static_cast<float>(size_.y), 0.0f, -1.0f, 1.0f);
     m_spriteShader.use();
     m_spriteShader.setMatrix4("projection", projection);
 }
@@ -365,7 +365,7 @@ void Renderer::drawRectangle(const Vector2<int> &pos_, const Vector2<int> &size_
 
 void Renderer::drawRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const SDL_Color &col_, const Camera &cam_)
 {
-    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - gamedata::global::maxCameraSize / 2;
+    Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
     drawRectangle(pos_ - camTL, size_, col_);
 }
 
@@ -386,7 +386,7 @@ void Renderer::fillRectangle(const Vector2<int> &pos_, const Vector2<int> &size_
 
 void Renderer::fillRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const SDL_Color &col_, const Camera &cam_)
 {
-    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - gamedata::global::maxCameraSize / 2;
+    Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
     fillRectangle(pos_ - camTL, size_, col_);
 }
 
@@ -405,13 +405,13 @@ void Renderer::drawLine(const Vector2<int> &p1_, const Vector2<int> &p2_, const 
 
 void Renderer::drawLine(const Vector2<int> &p1_, const Vector2<int> &p2_, const SDL_Color &col_, const Camera &cam_)
 {
-    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - gamedata::global::maxCameraSize / 2;
+    Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
     drawLine(p1_ - camTL, p2_ - camTL, col_);
 }
 
 void Renderer::drawCross(const Vector2<int> &center_, const Vector2<int> &vSize_, const Vector2<int> &hSize_, const SDL_Color &col_, const Camera &cam_)
 {
-    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - gamedata::global::maxCameraSize / 2;
+    Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
 	drawCross(center_ - camTL, vSize_, hSize_, col_);
 }
 
@@ -436,7 +436,7 @@ void Renderer::drawCircleOutline(const Vector2<int> &center_, float radius_, con
 
 void Renderer::drawCircleOutline(const Vector2<int> &center_, float radius_, const SDL_Color &col_, const Camera &cam_)
 {
-    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - gamedata::global::maxCameraSize / 2;
+    Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
     drawCircleOutline(center_ - camTL, radius_, col_);
 }
 
@@ -453,7 +453,7 @@ void Renderer::drawCollider(const Collider &cld_, const SDL_Color &fillCol_, con
 
 void Renderer::drawCollider(const SlopeCollider &cld_, const SDL_Color &fillCol_, const Camera &cam_)
 {
-    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - gamedata::global::maxCameraSize / 2;
+    Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
 
     glBindVertexArray(m_rectVAO);
     m_rectShader.use();
@@ -485,7 +485,7 @@ void Renderer::renderTextureOutlined(const unsigned int tex_, const Vector2<int>
     glBindVertexArray(m_spriteVAO);
     m_spriteOutlinedShader.use();
 
-    float top, bot, lft, rgt;
+    int top, bot, lft, rgt;
     if (flip_ & SDL_FLIP_VERTICAL)
     {
         top = pos_.y + size_.y;
@@ -508,7 +508,7 @@ void Renderer::renderTextureOutlined(const unsigned int tex_, const Vector2<int>
     }
 
 
-    Vector2<float> vertices[] =
+    Vector2<int> vertices[] =
     {
         {lft, top},
         {rgt, top},
@@ -533,7 +533,7 @@ void Renderer::renderTextureOutlined(const unsigned int tex_, const Vector2<int>
 
 void Renderer::renderTextureOutlined(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_, const Camera &cam_)
 {
-    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - gamedata::global::maxCameraSize / 2;
+    Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
     renderTextureOutlined(tex_, pos_ - camTL, size_, flip_);
 }
 
@@ -542,7 +542,7 @@ void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, 
     glBindVertexArray(m_spriteVAO);
     m_spriteShader.use();
 
-    float top, bot, lft, rgt;
+    int top, bot, lft, rgt;
     if (flip_ & SDL_FLIP_VERTICAL)
     {
         top = pos_.y + size_.y;
@@ -565,7 +565,7 @@ void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, 
     }
 
 
-    Vector2<float> vertices[] =
+    Vector2<int> vertices[] =
     {
         {lft, top},
         {rgt, top},
@@ -586,7 +586,7 @@ void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, 
 
 void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_, float alpha_, const Camera &cam_)
 {
-    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - gamedata::global::maxCameraSize / 2;
+    Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
     renderTexture(tex_, pos_ - camTL, size_, flip_, alpha_);
 }
 
@@ -597,7 +597,7 @@ void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, 
 
     auto realPivot = pivot_ + pos_;
 
-    float top, bot, lft, rgt;
+    int top, bot, lft, rgt;
     if (flip_ & SDL_FLIP_VERTICAL)
     {
         top = pos_.y + size_.y;
@@ -620,7 +620,7 @@ void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, 
     }
 
 
-    Vector2<float> vertices[] =
+    Vector2<int> vertices[] =
     {
         {lft, top},
         {rgt, top},
@@ -642,7 +642,7 @@ void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, 
 
 void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_, float degrees_, const Vector2<int> pivot_, const Camera &cam_)
 {
-    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - gamedata::global::maxCameraSize / 2;
+    Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
     renderTexture(tex_, pos_ - camTL, size_, flip_, degrees_, pivot_);
 }
 
@@ -651,7 +651,7 @@ void Renderer::renderTextureFlash(const unsigned int tex_, const Vector2<int> &p
     glBindVertexArray(m_spriteVAO);
     m_spriteShaderFlash.use();
 
-    float top, bot, lft, rgt;
+    int top, bot, lft, rgt;
     if (flip_ & SDL_FLIP_VERTICAL)
     {
         top = pos_.y + size_.y;
@@ -674,7 +674,7 @@ void Renderer::renderTextureFlash(const unsigned int tex_, const Vector2<int> &p
     }
 
 
-    Vector2<float> vertices[] =
+    Vector2<int> vertices[] =
     {
         {lft, top},
         {rgt, top},
@@ -695,7 +695,7 @@ void Renderer::renderTextureFlash(const unsigned int tex_, const Vector2<int> &p
 
 void Renderer::renderTextureFlash(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_, uint8_t alpha_, const Camera &cam_)
 {
-    Vector2<int> camTL = Vector2<int>(cam_.getPos()) - gamedata::global::maxCameraSize / 2;
+    Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
     renderTextureFlash(tex_, pos_ - camTL, size_, flip_, alpha_);
 }
 
@@ -704,7 +704,7 @@ void Renderer::renderTile(const unsigned int tex_, const Vector2<int> &pos_, con
     glBindVertexArray(m_spriteVAO);
     m_tileShader.use();
 
-    float top, bot, lft, rgt;
+    int top, bot, lft, rgt;
     if (flip_ & SDL_FLIP_VERTICAL)
     {
         top = pos_.y + size_.y;
@@ -727,7 +727,7 @@ void Renderer::renderTile(const unsigned int tex_, const Vector2<int> &pos_, con
     }
 
 
-    Vector2<float> vertices[] =
+    Vector2<int> vertices[] =
     {
         {lft, top},
         {rgt, top},

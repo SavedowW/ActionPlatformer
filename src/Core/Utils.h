@@ -140,7 +140,8 @@ namespace utils
     }
 
     // Gets portion of l1, overlapped by l2, result is in range [0, 1]
-    inline float getOverlapPortion(float l1min_, float l1max_, float l2min_, float l2max_) noexcept
+    template<Numeric T>
+    inline constexpr auto getOverlapPortion(T l1min_, T l1max_, T l2min_, T l2max_) noexcept -> decltype(1.0f / l1min_)
     {
         assert(l1max_ > l1min_);
         assert(l2max_ > l2min_);
@@ -149,9 +150,9 @@ namespace utils
         auto pmax = std::min(l1max_, l2max_);
 
         if (pmin >= pmax)
-            return 0;
+            return 0.0f;
 
-        return (pmax - pmin) / (l1max_ - l1min_);
+        return static_cast<float>(pmax - pmin) / (l1max_ - l1min_);
     }
 
     constexpr inline std::string getIntend(int intend_)

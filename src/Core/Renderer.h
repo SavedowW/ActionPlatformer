@@ -24,7 +24,7 @@ public:
     static unsigned int *surfacesToTexture(const std::vector<SDL_Surface*> &surfaces);
     static unsigned int createTextureRGBA(int width_, int height_);
 
-    void attachTex(unsigned int tex_, const Vector2<float> &size_);
+    void attachTex(unsigned int tex_, const Vector2<unsigned int> &size_);
     void attachTex();
 
     void prepareRenderer(const SDL_Color &col_);

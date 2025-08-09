@@ -240,7 +240,7 @@ PhysicalState &PhysicalState::setUpdateMovementData(TimelineProperty<Vector2<flo
     return *this;
 }
 
-PhysicalState &PhysicalState::setMagnetLimit(TimelineProperty<float> &&magnetLimit_)
+PhysicalState &PhysicalState::setMagnetLimit(TimelineProperty<unsigned int> &&magnetLimit_)
 {
     m_magnetLimit = std::move(magnetLimit_);
     return *this;
