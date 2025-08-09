@@ -85,22 +85,21 @@ std::string &utf8::appendBytes(std::string &s_, const char *u8char_, size_t sz_)
 
 std::wstring &utf8::appendChar(std::wstring &s_, const char *u8char_)
 {
-    return s_ += tou32(u8char_);
+    return s_ += static_cast<wchar_t>(tou32(u8char_));
 }
 
 std::wstring &utf8::appendChar(std::wstring &s_, const char *u8char_, uint8_t sz_)
 {
-    return s_ += tou32(u8char_, sz_);
+    return s_ += static_cast<wchar_t>(tou32(u8char_, sz_));
 }
 
 std::wstring &utf8::appendChars(std::wstring &s_, const char *u8char_, size_t cnt_)
 {
-    size_t fullsz = 0;
     auto *it = u8char_;
     while (cnt_-- && *it)
     {
         auto sz = readCharSize(it);
-        s_ += tou32(it, sz);
+        s_ += static_cast<wchar_t>(tou32(it, sz));
         it += sz;
     }
     return s_;

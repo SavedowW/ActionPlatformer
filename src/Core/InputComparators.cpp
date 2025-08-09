@@ -21,12 +21,12 @@ bool recursivelySearchInput(const InputQueue &inputQueue_, Vector2<VecT> (&input
     return false;
 }
 
-bool InputComparatorIdle::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
+bool InputComparatorIdle::operator()(const InputQueue&, unsigned int) const
 {
     return true;
 }
 
-bool InputComparatorHoldRight::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
+bool InputComparatorHoldRight::operator()(const InputQueue &inputQueue_, unsigned int) const
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -34,7 +34,7 @@ bool InputComparatorHoldRight::operator()(const InputQueue &inputQueue_, unsigne
     return inputQueue_[0].m_dir.x > 0;
 }
 
-bool InputComparatorHoldLeft::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
+bool InputComparatorHoldLeft::operator()(const InputQueue &inputQueue_, unsigned int) const
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -109,7 +109,7 @@ bool InputComparatorTapUpLeft::operator()(const InputQueue &inputQueue_, unsigne
     return false;
 }
 
-bool InputComparatorHoldUp::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
+bool InputComparatorHoldUp::operator()(const InputQueue &inputQueue_, unsigned int) const
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -117,7 +117,7 @@ bool InputComparatorHoldUp::operator()(const InputQueue &inputQueue_, unsigned i
     return inputQueue_[0].m_dir.y < 0;
 }
 
-bool InputComparatorHoldDown::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
+bool InputComparatorHoldDown::operator()(const InputQueue &inputQueue_, unsigned int) const
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -125,7 +125,7 @@ bool InputComparatorHoldDown::operator()(const InputQueue &inputQueue_, unsigned
     return inputQueue_[0].m_dir.y > 0;
 }
 
-bool InputComparatorFail::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
+bool InputComparatorFail::operator()(const InputQueue&, unsigned int) const
 {
     return false;
 }

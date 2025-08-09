@@ -167,7 +167,6 @@ bool MoveTowards::update(EntityAnywhere owner_, uint32_t currentFrame_)
 
     auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
     const auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
-    const auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
     auto delta = ai.m_navigationTarget - trans.m_pos;
 
     ai.m_requestedState = m_walk;
@@ -190,7 +189,7 @@ bool MoveTowards::update(EntityAnywhere owner_, uint32_t currentFrame_)
     return true;
 }
 
-void NavigateGraphChase::enter(EntityAnywhere owner_, CharState from_)
+void NavigateGraphChase::enter(EntityAnywhere owner_, CharState)
 {
     auto &nav = owner_.reg->get<Navigatable>(owner_.idx);
     nav.m_pathFollower = owner_.reg->get<World>(owner_.idx).getNavsys().makePath(nav.m_traverseTraits, owner_.reg->get<ComponentAI>(owner_.idx).m_chaseTarget, 60.0f);

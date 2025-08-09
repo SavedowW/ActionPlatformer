@@ -162,7 +162,7 @@ unsigned int Animation::getSprite()
 bool Animation::isFinished()
 {
     if (m_direction > 0)
-        return m_currentFrame == m_textures->m_totalDuration - 1;
+        return m_currentFrame == static_cast<int>(m_textures->m_totalDuration - 1);
     else
         return !m_currentFrame;
 }

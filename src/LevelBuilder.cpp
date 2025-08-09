@@ -60,7 +60,7 @@ LevelBuilder::LevelBuilder(Application &app_, entt::registry &reg_) :
     ADD_NAME_FACTORY_PAIR(GrassTopComp);
 }
 
-void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_, EnvironmentSystem &env_)
+void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_)
 {
     const auto fullpath = Filesystem::getRootDirectory() + mapDescr_;
 
@@ -133,7 +133,7 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
             }
             else
             {
-                loadObjectsLayer(*layer.m_layer, env_);
+                loadObjectsLayer(*layer.m_layer);
             }
         }
     }
@@ -445,7 +445,6 @@ void LevelBuilder::loadNavigationLayer(const nlohmann::json &json_, NavGraph &gr
                 auto traits = lineToTraverse(prop["name"]);
                 auto dst = static_cast<int>(prop["value"]);
                 
-                bool swapped = false;
                 if (src < dst)
                 {
                     connections[{src, dst}].first = traits;
@@ -583,7 +582,7 @@ void LevelBuilder::loadColliderRoutingLayer(const nlohmann::json &json_, Collide
     }
 }
 
-void LevelBuilder::loadObjectsLayer(const nlohmann::json &json_, EnvironmentSystem &env_)
+void LevelBuilder::loadObjectsLayer(const nlohmann::json &json_)
 {
     auto depth = m_autoLayer;
 

@@ -7,7 +7,7 @@
 #include <string>
 #include <stack>
 
-int main(int argc, char* args[])
+int main(int, char**)
 {
     try
     {

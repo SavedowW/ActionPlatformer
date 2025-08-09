@@ -103,6 +103,11 @@ public:
 
 private:
     std::shared_ptr<TextureArr> m_textures;
+
+    /*
+        Cannot be unsigned due to first frame logic:
+        on the first frame animation is used, it should show first frame no matter if the update was called or not
+    */
     int m_currentFrame;
     int m_direction;
     LOOPMETHOD m_isLoop;

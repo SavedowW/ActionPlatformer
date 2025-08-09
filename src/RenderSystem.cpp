@@ -66,7 +66,7 @@ void RenderSystem::draw()
 
     for (auto [idx, renlayer] : renderable.each())
         if (renlayer.m_visible)
-            handleDepthInstance(idx, renlayer);
+            handleDepthInstance(idx);
 
     for (auto [idx, trans, hren] : viewHealthOwners.each())
         drawHealth(trans, hren);
@@ -220,7 +220,7 @@ void RenderSystem::drawTilemapLayer(const ComponentTransform &trans_, TilemapLay
     }
 }
 
-void RenderSystem::handleDepthInstance(const entt::entity &idx_, const RenderLayer &layer_)
+void RenderSystem::handleDepthInstance(const entt::entity &idx_)
 {
     if (auto *ren = m_reg.try_get<ComponentAnimationRenderable>(idx_))
     {

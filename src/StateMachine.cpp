@@ -20,7 +20,7 @@ void StateMachine::switchCurrentState(EntityAnywhere owner_, GenericState *state
     m_framesInState = 0;
 }
 
-bool StateMachine::update(EntityAnywhere owner_, uint32_t currentFrame_)
+bool StateMachine::update(EntityAnywhere owner_, uint32_t)
 {
     m_framesInState++;
     auto updres = m_currentState->update(owner_, m_framesInState - 1);
@@ -147,7 +147,7 @@ bool GenericState::transitionableFrom(CharState targetStateId_) const
     return m_transitionableFrom[targetStateId_];
 }
 
-bool GenericState::transitionableInto(CharState targetStateId_, uint32_t currentFrame_) const
+bool GenericState::transitionableInto(CharState, uint32_t) const
 {
     return false;
 }
@@ -304,7 +304,7 @@ GenericState &GenericState::setParticlesLoopable(TimelineProperty<ParticleTempla
     return *this;
 }
 
-void GenericState::enter(EntityAnywhere owner_, CharState from_)
+void GenericState::enter(EntityAnywhere, CharState)
 {
     //std::cout << "Switched to " << m_stateName << std::endl;
 }
@@ -348,7 +348,7 @@ void PhysicalState::enter(EntityAnywhere owner_, CharState from_)
     }
 }
 
-void GenericState::leave(EntityAnywhere owner_, CharState to_)
+void GenericState::leave(EntityAnywhere owner_, CharState)
 {
     for (auto &particle : m_lifetimeTiedParticles)
     {

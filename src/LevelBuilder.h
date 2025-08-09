@@ -14,7 +14,7 @@ class LevelBuilder
 {
 public:
     LevelBuilder(Application &app_, entt::registry &reg_);
-    void buildLevel(const std::string &mapDescr_, entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_, EnvironmentSystem &env_);
+    void buildLevel(const std::string &mapDescr_, entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_);
 
 private:
     /*
@@ -46,7 +46,7 @@ private:
     void loadNavigationLayer(const nlohmann::json &json_, NavGraph &graph_);
     void loadFocusLayer(const nlohmann::json &json_);
     void loadColliderRoutingLayer(const nlohmann::json &json_, ColliderRoutesCollection &rtCollection_);
-    void loadObjectsLayer(const nlohmann::json &json_, EnvironmentSystem &env_);
+    void loadObjectsLayer(const nlohmann::json &json_);
 
 
     // Object factories

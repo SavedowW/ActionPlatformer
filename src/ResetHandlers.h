@@ -22,7 +22,7 @@ template <>
 class ComponentResetStatic<MoveCollider2Points>
 {
 public:
-    static void resetComponent(const entt::entity &ent_, MoveCollider2Points &m2p_)
+    static void resetComponent(const entt::entity&, MoveCollider2Points &m2p_)
     {
         m2p_.m_point1 = Vector2<float>{};
         m2p_.m_point2 = Vector2<float>{};
@@ -34,7 +34,7 @@ template <>
 class ComponentResetStatic<ColliderRoutingIterator>
 {
 public:
-    static void resetComponent(const entt::entity &ent_, ColliderRoutingIterator &iter_)
+    static void resetComponent(const entt::entity&, ColliderRoutingIterator &iter_)
     {
         iter_.m_iter = 0;
     }
@@ -44,7 +44,7 @@ template <>
 class ComponentReset<ComponentTransform>
 {
 public:
-    void resetComponent(const entt::entity &ent_, ComponentTransform &trans_)
+    void resetComponent(const entt::entity&, ComponentTransform &trans_)
     {
         trans_.m_pos = m_defaultPos;
         trans_.m_orientation = m_defaultOrientation;
@@ -70,7 +70,7 @@ template <>
 class ComponentResetStatic<ComponentPhysical>
 {
 public:
-    static void resetComponent(const entt::entity &ent_, ComponentPhysical &phys_)
+    static void resetComponent(const entt::entity&, ComponentPhysical &phys_)
     {
         phys_.m_velocity = {0.0f, 0.0f};
         phys_.m_inertia = {0.0f, 0.0f};
@@ -84,7 +84,7 @@ template <>
 class ComponentResetStatic<ComponentDynamicCameraTarget>
 {
 public:
-    static void resetComponent(const entt::entity &ent_, ComponentDynamicCameraTarget &camtar_)
+    static void resetComponent(const entt::entity&, ComponentDynamicCameraTarget &camtar_)
     {
         camtar_.m_offset = {0, 0};
     }
@@ -94,7 +94,7 @@ template <>
 class ComponentResetStatic<ComponentAnimationRenderable>
 {
 public:
-    static void resetComponent(const entt::entity &ent_, ComponentAnimationRenderable &anim_)
+    static void resetComponent(const entt::entity&, ComponentAnimationRenderable &anim_)
     {
         anim_.m_flash = nullptr;
     }

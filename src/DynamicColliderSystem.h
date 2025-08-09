@@ -18,7 +18,7 @@ struct DynamicColliderSystem
     bool isObstacleOverlappingWithDynamic(const SlopeCollider &cld_, int obstacleId_);
     
 private:
-    void solveRouteIter(ComponentStaticCollider &scld_, MoveCollider2Points &m2p_, ColliderRoutingIterator &iter_);
+    void solveRouteIter(MoveCollider2Points &m2p_, ColliderRoutingIterator &iter_);
     void moveColliderAt(ComponentTransform &trans_, ComponentStaticCollider &scld_, const Vector2<int> &newtl_);
 
     entt::registry &m_reg;

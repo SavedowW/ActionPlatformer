@@ -247,7 +247,7 @@ namespace utils
         while (ss.good())
         {
             std::string substr;
-            std::getline(ss, substr, ',');
+            std::getline(ss, substr, splitter_);
             res.push_back(substr);
         }
 

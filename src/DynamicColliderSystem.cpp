@@ -29,10 +29,10 @@ void DynamicColliderSystem::updateMovingColliders()
 {
     PROFILE_FUNCTION;
     
-    auto routes = m_reg.view<ComponentStaticCollider, MoveCollider2Points, ColliderRoutingIterator>();
-    for (auto [idx, scld, m2p, routing] : routes.each())
+    auto routes = m_reg.view<MoveCollider2Points, ColliderRoutingIterator>();
+    for (auto [idx, m2p, routing] : routes.each())
     {
-        solveRouteIter(scld, m2p, routing);
+        solveRouteIter(m2p, routing);
     }
 
     auto dynamics = m_reg.view<ComponentTransform, ComponentStaticCollider, MoveCollider2Points>();
@@ -89,7 +89,7 @@ bool DynamicColliderSystem::isObstacleOverlappingWithDynamic(const SlopeCollider
     return false;
 }
 
-void DynamicColliderSystem::solveRouteIter(ComponentStaticCollider &scld_, MoveCollider2Points &m2p_, ColliderRoutingIterator &iter_)
+void DynamicColliderSystem::solveRouteIter(MoveCollider2Points &m2p_, ColliderRoutingIterator &iter_)
 {
     bool firstTime = !m2p_.m_timer.isActive() && !m2p_.m_timer.isOver();
 

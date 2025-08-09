@@ -205,10 +205,7 @@ Renderer::Renderer(SDL_Window *window_) :
 unsigned int Renderer::surfaceToTexture(SDL_Surface *sur_)
 {
     if (!sur_)
-    {
-        std::cout << "Trying to create texture from non-existing surface" << std::endl;
-        return -1;
-    }
+        throw std::runtime_error("Trying to create texture from non-existing surface");
 
     unsigned int res;
 

@@ -571,17 +571,19 @@ void ChatMessage::skip()
 
 void ChatMessage::proceedUntilNonTechCharacter()
 {
-    const TechSymbol* techsym = nullptr;
     m_currentProceedingCharacter++;
-    while (m_currentProceedingCharacter < m_symbols.size() && (techsym = dynamic_cast<const TechSymbol*>(m_symbols[m_currentProceedingCharacter])))
+    while (m_currentProceedingCharacter < m_symbols.size())
     {
-        m_symbolAppearTimers[m_currentProceedingCharacter].beginAt(1, 1);
-        auto *p = const_cast<TechSymbol*>(techsym);
-        auto res = p->onReached(*this);
-        if (!res)
-            break;
-
-        m_currentProceedingCharacter++;
+        if (const TechSymbol* techsym = dynamic_cast<const TechSymbol*>(m_symbols[m_currentProceedingCharacter]))
+        {
+            m_symbolAppearTimers[m_currentProceedingCharacter].beginAt(1, 1);
+            auto *p = const_cast<TechSymbol*>(techsym);
+            auto res = p->onReached(*this);
+            if (!res)
+                break;
+            
+            m_currentProceedingCharacter++;
+        }
     }
 }
 
@@ -602,12 +604,12 @@ bool SymbolDelay::onReached(ChatMessage &message_)
     return false;
 }
 
-bool IRenderSymbol::onReached(ChatMessage &message_)
+bool IRenderSymbol::onReached(ChatMessage&)
 {
     return true;
 }
 
-void TechSymbol::onRenderReached(ChatMessageSequence &sequence_)
+void TechSymbol::onRenderReached(ChatMessageSequence&)
 {
 }
 

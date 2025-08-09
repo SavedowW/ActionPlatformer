@@ -8,7 +8,7 @@ EnvironmentSystem::EnvironmentSystem(Application &app_, entt::registry &reg_) :
 {
 }
 
-void EnvironmentSystem::update(entt::entity playerId_)
+void EnvironmentSystem::update(entt::entity)
 {
     auto physicals = m_reg.view<ComponentTransform, ComponentPhysical>();
     auto grassTops = m_reg.view<ComponentTransform, GrassTopComp>();

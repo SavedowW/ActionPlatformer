@@ -427,8 +427,8 @@ public:
     //Input reactor needs pointer to  InputSystem
     InputReactor(InputSystem &input_);
 
-    virtual void receiveEvents(GAMEPLAY_EVENTS event, const float scale_);
-    virtual void receiveEvents(HUD_EVENTS event, const float scale_);
+    virtual void receiveEvents(GAMEPLAY_EVENTS, const float);
+    virtual void receiveEvents(HUD_EVENTS, const float);
 
     void setInputEnabled();
     void setInputDisabled();

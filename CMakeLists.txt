@@ -4,7 +4,7 @@ cmake_minimum_required (VERSION 3.20)
 #  set(CMAKE_BUILD_TYPE Release)
 #endif()
 
-set(CMAKE_CXX_FLAGS "-W3 -EHsc")
+set(CMAKE_CXX_FLAGS "-W4 -EHsc")
 #set(CMAKE_CXX_FLAGS_DEBUG "-g")
 #set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 

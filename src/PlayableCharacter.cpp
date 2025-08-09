@@ -10,7 +10,7 @@ void PlayerActionWallCling::leave(EntityAnywhere owner_, CharState to_)
     std::cout << "Leaving wallcling" << std::endl;
 }
 
-void PlayerActionWallPrejump::leave(EntityAnywhere owner_, CharState to_)
+void PlayerActionWallPrejump::leave(EntityAnywhere owner_, CharState)
 {
     auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
     physical.m_onWall = entt::null;

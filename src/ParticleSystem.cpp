@@ -15,7 +15,6 @@ void ParticleSystem::makeParticle(const ParticleRecipe &particle_, std::vector<e
         auto pid = m_registry.create();
         auto &trans = m_registry.emplace<ComponentTransform>(pid, particle_.pos, ORIENTATION::UNSPECIFIED);
         auto &pprim = m_registry.emplace<ComponentParticlePrimitive>(pid, particle_.flip);
-        auto &phys = m_registry.emplace<ComponentParticlePhysics>(pid);
         if (particle_.m_tiePosTo != entt::null)
         {
             pprim.m_tieTransform = particle_.m_tiePosTo;

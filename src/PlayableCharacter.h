@@ -370,9 +370,7 @@ public:
 
         const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
         auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
-        const auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
-        const auto &cworld = owner_.reg->get<World>(owner_.idx);
-        const auto &cobs = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
+        const auto &[compInput, cworld] = owner_.reg->get<ComponentPlayerInput, World>(owner_.idx);
 
         const auto &inq = compInput.m_inputResolver->getInputQueue();
         auto pb = physical.m_pushbox + transform.m_pos;
@@ -435,7 +433,6 @@ public:
 
         auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
         auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
-        const auto &cworld = owner_.reg->get<World>(owner_.idx);
 
         auto pb = physical.m_pushbox + transform.m_pos;
 

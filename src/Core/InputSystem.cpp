@@ -136,7 +136,17 @@ void InputSystem::subscribe(GAMEPLAY_EVENTS ev_, Subscriber sub_)
 //Automatically called when InputReactor is destroyed
 void InputSystem::unsubscribe(GAMEPLAY_EVENTS ev_, Subscriber sub_)
 {
+    // If this operation was more frequent, unordered_set would be better, but iteration is more important
     std::vector<Subscriber>& v = m_gameplaySubscribers[(int)ev_];
+
+    size_t i = 0;
+    while (i < v.size())
+    {
+        if (v[i] == sub_)
+            v.erase(v.begin() + i);
+        else
+            i++;
+    }
 }
 
 void InputSystem::subscribe(HUD_EVENTS ev_, Subscriber sub_)
@@ -149,6 +159,15 @@ void InputSystem::subscribe(HUD_EVENTS ev_, Subscriber sub_)
 void InputSystem::unsubscribe(HUD_EVENTS ev_, Subscriber sub_)
 {
     std::vector<Subscriber>& v = m_hudSubscribers[(int)ev_];
+
+    size_t i = 0;
+    while (i < v.size())
+    {
+        if (v[i] == sub_)
+            v.erase(v.begin() + i);
+        else
+            i++;
+    }
 }
 
 void InputSystem::initiateControllers()
@@ -333,11 +352,11 @@ InputReactor::InputReactor(InputSystem &input_) :
 {
 }
 
-void InputReactor::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
+void InputReactor::receiveEvents(GAMEPLAY_EVENTS, const float)
 {
 }
 
-void InputReactor::receiveEvents(HUD_EVENTS event, const float scale_)
+void InputReactor::receiveEvents(HUD_EVENTS, const float)
 {
 }
 

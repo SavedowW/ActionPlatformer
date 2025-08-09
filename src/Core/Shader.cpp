@@ -9,9 +9,8 @@ void dumpErrors()
 {
     std::string res = "{";
     bool singleError = false;
-    GLenum err = 0;
     bool first = false;
-    while (err = glGetError())
+    while (auto err = glGetError())
     {
         singleError = true;
         std::string newField;

@@ -63,7 +63,7 @@ BattleLevel::BattleLevel(Application &application_, const Vector2<float>& size_,
 
     //m_envSystem.makeGrassTop(Vector2{230, 351});
     
-    m_lvlBuilder.buildLevel("Tilemaps/Level1.json", playerId, m_graph, m_cldRoutesCollection, m_envSystem);
+    m_lvlBuilder.buildLevel("Tilemaps/Level1.json", playerId, m_graph, m_cldRoutesCollection);
     
     m_chatBoxSys.setPlayerEntity(m_playerId);
     
