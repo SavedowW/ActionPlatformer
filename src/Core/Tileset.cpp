@@ -18,8 +18,8 @@ void Tileset::load(const std::string &spritesheet_)
 
     m_tex = m_texManager.getTexture(m_texManager.getTexID(spritesheet_));
 
-    const int tilesetTilesWidth = m_tex->m_size.x / gamedata::tiles::tileSize.x;
-    const int tilesetTilesHeight = m_tex->m_size.y / gamedata::tiles::tileSize.y;
+    const auto tilesetTilesWidth = m_tex->m_size.x / gamedata::tiles::tileSize.x;
+    const auto tilesetTilesHeight = m_tex->m_size.y / gamedata::tiles::tileSize.y;
 
     for (m_size.y = 0; m_size.y < tilesetTilesHeight; ++m_size.y)
     {
@@ -70,6 +70,6 @@ Tile TilesetBase::getTile(uint32_t gid_)
         FLIPPED_DIAGONALLY_FLAG |
         ROTATED_HEXAGONAL_120_FLAG);
 
-    int tilesetId = m_tilesetMapping[gid_];
+    const auto tilesetId = m_tilesetMapping[gid_];
     return {m_tilesets[tilesetId].getView(gid_), flags};
 }

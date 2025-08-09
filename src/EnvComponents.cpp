@@ -2,9 +2,9 @@
 
 const Collider GrassTopComp::m_colliderRight{Vector2{14, -6}, Vector2{2, 6}};
 const Collider GrassTopComp::m_colliderLeft{Vector2{-14, -6}, Vector2{2, 6}};
-int GrassTopComp::m_idleAnimId = 0;
-int GrassTopComp::m_flickLeftAnimId = 0;
-int GrassTopComp::m_flickRightAnimId = 0;
+ResID GrassTopComp::m_idleAnimId = 0;
+ResID GrassTopComp::m_flickLeftAnimId = 0;
+ResID GrassTopComp::m_flickRightAnimId = 0;
 
 void GrassTopComp::touchedPlayer(const Vector2<float> &velocity_, EntityAnywhere self_)
 {

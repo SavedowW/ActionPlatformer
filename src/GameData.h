@@ -43,7 +43,7 @@ namespace gamedata
         inline constexpr float baseCameraScale = maxCameraSize.y / (float)baseResolution.y;
         inline constexpr float minCameraScale = (float)maxCameraSize.y / maxCameraSize.y;
         inline constexpr float maxCameraScale = (float)maxCameraSize.y / minCameraSize.y;
-        inline constexpr int inputBufferLength = 4;
+        inline constexpr unsigned int inputBufferLength = 4;
     }
 
     namespace tiles

@@ -27,13 +27,13 @@ struct ConnectionDescr
     
     std::vector<ConnectionDescr *> m_neighbourConnections;
     std::optional<const ConnectionDescr *> m_nextConnection;
-    int m_nextNode = -1;
+    uint8_t m_nextNode = 0;
 
     // If next connection is known, return begin, end
     std::pair<NodeID, NodeID> getOrientedNodes() const;
 
     void resetResults();
-    void setPathFound(const ConnectionDescr *con_, float calculatedCost_, int nextNode_);
+    void setPathFound(const ConnectionDescr *con_, float calculatedCost_, uint8_t nextNode_);
     void setNoPathFound();
 
     Status getStatus() const;

@@ -52,7 +52,7 @@ void ParticleSystem::update()
     }
 }
 
-ParticleTemplate::ParticleTemplate(int count_, const Vector2<float> &offset_, int anim_, uint32_t lifetime_, int layer_) :
+ParticleTemplate::ParticleTemplate(int count_, const Vector2<float> &offset_, ResID anim_, uint32_t lifetime_, int layer_) :
     count(count_),
     offset(offset_),
     anim(anim_),

@@ -158,7 +158,7 @@ void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<int> &tl
     auto pos = tl_;
     bool newLine = true;
     int currentLine = 0;
-    for (int i = 0; i <= seq_.m_currentMessage->m_currentProceedingCharacter && i < seq_.m_currentMessage->m_symbols.size(); ++i)
+    for (size_t i = 0; i <= seq_.m_currentMessage->m_currentProceedingCharacter && i < seq_.m_currentMessage->m_symbols.size(); ++i)
     {
         auto &sym = seq_.m_currentMessage->m_symbols[i];
         if (newLine)
@@ -174,9 +174,8 @@ void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<int> &tl
         }
         else if (sym->m_tex.m_id)
         {
-            bool applyAppearOffset = i >= seq_.m_currentMessage->m_firstCharacterForFadingIn;
-            float progress = (applyAppearOffset ?  seq_.m_currentMessage->m_symbolAppearTimers[i].getProgressNormalized() : 1.0f);
-            progress = Easing::circ(progress);
+            const bool applyAppearOffset = i >= seq_.m_currentMessage->m_firstCharacterForFadingIn;
+            const float progress = applyAppearOffset ? Easing::circ(seq_.m_currentMessage->m_symbolAppearTimers[i].getProgressNormalized()) : 1.0f;
 
             Vector2<int> offset;
             {

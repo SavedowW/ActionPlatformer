@@ -19,7 +19,7 @@ enum class TieLifetimeRule
 
 struct ParticleTemplate
 {
-    ParticleTemplate(int count_, const Vector2<float> &offset_, int anim_, uint32_t lifetime_, int layer_);
+    ParticleTemplate(int count_, const Vector2<float> &offset_, ResID anim_, uint32_t lifetime_, int layer_);
 
     ParticleTemplate &setTiePosRules(TiePosRule tieRule_);
     ParticleTemplate &setTieLifetimeRules(TieLifetimeRule tieRule_);
@@ -33,7 +33,7 @@ struct ParticleTemplate
 
     int count = 0;
     Vector2<float> offset;
-    int anim;
+    ResID anim;
     uint32_t lifetime = 0;
     int layer;
     TiePosRule m_tiePosRule = TiePosRule::NONE;
@@ -47,11 +47,11 @@ struct ParticleRecipe
 
     int count = 0;
     Vector2<float> pos;
-    int anim;
+    ResID anim;
     SDL_RendererFlip flip = SDL_FLIP_NONE;
     uint32_t lifetime;
     float angle = 0;
-    size_t layer;
+    int layer;
     entt::entity m_tiePosTo = entt::null;
 
     const ParticleTemplate &m_baseTemplate;

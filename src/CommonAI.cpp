@@ -79,7 +79,7 @@ bool BlindChaseState::update(EntityAnywhere owner_, uint32_t currentFrame_)
 
     const auto delta = tarTrans.m_pos - ownTrans.m_pos;
 
-    if (abs(delta.x) <= m_idleRange)
+    if (static_cast<unsigned int>(abs(delta.x)) <= m_idleRange)
     {
         ai.m_requestedState = m_idle;
     }
@@ -105,7 +105,7 @@ void BlindChaseState::enter(EntityAnywhere owner_, CharState from_)
         owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx).setIgnoringObstacles();
 
     auto delta = tarTrans.m_pos - ownTrans.m_pos;
-    float range = delta.length();
+    float range = static_cast<float>(delta.length());
 
     if (range <= m_idleRange)
     {
@@ -119,6 +119,7 @@ void BlindChaseState::enter(EntityAnywhere owner_, CharState from_)
 
 }
 
+#if 0
 bool ProxySelectionState::update(EntityAnywhere owner_, uint32_t currentFrame_)
 {
     NodeState::update(owner_, currentFrame_);
@@ -142,6 +143,7 @@ bool ProxySelectionState::update(EntityAnywhere owner_, uint32_t currentFrame_)
 
     return true;
 }
+#endif
 
 void MoveTowards::enter(EntityAnywhere owner_, CharState from_)
 {

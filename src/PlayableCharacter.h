@@ -80,7 +80,7 @@ template<bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN, bool FORCE_TOWARDS_INPUT,
 class PlayerState : public PhysicalState
 {
 public:
-    PlayerState(CharacterState actionState_, StateMarker &&transitionableFrom_, int anim_) :
+    PlayerState(CharacterState actionState_, StateMarker &&transitionableFrom_, ResID anim_) :
         PhysicalState(actionState_, std::move(transitionableFrom_), anim_)
     {
     }
@@ -234,7 +234,7 @@ protected:
 class PlayerActionFloat: public PlayerState<false, true, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>
 {
 public:
-    PlayerActionFloat(int anim_, StateMarker transitionableFrom_) :
+    PlayerActionFloat(ResID anim_, StateMarker transitionableFrom_) :
         PlayerState<false, true, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>(CharacterState::FLOAT, std::move(transitionableFrom_), anim_)
     {
     }
@@ -293,7 +293,7 @@ protected:
 class PlayerActionWallCling: public PlayerState<false, true, false, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail>
 {
 public:
-    PlayerActionWallCling(int anim_, StateMarker transitionableFrom_, ParticleTemplate &&slideParticle_) :
+    PlayerActionWallCling(ResID anim_, StateMarker transitionableFrom_, ParticleTemplate &&slideParticle_) :
         PlayerState<false, true, false, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail>(CharacterState::WALL_CLING, std::move(transitionableFrom_), anim_),
         m_transitionOnLeave(CharacterState::FLOAT),
         m_slideParticle(std::move(slideParticle_))
@@ -420,7 +420,7 @@ protected:
 class PlayerActionWallPrejump: public PlayerState<true, false, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>
 {
 public:
-    PlayerActionWallPrejump(int anim_, StateMarker transitionableFrom_, ParticleTemplate &&jumpParticle_) :
+    PlayerActionWallPrejump(ResID anim_, StateMarker transitionableFrom_, ParticleTemplate &&jumpParticle_) :
         PlayerState<true, false, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>(CharacterState::WALL_CLING_PREJUMP, std::move(transitionableFrom_), anim_),
         m_jumpParticle(std::move(jumpParticle_))
     {
@@ -518,7 +518,7 @@ protected:
 class PlayerActionAttack1Chain: public PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>
 {
 public:
-    inline PlayerActionAttack1Chain(int anim_, int animTrace_) :
+    inline PlayerActionAttack1Chain(ResID anim_, ResID animTrace_) :
         PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>(CharacterState::ATTACK_1_CHAIN, {CharacterState::NONE, {}}, anim_)
     {
         setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>({

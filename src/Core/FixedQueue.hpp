@@ -10,20 +10,17 @@ class FixedQueue
 public:
     FixedQueue() {};
 
-    const T& operator[](int rhs_) const
+    const T& operator[](size_t rhs_) const
     {
         if (rhs_ >= m_filled)
             throw std::runtime_error("Trying to access non-existing element");
-    
-        int lastFilled = m_nextToFill-1;
-        if (lastFilled < 0)
-            lastFilled = len - 1;
-    
-        int id = m_nextToFill - 1 - rhs_;
-        if (id < 0)
-            id = len + id;
-    
-        return m_data[id];
+
+        rhs_ += 1;
+
+        if (m_nextToFill >= rhs_)
+            return m_data[m_nextToFill - rhs_];
+        else
+            return m_data[len - (rhs_ - m_nextToFill)];
     }
 
     void push(const T &val_)
@@ -33,19 +30,19 @@ public:
         m_filled = std::min(m_filled + 1, len);
     }
 
-    constexpr int getLen() const
+    constexpr size_t getLen() const noexcept
     {
         return len;
     }
 
-    int getFilled() const
+    size_t getFilled() const noexcept
     {
         return m_filled;
     }
 
 private:
     T m_data[len];
-    int m_nextToFill = 0;
+    size_t m_nextToFill = 0;
     size_t m_filled = 0;
 
 };

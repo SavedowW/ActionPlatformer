@@ -238,7 +238,7 @@ NavPath::Status NavPath::buildUntil(const Connection * const con_)
         for (auto *con : used->m_neighbourConnections)
         {
             const auto newcost = con->m_originalCon.m_cost + used->m_calculatedCost;
-            size_t orientation = (con->m_originalCon.m_nodes[1] == used->m_originalCon.m_nodes[0] || con->m_originalCon.m_nodes[1] == used->m_originalCon.m_nodes[1] ? 0 : 1);
+            const uint8_t orientation = (con->m_originalCon.m_nodes[1] == used->m_originalCon.m_nodes[0] || con->m_originalCon.m_nodes[1] == used->m_originalCon.m_nodes[1] ? 0 : 1);
 
             // TODO: move traverse type check to the graph constructor
             if (newcost < con->m_calculatedCost && Traverse::canTraverseByPath(m_traverseTraits, con->m_originalCon.m_traverses[orientation]))
@@ -349,7 +349,7 @@ void ConnectionDescr::resetResults()
     m_calculatedCost = std::numeric_limits<float>::max();
 }
 
-void ConnectionDescr::setPathFound(const ConnectionDescr *con_, float calculatedCost_, int nextNode_)
+void ConnectionDescr::setPathFound(const ConnectionDescr *con_, float calculatedCost_, uint8_t nextNode_)
 {
     assert(con_);
     m_nextConnection = con_;

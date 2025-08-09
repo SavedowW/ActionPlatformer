@@ -296,7 +296,7 @@ uint32_t utf8::tou32(const char *ch_)
     return tou32(ch_, readCharSize(ch_));
 }
 
-uint32_t utf8::tou32(const char *ch_, size_t sz_)
+uint32_t utf8::tou32(const char *ch_, uint8_t sz_)
 {
     switch (sz_)
     {

@@ -17,17 +17,17 @@ class TextureManager
 {
 public:
 	TextureManager(Renderer &renderer_);
-	std::shared_ptr<Texture> getTexture(int id_);
+	std::shared_ptr<Texture> getTexture(ResID id_);
 	void preload(const std::string &toPreload_);
-	void preload(int toPreload_);
+	void preload(ResID id_);
 
-	int getTexID(const std::string &texName_) const;
+	ResID getTexID(const std::string &texName_) const;
     std::shared_ptr<TextureResource> loadTexture(const std::string &path_);
 
 private:
 
 	Renderer &m_renderer;
-	std::map<std::string, int> m_ids;
+	std::map<std::string, ResID> m_ids;
 	std::vector<ContainedTextureData> m_textures_;
 };
 

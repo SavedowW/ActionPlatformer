@@ -238,7 +238,7 @@ bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, const entt::entit
             highest--;
 
             // If we can rise on top of it
-            if (originalY_ - highest <= maxYOffset_)
+            if (static_cast<unsigned int>(originalY_ - highest) <= maxYOffset_)
             {
                 if (cld.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(cld.m_obstacleId))
                     continue;
@@ -445,7 +445,7 @@ bool PhysicsSystem::magnetEntity(const auto &clds_, ComponentTransform &trans_, 
     const auto [found, pcld] = getHighestVerticalMagnetCoord(clds_, pb, height, obsFallthrough_.m_ignoredObstacles, obsFallthrough_.m_isIgnoringObstacles.isActive());
     if ( found != entt::null )
     {
-        int magnetRange = height - trans_.m_pos.y - 1;
+        const auto magnetRange = static_cast<unsigned int>(height - trans_.m_pos.y - 1);
         if (magnetRange <= phys_.m_magnetLimit)
         {
             //std::cout << "MAGNET: " << magnetRange << std::endl;

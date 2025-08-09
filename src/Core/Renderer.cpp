@@ -241,7 +241,7 @@ unsigned int *Renderer::surfacesToTexture(const std::vector<SDL_Surface *> &surf
 
     unsigned int *ids = new unsigned int[surfaces_.size()];
 
-    glGenTextures(surfaces_.size(), ids);
+    glGenTextures(static_cast<int>(surfaces_.size()), ids);
 
     for (size_t i = 0; i < surfaces_.size(); ++i)
     {

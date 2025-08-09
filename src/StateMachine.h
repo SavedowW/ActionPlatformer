@@ -53,7 +53,7 @@ public:
     }
 
     std::vector<std::unique_ptr<GenericState>> m_states;
-    std::unordered_map<CharState, int> m_stateIds;
+    std::unordered_map<CharState, size_t> m_stateIds;
 
     GenericState *m_currentState = nullptr;
     uint32_t m_framesInState = 0;
@@ -122,7 +122,7 @@ class PhysicalState: public GenericState
 {
 public:
     template<typename PLAYER_STATE_T>
-    PhysicalState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_, int anim_) :
+    PhysicalState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_, ResID anim_) :
         GenericState(stateId_, std::move(transitionableFrom_)),
         m_anim(anim_),
         m_drag({1.0f, 0.0f}),
@@ -151,7 +151,7 @@ public:
     }
 
     template<typename PLAYER_STATE_T>
-    PhysicalState &addTransitionAnim(PLAYER_STATE_T oldState_, int anim_)
+    PhysicalState &addTransitionAnim(PLAYER_STATE_T oldState_, ResID anim_)
     {
         m_uniqueTransitionAnims[static_cast<CharState>(oldState_)] = anim_;
         return *this;
@@ -184,7 +184,7 @@ public:
     virtual void onLostGround(EntityAnywhere owner_);
 
 protected:
-    int m_anim;
+    ResID m_anim;
     TimelineProperty<std::optional<CharState>> m_transitionsOnLand;
     std::optional<CharState> m_transitionOnLostGround;
     TimelineProperty<Vector2<float>> m_gravity;
@@ -216,7 +216,7 @@ protected:
 
     TimelineProperty<StateMarker> m_recoveryFrames;
 
-    std::map<CharState, int> m_uniqueTransitionAnims;
+    std::map<CharState, ResID> m_uniqueTransitionAnims;
 
     TimelineProperty<bool> m_noLanding;
     bool m_convertEnforcedVelocity = false;

@@ -97,7 +97,7 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
     }
 
     m_colliderIds.clear();
-    m_autoLayer = mapdata.size();
+    m_autoLayer = static_cast<int>(mapdata.size());
 
     // Actually parsing layers
     for (const auto &layer : layers)

@@ -16,7 +16,7 @@ ConfigurationView<READ_ONLY> ConfigurationView<READ_ONLY>::operator[](const std:
     {
         return {m_dataRef.at(field_), m_dirtyRef};
     }
-    catch (std::exception &ex_)
+    catch (std::exception&)
     {
         if constexpr (READ_ONLY)
         {
@@ -52,11 +52,11 @@ Configuration<READ_ONLY>::Configuration(const std::string &configName_) : Config
 
             if constexpr (READ_ONLY)
             {
-                std::cout << "Failed to parse \"" << m_path << "\", most likely it's broken, leaving it this way" << std::endl;
+                std::cout << "Failed to parse \"" << m_path << "\": \"" << ex_.what() << "\", most likely it's broken, leaving it this way" << std::endl;
             }
             else
             {
-                std::cout << "Failed to parse \"" << m_path << "\", most likely it's broken. Turning it empty." << std::endl;
+                std::cout << "Failed to parse \"" << m_path << "\": \"" << ex_.what() << "\", most likely it's broken. Turning it empty." << std::endl;
                 std::ofstream of(m_path);
                 of << "{}\n";
             }
@@ -90,7 +90,7 @@ void Configuration<READ_ONLY>::save() requires (!READ_ONLY)
         }
         catch (std::exception &ex_)
         {
-            std::cout << "WARNING: failed to update config file for \"" << m_path << "\"" << std::endl;
+            std::cout << "WARNING: failed to update config file for \"" << m_path << "\": " << ex_.what() << std::endl;
         }
     }
 }

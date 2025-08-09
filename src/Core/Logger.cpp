@@ -2,7 +2,7 @@
 
 std::string utils::prettifyFunction(const std::string &functionName_)
 {
-    int i = functionName_.size() - 1;
+    auto i = functionName_.size() - 1;
     while (functionName_[i--] != ')');
     int depth = 1;
     while (depth != 0)

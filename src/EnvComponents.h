@@ -13,9 +13,9 @@ public:
 
     static const Collider m_colliderRight;
     static const Collider m_colliderLeft;
-    static int m_idleAnimId;
-    static int m_flickLeftAnimId;
-    static int m_flickRightAnimId;
+    static ResID m_idleAnimId;
+    static ResID m_flickLeftAnimId;
+    static ResID m_flickRightAnimId;
 
     enum class State
     {

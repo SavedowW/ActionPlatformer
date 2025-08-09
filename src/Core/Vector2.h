@@ -242,8 +242,11 @@ namespace utils
     }
 
     template <Numeric T>
-    inline Vector2<T> limitVectorLength(const Vector2<T>& val, const T &limit)
+    inline Vector2<T> limitVectorLength(const Vector2<T>& val, const T &limit) noexcept
     {
+        assert(val.x != 0 || val.y != 0);
+        assert(limit != 0);
+
         auto curlen = val.length();
         if (curlen > limit)
         {

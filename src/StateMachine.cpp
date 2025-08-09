@@ -112,7 +112,7 @@ void GenericState::spawnParticle(EntityAnywhere owner_, const ParticleTemplate &
         rp.m_tiePosTo = phys_.m_onGround;
 
         if (partemplate_.m_dependOnGroundAngle)
-            rp.angle = atan(phys_.m_onSlopeWithAngle) * 180 / 3.1415;
+            rp.angle = atan(phys_.m_onSlopeWithAngle) * 180 / 3.1415f;
     }
     else if (partemplate_.m_tiePosRule == TiePosRule::TIE_TO_WALL)
     {

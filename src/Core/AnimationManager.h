@@ -53,16 +53,16 @@ class AnimationManager
 {
 public:
     AnimationManager(Renderer &renderer_);
-    std::shared_ptr<TextureArr> getTextureArr(int id_);
+    std::shared_ptr<TextureArr> getTextureArr(ResID id_);
     void preload(const std::string &toPreload_);
-    void preload(int toPreload_);
+    void preload(ResID id_);
 
-    int getAnimID(const std::string &animName_) const;
+    ResID getAnimID(const std::string &animName_) const;
 
 private:
     Renderer &m_renderer;
 
-    std::unordered_map<std::string, int> m_ids;
+    std::unordered_map<std::string, ResID> m_ids;
     std::vector<ContainedAnimationData> m_textureArrs;
 };
 
@@ -84,7 +84,7 @@ enum class LOOPMETHOD
 class Animation
 {
 public:
-    Animation(AnimationManager &animationManager_, int id_, LOOPMETHOD isLoop_ = LOOPMETHOD::JUMP_LOOP, int beginFrame_ = -1, int beginDirection_ = 1);
+    Animation(AnimationManager &animationManager_, ResID id_, LOOPMETHOD isLoop_ = LOOPMETHOD::JUMP_LOOP, int beginFrame_ = -1, int beginDirection_ = 1);
     void update();
     unsigned int getSprite();
     bool isFinished();

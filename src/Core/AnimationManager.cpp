@@ -35,7 +35,7 @@ AnimationManager::AnimationManager(Renderer &renderer_) :
     //preload("Particles/Block");
 }
 
-std::shared_ptr<TextureArr> AnimationManager::getTextureArr(int id_)
+std::shared_ptr<TextureArr> AnimationManager::getTextureArr(ResID id_)
 {
     if (m_textureArrs[id_].m_preloaded)
     {
@@ -102,22 +102,20 @@ std::shared_ptr<TextureArr> AnimationManager::getTextureArr(int id_)
     }
 }
 
-void AnimationManager::preload(int toPreload_)
+void AnimationManager::preload(ResID id_)
 {
-    if (m_textureArrs[toPreload_].m_preloaded == nullptr)
+    if (m_textureArrs[id_].m_preloaded == nullptr)
     {
-        m_textureArrs[toPreload_].m_preloaded = std::shared_ptr<TextureArr>(getTextureArr(toPreload_));
+        m_textureArrs[id_].m_preloaded = std::shared_ptr<TextureArr>(getTextureArr(id_));
     }
 }
 
 void AnimationManager::preload(const std::string &toPreload_)
 {
-    int id = getAnimID(toPreload_);
-
-    preload(id);
+    preload(getAnimID(toPreload_));
 }
 
-int AnimationManager::getAnimID(const std::string &animName_) const
+ResID AnimationManager::getAnimID(const std::string &animName_) const
 {
     try
     {
@@ -125,7 +123,6 @@ int AnimationManager::getAnimID(const std::string &animName_) const
     }
     catch (std::out_of_range exc_)
     {
-        return 0;
         throw std::runtime_error("Failed to find animation " + animName_ + " : " + exc_.what());
     }
 }
@@ -134,11 +131,11 @@ int AnimationManager::getAnimID(const std::string &animName_) const
 TextureArr::~TextureArr()
 {
     //Logger::print("Release " + intToString(amount) + " textures\n");
-    glDeleteTextures(m_amount, m_tex);
+    glDeleteTextures(static_cast<int>(m_amount), m_tex);
     delete[] m_tex;
 }
 
-Animation::Animation(AnimationManager &animationManager_, int id_, LOOPMETHOD isLoop_, int beginFrame_, int beginDirection_) :
+Animation::Animation(AnimationManager &animationManager_, ResID id_, LOOPMETHOD isLoop_, int beginFrame_, int beginDirection_) :
     m_isLoop(isLoop_),
     m_currentFrame(beginFrame_),
     m_direction(beginDirection_)
@@ -197,7 +194,7 @@ void Animation::animFinished()
         break;
 
     case (LOOPMETHOD::JUMP_LOOP):
-        if (m_currentFrame >= m_textures->m_totalDuration - 1)
+        if (m_currentFrame >= static_cast<int>(m_textures->m_totalDuration - 1))
             m_currentFrame = 0;
         else if (m_currentFrame <= 0)
             m_currentFrame = m_textures->m_totalDuration - 1;

@@ -103,7 +103,7 @@ namespace utf8
     uint32_t tou32_3(const char *ch_);
     uint32_t tou32_4(const char *ch_);
     uint32_t tou32(const char *ch_);
-    uint32_t tou32(const char *ch_, size_t sz_);
+    uint32_t tou32(const char *ch_, uint8_t sz_);
 }
 
 /*
@@ -116,7 +116,7 @@ public:
     struct iterator
     {
         const char *m_ch;
-        size_t m_byteSize;
+        uint8_t m_byteSize;
 
         iterator(const char *ch_);
         bool operator!=(const iterator &rhs_) const;

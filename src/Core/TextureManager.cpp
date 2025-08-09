@@ -28,7 +28,7 @@ TextureManager::TextureManager(Renderer &renderer_) :
 	std::cout << "=== LISTING ENDS HERE ===\n";
 }
 
-std::shared_ptr<Texture> TextureManager::getTexture(int id_)
+std::shared_ptr<Texture> TextureManager::getTexture(ResID id_)
 {
 	if (m_textures_[id_].m_preloaded)
 	{
@@ -50,20 +50,18 @@ std::shared_ptr<Texture> TextureManager::getTexture(int id_)
 
 void TextureManager::preload(const std::string &toPreload_)
 {
-	int id = getTexID(toPreload_);
-
-	preload(id);
+	preload(getTexID(toPreload_));
 }
 
-void TextureManager::preload(int toPreload_)
+void TextureManager::preload(ResID id_)
 {
-	if (m_textures_[toPreload_].m_preloaded == nullptr)
+	if (m_textures_[id_].m_preloaded == nullptr)
 	{
-		m_textures_[toPreload_].m_preloaded = getTexture(toPreload_);
+		m_textures_[id_].m_preloaded = getTexture(id_);
 	}
 }
 
-int TextureManager::getTexID(const std::string &texName_) const
+ResID TextureManager::getTexID(const std::string &texName_) const
 {
     try
 	{

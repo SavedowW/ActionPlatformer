@@ -140,8 +140,8 @@ struct ChatMessage
 
     uint32_t m_characterDelay = m_defaultCharacterDelay;
     uint32_t m_appearDuration = m_defaultAppearDuration;
-    uint32_t m_currentProceedingCharacter = 0;
-    uint32_t m_firstCharacterForFadingIn = 0;
+    size_t m_currentProceedingCharacter = 0;
+    size_t m_firstCharacterForFadingIn = 0;
 
     enum class MessageState { APPEAR, IDLE } m_currentState = MessageState::APPEAR;
 

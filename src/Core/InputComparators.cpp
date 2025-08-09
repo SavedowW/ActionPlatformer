@@ -4,6 +4,8 @@
 template<size_t len, typename VecT>
 bool recursivelySearchInput(const InputQueue &inputQueue_, Vector2<VecT> (&inputs_)[len], int start_, int toSearch_, int window_)
 {
+    assert(inputQueue_.getFilled());
+
     int lastToLook = std::min(inputQueue_.getFilled() - 1, start_ + window_ - 1);
     for (int i = start_; i < lastToLook; ++i)
     {
@@ -19,12 +21,12 @@ bool recursivelySearchInput(const InputQueue &inputQueue_, Vector2<VecT> (&input
     return false;
 }
 
-bool InputComparatorIdle::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+bool InputComparatorIdle::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
 {
     return true;
 }
 
-bool InputComparatorHoldRight::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+bool InputComparatorHoldRight::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -32,7 +34,7 @@ bool InputComparatorHoldRight::operator()(const InputQueue &inputQueue_, int ext
     return inputQueue_[0].m_dir.x > 0;
 }
 
-bool InputComparatorHoldLeft::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+bool InputComparatorHoldLeft::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -40,13 +42,13 @@ bool InputComparatorHoldLeft::operator()(const InputQueue &inputQueue_, int exte
     return inputQueue_[0].m_dir.x < 0;
 }
 
-bool InputComparatorTapUp::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+bool InputComparatorTapUp::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
 {
     if (inputQueue_.getFilled() == 0)
         return false;
 
-    int lookAt = std::min(inputQueue_.getFilled() - 1, gamedata::global::inputBufferLength + extendBuffer_);
-    for (int i = 0; i <= lookAt; ++i)
+    size_t lookAt = std::min(inputQueue_.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
+    for (size_t i = 0; i <= lookAt; ++i)
     {
         auto &in = inputQueue_[i];
         bool valid = in.m_dir.y == -1.0f && in.m_inputs.at(INPUT_BUTTON::UP) == INPUT_BUTTON_STATE::PRESSED;
@@ -57,13 +59,13 @@ bool InputComparatorTapUp::operator()(const InputQueue &inputQueue_, int extendB
     return false;
 }
 
-bool InputComparatorTapAnyDown::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+bool InputComparatorTapAnyDown::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
 {
     if (inputQueue_.getFilled() == 0)
         return false;
 
-    int lookAt = std::min(inputQueue_.getFilled() - 1, gamedata::global::inputBufferLength + extendBuffer_);
-    for (int i = 0; i <= lookAt; ++i)
+    size_t lookAt = std::min(inputQueue_.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
+    for (size_t i = 0; i <= lookAt; ++i)
     {
         auto &in = inputQueue_[i];
         bool valid = in.m_dir.y == 1.0f && in.m_inputs.at(INPUT_BUTTON::DOWN) == INPUT_BUTTON_STATE::PRESSED;
@@ -75,13 +77,13 @@ bool InputComparatorTapAnyDown::operator()(const InputQueue &inputQueue_, int ex
 }
 
 
-bool InputComparatorTapUpRight::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+bool InputComparatorTapUpRight::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
 {
     if (inputQueue_.getFilled() == 0)
         return false;
 
-    int lookAt = std::min(inputQueue_.getFilled() - 1, gamedata::global::inputBufferLength + extendBuffer_);
-    for (int i = 0; i <= lookAt; ++i)
+    size_t lookAt = std::min(inputQueue_.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
+    for (size_t i = 0; i <= lookAt; ++i)
     {
         auto &in = inputQueue_[i];
         if (in.m_dir == Vector2{1.0f, -1.0f} && in.m_inputs.at(INPUT_BUTTON::UP) == INPUT_BUTTON_STATE::PRESSED)
@@ -91,13 +93,13 @@ bool InputComparatorTapUpRight::operator()(const InputQueue &inputQueue_, int ex
     return false;
 }
 
-bool InputComparatorTapUpLeft::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+bool InputComparatorTapUpLeft::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
 {
     if (inputQueue_.getFilled() == 0)
         return false;
 
-    int lookAt = std::min(inputQueue_.getFilled() - 1, gamedata::global::inputBufferLength + extendBuffer_);
-    for (int i = 0; i <= lookAt; ++i)
+    size_t lookAt = std::min(inputQueue_.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
+    for (size_t i = 0; i <= lookAt; ++i)
     {
         auto &in = inputQueue_[i];
         if (in.m_dir == Vector2{-1.0f, -1.0f} && in.m_inputs.at(INPUT_BUTTON::UP) == INPUT_BUTTON_STATE::PRESSED)
@@ -107,7 +109,7 @@ bool InputComparatorTapUpLeft::operator()(const InputQueue &inputQueue_, int ext
     return false;
 }
 
-bool InputComparatorHoldUp::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+bool InputComparatorHoldUp::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -115,7 +117,7 @@ bool InputComparatorHoldUp::operator()(const InputQueue &inputQueue_, int extend
     return inputQueue_[0].m_dir.y < 0;
 }
 
-bool InputComparatorHoldDown::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+bool InputComparatorHoldDown::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -123,18 +125,18 @@ bool InputComparatorHoldDown::operator()(const InputQueue &inputQueue_, int exte
     return inputQueue_[0].m_dir.y > 0;
 }
 
-bool InputComparatorFail::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+bool InputComparatorFail::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
 {
     return false;
 }
 
-bool InputComparatorTapAttack::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+bool InputComparatorTapAttack::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
 {
     if (inputQueue_.getFilled() == 0)
         return false;
 
-    int lookAt = std::min(inputQueue_.getFilled() - 1, gamedata::global::inputBufferLength + extendBuffer_);
-    for (int i = 0; i <= lookAt; ++i)
+    size_t lookAt = std::min(inputQueue_.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
+    for (size_t i = 0; i <= lookAt; ++i)
     {
         auto &in = inputQueue_[i];
         if (in.m_inputs.at(INPUT_BUTTON::ATTACK) == INPUT_BUTTON_STATE::PRESSED)
@@ -144,13 +146,13 @@ bool InputComparatorTapAttack::operator()(const InputQueue &inputQueue_, int ext
     return false;
 }
 
-bool InputComparatorTapAnyRight::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+bool InputComparatorTapAnyRight::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
 {
     if (inputQueue_.getFilled() == 0)
         return false;
 
-    int lookAt = std::min(inputQueue_.getFilled() - 1, gamedata::global::inputBufferLength + extendBuffer_);
-    for (int i = 0; i <= lookAt; ++i)
+    size_t lookAt = std::min(inputQueue_.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
+    for (size_t i = 0; i <= lookAt; ++i)
     {
         auto &in = inputQueue_[i];
         if (in.m_dir.x != -1 && in.m_dir != Vector2{0.0f, 0.0f} && (
@@ -164,13 +166,13 @@ bool InputComparatorTapAnyRight::operator()(const InputQueue &inputQueue_, int e
     return false;
 }
 
-bool InputComparatorTapAnyLeft::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+bool InputComparatorTapAnyLeft::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
 {
     if (inputQueue_.getFilled() == 0)
         return false;
 
-    int lookAt = std::min(inputQueue_.getFilled() - 1, gamedata::global::inputBufferLength + extendBuffer_);
-    for (int i = 0; i <= lookAt; ++i)
+    size_t lookAt = std::min(inputQueue_.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
+    for (size_t i = 0; i <= lookAt; ++i)
     {
         auto &in = inputQueue_[i];
         if (in.m_dir.x != 1 && in.m_dir != Vector2{0.0f, 0.0f} && (
@@ -184,13 +186,13 @@ bool InputComparatorTapAnyLeft::operator()(const InputQueue &inputQueue_, int ex
     return false;
 }
 
-bool InputComparatorBufferedHoldRight::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+bool InputComparatorBufferedHoldRight::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
 {
     if (inputQueue_.getFilled() == 0)
         return false;
 
-    int lookAt = std::min(inputQueue_.getFilled() - 1, gamedata::global::inputBufferLength + extendBuffer_);
-    for (int i = 0; i <= lookAt; ++i)
+    size_t lookAt = std::min(inputQueue_.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
+    for (size_t i = 0; i <= lookAt; ++i)
     {
         auto &in = inputQueue_[i];
         if (in.m_dir.x > 0)
@@ -200,13 +202,13 @@ bool InputComparatorBufferedHoldRight::operator()(const InputQueue &inputQueue_,
     return false;
 }
 
-bool InputComparatorBufferedHoldLeft::operator()(const InputQueue &inputQueue_, int extendBuffer_) const
+bool InputComparatorBufferedHoldLeft::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
 {
     if (inputQueue_.getFilled() == 0)
         return false;
 
-    int lookAt = std::min(inputQueue_.getFilled() - 1, gamedata::global::inputBufferLength + extendBuffer_);
-    for (int i = 0; i <= lookAt; ++i)
+    size_t lookAt = std::min(inputQueue_.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
+    for (size_t i = 0; i <= lookAt; ++i)
     {
         auto &in = inputQueue_[i];
         if (in.m_dir.x < 0)

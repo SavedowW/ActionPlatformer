@@ -254,8 +254,6 @@ inline void BattleLevel::handleResetStaticHandler()
 {
     auto view = m_registry.view<Components..., ComponentResetStatic<Components...>>();
 
-    ComponentResetStatic<Components...> handler;
-
     view.each(&ComponentResetStatic<Components...>::resetComponent);
 }
 

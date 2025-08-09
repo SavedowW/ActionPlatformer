@@ -74,7 +74,7 @@ inline T ConfigurationView<READ_ONLY>::readOrSet(const T &default_) requires (!R
     {
         return m_dataRef.template get<T>();
     }
-    catch (std::exception &ex_)
+    catch (std::exception &)
     {
         m_dataRef = default_;
         m_dirtyRef = true;
@@ -90,7 +90,7 @@ inline T ConfigurationView<READ_ONLY>::readOrDefault(const T &default_) const
     {
         return m_dataRef.template get<T>();
     }
-    catch (std::exception &ex_)
+    catch (std::exception&)
     {
         return default_;
     }

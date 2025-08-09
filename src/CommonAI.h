@@ -94,6 +94,7 @@ protected:
     const unsigned int m_idleRange;
 };
 
+#if 0
 class ProxySelectionState: public NodeState
 {
 public:
@@ -117,6 +118,7 @@ protected:
     std::vector<float> m_rangeLimits;
     EntityAnywhere m_target;
 };
+#endif
 
 class MoveTowards : public AIState
 {

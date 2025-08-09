@@ -37,7 +37,7 @@ class NPCState : public PhysicalState
 {
 public:
     template<typename PLAYER_STATE_T>
-    NPCState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_, int anim_) :
+    NPCState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_, ResID anim_) :
         PhysicalState(stateId_, std::move(transitionableFrom_), anim_)
     {
     }
@@ -98,7 +98,7 @@ class AimedPrejump : public NPCState<true, false>
 {
 public:
     template<typename PLAYER_STATE_T>
-    AimedPrejump(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_, int anim_, float gravity_, float maxInitialHorSpd_) :
+    AimedPrejump(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_, ResID anim_, float gravity_, float maxInitialHorSpd_) :
         NPCState<true, false>(stateId_, std::move(transitionableFrom_), anim_),
         m_gravity(gravity_),
         m_maxInitialHorSpd(maxInitialHorSpd_)
@@ -116,7 +116,7 @@ class AimedFloat : public NPCState<false, false>
 {
 public:
     template<typename PLAYER_STATE_T>
-    AimedFloat(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_, int anim_) :
+    AimedFloat(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_, ResID anim_) :
         NPCState<false, false>(stateId_, std::move(transitionableFrom_), anim_)
     {}
 

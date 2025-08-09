@@ -7,6 +7,9 @@
 #include <string>
 #include <cassert>
 
+// resource id - for animations, textures, etc
+using ResID = size_t;
+
 template <typename T>
 concept Numeric = std::is_arithmetic_v<T>;
 
