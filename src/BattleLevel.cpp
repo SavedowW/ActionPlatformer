@@ -143,6 +143,12 @@ void BattleLevel::update()
     m_rendersys.update();
 
     /*
+        ComponentTransform - read
+        Navigatable - read / write
+    */
+    m_navsys.update();
+
+    /*
         ComponentAI, ComponentTransform (own) - read and write
         Player's transform, physics, possibly state machine - read
     */
@@ -208,12 +214,6 @@ void BattleLevel::update()
         CameraFocusArea - read
     */
     m_camsys.update();
-
-    /*
-        ComponentTransform - read
-        Navigatable - read / write
-    */
-    m_navsys.update();
 
     // Not actually an ECS system
     m_chatBoxSys.update();

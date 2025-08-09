@@ -74,18 +74,20 @@ public:
     void updateTarget();
 
     bool isTargetConnection(ConnectionID id_) const;
-
+    const Connection *findClosestConnection(const Vector2<float> &pos_, Traverse::TraitT traits_, float maxRange_) const;
+    
     // TODO: unordered_multimap
     std::unordered_map<ConnectionID, ConnectionDescr> m_graphView;
     const NavGraph &m_graph;
     
-private:
+    private:
+
     const Traverse::TraitT m_traverseTraits;
     const entt::entity m_target;
-
+    
     // Max range to be tied to a connection
     const float m_targetMaxConnectionRange;
-
+    
     std::vector<ConnectionDescr *> m_front;
     const Connection *m_currentTarget = nullptr;
     entt::registry &m_reg;

@@ -202,6 +202,13 @@ struct Vector2
     }
 
     template<Numeric TR>
+    [[nodiscard]]
+    constexpr inline auto sub(const TR &x_, const TR &y_) const noexcept -> Vector2<decltype(x - x_)>
+    {
+        return { x - x_, y - y_ };
+    }
+
+    template<Numeric TR>
     constexpr inline auto dot(const Vector2<TR>& rhs) const noexcept -> decltype(x * rhs.x)
     {
         return x * rhs.x + y * rhs.y;

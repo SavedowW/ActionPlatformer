@@ -40,7 +40,8 @@ void NavSystem::update()
         }
 
         while (nav.m_pathFollower.nextConnectionExists() &&
-            (nav.m_pathFollower.getNextNodePos() - trans.m_pos).sqLength()<= nav.m_nodeTransitionRange * nav.m_nodeTransitionRange)
+            // TODO: 8.0f - common offset for nodes from the ground - turn to global var
+            (nav.m_pathFollower.getNextNodePos() - trans.m_pos.sub(0.0f, 8.0f)).sqLength() <= nav.m_nodeTransitionRange * nav.m_nodeTransitionRange)
         {
             possibleLoss = false;
             nav.m_pathFollower.iterateForward();
@@ -75,7 +76,7 @@ void NavSystem::draw(Camera &cam_)
         const auto view = m_reg.view<ComponentTransform, Navigatable>();
         for (const auto [idx, trans, nav] : view.each())
         {
-            m_ren.drawCircleOutline(trans.m_pos, nav.m_nodeTransitionRange, {0, 255, 50, 200}, cam_);
+            m_ren.drawCircleOutline(trans.m_pos.sub(0.0f, 8.0f), nav.m_nodeTransitionRange, {0, 255, 50, 200}, cam_);
 
             if (nav.m_pathFollower.m_currentOwnConnection)
             {
@@ -324,6 +325,16 @@ void NavPath::updateTarget()
 bool NavPath::isTargetConnection(ConnectionID id_) const
 {
     return m_currentTarget && m_currentTarget->m_ownId == id_;
+}
+
+const Connection *NavPath::findClosestConnection(const Vector2<float> &pos_, Traverse::TraitT traits_, float maxRange_) const
+{
+    //nav.m_checkIfGrounded && m_reg.get<ComponentPhysical>(idx).m_onGround == entt::null
+
+    const auto newCon = m_graph.findClosestConnection(pos_, traits_);
+    if (newCon.second <= maxRange_)
+        return newCon.first;
+    return nullptr;
 }
 
 ConnectionDescr::ConnectionDescr(const Connection&con_) :

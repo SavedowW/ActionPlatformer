@@ -147,7 +147,7 @@ bool PhysicsSystem::attemptOffsetDown(const auto &clds_, const Vector2<float> &o
             if (cld.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(cld.m_obstacleId) || oldPos.y - highest > 0))
                 continue;
 
-            std::cout << "Touched slope top, stopping at top, offset.y > 0\n";
+            //std::cout << "Touched slope top, stopping at top, offset.y > 0\n";
 
             if (!noLanding_)
             {
@@ -189,7 +189,7 @@ bool PhysicsSystem::attemptOffsetUp(const auto &clds_, const Vector2<float> &ori
             if (cld.m_obstacleId && !obsFallthrough_.touchedObstacleBottom(cld.m_obstacleId))
                 continue;
 
-            std::cout << "Touched ceiling, stopping at bottom, offset.y < 0\n";
+            //std::cout << "Touched ceiling, stopping at bottom, offset.y < 0\n";
 
             auto overlapPortion = utils::getOverlapPortion(newPb.getLeftEdge(), newPb.getRightEdge(), cld.m_resolved.m_points[0].x, cld.m_resolved.m_points[1].x);
 
@@ -243,7 +243,7 @@ bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, ComponentTransfor
                 if (cld.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(cld.m_obstacleId))
                     continue;
 
-                std::cout << "Touched slope, (potentially) getting at it's top, offset.x > 0\n";
+                //std::cout << "Touched slope, (potentially) getting at it's top, offset.x > 0\n";
 
                 if (!mustRise || highest < completeHighest)
                 {
@@ -263,15 +263,15 @@ bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, ComponentTransfor
 
                 if (overlapPortion >= 0.15)
                 {
-                    std::cout << "Touched edge, stopping at it (hard), offset.x > 0\n";
+                    //std::cout << "Touched edge, stopping at it (hard), offset.x > 0\n";
                     if (phys_.m_velocity.x + phys_.m_inertia.x > 0)
                     {
                         phys_.m_velocity.x = 0;
                         phys_.m_inertia.x = 0;
                     }
                 }
-                else
-                    std::cout << "Touched edge, stopping at it (soft), offset.x > 0\n";
+                //else
+                //    std::cout << "Touched edge, stopping at it (soft), offset.x > 0\n";
 
                 return false;
             }
