@@ -158,7 +158,7 @@ namespace utils
         return static_cast<float>(pmax - pmin) / (l1max_ - l1min_);
     }
 
-    constexpr inline std::string getIntend(int intend_)
+    constexpr inline std::string getIntend(size_t intend_)
     {
         return std::string(intend_, ' ');
     }
@@ -205,11 +205,14 @@ namespace utils
     inline void dumpType(std::ostream &os_, const std::string &type_)
     {
         auto res = replaceAll(type_, " ", "");
-        int intendLevel = 0;
+        size_t intendLevel = 0;
         for (const auto &ch : type_)
         {
             if (ch == '>')
             {
+                if (intendLevel < 4)
+                    throw std::logic_error("Unexpected '>' before '<'");
+
                 intendLevel -= 4;
                 os_ << "\n" << getIntend(intendLevel);
                 os_ << ch;
@@ -230,7 +233,7 @@ namespace utils
 
     inline bool startsWith(const std::string &base_, const std::string &beginning_)
     {
-        for (int i = 0; i < beginning_.size(); ++i)
+        for (size_t i = 0; i < beginning_.size(); ++i)
         {
             if (base_[i] != beginning_[i])
                 return false;

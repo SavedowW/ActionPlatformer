@@ -407,10 +407,10 @@ private:
     EventBinding<HUD_EVENTS> m_hudBindings;
 
     std::map<Uint8, Sint16> m_lastAxisValue = {
-        {SDL_CONTROLLER_AXIS_LEFTX, 0},
-        {SDL_CONTROLLER_AXIS_LEFTY, 0},
-        {SDL_CONTROLLER_AXIS_RIGHTX, 0},
-        {SDL_CONTROLLER_AXIS_RIGHTY, 0}
+        {SDL_CONTROLLER_AXIS_LEFTX, Sint16(0)},
+        {SDL_CONTROLLER_AXIS_LEFTY, Sint16(0)},
+        {SDL_CONTROLLER_AXIS_RIGHTX, Sint16(0)},
+        {SDL_CONTROLLER_AXIS_RIGHTY, Sint16(0)}
     };
 
     std::map<int, ControllerDescription> m_controllers;

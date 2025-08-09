@@ -12,7 +12,7 @@ template<typename T>
 const std::map<std::string, T> &makeReversedMap();
 
 template<typename T>
-const std::string serialize(const T &value_)
+const std::string &serialize(const T &value_)
 {
     static const std::map<T, std::string> &m = makeDirectMap<T>();
 
@@ -20,7 +20,7 @@ const std::string serialize(const T &value_)
 }
 
 template<typename T>
-const bool isSerializable(const T &value_)
+bool isSerializable(const T &value_)
 {
     static const std::map<T, std::string> &m = makeDirectMap<T>();
 
@@ -28,7 +28,7 @@ const bool isSerializable(const T &value_)
 }
 
 template<typename T>
-const T deserialize(const std::string &value_)
+const T &deserialize(const std::string &value_)
 {
     static const std::map<std::string, T> &m = makeReversedMap<T>();
 

@@ -143,7 +143,7 @@ void InputSystem::unsubscribe(GAMEPLAY_EVENTS ev_, Subscriber sub_)
     while (i < v.size())
     {
         if (v[i] == sub_)
-            v.erase(v.begin() + i);
+            v.erase(v.begin() + static_cast<int64_t>(i));
         else
             i++;
     }
@@ -164,7 +164,7 @@ void InputSystem::unsubscribe(HUD_EVENTS ev_, Subscriber sub_)
     while (i < v.size())
     {
         if (v[i] == sub_)
-            v.erase(v.begin() + i);
+            v.erase(v.begin() + static_cast<int64_t>(i));
         else
             i++;
     }
