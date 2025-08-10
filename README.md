@@ -1,4 +1,4 @@
-Just a small action platformer I'm working on in my spare time. Uses SDL2, lz4 (these 2 are resolved via conan), entt, nlohmann-json (git submodules), built with cmake. Tiled is used for tilemap editing, the game only needs JSON map and images of tilesets
+Just a small action platformer I'm working on in my spare time. Uses SDL2, (resolved via conan), entt, nlohmann-json, glm (git submodules), built with cmake. Tiled is used for tilemap editing, the game only needs JSON map and images of tilesets
 # About animation format
 ~~Detalis are in SavedowW/AnimationEditor, but the way it is right now in this project:~~
 - ~~There are 3 (hardcoded) layers of LZ4-compressed sprites: RGB, pure white with (optional) glow and white border (not necessary for this project in particular)~~

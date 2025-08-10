@@ -4,6 +4,7 @@
 #include "Enemy1.h"
 #include "NavGraph.h"
 #include "ResetHandlers.h"
+#include "Behavior.hpp"
 
 EnemySystem::EnemySystem(entt::registry &reg_, Application &app_, NavSystem &navsys_, Camera &cam_, ParticleSystem &partsys_) :
     m_reg(reg_),
@@ -21,6 +22,11 @@ entt::entity EnemySystem::makeEnemy()
 
     const auto &trans = m_reg.emplace<ComponentTransform>(enemyId, Vector2{780, 470}, ORIENTATION::RIGHT);
     m_reg.emplace<ComponentReset<ComponentTransform>>(enemyId, trans.m_pos, trans.m_orientation);
+
+    auto &phys = m_reg.emplace<ComponentPhysical>(enemyId);
+    m_reg.emplace<ComponentResetStatic<ComponentPhysical>>(enemyId);
+    phys.m_pushbox = Collider(Vector2{-15, -30}, Vector2{30, 30});
+    phys.m_gravity = {0.0f, 0.2f};
 
     m_reg.emplace<PhysicalEvents>(enemyId);
     m_reg.emplace<BattleActor>(enemyId, BattleTeams::ENEMIES);
@@ -88,7 +94,7 @@ entt::entity EnemySystem::makeEnemy()
     navigateChase->addState(std::unique_ptr<GenericState>(
         new BlindChaseState(
             Enemy1State::META_BLIND_CHASE, {Enemy1State::NONE, {}},
-            Enemy1State::IDLE, Enemy1State::RUN, 200)
+            Enemy1State::IDLE, Enemy1State::RUN, 30)
     ));
 
     navigateChase->setInitialState(Enemy1State::IDLE);
@@ -97,12 +103,6 @@ entt::entity EnemySystem::makeEnemy()
     ai.m_sm.addState(std::unique_ptr<GenericState>(std::move(navigateChase)));
     ai.m_sm.setInitialState(Enemy1State::META_MOVE_TOWARDS);
     ai.m_sm.switchCurrentState({&m_reg, enemyId}, Enemy1State::META_MOVE_TOWARDS);
-
-
-    auto &phys = m_reg.emplace<ComponentPhysical>(enemyId);
-    m_reg.emplace<ComponentResetStatic<ComponentPhysical>>(enemyId);
-    phys.m_pushbox = Collider(Vector2{-15, -30}, Vector2{30, 30});
-    phys.m_gravity = {0.0f, 0.2f};
 
     auto &animrnd = m_reg.emplace<ComponentAnimationRenderable>(enemyId);
     m_reg.emplace<ComponentResetStatic<ComponentAnimationRenderable>>(enemyId);
