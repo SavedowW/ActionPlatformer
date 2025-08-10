@@ -6,35 +6,48 @@
 
 namespace Behavior
 {
+    class NodeBase;
+}
+
+struct ComponentAI
+{
+    std::unique_ptr<Behavior::NodeBase> m_logic;
+    std::optional<CharState> m_requestedState;
+    ORIENTATION m_requestedOrientation = ORIENTATION::UNSPECIFIED;
+    Vector2<float> m_navigationTarget;
+    bool m_isNavigating = false;
+    float m_additionalAccel = 0.0f;
+    entt::entity m_chaseTarget;
+    bool m_allowLeaveState = true;
+};
+
+namespace Behavior
+{
     enum class Status {
         SUCCESS,
         FAILURE,
         RUNNING
     };
 
+    struct Context
+    {
+        
+    };
+
     class NodeBase
     {
     public:
-        NodeBase(const std::string &name_) :
-            m_name(name_)
-        {
-        }
+        NodeBase(const std::string &name_);
 
         virtual void enter() = 0;
-        virtual void leave() {}
+        virtual void leave();
 
         virtual Status update() = 0;
 
-        virtual std::string stringify(int intend_) const
-        {
-            return std::string(intend_, ' ') + describeSelf() + "\n";
-        }
+        virtual std::string stringify(size_t intend_) const;
 
     protected:
-        virtual std::string describeSelf() const
-        {
-            return m_name;
-        }
+        virtual std::string describeSelf() const;
 
         const std::string m_name;
     };
@@ -124,20 +137,23 @@ namespace Behavior
         decltype(m_nodes)::iterator m_it;
     };
 
-    class WaitAndRand : public NodeBase
+    class RequestState : public NodeBase
     {
     public:
-        WaitAndRand(uint32_t frames_) :
-            NodeBase("WaitAndRand"),
-            m_timer(frames_)
+        template<typename T>
+        RequestState(const T &state_) :
+            NodeBase("Request " + serialize(state_)),
+            m_state(static_cast<CharState>(state_))
         {
-            std::cout << "Creating \"" << describeSelf() << "\" for " << frames_ << " frames" << std::endl;
+            std::cout << "Creating \"" << describeSelf() << "\"" std::endl;
         }
 
+        // TODO: pass context
         virtual void enter() override
         {
             std::cout << "\"" << describeSelf() << "\" - enter" << std::endl;
-            m_timer.setCurrentFrame(0);
+            m_it = m_nodes.begin();
+            (*m_it)->enter();
         }
 
         virtual void leave() override
@@ -147,27 +163,55 @@ namespace Behavior
 
         virtual Status update() override
         {
-            if (m_timer.update())
+            std::cout << "\"" << describeSelf() << "\" - update" << std::endl;
+            while (m_it != m_nodes.end())
             {
-                auto rng = rand() % 2;
-                auto res = rng ? Status::SUCCESS : Status::FAILURE;
-                std::cout << "\"" << describeSelf() << "\" - reporting " << serialize(res) << std::endl;
-                return res;
+                auto res = (*m_it)->update();
+                if (res == Status::SUCCESS)
+                {
+                    (*m_it)->leave();
+                    m_it++;
+                    if (m_it != m_nodes.end())
+                        (*m_it)->enter();
+                    else
+                    {
+                        std::cout << "\"" << describeSelf() << "\" - reporting " << serialize(Status::SUCCESS) << std::endl;
+                        return Status::SUCCESS;
+                    }
+                }
+                else if (res == Status::FAILURE)
+                {
+                    (*m_it)->leave();
+                    std::cout << "\"" << describeSelf() << "\" - reporting " << serialize(res) << std::endl;
+                    return res;
+                }
+                else
+                {
+                    std::cout << "\"" << describeSelf() << "\" - reporting " << serialize(res) << std::endl;
+                    return res;
+                }
             }
-            else
-            {
-                std::cout << "\"" << describeSelf() << "\" - update" << std::endl;
-                return Status::RUNNING;
-            }
+
+            throw std::runtime_error("Loop condition contradicts internal check");
+        }
+
+        virtual std::string stringify(int intend_) const override
+        {
+            std::string res(intend_, ' ');
+            res += describeSelf() + "\n";
+            for (const auto &el : m_nodes)
+                res += el->stringify(intend_ + 1);
+
+            return res;
         }
 
     protected:
-        virtual std::string describeSelf() const override
-        {
-            return NodeBase::describeSelf() + " (duration=" + std::to_string(m_timer.getDuration()) + ")";
-        }
+        virtual std::string describeSelf() const
+            {
+                return m_name + " (size=" + std::to_string(m_nodes.size()) + ")";
+            }
 
-        FrameTimer<true> m_timer;
+        const CharState m_state;
     };
 
 }

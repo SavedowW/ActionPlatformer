@@ -50,6 +50,7 @@ RectCollider.cpp
 FilesystemUtils.cpp
 Shader.cpp
 Configuration.cpp
+Behavior.cpp
 Localization/LocalizationGen.cpp
 )
 

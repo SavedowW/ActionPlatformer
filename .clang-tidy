@@ -1,0 +1,19 @@
+# Основные настройки
+Checks: >
+  -*,
+  clang-analyzer-*,
+  modernize-*,
+  performance-*,
+  -performance-avoid-endl, # Used on purpose since output wont necessarily be flushed otherwise
+  readability-*,
+  -readability-magic-numbers, # maybe later
+  bugprone-*,
+  -modernize-use-trailing-return-type, # Stylistically meh
+  #-performance-no-int-to-ptr,
+  #-bugprone-easily-swappable-parameters,
+  #-cppcoreguidelines-avoid-c-arrays,
+  #-cppcoreguidelines-pro-type-union-access,
+  #-cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  #-modernize-avoid-c-arrays,
+
+HeaderFilterRegex: '.*'
