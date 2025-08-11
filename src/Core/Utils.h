@@ -1,11 +1,11 @@
 #ifndef UTILS_H_
 #define UTILS_H_
-#include <SDL.h>
+#include <SDL3/SDL.h> // TODO: remove SDL dependency from utils
 #include <string>
-#include <regex>
 #include <sstream>
-#include <string>
+#include <vector>
 #include <cassert>
+#include <cmath>
 
 // resource id - for animations, textures, etc
 using ResID = size_t;
@@ -163,11 +163,6 @@ namespace utils
         return std::string(intend_, ' ');
     }
 
-    inline std::string replaceAll(std::string src_, const std::string &replacable_, const std::string &toReplace_)
-    {
-        return std::regex_replace(src_, std::regex(replacable_), toReplace_);
-    }
-
     constexpr inline std::string wrap(const std::string &src_)
     {
         return "\"" + src_ + "\"";
@@ -178,6 +173,12 @@ namespace utils
     constexpr inline bool isLowerOrGreater(const T& value_, const T& bound_) noexcept
     {
         return bound_ < 0 ? value_ <= bound_ : value_ >= bound_;
+    }
+
+#if 0 // Builin regex bad
+    inline std::string replaceAll(std::string src_, const std::string &replacable_, const std::string &toReplace_)
+    {
+        return std::regex_replace(src_, std::regex(replacable_), toReplace_);
     }
 
     inline std::string normalizeType(const std::string &reg_)
@@ -201,6 +202,7 @@ namespace utils
 
         return res;
     }
+
 
     inline void dumpType(std::ostream &os_, const std::string &type_)
     {
@@ -230,6 +232,7 @@ namespace utils
                 os_ << "\n" << getIntend(intendLevel);
         }
     }
+#endif
 
     inline bool startsWith(const std::string &base_, const std::string &beginning_)
     {

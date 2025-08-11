@@ -1,9 +1,8 @@
 #include "TextureManager.h"
 #include "FilesystemUtils.h"
-#include <SDL_Image.h>
+#include <SDL3_image/SDL_image.h>
 
-TextureManager::TextureManager(Renderer &renderer_) :
-	m_renderer(renderer_)
+TextureManager::TextureManager()
 {
 	auto sprPath = Filesystem::getRootDirectory() + "Resources/Sprites/";
 	std::filesystem::path basePath(sprPath);
@@ -84,7 +83,7 @@ std::shared_ptr<TextureResource> TextureManager::loadTexture(const std::string &
     }
 
     
-    std::cout << SDL_GetPixelFormatName(imgSurface->format->format) << std::endl;
+    std::cout << SDL_GetPixelFormatName(imgSurface->format) << std::endl;
 
     Vector2<int> texSize(imgSurface->w, imgSurface->h);
     unsigned int texId = 0;
@@ -102,7 +101,7 @@ std::shared_ptr<TextureResource> TextureManager::loadTexture(const std::string &
 
     dumpErrors();
 
-    SDL_FreeSurface(imgSurface);
+    SDL_DestroySurface(imgSurface);
 
     return std::make_shared<TextureResource>(path_, texSize, texId);
 }

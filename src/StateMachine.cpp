@@ -74,10 +74,8 @@ void StateMachine::switchCurrentState(EntityAnywhere owner_, const std::vector<C
     }
 }
 
-void GenericState::spawnParticle(EntityAnywhere owner_, const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_, SDL_RendererFlip flip_)
+void GenericState::spawnParticle(EntityAnywhere owner_, const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_, SDL_FlipMode  flip_)
 {
-    auto offset = phys_.m_velocity + phys_.m_inertia;
-
     ParticleRecipe rp(partemplate_);
 
     if (partemplate_.m_tiePosRule != TiePosRule::TIE_TO_SOURCE)
@@ -85,7 +83,7 @@ void GenericState::spawnParticle(EntityAnywhere owner_, const ParticleTemplate &
 
     if (trans_.m_orientation == ORIENTATION::LEFT || trans_.m_orientation == ORIENTATION::RIGHT && (flip_ & SDL_FLIP_HORIZONTAL))
     {
-        rp.flip = SDL_RendererFlip(rp.flip | SDL_FLIP_HORIZONTAL);
+        rp.flip = SDL_FlipMode (rp.flip | SDL_FLIP_HORIZONTAL);
         rp.pos.x -= partemplate_.offset.x;
 
         if (!(flip_ & SDL_FLIP_VERTICAL) && partemplate_.m_dependOnGroundAngle)
@@ -101,7 +99,7 @@ void GenericState::spawnParticle(EntityAnywhere owner_, const ParticleTemplate &
 
     if (flip_ & SDL_FLIP_VERTICAL)
     {
-        rp.flip = SDL_RendererFlip(rp.flip | SDL_FLIP_VERTICAL);
+        rp.flip = SDL_FlipMode (rp.flip | SDL_FLIP_VERTICAL);
         rp.pos.y -= partemplate_.offset.y;
     }
     else

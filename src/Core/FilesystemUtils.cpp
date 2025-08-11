@@ -1,5 +1,5 @@
 #include "FilesystemUtils.h"
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 namespace
 {
@@ -21,7 +21,6 @@ std::string Filesystem::getRootDirectory()
             throw std::runtime_error("Failed to identify base path: " + std::string(SDL_GetError()));
 
         std::string path = pathptr;
-        SDL_free(pathptr);
         std::filesystem::path ppath(path);
 
         for (; ppath.filename() != "build" && !ppath.empty(); ppath = ppath.parent_path());

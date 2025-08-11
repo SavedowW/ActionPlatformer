@@ -13,7 +13,7 @@ struct TileView
 struct Tile
 {
     TileView *m_tile = nullptr;
-    SDL_RendererFlip m_flip = SDL_FLIP_NONE;
+    SDL_FlipMode m_flip = SDL_FLIP_NONE;
 };
 
 class Tileset
@@ -24,10 +24,10 @@ public:
     TileView *getView(uint32_t id_);
 
 private:
-    uint32_t m_firstgid;
     TextureManager &m_texManager;
     std::shared_ptr<Texture> m_tex;
     std::vector<TileView> m_tiles;
+    uint32_t m_firstgid;
 
     // Size in tiles
     Vector2<int> m_size;
@@ -41,7 +41,7 @@ public:
     void addTileset(const std::string &spritesheet_, uint32_t firstgid_);
     Tile getTile(uint32_t gid_);
 
-    static SDL_RendererFlip flagsToFlip(uint32_t gid_);
+    static SDL_FlipMode flagsToFlip(uint32_t gid_);
 
 private:
 

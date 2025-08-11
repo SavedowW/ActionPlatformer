@@ -5,7 +5,7 @@
 #include <vector>
 #include <functional>
 #include <array>
-#include <SDL_ttf.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include "Vector2.h"
 #include "TimelineProperty.hpp"
 #include <set>

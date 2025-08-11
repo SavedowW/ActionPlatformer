@@ -4,11 +4,6 @@ set(PROJECT_NAME ActionPlatformer)
 
 project(${PROJECT_NAME})
 
-find_package(SDL2 REQUIRED)
-find_package(SDL2_IMAGE REQUIRED)
-find_package(SDL2_ttf REQUIRED)
-find_package(SDL2_mixer REQUIRED)
-
 set(SRC_FILES 
 main.cpp
 BattleLevel.cpp
@@ -42,24 +37,18 @@ set(INCLUDE_DIRS
 ${CMAKE_CURRENT_LIST_DIR}
 ${CMAKE_CURRENT_LIST_DIR}/Core
 ${CMAKE_SOURCE_DIR}/external/glm
-${SDL2_mixer_INCLUDE_DIRS}
 )
 
 message(Paths:)
 
 set(LINK_LIBRARIES
-${SDL2_LIBRARIES}
-SDL2_image::SDL2_image
-SDL2_mixer::SDL2_mixer
+SDL3::SDL3
+SDL3_image::SDL3_image
+SDL3_ttf::SDL3_ttf
+SDL3_mixer::SDL3_mixer
 nlohmann_json::nlohmann_json
 EnTT::EnTT
 )
-
-if (TARGET sdl_ttf::sdl_ttf)
-    list(APPEND LINK_LIBRARIES sdl_ttf::sdl_ttf)
-else ()
-    list(APPEND LINK_LIBRARIES SDL2_ttf::SDL2_ttf)
-endif ()
 
 message(${LINK_LIBRARIES})
 

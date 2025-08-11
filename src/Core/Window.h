@@ -1,8 +1,7 @@
 #ifndef WINDOW_H_
 #define WINDOW_H_
 
-#include <SDL.h>
-#include <SDL_Image.h>
+#include <SDL3/SDL.h>
 #include <string>
 #include "Vector2.h"
 
@@ -20,12 +19,9 @@ public:
 
     SDL_Window* getWindow();
 
-    Vector2<int> getCurrentResulution() const;
-
 private:
     SDL_Window* m_window = nullptr;
     std::string m_winName;
-
 };
 
 #endif

@@ -298,7 +298,7 @@ public:
         m_transitionOnLeave(CharacterState::FLOAT),
         m_slideParticle(std::move(slideParticle_))
     {
-        setGravity(TimelineProperty<Vector2<float>>({0.0f, 0.020f}));
+        setGravity(Vector2{0.0f, 0.020f});
         setConvertVelocityOnSwitch(true, false);
     }
 
@@ -422,9 +422,9 @@ public:
         PlayerState<true, false, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>(CharacterState::WALL_CLING_PREJUMP, std::move(transitionableFrom_), anim_),
         m_jumpParticle(std::move(jumpParticle_))
     {
-        setGravity(TimelineProperty<Vector2<float>>({0.0f, 0.020f}));
+        setGravity(Vector2{0.0f, 0.020f});
         setConvertVelocityOnSwitch(true, true);
-        setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}));
+        setAppliedInertiaMultiplier(Vector2{0.0f, 0.0f});
     }
 
     inline virtual void enter(EntityAnywhere owner_, CharState from_) override
@@ -526,7 +526,7 @@ public:
                 }));
         setCanFallThrough(TimelineProperty<bool>(false));
         setExtendedBuffer(10);
-        setGravity({{0.0f, 0.0f}});
+        setGravity(Vector2{0.0f, 0.0f});
         setConvertVelocityOnSwitch(true, false);
         setTransitionOnLostGround(CharacterState::FLOAT);
         setMagnetLimit(TimelineProperty<unsigned int>({
@@ -549,13 +549,13 @@ public:
                     {40, {-1.5f, 0.0f}},
                     {41, {0.0f, 0.0f}}
                 }),  // Dir vel mul
-            TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Raw vel
-            TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Inr mul
-            TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
-            TimelineProperty<Vector2<float>>({0.0f, 0.0f})); // Raw inr
+            TimelineProperty(Vector2<float>{0.0f, 0.0f}), // Raw vel
+            TimelineProperty(Vector2<float>{1.0f, 1.0f}), // Inr mul
+            TimelineProperty(Vector2<float>{0.0f, 0.0f}), // Dir inr mul
+            TimelineProperty(Vector2<float>{0.0f, 0.0f})); // Raw inr
         setMulInsidePushbox(TimelineProperty<std::optional<Vector2<float>>>({
-            {9, Vector2<float>{0.2f, 1.0f}},
-            {12, std::optional<Vector2<float>>()}
+            {9, Vector2{0.2f, 1.0f}},
+            {12, std::nullopt}
         }));
         setTransitionVelocityMultiplier(TimelineProperty<Vector2<float>>({
                     {0, {1.0f, 1.0f}},

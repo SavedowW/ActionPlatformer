@@ -5,6 +5,8 @@
 #include <filesystem>
 #include <fstream>
 
+// TODO: maybe can be improved with new SDL3 features?
+
 InputSystem::InputSystem() :
     m_rootPath(Filesystem::getRootDirectory() + "Configs"),
     m_configPath(Filesystem::getRootDirectory() + "Configs/inputs.json")
@@ -30,64 +32,64 @@ void InputSystem::handleInput()
     {
         switch (e.type)
         {
-        case (SDL_QUIT):
+        case (SDL_EVENT_QUIT):
             send(GAMEPLAY_EVENTS::QUIT, 1);
             break;
 
-        case (SDL_KEYDOWN):
+        case (SDL_EVENT_KEY_DOWN):
         {
             if (e.key.repeat)
                 break;
 
-            resolveBinding(m_gameplayBindings.m_keyboardBindings, e.key.keysym.sym, 1);
-            resolveBinding(m_hudBindings.m_keyboardBindings, e.key.keysym.sym, 1);
+            resolveBinding(m_gameplayBindings.m_keyboardBindings, e.key.key, 1);
+            resolveBinding(m_hudBindings.m_keyboardBindings, e.key.key, 1);
             
         }
             break;
 
-        case (SDL_KEYUP):
+        case (SDL_EVENT_KEY_UP):
         {
-            resolveBinding(m_gameplayBindings.m_keyboardBindings, e.key.keysym.sym, -1);
-            resolveBinding(m_hudBindings.m_keyboardBindings, e.key.keysym.sym, -1);
+            resolveBinding(m_gameplayBindings.m_keyboardBindings, e.key.key, -1);
+            resolveBinding(m_hudBindings.m_keyboardBindings, e.key.key, -1);
         }
         break;
 
-        case (SDL_CONTROLLERDEVICEADDED):
-            m_controllers[e.cdevice.which].m_controller = SDL_GameControllerOpen(e.cdevice.which);
-            std::cout << "Discovered new controller at " << e.cdevice.which << ": " << SDL_GameControllerName(m_controllers[e.cdevice.which].m_controller) << std::endl;
+        case (SDL_EVENT_GAMEPAD_ADDED):
+            m_controllers[e.cdevice.which].m_controller = SDL_OpenGamepad(e.cdevice.which);
+            std::cout << "Discovered new controller at " << e.cdevice.which << ": " << SDL_GetGamepadName(m_controllers[e.cdevice.which].m_controller) << std::endl;
         break;
 
-        case (SDL_CONTROLLERDEVICEREMOVED):
+        case (SDL_EVENT_GAMEPAD_REMOVED):
             std::cout << "Removing controller at " << e.cdevice.which << std::endl;
-            SDL_GameControllerClose(m_controllers[e.cdevice.which].m_controller);
+            SDL_CloseGamepad(m_controllers[e.cdevice.which].m_controller);
             m_controllers.erase(e.cdevice.which);
         break;
 
-        case (SDL_CONTROLLERBUTTONDOWN):
+        case (SDL_EVENT_GAMEPAD_BUTTON_DOWN):
         {
-            //std::cout << "Controller pressed " << gamepadButtonNames.at(e.cbutton.button) << std::endl;
+            //std::cout << "Controller pressed " << gamepadButtonNames.at(e.gbutton.button) << std::endl;
 
-            resolveBinding(m_gameplayBindings.m_gamepadBindings, e.cbutton.button, 1);
-            resolveBinding(m_hudBindings.m_gamepadBindings, e.cbutton.button, 1);
+            resolveBinding(m_gameplayBindings.m_gamepadBindings, e.gbutton.button, 1);
+            resolveBinding(m_hudBindings.m_gamepadBindings, e.gbutton.button, 1);
         }
         break;
 
-        case (SDL_CONTROLLERBUTTONUP):
+        case (SDL_EVENT_GAMEPAD_BUTTON_UP):
         {
-            //std::cout << "Controller released " << gamepadButtonNames.at(e.cbutton.button) << std::endl;
+            //std::cout << "Controller released " << gamepadButtonNames.at(e.gbutton.button) << std::endl;
 
-            resolveBinding(m_gameplayBindings.m_gamepadBindings, e.cbutton.button, -1);
-            resolveBinding(m_hudBindings.m_gamepadBindings, e.cbutton.button, -1);
+            resolveBinding(m_gameplayBindings.m_gamepadBindings, e.gbutton.button, -1);
+            resolveBinding(m_hudBindings.m_gamepadBindings, e.gbutton.button, -1);
         }
         break;
 
-        case (SDL_CONTROLLERAXISMOTION):
+        case (SDL_EVENT_GAMEPAD_AXIS_MOTION):
         {
-            auto resolvedValue = e.caxis.value;
+            auto resolvedValue = e.gaxis.value;
             if (abs(resolvedValue) < m_stickDeadzone)
                 resolvedValue = 0;
 
-            auto lastValueRes = m_lastAxisValue.find(e.caxis.axis);
+            auto lastValueRes = m_lastAxisValue.find(e.gaxis.axis);
             if (lastValueRes != m_lastAxisValue.end())
             {
                 if (lastValueRes->second == resolvedValue)
@@ -108,12 +110,12 @@ void InputSystem::handleInput()
                 posValue = 0;
             }
 
-            resolveBinding(m_gameplayBindings.m_gamepadPositiveAxisBindings, e.caxis.axis, posValue);
-            resolveBinding(m_gameplayBindings.m_gamepadNegativeAxisBindings, e.caxis.axis, negValue);
-            resolveBinding(m_hudBindings.m_gamepadPositiveAxisBindings, e.caxis.axis, posValue);
-            resolveBinding(m_hudBindings.m_gamepadNegativeAxisBindings, e.caxis.axis, negValue);
+            resolveBinding(m_gameplayBindings.m_gamepadPositiveAxisBindings, e.gaxis.axis, posValue);
+            resolveBinding(m_gameplayBindings.m_gamepadNegativeAxisBindings, e.gaxis.axis, negValue);
+            resolveBinding(m_hudBindings.m_gamepadPositiveAxisBindings, e.gaxis.axis, posValue);
+            resolveBinding(m_hudBindings.m_gamepadNegativeAxisBindings, e.gaxis.axis, negValue);
 
-            //std::cout << "Controller axis motion " << gamepadAxisNames.at(e.caxis.axis) << " : " << int(e.caxis.value) << std::endl;
+            //std::cout << "Controller axis motion " << gamepadAxisNames.at(e.gaxis.axis) << " : " << int(e.gaxis.value) << std::endl;
         }
         break;
 
@@ -173,19 +175,24 @@ void InputSystem::unsubscribe(HUD_EVENTS ev_, Subscriber sub_)
 void InputSystem::initiateControllers()
 {
     std::cout << "Discovering controllers..." << std::endl;
-    for (int i = 0; i < SDL_NumJoysticks(); ++i)
+
+    int gamepadCount = 0;
+    SDL_JoystickID *pads = SDL_GetJoysticks(&gamepadCount);
+    for (size_t i = 0; i < gamepadCount; ++i)
     {
-        if (SDL_IsGameController(i))
+        if (SDL_IsGamepad(pads[i]))
         {
             auto &ctrl = m_controllers[i];
-            ctrl.m_controller = SDL_GameControllerOpen(i);
-            std::cout << "Found supported controller at " << i << ": " << SDL_GameControllerName(ctrl.m_controller) << std::endl;
+            ctrl.m_controller = SDL_OpenGamepad(pads[i]);
+            std::cout << "Found supported controller at " << i << ": " << SDL_GetGamepadName(ctrl.m_controller) << std::endl;
         }
         else
         {
             std::cout << "Found unknown joystick at " << i << std::endl;
         }
     }
+
+    SDL_free(pads);
 }
 
 void InputSystem::send(GAMEPLAY_EVENTS ev_, float val_)
@@ -213,69 +220,69 @@ void InputSystem::send(HUD_EVENTS ev_, float val_)
 void InputSystem::setupDefaultMapping()
 {
     m_gameplayBindings.m_keyboardBindings = {
-        {SDLK_w, GAMEPLAY_EVENTS::UP},
-        {SDLK_d, GAMEPLAY_EVENTS::RIGHT},
-        {SDLK_s, GAMEPLAY_EVENTS::DOWN},
-        {SDLK_a, GAMEPLAY_EVENTS::LEFT},
-        {SDLK_i, GAMEPLAY_EVENTS::ATTACK},
+        {SDLK_W, GAMEPLAY_EVENTS::UP},
+        {SDLK_D, GAMEPLAY_EVENTS::RIGHT},
+        {SDLK_S, GAMEPLAY_EVENTS::DOWN},
+        {SDLK_A, GAMEPLAY_EVENTS::LEFT},
+        {SDLK_I, GAMEPLAY_EVENTS::ATTACK},
         {SDLK_MINUS, GAMEPLAY_EVENTS::FN1},
         {SDLK_EQUALS, GAMEPLAY_EVENTS::FN2},
         {SDLK_0, GAMEPLAY_EVENTS::FN3},
         {SDLK_SPACE, GAMEPLAY_EVENTS::CAM_STOP},
         {SDLK_BACKSPACE, GAMEPLAY_EVENTS::FN4},
         {SDLK_SLASH, GAMEPLAY_EVENTS::REN_DBG_1},
-        {SDLK_r, GAMEPLAY_EVENTS::RESET_DBG}
+        {SDLK_R, GAMEPLAY_EVENTS::RESET_DBG}
     };
 
     m_gameplayBindings.m_gamepadBindings = {
-        {SDL_CONTROLLER_BUTTON_A, GAMEPLAY_EVENTS::UP},
-        {SDL_CONTROLLER_BUTTON_DPAD_RIGHT, GAMEPLAY_EVENTS::RIGHT},
-        {SDL_CONTROLLER_BUTTON_DPAD_DOWN, GAMEPLAY_EVENTS::DOWN},
-        {SDL_CONTROLLER_BUTTON_DPAD_LEFT, GAMEPLAY_EVENTS::LEFT},
-        {SDL_CONTROLLER_BUTTON_X, GAMEPLAY_EVENTS::ATTACK},
-        {SDL_CONTROLLER_BUTTON_RIGHTSTICK, GAMEPLAY_EVENTS::FN1},
-        {SDL_CONTROLLER_BUTTON_START, GAMEPLAY_EVENTS::FN2},
-        {SDL_CONTROLLER_BUTTON_BACK, GAMEPLAY_EVENTS::FN3},
-        {SDL_CONTROLLER_BUTTON_LEFTSHOULDER, GAMEPLAY_EVENTS::CAM_STOP},
-        {SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, GAMEPLAY_EVENTS::FN4},
-        {SDL_CONTROLLER_BUTTON_LEFTSTICK, GAMEPLAY_EVENTS::REN_DBG_1},
-        {SDL_CONTROLLER_BUTTON_Y, GAMEPLAY_EVENTS::RESET_DBG}
+        {SDL_GAMEPAD_BUTTON_SOUTH, GAMEPLAY_EVENTS::UP},
+        {SDL_GAMEPAD_BUTTON_DPAD_RIGHT, GAMEPLAY_EVENTS::RIGHT},
+        {SDL_GAMEPAD_BUTTON_DPAD_DOWN, GAMEPLAY_EVENTS::DOWN},
+        {SDL_GAMEPAD_BUTTON_DPAD_LEFT, GAMEPLAY_EVENTS::LEFT},
+        {SDL_GAMEPAD_BUTTON_WEST, GAMEPLAY_EVENTS::ATTACK},
+        {SDL_GAMEPAD_BUTTON_RIGHT_STICK, GAMEPLAY_EVENTS::FN1},
+        {SDL_GAMEPAD_BUTTON_START, GAMEPLAY_EVENTS::FN2},
+        {SDL_GAMEPAD_BUTTON_BACK, GAMEPLAY_EVENTS::FN3},
+        {SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, GAMEPLAY_EVENTS::CAM_STOP},
+        {SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, GAMEPLAY_EVENTS::FN4},
+        {SDL_GAMEPAD_BUTTON_LEFT_STICK, GAMEPLAY_EVENTS::REN_DBG_1},
+        {SDL_GAMEPAD_BUTTON_NORTH, GAMEPLAY_EVENTS::RESET_DBG}
     };
 
     m_gameplayBindings.m_gamepadPositiveAxisBindings = {
-        {SDL_CONTROLLER_AXIS_LEFTX, GAMEPLAY_EVENTS::RIGHT},
-        {SDL_CONTROLLER_AXIS_LEFTY, GAMEPLAY_EVENTS::DOWN}
+        {SDL_GAMEPAD_AXIS_LEFTX, GAMEPLAY_EVENTS::RIGHT},
+        {SDL_GAMEPAD_AXIS_LEFTY, GAMEPLAY_EVENTS::DOWN}
     };
 
     m_gameplayBindings.m_gamepadNegativeAxisBindings = {
-        {SDL_CONTROLLER_AXIS_LEFTX, GAMEPLAY_EVENTS::LEFT},
-        {SDL_CONTROLLER_AXIS_LEFTY, GAMEPLAY_EVENTS::UP}
+        {SDL_GAMEPAD_AXIS_LEFTX, GAMEPLAY_EVENTS::LEFT},
+        {SDL_GAMEPAD_AXIS_LEFTY, GAMEPLAY_EVENTS::UP}
     };
 
     m_hudBindings.m_keyboardBindings = {
-        {SDLK_w, HUD_EVENTS::UP},
-        {SDLK_d, HUD_EVENTS::RIGHT},
-        {SDLK_s, HUD_EVENTS::DOWN},
-        {SDLK_a, HUD_EVENTS::LEFT},
-        {SDLK_i, HUD_EVENTS::PROCEED},
+        {SDLK_W, HUD_EVENTS::UP},
+        {SDLK_D, HUD_EVENTS::RIGHT},
+        {SDLK_S, HUD_EVENTS::DOWN},
+        {SDLK_A, HUD_EVENTS::LEFT},
+        {SDLK_I, HUD_EVENTS::PROCEED},
     };
 
     m_hudBindings.m_gamepadBindings = {
-        {SDL_CONTROLLER_BUTTON_DPAD_UP, HUD_EVENTS::UP},
-        {SDL_CONTROLLER_BUTTON_DPAD_RIGHT, HUD_EVENTS::RIGHT},
-        {SDL_CONTROLLER_BUTTON_DPAD_DOWN, HUD_EVENTS::DOWN},
-        {SDL_CONTROLLER_BUTTON_DPAD_LEFT, HUD_EVENTS::LEFT},
-        {SDL_CONTROLLER_BUTTON_A, HUD_EVENTS::PROCEED},
+        {SDL_GAMEPAD_BUTTON_DPAD_UP, HUD_EVENTS::UP},
+        {SDL_GAMEPAD_BUTTON_DPAD_RIGHT, HUD_EVENTS::RIGHT},
+        {SDL_GAMEPAD_BUTTON_DPAD_DOWN, HUD_EVENTS::DOWN},
+        {SDL_GAMEPAD_BUTTON_DPAD_LEFT, HUD_EVENTS::LEFT},
+        {SDL_GAMEPAD_BUTTON_SOUTH, HUD_EVENTS::PROCEED},
     };
 
     m_hudBindings.m_gamepadPositiveAxisBindings = {
-        {SDL_CONTROLLER_AXIS_LEFTX, HUD_EVENTS::RIGHT},
-        {SDL_CONTROLLER_AXIS_LEFTY, HUD_EVENTS::DOWN}
+        {SDL_GAMEPAD_AXIS_LEFTX, HUD_EVENTS::RIGHT},
+        {SDL_GAMEPAD_AXIS_LEFTY, HUD_EVENTS::DOWN}
     };
 
     m_hudBindings.m_gamepadNegativeAxisBindings = {
-        {SDL_CONTROLLER_AXIS_LEFTX, HUD_EVENTS::LEFT},
-        {SDL_CONTROLLER_AXIS_LEFTY, HUD_EVENTS::UP}
+        {SDL_GAMEPAD_AXIS_LEFTX, HUD_EVENTS::LEFT},
+        {SDL_GAMEPAD_AXIS_LEFTY, HUD_EVENTS::UP}
     };
 }
 

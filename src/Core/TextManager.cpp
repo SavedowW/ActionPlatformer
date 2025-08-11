@@ -71,7 +71,7 @@ TextManager::TextManager(Renderer &renderer_) :
     TTF_Font *font = TTF_OpenFont((basePath_ + font_).c_str(), size_);
     if (font == nullptr)
     {
-            std::cout << "Cannot create font: " << TTF_GetError() << std::endl;
+            std::cout << "Cannot create font: " << SDL_GetError() << std::endl;
             return;
     }
 
@@ -93,7 +93,7 @@ TextManager::TextManager(Renderer &renderer_) :
             uint32_t chid_8 = chunkInitVal * fonts::CHUNK_SIZE + i;
             uint32_t chid = utf8::u8tou32(chid_8, utf8::readCharSize(chid_8));
 
-            if (!TTF_GlyphIsProvided32(font, chid))
+            if (!TTF_FontHasGlyph(font, chid))
             {
                 notProvided++;
                 continue;
@@ -102,27 +102,27 @@ TextManager::TextManager(Renderer &renderer_) :
             TTF_SetFontOutline(font, outlineWidth_);
 
             // Outline (background)
-            auto surf = TTF_RenderGlyph32_Solid(font, chid, outlineColor_);
+            auto surf = TTF_RenderGlyph_Solid(font, chid, outlineColor_);
             if (surf == nullptr)
             {
-                std::cout << "Cannot create 1st surface: " << TTF_GetError() << std::endl;
+                std::cout << "Cannot create 1st surface: " << SDL_GetError() << std::endl;
                 continue;
             }
             auto *text1 = SDL_CreateTextureFromSurface(sdlrenderer, surf);
-            SDL_FreeSurface(surf);
+            SDL_DestroySurface(surf);
 
             // Inner letter
             TTF_SetFontOutline(font, 0);
-            surf = TTF_RenderGlyph32_Solid(font, chid, {255, 255, 255, 255});
+            surf = TTF_RenderGlyph_Solid(font, chid, {255, 255, 255, 255});
             if (surf == nullptr)
             {
-                std::cout << "Cannot create 2nd surface: " << TTF_GetError() << std::endl;
+                std::cout << "Cannot create 2nd surface: " << SDL_GetError() << std::endl;
                 continue;
             }
             else
                 generated++;
             auto *text2 = SDL_CreateTextureFromSurface(sdlrenderer, surf);
-            SDL_FreeSurface(surf);
+            SDL_DestroySurface(surf);
 
             // Outline size
             int w1, h1;
@@ -148,7 +148,7 @@ TextManager::TextManager(Renderer &renderer_) :
             symbols_[i].m_w = w1;
             symbols_[i].m_h = h1;
 
-            TTF_GlyphMetrics32(font, chid, &symbols_[i].m_minx, &symbols_[i].m_maxx, &symbols_[i].m_miny, &symbols_[i].m_maxy, &symbols_[i].m_advance);
+            TTF_GetGlyphMetrics(font, chid, &symbols_[i].m_minx, &symbols_[i].m_maxx, &symbols_[i].m_miny, &symbols_[i].m_maxy, &symbols_[i].m_advance);
             SDL_SetTextureBlendMode(symbols_[i].m_tex, SDL_BLENDMODE_BLEND);
 
             renderer_.setRenderTarget(symbols_[i].m_tex);
@@ -174,7 +174,7 @@ TextManager::TextManager(Renderer &renderer_) :
     TTF_Font *font = TTF_OpenFont((basePath_ + font_).c_str(), size_);
     if (font == nullptr)
     {
-            std::cout << "Cannot create font: " << TTF_GetError() << std::endl;
+            std::cout << "Cannot create font: " << SDL_GetError() << std::endl;
             return;
     }
 
@@ -194,7 +194,7 @@ TextManager::TextManager(Renderer &renderer_) :
             uint32_t chid_8 = chunkInitVal * fonts::CHUNK_SIZE + i;
             uint32_t chid = utf8::u8tou32(chid_8, utf8::readCharSize(chid_8));
 
-            if (!TTF_GlyphIsProvided32(font, chid))
+            if (!TTF_FontHasGlyph(font, chid))
             {
                 notProvided++;
                 continue;
@@ -203,27 +203,27 @@ TextManager::TextManager(Renderer &renderer_) :
             TTF_SetFontOutline(font, outlineWidth_);
 
             // Outline (background)
-            auto surf = TTF_RenderGlyph32_Solid(font, chid, outlineColor_);
+            auto surf = TTF_RenderGlyph_Solid(font, chid, outlineColor_);
             if (surf == nullptr)
             {
-                std::cout << "Cannot create 1st surface: " << TTF_GetError() << std::endl;
+                std::cout << "Cannot create 1st surface: " << SDL_GetError() << std::endl;
                 continue;
             }
             auto *text1 = SDL_CreateTextureFromSurface(sdlrenderer, surf);
-            SDL_FreeSurface(surf);
+            SDL_DestroySurface(surf);
 
             // Inner letter
             TTF_SetFontOutline(font, 0);
-            surf = TTF_RenderGlyph32_Solid(font, chid, {255, 255, 255, 255});
+            surf = TTF_RenderGlyph_Solid(font, chid, {255, 255, 255, 255});
             if (surf == nullptr)
             {
-                std::cout << "Cannot create 2nd surface: " << TTF_GetError() << std::endl;
+                std::cout << "Cannot create 2nd surface: " << SDL_GetError() << std::endl;
                 continue;
             }
             else
                 generated++;
             auto *text2 = SDL_CreateTextureFromSurface(sdlrenderer, surf);
-            SDL_FreeSurface(surf);
+            SDL_DestroySurface(surf);
 
             // Outline size
             int w1, h1;
@@ -242,7 +242,7 @@ TextManager::TextManager(Renderer &renderer_) :
             symbols_[i].m_tex = renderer_.createTexture(w1, h1);
             symbols_[i].m_w = w1;
             symbols_[i].m_h = h1;
-            TTF_GlyphMetrics32(font, chid, &symbols_[i].m_minx, &symbols_[i].m_maxx, &symbols_[i].m_miny, &symbols_[i].m_maxy, &symbols_[i].m_advance);
+            TTF_GetGlyphMetrics(font, chid, &symbols_[i].m_minx, &symbols_[i].m_maxx, &symbols_[i].m_miny, &symbols_[i].m_maxy, &symbols_[i].m_advance);
             SDL_SetTextureBlendMode(symbols_[i].m_tex, SDL_BLENDMODE_BLEND);
 
             renderer_.setRenderTarget(symbols_[i].m_tex);
@@ -266,7 +266,7 @@ void TextManager::generateSimpleSymbols(std::vector<std::array<fonts::Symbol, fo
     TTF_Font *font = TTF_OpenFont((basePath_ + font_).c_str(), size_);
     if (font == nullptr)
     {
-            std::cout << "Cannot create font: " << TTF_GetError() << std::endl;
+            std::cout << "Cannot create font: " << SDL_GetError() << std::endl;
             return;
     }
 
@@ -283,31 +283,31 @@ void TextManager::generateSimpleSymbols(std::vector<std::array<fonts::Symbol, fo
             uint32_t chid_8 = chunkInitVal * fonts::CHUNK_SIZE + i;
             uint32_t chid = utf8::u8tou32(chid_8, utf8::readCharSize(chid_8));
 
-            if (!TTF_GlyphIsProvided32(font, chid))
+            if (!TTF_FontHasGlyph(font, chid))
             {
                 notProvided++;
                 continue;
             }
 
-            auto surf = TTF_RenderGlyph32_Solid(font, chid, color_);
+            auto surf = TTF_RenderGlyph_Solid(font, chid, color_);
             if (surf == nullptr)
             {
-                std::cout << "Cannot create surface: " << TTF_GetError() << std::endl;
+                std::cout << "Cannot create surface: " << SDL_GetError() << std::endl;
                 continue;
             }
             else
                 generated++;
 
-            auto nsurf = SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_ABGR8888, 0);
+            auto nsurf = SDL_ConvertSurface(surf, SDL_PIXELFORMAT_ABGR8888);
 
             symbols_[i].m_tex.m_size.x = nsurf->w;
             symbols_[i].m_tex.m_size.y = nsurf->h;
             symbols_[i].m_tex.m_id = renderer_.surfaceToTexture(nsurf);
 
-            SDL_FreeSurface(surf);
-            SDL_FreeSurface(nsurf);
+            SDL_DestroySurface(surf);
+            SDL_DestroySurface(nsurf);
 
-            TTF_GlyphMetrics32(font, chid, &symbols_[i].m_minx, &symbols_[i].m_maxx, &symbols_[i].m_miny, &symbols_[i].m_maxy, &symbols_[i].m_advance);
+            TTF_GetGlyphMetrics(font, chid, &symbols_[i].m_minx, &symbols_[i].m_maxx, &symbols_[i].m_miny, &symbols_[i].m_maxy, &symbols_[i].m_advance);
         }
 
         symbolChunks_.push_back(std::move(symbols_));
@@ -323,7 +323,7 @@ void TextManager::generateSimpleShadedSymbols(std::vector<std::array<fonts::Symb
     TTF_Font *font = TTF_OpenFont((basePath_ + font_).c_str(), size_);
     if (font == nullptr)
     {
-            std::cout << "Cannot create font: " << TTF_GetError() << std::endl;
+            std::cout << "Cannot create font: " << SDL_GetError() << std::endl;
             return;
     }
 
@@ -340,7 +340,7 @@ void TextManager::generateSimpleShadedSymbols(std::vector<std::array<fonts::Symb
             uint32_t chid_8 = chunkInitVal * fonts::CHUNK_SIZE + i;
             uint32_t chid = utf8::u8tou32(chid_8, utf8::readCharSize(chid_8)); // TODO: update in main project
 
-            if (!TTF_GlyphIsProvided32(font, chid))
+            if (!TTF_FontHasGlyph(font, chid))
             {
                 notProvided++;
                 continue;
@@ -354,39 +354,39 @@ void TextManager::generateSimpleShadedSymbols(std::vector<std::array<fonts::Symb
             {
                 // Outline (background)
                 TTF_SetFontOutline(font, 1);
-                auto surf = TTF_RenderGlyph32_Solid(font, chid, shadeColor_);
+                auto surf = TTF_RenderGlyph_Solid(font, chid, shadeColor_);
                 if (surf == nullptr)
                 {
-                    std::cout << "Cannot create 1st surface: " << TTF_GetError() << std::endl;
+                    std::cout << "Cannot create 1st surface: " << SDL_GetError() << std::endl;
                     continue;
                 }
-                auto nsurf = SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_ABGR8888, 0);
+                auto nsurf = SDL_ConvertSurface(surf, SDL_PIXELFORMAT_ABGR8888);
                 shadedTex = renderer_.surfaceToTexture(nsurf);
                 shadedSize = {nsurf->w, nsurf->h};
-                SDL_FreeSurface(surf);
-                SDL_FreeSurface(nsurf);
+                SDL_DestroySurface(surf);
+                SDL_DestroySurface(nsurf);
 
                 // Inner letter
                 TTF_SetFontOutline(font, 0);
-                surf = TTF_RenderGlyph32_Solid(font, chid, color_);
+                surf = TTF_RenderGlyph_Solid(font, chid, color_);
                 if (surf == nullptr)
                 {
-                    std::cout << "Cannot create 2nd surface: " << TTF_GetError() << std::endl;
+                    std::cout << "Cannot create 2nd surface: " << SDL_GetError() << std::endl;
                     continue;
                 }
                 else
                     generated++;
-                nsurf = SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_ABGR8888, 0);
+                nsurf = SDL_ConvertSurface(surf, SDL_PIXELFORMAT_ABGR8888);
                 unshadedTex = renderer_.surfaceToTexture(nsurf);
                 unshadedSize = {nsurf->w, nsurf->h};
-                SDL_FreeSurface(surf);
-                SDL_FreeSurface(nsurf);
+                SDL_DestroySurface(surf);
+                SDL_DestroySurface(nsurf);
             }
 
             symbols_[i].m_tex.m_size.x = shadedSize.x + 1;
             symbols_[i].m_tex.m_size.y = shadedSize.y + 1;
             symbols_[i].m_tex.m_id = renderer_.createTextureRGBA(symbols_[i].m_tex.m_size.x, symbols_[i].m_tex.m_size.y);
-            TTF_GlyphMetrics32(font, chid, &symbols_[i].m_minx, &symbols_[i].m_maxx, &symbols_[i].m_miny, &symbols_[i].m_maxy, &symbols_[i].m_advance);
+            TTF_GetGlyphMetrics(font, chid, &symbols_[i].m_minx, &symbols_[i].m_maxx, &symbols_[i].m_miny, &symbols_[i].m_maxy, &symbols_[i].m_advance);
 
             renderer_.attachTex(symbols_[i].m_tex.m_id, symbols_[i].m_tex.m_size);
             renderer_.fillRenderer(SDL_Color{255, 255, 255, 0});

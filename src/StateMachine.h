@@ -67,8 +67,8 @@ public:
     template<typename PLAYER_STATE_T>
     GenericState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_) :
         m_stateId(static_cast<CharState>(stateId_)),
-        m_stateName(serialize<PLAYER_STATE_T>(stateId_)),
-        m_transitionableFrom(std::move(transitionableFrom_))
+        m_transitionableFrom(std::move(transitionableFrom_)),
+        m_stateName(serialize<PLAYER_STATE_T>(stateId_))
     {}
 
     void setParent(StateMachine *parent_);
@@ -102,7 +102,7 @@ public:
     const CharState m_stateId;
 
 protected:
-    void spawnParticle(EntityAnywhere owner_, const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_, SDL_RendererFlip verFlip_);
+    void spawnParticle(EntityAnywhere owner_, const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_, SDL_FlipMode verFlip_);
 
     const StateMarker m_transitionableFrom;
     std::string m_stateName;
@@ -125,10 +125,10 @@ public:
     PhysicalState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_, ResID anim_) :
         GenericState(stateId_, std::move(transitionableFrom_)),
         m_anim(anim_),
-        m_drag({1.0f, 0.0f}),
-        m_appliedInertiaMultiplier({1.0f, 1.0f}),
-        m_canFallThrough(true),
-        m_transitionVelocityMultiplier({1.0f, 1.0f})
+        m_appliedInertiaMultiplier(Vector2{1.0f, 1.0f}),
+        m_drag(Vector2{1.0f, 0.0f}),
+        m_transitionVelocityMultiplier(Vector2{1.0f, 1.0f}),
+        m_canFallThrough(true)
     {}
 
     virtual void leave(EntityAnywhere owner_, CharState to_) override;
@@ -177,7 +177,7 @@ public:
     PhysicalState &setHurtboxes(Hurtbox &&hurtboxes_);
     PhysicalState &addHit(HitboxGroup &&hit_);
     PhysicalState &setHitStateMapping(HitStateMapping &&hitStateMapping_);
-    virtual bool transitionableInto(CharState targetStateId_, uint32_t currentFrame_) const;
+    virtual bool transitionableInto(CharState targetStateId_, uint32_t currentFrame_) const override;
 
 
     virtual void onTouchedGround(EntityAnywhere owner_);

@@ -16,7 +16,7 @@ struct ContainedTextureData
 class TextureManager
 {
 public:
-	TextureManager(Renderer &renderer_);
+	TextureManager();
 	std::shared_ptr<Texture> getTexture(ResID id_);
 	void preload(const std::string &toPreload_);
 	void preload(ResID id_);
@@ -25,8 +25,6 @@ public:
     std::shared_ptr<TextureResource> loadTexture(const std::string &path_);
 
 private:
-
-	Renderer &m_renderer;
 	std::map<std::string, ResID> m_ids;
 	std::vector<ContainedTextureData> m_textures_;
 };

@@ -48,7 +48,7 @@ struct ParticleRecipe
     int count = 0;
     Vector2<float> pos;
     ResID anim;
-    SDL_RendererFlip flip = SDL_FLIP_NONE;
+    SDL_FlipMode flip = SDL_FLIP_NONE;
     uint32_t lifetime;
     float angle = 0;
     int layer;

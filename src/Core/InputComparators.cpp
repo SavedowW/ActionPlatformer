@@ -1,6 +1,7 @@
 #include "InputComparators.h"
 #include "GameData.h"
 
+#if 0 // was used for FG-ish motion inputs
 template<size_t len, typename VecT>
 bool recursivelySearchInput(const InputQueue &inputQueue_, Vector2<VecT> (&inputs_)[len], int start_, int toSearch_, int window_)
 {
@@ -20,6 +21,7 @@ bool recursivelySearchInput(const InputQueue &inputQueue_, Vector2<VecT> (&input
     }
     return false;
 }
+#endif
 
 bool InputComparatorIdle::operator()(const InputQueue&, unsigned int) const
 {

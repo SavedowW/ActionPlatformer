@@ -242,7 +242,7 @@ protected:
         }
     }
 
-    const size_t binarySearch(uint32_t timeMark_) const
+    size_t binarySearch(uint32_t timeMark_) const
     {
         const auto size = m_keys.size();
         if (timeMark_ >= m_keys[size - 1])

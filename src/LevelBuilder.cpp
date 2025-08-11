@@ -1,8 +1,8 @@
 #include "LevelBuilder.h"
-#include "EnvComponents.h"
 #include "JsonUtils.hpp"
 #include "NavGraph.h"
 #include "CoreComponents.h"
+#include "EnvComponents.h"
 #include "CameraFocusArea.h"
 #include "StateMachine.h"
 #include "ResetHandlers.h"
@@ -254,7 +254,7 @@ void LevelBuilder::loadUtilTileset(const std::filesystem::path &jsonLoc_, uint32
 
     for (const auto &tile : tilesetdata["tiles"])
     {
-        m_utilTilesetFactories[firstgid_ + tile["id"]] = m_factories[tile["type"]];
+        m_utilTilesetFactories[firstgid_ + tile["id"].get<uint32_t>()] = m_factories[tile["type"]];
     }
 }
 

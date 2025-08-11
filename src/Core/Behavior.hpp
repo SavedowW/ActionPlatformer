@@ -1,5 +1,6 @@
 #ifndef BEHAVIOR_H_
 #define BEHAVIOR_H_
+#include "StateCommon.h"
 #include "FrameTimer.h"
 #include "EnumMapping.hpp"
 #include <iostream>
@@ -9,7 +10,7 @@ namespace Behavior
     class NodeBase;
 }
 
-struct ComponentAI
+/*struct ComponentAI
 {
     std::unique_ptr<Behavior::NodeBase> m_logic;
     std::optional<CharState> m_requestedState;
@@ -19,7 +20,7 @@ struct ComponentAI
     float m_additionalAccel = 0.0f;
     entt::entity m_chaseTarget;
     bool m_allowLeaveState = true;
-};
+};*/
 
 namespace Behavior
 {
@@ -117,7 +118,7 @@ namespace Behavior
             throw std::runtime_error("Loop condition contradicts internal check");
         }
 
-        virtual std::string stringify(int intend_) const override
+        virtual std::string stringify(size_t intend_) const override
         {
             std::string res(intend_, ' ');
             res += describeSelf() + "\n";
@@ -145,15 +146,14 @@ namespace Behavior
             NodeBase("Request " + serialize(state_)),
             m_state(static_cast<CharState>(state_))
         {
-            std::cout << "Creating \"" << describeSelf() << "\"" std::endl;
+            std::cout << "Creating \"" << describeSelf() << "\"" << std::endl;
         }
 
         // TODO: pass context
         virtual void enter() override
         {
             std::cout << "\"" << describeSelf() << "\" - enter" << std::endl;
-            m_it = m_nodes.begin();
-            (*m_it)->enter();
+            // TODO:
         }
 
         virtual void leave() override
@@ -164,43 +164,13 @@ namespace Behavior
         virtual Status update() override
         {
             std::cout << "\"" << describeSelf() << "\" - update" << std::endl;
-            while (m_it != m_nodes.end())
-            {
-                auto res = (*m_it)->update();
-                if (res == Status::SUCCESS)
-                {
-                    (*m_it)->leave();
-                    m_it++;
-                    if (m_it != m_nodes.end())
-                        (*m_it)->enter();
-                    else
-                    {
-                        std::cout << "\"" << describeSelf() << "\" - reporting " << serialize(Status::SUCCESS) << std::endl;
-                        return Status::SUCCESS;
-                    }
-                }
-                else if (res == Status::FAILURE)
-                {
-                    (*m_it)->leave();
-                    std::cout << "\"" << describeSelf() << "\" - reporting " << serialize(res) << std::endl;
-                    return res;
-                }
-                else
-                {
-                    std::cout << "\"" << describeSelf() << "\" - reporting " << serialize(res) << std::endl;
-                    return res;
-                }
-            }
-
-            throw std::runtime_error("Loop condition contradicts internal check");
+            // TODO:
         }
 
-        virtual std::string stringify(int intend_) const override
+        virtual std::string stringify(size_t intend_) const override
         {
             std::string res(intend_, ' ');
             res += describeSelf() + "\n";
-            for (const auto &el : m_nodes)
-                res += el->stringify(intend_ + 1);
 
             return res;
         }
@@ -208,7 +178,8 @@ namespace Behavior
     protected:
         virtual std::string describeSelf() const
             {
-                return m_name + " (size=" + std::to_string(m_nodes.size()) + ")";
+                //return m_name + " (size=" + std::to_string(m_nodes.size()) + ")"; TODO:
+                return "";
             }
 
         const CharState m_state;

@@ -4,27 +4,27 @@
 
 Application::Application()
 {
-    if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
+    if (!SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMEPAD))
 	{
 		std::cout << "SDL initialization error: " << SDL_GetError() << std::endl;
 		throw std::runtime_error("Cannot initialize SDL");
 	}
     
-    if (SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 4 ) < 0)
+    if (!SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 4 ))
         std::cout << SDL_GetError() << std::endl;
-    if (SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 3 ) < 0)
+    if (!SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 3 ))
         std::cout << SDL_GetError() << std::endl;
-    if (SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE ) < 0)
+    if (!SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE ))
         std::cout << SDL_GetError() << std::endl;
 
-    if (TTF_Init() == -1)
+    if (!TTF_Init())
 	{
-		std::cout << "TTF initialization error: " << TTF_GetError() << std::endl;
+		std::cout << "TTF initialization error: " << SDL_GetError() << std::endl;
 	}
 
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 0, 512))
+    if (!MIX_Init())
 	{
-		std::cout << "MIX ititialization error: " << Mix_GetError() << std::endl;
+		std::cout << "MIX ititialization error: " << SDL_GetError() << std::endl;
 	}
 
     Filesystem::ensureDirectoryRelative("Resources");
@@ -40,7 +40,7 @@ Application::Application()
     m_window = std::make_unique<Window>("GameName");
     m_renderer = std::make_unique<Renderer>(m_window->getWindow());
     m_inputSystem = std::make_unique<InputSystem>();
-    m_textureManager = std::make_unique<TextureManager>(*m_renderer);
+    m_textureManager = std::make_unique<TextureManager>();
     m_animationManager = std::make_unique<AnimationManager>(*m_renderer);
     m_textManager = std::make_unique<TextManager>(*m_renderer);
 
@@ -55,7 +55,7 @@ Application::~Application()
     m_inputSystem.reset();
     m_renderer.reset();
     m_window.reset();
-    Mix_Quit();
+    MIX_Quit();
     TTF_Quit();
 	SDL_Quit();
     std::cout << "Application shut down successfully" << std::endl;

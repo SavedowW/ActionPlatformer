@@ -8,8 +8,6 @@ template <typename T, size_t len>
 class FixedQueue
 {
 public:
-    FixedQueue() {};
-
     const T& operator[](size_t rhs_) const
     {
         if (rhs_ >= m_filled)

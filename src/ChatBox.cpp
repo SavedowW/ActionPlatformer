@@ -399,7 +399,7 @@ void ChatboxSystem::draw()
 
     ren.renderTexture(m_chatboxEdge->m_id,
             outerBoundBR - m_chatboxEdge->m_size,
-            m_chatboxEdge->m_size, SDL_RendererFlip(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL), 1.0f);
+            m_chatboxEdge->m_size, SDL_FlipMode(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL), 1.0f);
 
     std::cout << (int)seq.m_currentState << std::endl;
     if (seq.m_currentMessage && seq.m_currentState == ChatMessageSequence::BoxState::IDLE)

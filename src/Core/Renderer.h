@@ -8,8 +8,8 @@
 #include "Texture.h"
 
 #include <glad/glad.h>
-#include <SDL.h>
-#include <SDL_opengl.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_opengl.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -48,22 +48,20 @@ public:
     void drawCollider(const SlopeCollider &cld_, const SDL_Color &fillCol_, const Camera &cam_);
     void drawCollider(const Collider &cld_, const SDL_Color &fillCol_, const SDL_Color &borderCol_, const Camera &cam_);
 
-    // Add horizontal flip
-    // Version with flip + angle
-    // Tilemap version
-    void renderTextureOutlined(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_);
-    void renderTextureOutlined(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_, const Camera &cam_);
+    // TODO: templated integral param, to hpp
+    void renderTextureOutlined(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_);
+    void renderTextureOutlined(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_, const Camera &cam_);
 
-    void renderTexture(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_, float alpha_);
-    void renderTexture(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_, float alpha_, const Camera &cam_);
+    void renderTexture(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_, float alpha_);
+    void renderTexture(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_, float alpha_, const Camera &cam_);
 
-    void renderTexture(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_, float degrees_, const Vector2<int> pivot_);
-    void renderTexture(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_, float degrees_, const Vector2<int> pivot_, const Camera &cam_);
+    void renderTexture(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_, float degrees_, const Vector2<int> pivot_);
+    void renderTexture(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_, float degrees_, const Vector2<int> pivot_, const Camera &cam_);
 
-    void renderTextureFlash(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_, uint8_t alpha_);
-    void renderTextureFlash(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_, uint8_t alpha_, const Camera &cam_);
+    void renderTextureFlash(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_, uint8_t alpha_);
+    void renderTextureFlash(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_, uint8_t alpha_, const Camera &cam_);
 
-    void renderTile(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_RendererFlip flip_, const Vector2<int> &tilesetPixelsPos_);
+    void renderTile(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_, const Vector2<int> &tilesetPixelsPos_);
 
 private:
     SDL_GLContext m_context;

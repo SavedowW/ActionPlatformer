@@ -1,3 +1,4 @@
+#include <regex>
 #include "Tileset.h"
 #include "GameData.h"
 
@@ -40,15 +41,15 @@ TilesetBase::TilesetBase(TextureManager &texMan_) :
 {
 }
 
-SDL_RendererFlip TilesetBase::flagsToFlip(uint32_t gid_)
+SDL_FlipMode TilesetBase::flagsToFlip(uint32_t gid_)
 {
-    SDL_RendererFlip res = SDL_FLIP_NONE;
+    SDL_FlipMode res = SDL_FLIP_NONE;
 
     if (gid_ & FLIPPED_HORIZONTALLY_FLAG)
-        res = SDL_RendererFlip(res | SDL_FLIP_HORIZONTAL);
+        res = SDL_FlipMode(res | SDL_FLIP_HORIZONTAL);
 
     if (gid_ & FLIPPED_VERTICALLY_FLAG)
-        res = SDL_RendererFlip(res | SDL_FLIP_VERTICAL);
+        res = SDL_FlipMode(res | SDL_FLIP_VERTICAL);
 
     return res;
 }

@@ -124,23 +124,23 @@ entt::entity EnemySystem::makeEnemy()
     sm.addState(std::unique_ptr<GenericState>(
         &(new NPCState<true, true>(
             Enemy1State::RUN, {Enemy1State::NONE, {Enemy1State::IDLE, Enemy1State::RUN}}, m_animManager.getAnimID("Enemy1/run")))
-        ->setGravity({{0.0f, 0.0f}})
+        ->setGravity(Vector2{0.0f, 0.0f})
         .setUpdateMovementData(
-            TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Vel mul
+            TimelineProperty(Vector2{1.0f, 1.0f}), // Vel mul
             TimelineProperty<Vector2<float>>( 
                 {
                     {0, {0.2f, 0.0f}},
                     {5, {0.4f, 0.0f}},
                 }),  // Dir vel mul
-            TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Raw vel
-            TimelineProperty<Vector2<float>>({1.0f, 1.0f}), // Inr mul
-            TimelineProperty<Vector2<float>>({0.0f, 0.0f}), // Dir inr mul
-            TimelineProperty<Vector2<float>>({0.0f, 0.0f})) // Raw inr
+            TimelineProperty(Vector2{0.0f, 0.0f}), // Raw vel
+            TimelineProperty(Vector2{1.0f, 1.0f}), // Inr mul
+            TimelineProperty(Vector2{0.0f, 0.0f}), // Dir inr mul
+            TimelineProperty(Vector2{0.0f, 0.0f})) // Raw inr
         .setUpdateSpeedLimitData(
-            TimelineProperty<Vector2<float>>({3.5f, 0.0f}),
-            TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
+            TimelineProperty(Vector2{3.5f, 0.0f}),
+            TimelineProperty(Vector2{9999.9f, 0.0f}))
         .setTransitionOnLostGround(Enemy1State::FLOAT)
-        .setMagnetLimit(TimelineProperty<unsigned int>(10))
+        .setMagnetLimit(10)
         .setHurtboxes({
             {
                 HurtboxGroup(
@@ -159,12 +159,12 @@ entt::entity EnemySystem::makeEnemy()
         &(new AimedPrejump(
             Enemy1State::PREJUMP, {Enemy1State::NONE, {Enemy1State::IDLE, Enemy1State::RUN}}, m_animManager.getAnimID("Enemy1/prejump"),
             0.3f, 1.5f))
-        ->setGravity({{0.0f, 0.0f}})
+        ->setGravity(Vector2{0.0f, 0.0f})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(Enemy1State::FLOAT)
-        .setMagnetLimit(TimelineProperty<unsigned int>(4))
-        .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
-        .setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+        .setMagnetLimit(4)
+        .setDrag(Vector2{0.0f, 0.0f})
+        .setAppliedInertiaMultiplier(Vector2{0.0f, 0.0f})
         .setHurtboxes({
             {
                 HurtboxGroup(
@@ -188,7 +188,7 @@ entt::entity EnemySystem::makeEnemy()
     sm.addState(std::unique_ptr<GenericState>(
         &(new NPCState<false, false>(
             Enemy1State::IDLE, {Enemy1State::NONE, {Enemy1State::IDLE, Enemy1State::RUN}}, m_animManager.getAnimID("Enemy1/idle")))
-        ->setGravity({{0.0f, 0.0f}})
+        ->setGravity(Vector2{0.0f, 0.0f})
         .setDrag(TimelineProperty<Vector2<float>>({{0, Vector2{0.1f, 0.1f}}, {3, Vector2{0.5f, 0.5f}}}))
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(Enemy1State::FLOAT)
@@ -206,8 +206,8 @@ entt::entity EnemySystem::makeEnemy()
         })
         .setCanFallThrough(TimelineProperty<bool>(true))
         .setUpdateSpeedLimitData(
-            TimelineProperty<Vector2<float>>({9999.9f, 0.0f}),
-            TimelineProperty<Vector2<float>>({9999.9f, 0.0f}))
+            TimelineProperty(Vector2<float>{9999.9f, 0.0f}),
+            TimelineProperty(Vector2<float>{9999.9f, 0.0f}))
         .setHitStateMapping(std::move(HitStateMapping()
             .addHitstunTransition(0, std::numeric_limits<CharState>::max())
             .addHitstunTransition(2, static_cast<CharState>(Enemy1State::PREJUMP))
@@ -217,8 +217,8 @@ entt::entity EnemySystem::makeEnemy()
     sm.addState(std::unique_ptr<GenericState>(
         &(new AimedFloat(
             Enemy1State::FLOAT, {Enemy1State::NONE, {}}, m_animManager.getAnimID("Enemy1/float")))
-        ->setGravity({{0.0f, 0.3f}})
-        .setDrag(TimelineProperty<Vector2<float>>({0.0f, 0.0f}))
+        ->setGravity(Vector2<float>{0.0f, 0.3f})
+        .setDrag(Vector2<float>{0.0f, 0.0f})
         .setHurtboxes({
             {
                 HurtboxGroup(

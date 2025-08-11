@@ -3,7 +3,7 @@
 #include "JsonUtils.hpp"
 #include "FilesystemUtils.h"
 #include <nlohmann/json.hpp>
-#include <SDL_Image.h>
+#include <SDL3_image/SDL_image.h>
 #include <cassert>
 
 AnimationManager::AnimationManager(Renderer &renderer_) :

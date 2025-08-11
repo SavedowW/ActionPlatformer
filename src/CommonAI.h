@@ -2,6 +2,18 @@
 #define COMMON_AI_H_
 #include "StateMachine.h"
 
+struct ComponentAI
+{
+    StateMachine m_sm;
+    std::optional<CharState> m_requestedState;
+    ORIENTATION m_requestedOrientation = ORIENTATION::UNSPECIFIED;
+    Vector2<float> m_navigationTarget;
+    bool m_isNavigating = false;
+    float m_additionalAccel = 0.0f;
+    entt::entity m_chaseTarget;
+    bool m_allowLeaveState = true;
+};
+
 class AIState: public GenericState
 {
 public:

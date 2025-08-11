@@ -53,7 +53,7 @@ private:
     template<typename T>
     void makeObject(const Vector2<int> &pos_, bool visible_, int layer_) = delete;
 
-    using FactoryMethod = decltype(&LevelBuilder::makeObject<void>);
+    using FactoryMethod = void (LevelBuilder::*)(const Vector2<int>&, bool, int);
 
     std::map<std::string, FactoryMethod> m_factories;
 

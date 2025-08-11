@@ -9,8 +9,7 @@
 #include "AnimationManager.h"
 #include <memory>
 #include <filesystem>
-#include <SDL_ttf.h>
-#include <SDL_mixer.h>
+#include <SDL3_mixer/SDL_mixer.h>
 #include "TextManager.h"
 
 namespace gamedata

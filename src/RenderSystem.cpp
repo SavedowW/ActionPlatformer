@@ -45,7 +45,7 @@ void RenderSystem::updateDepth()
 
     if (RenderLayer::m_dirtyOrder)
     {
-        std::cout << "Updating depth" << std::endl;
+        //std::cout << "Updating depth" << std::endl;
         m_reg.sort<RenderLayer>([](const RenderLayer &lhs_, const RenderLayer &rhs_)
         {
             return lhs_.m_depth > rhs_.m_depth;
@@ -132,7 +132,7 @@ void RenderSystem::drawInstance(const ComponentTransform &trans_, const Componen
         auto animorigin = ren_.m_currentAnimation->getOrigin();
         auto texPos = trans_.m_pos + Vector2{1, 1};
         texPos.y -= animorigin.y;
-        SDL_RendererFlip flip = SDL_FLIP_NONE;
+        SDL_FlipMode flip = SDL_FLIP_NONE;
         if (trans_.m_orientation == ORIENTATION::LEFT)
         {
             flip = SDL_FLIP_HORIZONTAL;
@@ -153,7 +153,7 @@ void RenderSystem::drawInstance(const ComponentTransform &trans_, const Componen
         if (ren_.m_flash)
         {
             auto alpha = ren_.m_flash->getFlashAlpha();
-            std::cout << (int)alpha << std::endl;
+            //std::cout << (int)alpha << std::endl;
             m_renderer.renderTextureFlash(spr, texPos, texSize, flip, alpha, m_camera);
         }
 
