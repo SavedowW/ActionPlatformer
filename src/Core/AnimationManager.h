@@ -10,11 +10,11 @@ struct TextureArr
     TextureArr(unsigned int* tex_, size_t amount_, uint32_t totalDuration_, const std::vector<size_t> &framesData_, int w_, int h_, const Vector2<int> &origin_) :
         m_tex(tex_),
         m_amount(amount_),
-        m_totalDuration(totalDuration_),
-        m_framesData(framesData_),
         m_w(w_),
         m_h(h_),
-        m_origin(origin_)
+        m_totalDuration(totalDuration_),
+        m_origin(origin_),
+        m_framesData(framesData_)
     {
     }
 

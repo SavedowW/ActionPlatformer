@@ -119,5 +119,8 @@ void Level::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
 				m_forcerun = false;
 			}
 			break;
+		
+		default:
+			break;
 	}
 }

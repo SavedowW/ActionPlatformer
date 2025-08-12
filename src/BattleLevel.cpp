@@ -100,27 +100,39 @@ void BattleLevel::enter()
 
 void BattleLevel::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
 {
-    Level::receiveEvents(event, scale_);
-
-    if (event == GAMEPLAY_EVENTS::FN4 && scale_ > 0)
+    switch (event)
     {
-        ChatMessageSequence seq{m_playerId, ChatBoxSide::PREFER_TOP, true, true, true, true};
-        seq.m_messages.emplace_back(ll::test_dlg1(), 3);
-        seq.m_messages.emplace_back(ll::test_dlg2(), 3);
-        seq.m_messages.emplace_back(ll::test_dlg3(), 3);
-        // TODO: doesn't work with first tech symbol
-        //seq.m_messages.emplace_back("<shake=2, 2, 0.001>I believe I shall\nanswer your<charspd=8,default>...</shake> <charspd=default,default><shake=2,2, 0.5>request</shake>.", 3);
-        m_chatBoxSys.addSequence(std::move(seq));
+        case GAMEPLAY_EVENTS::FN4:
+            if (scale_ > 0)
+            {
+                ChatMessageSequence seq{m_playerId, ChatBoxSide::PREFER_TOP, true, true, true, true};
+                seq.m_messages.emplace_back(ll::test_dlg1(), 3);
+                seq.m_messages.emplace_back(ll::test_dlg2(), 3);
+                seq.m_messages.emplace_back(ll::test_dlg3(), 3);
+                // TODO: doesn't work with first tech symbol
+                //seq.m_messages.emplace_back("<shake=2, 2, 0.001>I believe I shall\nanswer your<charspd=8,default>...</shake> <charspd=default,default><shake=2,2, 0.5>request</shake>.", 3);
+                m_chatBoxSys.addSequence(std::move(seq));
 
-        ChatMessageSequence seq2{m_enemyId, ChatBoxSide::PREFER_BOTTOM, true, true, true, true};
-        seq2.m_messages.emplace_back(ll::test_dlg4(), 3);
-        seq2.m_messages.emplace_back(ll::test_dlg5(), 3);
-        m_chatBoxSys.addSequence(std::move(seq2));
+                ChatMessageSequence seq2{m_enemyId, ChatBoxSide::PREFER_BOTTOM, true, true, true, true};
+                seq2.m_messages.emplace_back(ll::test_dlg4(), 3);
+                seq2.m_messages.emplace_back(ll::test_dlg5(), 3);
+                m_chatBoxSys.addSequence(std::move(seq2));
+            }
+            else
+                Level::receiveEvents(event, scale_);
+        break;
+
+        case GAMEPLAY_EVENTS::RESET_DBG:
+            if (scale_ > 0)
+                handleReset();
+            else
+                Level::receiveEvents(event, scale_);
+        break;
+
+        default:
+            Level::receiveEvents(event, scale_);
     }
-    else if (event == GAMEPLAY_EVENTS::RESET_DBG && scale_ > 0)
-    {
-        handleReset();
-    }
+
 }
 
 void BattleLevel::update()
