@@ -35,8 +35,8 @@ namespace gamedata
 
     namespace global
     {
-        inline constexpr float framerate = 60.0f;
-        inline constexpr float dbgslowdownfps = 20.0f;
+        inline constexpr uint8_t framerate = 61;
+        inline constexpr uint8_t dbgslowdownfps = 20;
         inline constexpr Vector2<int> baseResolution = {640, 360}; // 320 x 180 or 480 x 270
         inline constexpr Vector2<int> maxCameraSize = {640, 360};
         inline constexpr Vector2<int> minCameraSize = {320, 180};

@@ -7,7 +7,7 @@ Profiler &Profiler::instance()
     return profiler;
 }
 
-void Profiler::addRecord(const std::string &identifier_, nanoseconds duration_)
+void Profiler::addRecord(const std::string &identifier_, uint64_t duration_)
 {
     m_calls[identifier_] += duration_;
 }
@@ -29,7 +29,9 @@ void Profiler::dump() const
     {
         auto found = m_calls.find(el.first);
         if (found != m_calls.end())
-            std::cout << el.second << ": avg = " << found->second.avg().count() / 1000000.0f << "ms, sum = " << found->second.sum().count() / 1000000.0f << "ms, calls = " << found->second.count() << std::endl;
+            std::cout << el.second << ": avg = " << static_cast<float>(found->second.avg()) / 1'000'000.0f 
+                                 << "ms, sum = " << static_cast<float>(found->second.sum()) / 1'000'000.0f
+                                 << "ms, calls = " << found->second.count() << std::endl;
         else
             std::cout << el.second << ": avg = " << 0 << ", sum = " << 0 << ", calls = " << 0 << std::endl;
     }
@@ -44,7 +46,7 @@ ProfileTimer::ProfileTimer(const char *identifier_, const std::string &functionN
 
 void ProfileTimer::stop()
 {
-    auto passed = getPassed<nanoseconds>();
+    auto passed = getPassed();
     Profiler::instance().addRecord(m_identifier, passed);
     m_stopped = true;
 }

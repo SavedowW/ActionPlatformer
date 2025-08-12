@@ -14,26 +14,23 @@
 class TimeStatistic
 {
 public:
-    TimeStatistic(const nanoseconds &def_ = nanoseconds::zero()) :
-        m_sum(def_)
-    {
-    }
+    TimeStatistic() = default;
 
-    TimeStatistic &operator+=(const nanoseconds &rhs_)
+    TimeStatistic &operator+=(const uint64_t &rhs_)
     {
         m_sum += rhs_;
         m_cnt++;
         return *this;
     }
 
-    nanoseconds avg() const
+    uint64_t avg() const
     {
-        return std::chrono::duration_cast<nanoseconds>(m_sum) / m_cnt;
+        return m_sum / m_cnt;
     }
 
-    nanoseconds sum() const
+    uint64_t sum() const
     {
-        return std::chrono::duration_cast<nanoseconds>(m_sum);
+        return m_sum;
     }
 
     int count() const
@@ -47,8 +44,8 @@ public:
     }
 
 private:
-    nanoseconds m_sum;
-    int m_cnt = 0;
+    uint64_t m_sum = 0;
+    uint64_t m_cnt = 0;
 
 };
 
@@ -68,7 +65,7 @@ class Profiler
 {
 public:
     static Profiler &instance();
-    void addRecord(const std::string &identifier_, nanoseconds duration_);
+    void addRecord(const std::string &identifier_, uint64_t duration_);
     void addName(const char *identifier_, const std::string &name_);
     void cleanFrame();
     void dump() const;

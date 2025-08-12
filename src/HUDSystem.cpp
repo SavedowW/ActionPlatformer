@@ -5,7 +5,7 @@
 #include "Localization/LocalizationGen.h"
 #include "Configuration.h"
 
-HudSystem::HudSystem(entt::registry &reg_, Application &app_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, nanoseconds &frameTime_) :
+HudSystem::HudSystem(entt::registry &reg_, Application &app_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, uint64_t &frameTime_) :
     m_renderer(app_.getRenderer()),
     m_textManager(app_.getTextManager()),
     m_reg(reg_),
@@ -46,16 +46,16 @@ void HudSystem::drawCommonDebug()
     if (firstRun)
         firstRun = false;
     else
-        m_avgFrames.push(static_cast<float>(m_frameTime.count()));
+        m_avgFrames.push(static_cast<float>(m_frameTime));
 
     m_commonLog.addRecord("[" + std::to_string(m_lvlId) + "] " + utils::toString(m_lvlSize));
     m_commonLog.addRecord("Camera pos: " + utils::toString(m_cam.getPos()));
     m_commonLog.addRecord("Camera size: " + utils::toString(m_cam.getSize()));
     m_commonLog.addRecord("Camera scale: " + std::to_string(m_cam.getScale()));
-    m_commonLog.addRecord("Real frame time (ns): " + std::to_string(m_frameTime.count()));
-    m_commonLog.addRecord("Avg frame time (ms): " + std::to_string( m_avgFrames.avg() / 1000000.0f));
-    m_commonLog.addRecord("FPS: " + std::to_string( 1000000000.0f / m_frameTime.count()));
-    m_commonLog.addRecord("Avg FPS: " + std::to_string( 1000000000.0f / m_avgFrames.avg()));
+    m_commonLog.addRecord("Real frame time (ns): " + std::to_string(m_frameTime));
+    m_commonLog.addRecord("Avg frame time (ms): " + std::to_string( m_avgFrames.avg() / 1'000'000.0f));
+    m_commonLog.addRecord("FPS: " + std::to_string( 1'000'000'000.0f / m_frameTime));
+    m_commonLog.addRecord("Avg FPS: " + std::to_string( 1'000'000'000.0f / m_avgFrames.avg()));
     m_commonLog.addRecord("UTF-8: Кириллица работает");
     m_commonLog.addRecord(ll::dbg_localization());
 

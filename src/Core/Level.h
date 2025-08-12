@@ -40,9 +40,9 @@ protected:
     Timer m_frameTimer;
     Application &m_application;
 
-    nanoseconds m_timeForFrame;
-    nanoseconds m_lastFrameTimeNS;
-    nanoseconds m_lastFullFrameTime;
+    uint64_t m_timeForFrame;
+    uint64_t m_lastFrameTimeNS;
+    uint64_t m_lastFullFrameTime;
     bool m_globalPause = false;
     bool m_allowIter = false;
     bool m_forcerun = false;

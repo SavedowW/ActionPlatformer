@@ -101,6 +101,8 @@ public:
 
     const CharState m_stateId;
 
+    virtual ~GenericState() = default;
+
 protected:
     void spawnParticle(EntityAnywhere owner_, const ParticleTemplate &partemplate_, const ComponentTransform &trans_, const ComponentPhysical &phys_, World &world_, SDL_FlipMode verFlip_);
 

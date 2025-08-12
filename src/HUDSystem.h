@@ -47,7 +47,7 @@ protected:
 struct HudSystem
 {
 public:
-    HudSystem(entt::registry &reg_, Application &app_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, nanoseconds &frameTime_);
+    HudSystem(entt::registry &reg_, Application &app_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, uint64_t &frameTime_);
 
     void draw();
     void drawCommonDebug();
@@ -64,7 +64,7 @@ private:
     Camera &m_cam;
     int m_lvlId;
     Vector2<float> m_lvlSize;
-    nanoseconds &m_frameTime;
+    uint64_t &m_frameTime;
     AveragingQueue<float, 20, 5> m_avgFrames;
 
     ImmediateScreenLog m_commonLog;

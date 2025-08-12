@@ -4,17 +4,19 @@
 #include "GameData.h"
 #include <thread>
 
-static std::string nicetime(const nanoseconds &ns_)
+#if 0
+static std::string nicetime(const uint64_t &ns_)
 {
 	return std::to_string(static_cast<float>(ns_.count()) / 1000000.0f);
 }
+#endif
 
 Level::Level(Application &application_, const Vector2<int> &size_, int lvlId_) :
 	InputReactor(application_.getInputSystem()),
 	m_size(size_),
 	m_levelId(lvlId_),
 	m_application(application_),
-	m_timeForFrame(nanoseconds(1000000000) / static_cast<long long>(gamedata::global::framerate)),
+	m_timeForFrame(1'000'000'000 / gamedata::global::framerate),
 	m_lastFrameTimeNS{0}
 {
 	subscribe(GAMEPLAY_EVENTS::QUIT);
@@ -42,7 +44,7 @@ void Level::leave()
 LevelResult Level::proceed()
 {
 	m_frameTimer.begin();
-	nanoseconds compensate = nanoseconds(0);
+	uint64_t compensate = 0;
 
 	Timer fullFrameTime;
 	auto &profiler = Profiler::instance();
@@ -67,17 +69,17 @@ LevelResult Level::proceed()
 			#endif
 		}
 
-		m_lastFrameTimeNS = m_frameTimer.getPassed<nanoseconds>();
+		m_lastFrameTimeNS = m_frameTimer.getPassed();
 		if (m_lastFrameTimeNS < m_timeForFrame + compensate)
 		{
-			std::this_thread::sleep_for(m_timeForFrame - m_lastFrameTimeNS + compensate);
-			compensate = m_timeForFrame - m_frameTimer.getPassed<nanoseconds>();
+			SDL_DelayNS(m_timeForFrame - m_lastFrameTimeNS + compensate);
+			compensate = m_timeForFrame - m_frameTimer.getPassed();
 		}
 		else
 			compensate += m_timeForFrame - m_lastFrameTimeNS;
 		m_frameTimer.begin();
 
-		m_lastFullFrameTime = fullFrameTime.getPassed<nanoseconds>();
+		m_lastFullFrameTime = fullFrameTime.getPassed();
 		fullFrameTime.begin();
 	}
 
@@ -108,12 +110,12 @@ void Level::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
 		case (GAMEPLAY_EVENTS::FN1):
 			if (scale_ > 0)
 			{
-				m_timeForFrame = nanoseconds(1000000000) / static_cast<long long>(gamedata::global::dbgslowdownfps);
+				m_timeForFrame = 1'000'000'000 / gamedata::global::dbgslowdownfps;
 				m_forcerun = true;
 			}
 			else
 			{
-				m_timeForFrame = nanoseconds(1000000000) / static_cast<long long>(gamedata::global::framerate);
+				m_timeForFrame = 1'000'000'000 / gamedata::global::framerate;
 				m_forcerun = false;
 			}
 			break;
