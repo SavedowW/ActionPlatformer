@@ -6,19 +6,19 @@ uint32_t ChatMessage::m_defaultCharacterDelay = 2;
 uint32_t ChatMessage::m_defaultAppearDuration = 12;
 
 template <>
-inline std::string InlinedValueHandler::getParam<std::string>(int index_)
+inline std::string InlinedValueHandler::getParam<std::string>(size_t index_)
 {
     return m_tokens[index_];
 }
 
 template <>
-inline int InlinedValueHandler::getParam<int>(int index_)
+inline int InlinedValueHandler::getParam<int>(size_t index_)
 {
     return std::atoi(m_tokens[index_].c_str());
 }
 
 template <>
-inline std::string InlinedValueHandler::getParam<std::string>(int index_, const std::string &default_)
+inline std::string InlinedValueHandler::getParam<std::string>(size_t index_, const std::string &default_)
 {
     if (index_ >= m_tokens.size() || m_tokens[index_] == "default")
         return default_;
@@ -27,7 +27,7 @@ inline std::string InlinedValueHandler::getParam<std::string>(int index_, const 
 }
 
 template <>
-inline int InlinedValueHandler::getParam<int>(int index_, const int &default_)
+inline int InlinedValueHandler::getParam<int>(size_t index_, const int &default_)
 {
     if (index_ >= m_tokens.size() || m_tokens[index_] == "default")
         return default_;
@@ -36,7 +36,7 @@ inline int InlinedValueHandler::getParam<int>(int index_, const int &default_)
 }
 
 template <>
-inline uint32_t InlinedValueHandler::getParam<uint32_t>(int index_, const uint32_t &default_)
+inline uint32_t InlinedValueHandler::getParam<uint32_t>(size_t index_, const uint32_t &default_)
 {
     if (index_ >= m_tokens.size() || m_tokens[index_] == "default")
         return default_;
@@ -45,7 +45,7 @@ inline uint32_t InlinedValueHandler::getParam<uint32_t>(int index_, const uint32
 }
 
 template <>
-inline float InlinedValueHandler::getParam<float>(int index_, const float &default_)
+inline float InlinedValueHandler::getParam<float>(size_t index_, const float &default_)
 {
     if (index_ >= m_tokens.size() || m_tokens[index_] == "default")
         return default_;

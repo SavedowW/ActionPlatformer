@@ -182,6 +182,8 @@ public:
     bool update();
     virtual std::unique_ptr<Flash> clone() const = 0;
 
+    virtual ~Flash() = default;
+
 protected:
     uint32_t m_fullDuration;
     uint32_t m_currentFrame;
@@ -277,6 +279,10 @@ struct HUDPoint
 struct RenderLayer
 {
     RenderLayer(int depth_);
+    RenderLayer(const RenderLayer&);
+    RenderLayer(RenderLayer&&);
+    RenderLayer &operator=(const RenderLayer&) = delete;
+    RenderLayer &operator=(RenderLayer&&);
     ~RenderLayer();
 
     int m_depth;
@@ -296,8 +302,8 @@ struct MoveCollider2Points
 struct TilemapLayer
 {
     TilemapLayer(const Vector2<int> &size_, const Vector2<float> &parallaxFactor_) :
-    m_parallaxFactor(parallaxFactor_),
-    m_tiles(size_.y, std::vector<Tile>(size_.x, Tile{}))
+    m_tiles(size_.y, std::vector<Tile>(size_.x, Tile{})),
+    m_parallaxFactor(parallaxFactor_)
     {
     }
 

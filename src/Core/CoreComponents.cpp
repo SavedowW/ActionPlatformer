@@ -209,6 +209,28 @@ RenderLayer::RenderLayer(int depth_) :
     m_dirtyOrder = true;
 }
 
+RenderLayer::RenderLayer(const RenderLayer &rhs_) :
+    m_depth(rhs_.m_depth),
+    m_visible(rhs_.m_visible)
+{
+    m_dirtyOrder = true;
+}
+
+RenderLayer::RenderLayer(RenderLayer &&rhs_) :
+    m_depth(rhs_.m_depth),
+    m_visible(rhs_.m_visible)
+{
+    m_dirtyOrder = true;
+}
+
+RenderLayer &RenderLayer::operator=(RenderLayer &&rhs_)
+{
+    m_depth = rhs_.m_depth;
+    m_visible = rhs_.m_visible;
+
+    return *this;
+}
+
 RenderLayer::~RenderLayer()
 {
     m_dirtyOrder = true;

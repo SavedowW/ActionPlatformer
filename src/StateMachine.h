@@ -52,6 +52,8 @@ public:
         m_currentState = m_states[m_stateIds[initstate]].get();
     }
 
+    virtual ~StateMachine() = default;
+
     std::vector<std::unique_ptr<GenericState>> m_states;
     std::unordered_map<CharState, size_t> m_stateIds;
 
@@ -241,6 +243,8 @@ public:
     NodeState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_) :
         GenericState(stateId_, std::move(transitionableFrom_))
     {}
+
+    using GenericState::getName;
 
     virtual std::string getName(uint32_t framesInState_) const override;
     virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;

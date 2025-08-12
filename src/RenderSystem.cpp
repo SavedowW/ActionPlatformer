@@ -45,7 +45,7 @@ void RenderSystem::updateDepth()
 
     if (RenderLayer::m_dirtyOrder)
     {
-        //std::cout << "Updating depth" << std::endl;
+        std::cout << "Updating depth" << std::endl;
         m_reg.sort<RenderLayer>([](const RenderLayer &lhs_, const RenderLayer &rhs_)
         {
             return lhs_.m_depth > rhs_.m_depth;

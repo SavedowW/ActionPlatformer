@@ -24,10 +24,10 @@ public:
     InlinedValueHandler(const std::string &s_);
 
     template<typename T>
-    T getParam(int index_);
+    T getParam(size_t index_);
 
     template<typename T>
-    T getParam(int index_, const T &default_);
+    T getParam(size_t index_, const T &default_);
 
 private:
     std::vector<std::string> m_tokens;

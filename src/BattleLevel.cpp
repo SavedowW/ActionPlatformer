@@ -17,12 +17,12 @@ BattleLevel::BattleLevel(Application &application_, const Vector2<float>& size_,
     m_aisys(m_registry),
     m_navsys(m_registry, application_, m_graph),
     m_colsys(m_registry),
-    m_graph(application_),
     m_partsys(m_registry, application_),
     m_battlesys(m_registry, application_, m_camera),
     m_chatBoxSys(m_registry, application_, m_camera),
-    m_lvlBuilder(application_, m_registry),
-    m_envSystem(application_, m_registry)
+    m_envSystem(m_registry),
+    m_graph(application_),
+    m_lvlBuilder(application_, m_registry)
 {
     auto playerId = m_registry.create();
 

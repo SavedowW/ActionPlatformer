@@ -2,8 +2,7 @@
 #include "CoreComponents.h"
 #include "EnvComponents.h"
 
-EnvironmentSystem::EnvironmentSystem(Application &app_, entt::registry &reg_) :
-    m_app(app_),
+EnvironmentSystem::EnvironmentSystem(entt::registry &reg_) :
     m_reg(reg_)
 {
 }

@@ -6,12 +6,11 @@
 class EnvironmentSystem
 {
 public:
-    EnvironmentSystem(Application &app_, entt::registry &reg_);
+    EnvironmentSystem(entt::registry &reg_);
 
     void update(entt::entity playerId_);
 
 private:
-    Application &m_app;
     entt::registry &m_reg;
 };
 
