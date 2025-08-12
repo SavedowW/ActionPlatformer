@@ -27,7 +27,7 @@ void AimedPrejump::onOutdated(EntityAnywhere owner_)
     // Calculated so that with m_gravity the velocity will turn 0 at height delta.y (from starting point)
     initialImpulse.y = -sqrt(2 * m_gravity * abs(delta.y));
 
-    const auto duration = abs(initialImpulse.y / m_gravity) + sqrt(2 * peak / m_gravity);
+    const auto duration = abs(initialImpulse.y / m_gravity) + std::sqrt(2 * peak / m_gravity);
     if (utils::isLowerOrGreater(duration * (m_maxInitialHorSpd + currentspd.x), delta.x))
     {
         initialImpulse.x = delta.x / duration - currentspd.x;

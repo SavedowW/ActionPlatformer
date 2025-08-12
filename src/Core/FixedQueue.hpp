@@ -21,7 +21,7 @@ public:
             return m_data[len - (rhs_ - m_nextToFill)];
     }
 
-    void push(const T &val_)
+    virtual void push(const T &val_)
     {
         m_data[m_nextToFill] = val_;
         m_nextToFill = (m_nextToFill + 1) % len;
@@ -38,8 +38,8 @@ public:
         return m_filled;
     }
 
-private:
-    T m_data[len];
+protected:
+    std::array<T, len> m_data;
     size_t m_nextToFill = 0;
     size_t m_filled = 0;
 

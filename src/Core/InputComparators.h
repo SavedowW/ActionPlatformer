@@ -101,6 +101,4 @@ public:
     bool operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const final;
 };
 
-using InputComparator_ptr = std::unique_ptr<InputComparator>;
-
 #endif

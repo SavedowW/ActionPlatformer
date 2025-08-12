@@ -70,7 +70,6 @@ BattleLevel::BattleLevel(Application &application_, const Vector2<float>& size_,
     subscribe(GAMEPLAY_EVENTS::FN4);
     subscribe(GAMEPLAY_EVENTS::RESET_DBG);
 
-for (int i = 0; i < 1000; ++i)
     m_enemyId = m_enemysys.makeEnemy();
 
     /*auto newcld = m_registry.create();

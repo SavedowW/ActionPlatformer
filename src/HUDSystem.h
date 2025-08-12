@@ -6,6 +6,44 @@
 #include "CommonAI.h"
 #include <entt/entt.hpp>
 
+template<Numeric T, size_t len, uint8_t updatePeriod>
+class AveragingQueue : public FixedQueue<T, len>
+{
+public:
+    virtual void push(const T &val_) override
+    {
+        auto &current = FixedQueue<T, len>::m_data[FixedQueue<T, len>::m_nextToFill];
+
+        if (FixedQueue<T, len>::m_filled >= len)
+        {
+            m_sum -= current;
+            m_sum += val_;
+        }
+        else
+        {
+            m_sum += val_;
+            FixedQueue<T, len>::m_filled++;
+        }
+
+        current = val_;
+
+        FixedQueue<T, len>::m_nextToFill = (FixedQueue<T, len>::m_nextToFill + 1) % len;
+
+        if (++m_iter % updatePeriod == 0)
+            m_lastAvg = m_sum / FixedQueue<T, len>::m_filled;
+    }
+
+    T avg() const noexcept
+    {
+        return m_lastAvg;
+    }
+
+protected:
+    uint8_t m_iter = 0;
+    T m_lastAvg = 0;
+    T m_sum = 0;
+};
+
 struct HudSystem
 {
 public:
@@ -27,6 +65,7 @@ private:
     int m_lvlId;
     Vector2<float> m_lvlSize;
     nanoseconds &m_frameTime;
+    AveragingQueue<float, 20, 5> m_avgFrames;
 
     ImmediateScreenLog m_commonLog;
     ImmediateScreenLog m_playerLog;

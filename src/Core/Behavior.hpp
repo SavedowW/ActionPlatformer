@@ -3,6 +3,7 @@
 #include "StateCommon.h"
 #include "FrameTimer.h"
 #include "EnumMapping.hpp"
+#include <memory>
 #include <iostream>
 
 namespace Behavior

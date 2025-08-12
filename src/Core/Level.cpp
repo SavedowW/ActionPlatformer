@@ -4,6 +4,11 @@
 #include "GameData.h"
 #include <thread>
 
+static std::string nicetime(const nanoseconds &ns_)
+{
+	return std::to_string(static_cast<float>(ns_.count()) / 1000000.0f);
+}
+
 Level::Level(Application &application_, const Vector2<int> &size_, int lvlId_) :
 	InputReactor(application_.getInputSystem()),
 	m_size(size_),
@@ -42,10 +47,10 @@ LevelResult Level::proceed()
 	Timer fullFrameTime;
 	auto &profiler = Profiler::instance();
 
+	fullFrameTime.begin();
 	while (m_state == STATE::RUNNING)
 	{
 		profiler.cleanFrame();
-		fullFrameTime.begin();
 
 		m_input.handleInput();
 
@@ -64,14 +69,15 @@ LevelResult Level::proceed()
 		m_lastFrameTimeMS = m_frameTimer.getPassed<nanoseconds>();
 		if (m_lastFrameTimeMS < m_timeForFrame + compensate)
 		{
-			nanoseconds nanoToSleep = m_timeForFrame - m_lastFrameTimeMS + compensate;
-			m_frameTimer.begin();
-			std::this_thread::sleep_for(nanoToSleep);
-			compensate = nanoToSleep - m_frameTimer.getPassed<nanoseconds>();
+			std::this_thread::sleep_for(m_timeForFrame - m_lastFrameTimeMS + compensate);
+			compensate = m_timeForFrame - m_frameTimer.getPassed<nanoseconds>();
 		}
+		else
+			compensate += m_timeForFrame - m_lastFrameTimeMS;
 		m_frameTimer.begin();
 
 		m_lastFullFrameTime = fullFrameTime.getPassed<nanoseconds>();
+		fullFrameTime.begin();
 	}
 
 	leave();
