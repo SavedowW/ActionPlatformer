@@ -15,7 +15,7 @@ Level::Level(Application &application_, const Vector2<int> &size_, int lvlId_) :
 	m_levelId(lvlId_),
 	m_application(application_),
 	m_timeForFrame(nanoseconds(1000000000) / static_cast<long long>(gamedata::global::framerate)),
-	m_lastFrameTimeMS{0}
+	m_lastFrameTimeNS{0}
 {
 	subscribe(GAMEPLAY_EVENTS::QUIT);
 	subscribe(GAMEPLAY_EVENTS::FN3);
@@ -48,6 +48,7 @@ LevelResult Level::proceed()
 	auto &profiler = Profiler::instance();
 
 	fullFrameTime.begin();
+	m_frameTimer.begin();
 	while (m_state == STATE::RUNNING)
 	{
 		profiler.cleanFrame();
@@ -66,14 +67,14 @@ LevelResult Level::proceed()
 			#endif
 		}
 
-		m_lastFrameTimeMS = m_frameTimer.getPassed<nanoseconds>();
-		if (m_lastFrameTimeMS < m_timeForFrame + compensate)
+		m_lastFrameTimeNS = m_frameTimer.getPassed<nanoseconds>();
+		if (m_lastFrameTimeNS < m_timeForFrame + compensate)
 		{
-			std::this_thread::sleep_for(m_timeForFrame - m_lastFrameTimeMS + compensate);
+			std::this_thread::sleep_for(m_timeForFrame - m_lastFrameTimeNS + compensate);
 			compensate = m_timeForFrame - m_frameTimer.getPassed<nanoseconds>();
 		}
 		else
-			compensate += m_timeForFrame - m_lastFrameTimeMS;
+			compensate += m_timeForFrame - m_lastFrameTimeNS;
 		m_frameTimer.begin();
 
 		m_lastFullFrameTime = fullFrameTime.getPassed<nanoseconds>();

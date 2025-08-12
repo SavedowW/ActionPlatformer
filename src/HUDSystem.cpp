@@ -46,16 +46,16 @@ void HudSystem::drawCommonDebug()
     if (firstRun)
         firstRun = false;
     else
-        m_avgFrames.push(static_cast<float>(m_frameTime.count()) / 1000000.0f);
+        m_avgFrames.push(static_cast<float>(m_frameTime.count()));
 
     m_commonLog.addRecord("[" + std::to_string(m_lvlId) + "] " + utils::toString(m_lvlSize));
     m_commonLog.addRecord("Camera pos: " + utils::toString(m_cam.getPos()));
     m_commonLog.addRecord("Camera size: " + utils::toString(m_cam.getSize()));
     m_commonLog.addRecord("Camera scale: " + std::to_string(m_cam.getScale()));
     m_commonLog.addRecord("Real frame time (ns): " + std::to_string(m_frameTime.count()));
-    m_commonLog.addRecord("Avg frame time (ms): " + std::to_string( m_avgFrames.avg()));
+    m_commonLog.addRecord("Avg frame time (ms): " + std::to_string( m_avgFrames.avg() / 1000000.0f));
     m_commonLog.addRecord("FPS: " + std::to_string( 1000000000.0f / m_frameTime.count()));
-    m_commonLog.addRecord("Avg FPS: " + std::to_string( 1000.0f / m_avgFrames.avg()));
+    m_commonLog.addRecord("Avg FPS: " + std::to_string( 1000000000.0f / m_avgFrames.avg()));
     m_commonLog.addRecord("UTF-8: Кириллица работает");
     m_commonLog.addRecord(ll::dbg_localization());
 

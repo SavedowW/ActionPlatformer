@@ -41,7 +41,7 @@ protected:
     Application &m_application;
 
     nanoseconds m_timeForFrame;
-    nanoseconds m_lastFrameTimeMS;
+    nanoseconds m_lastFrameTimeNS;
     nanoseconds m_lastFullFrameTime;
     bool m_globalPause = false;
     bool m_allowIter = false;
