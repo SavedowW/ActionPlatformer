@@ -5,7 +5,6 @@
 #include "InputComparators.h"
 #include "EnumMapping.hpp"
 #include <map>
-#include <string>
 
 enum class CharacterState : CharState {
     IDLE,
@@ -296,7 +295,7 @@ public:
     PlayerActionWallCling(ResID anim_, StateMarker transitionableFrom_, ParticleTemplate &&slideParticle_) :
         PlayerState<false, true, false, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail>(CharacterState::WALL_CLING, std::move(transitionableFrom_), anim_),
         m_transitionOnLeave(CharacterState::FLOAT),
-        m_slideParticle(std::move(slideParticle_))
+        m_slideParticle(slideParticle_)
     {
         setGravity(Vector2{0.0f, 0.020f});
         setConvertVelocityOnSwitch(true, false);
@@ -420,7 +419,7 @@ class PlayerActionWallPrejump: public PlayerState<true, false, false, InputCompa
 public:
     PlayerActionWallPrejump(ResID anim_, StateMarker transitionableFrom_, ParticleTemplate &&jumpParticle_) :
         PlayerState<true, false, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>(CharacterState::WALL_CLING_PREJUMP, std::move(transitionableFrom_), anim_),
-        m_jumpParticle(std::move(jumpParticle_))
+        m_jumpParticle(jumpParticle_)
     {
         setGravity(Vector2{0.0f, 0.020f});
         setConvertVelocityOnSwitch(true, true);

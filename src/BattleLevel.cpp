@@ -1,4 +1,7 @@
 #include "BattleLevel.h"
+
+#include <memory>
+#include "ResetHandlers.h"
 #include "World.h"
 #include "Profile.h"
 #include "GameData.h"
@@ -38,7 +41,7 @@ BattleLevel::BattleLevel(Application &application_, const Vector2<float>& size_,
     m_registry.emplace<ComponentResetStatic<ComponentAnimationRenderable>>(playerId);
 
     m_registry.emplace<RenderLayer>(playerId, 6);
-    m_registry.emplace<ComponentPlayerInput>(playerId, std::unique_ptr<InputResolver>(new InputResolver(application_.getInputSystem())));
+    m_registry.emplace<ComponentPlayerInput>(playerId, std::make_unique<InputResolver>(application_.getInputSystem()));
 
     m_registry.emplace<ComponentDynamicCameraTarget>(playerId);
     m_registry.emplace<ComponentResetStatic<ComponentDynamicCameraTarget>>(playerId);
@@ -70,7 +73,7 @@ BattleLevel::BattleLevel(Application &application_, const Vector2<float>& size_,
     subscribe(GAMEPLAY_EVENTS::FN4);
     subscribe(GAMEPLAY_EVENTS::RESET_DBG);
 
-for (int i = 0; i < 1000; ++i)
+//for (int i = 0; i < 1000; ++i)
     m_enemyId = m_enemysys.makeEnemy();
 
     /*auto newcld = m_registry.create();
@@ -288,7 +291,7 @@ inline void BattleLevel::handleResetHandler<StateMachine>()
 
     for (auto [idx, comp, handler] : view.each())
     {
-        handler.resetComponent(EntityAnywhere{&m_registry, idx}, comp);
+        handler.resetComponent({.reg=&m_registry, .idx=idx}, comp);
     }
 }
 

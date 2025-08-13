@@ -2,12 +2,9 @@
 #define BATTLE_LEVEL_H_
 
 #include "Level.h"
-#include "ResetHandlers.h"
 #include "Camera.h"
 #include "Application.h"
-#include "ImmediateScreenLog.h"
 #include "LevelBuilder.h"
-#include "PlayableCharacter.h"
 #include "PhysicsSystem.h"
 #include "PlayerSystem.h"
 #include "RenderSystem.h"

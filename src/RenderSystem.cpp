@@ -45,6 +45,7 @@ void RenderSystem::updateDepth()
 
     if (RenderLayer::m_dirtyOrder)
     {
+        // FIXME: sometimes with a lot of enemies player can change layer
         std::cout << "Updating depth" << std::endl;
         m_reg.sort<RenderLayer>([](const RenderLayer &lhs_, const RenderLayer &rhs_)
         {

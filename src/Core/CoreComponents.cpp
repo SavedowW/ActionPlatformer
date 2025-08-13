@@ -1,5 +1,4 @@
 #include "CoreComponents.h"
-#include <vector>
 
 ComponentTransform::ComponentTransform(const Vector2<int> &pos_, ORIENTATION orient_) :
     m_pos(pos_), m_orientation(orient_)
@@ -203,27 +202,27 @@ bool Flash::update()
     return ++m_currentFrame >= m_fullDuration;
 }
 
-RenderLayer::RenderLayer(int depth_) :
+RenderLayer::RenderLayer(int depth_) noexcept :
     m_depth(depth_)
 {
     m_dirtyOrder = true;
 }
 
-RenderLayer::RenderLayer(const RenderLayer &rhs_) :
+RenderLayer::RenderLayer(const RenderLayer &rhs_) noexcept :
     m_depth(rhs_.m_depth),
     m_visible(rhs_.m_visible)
 {
     m_dirtyOrder = true;
 }
 
-RenderLayer::RenderLayer(RenderLayer &&rhs_) :
+RenderLayer::RenderLayer(RenderLayer &&rhs_) noexcept :
     m_depth(rhs_.m_depth),
     m_visible(rhs_.m_visible)
 {
     m_dirtyOrder = true;
 }
 
-RenderLayer &RenderLayer::operator=(RenderLayer &&rhs_)
+RenderLayer &RenderLayer::operator=(RenderLayer &&rhs_) noexcept
 {
     m_depth = rhs_.m_depth;
     m_visible = rhs_.m_visible;

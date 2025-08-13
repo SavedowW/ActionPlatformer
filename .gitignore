@@ -7,3 +7,4 @@
 !Configs/debug.json
 *.tiled-session
 *.tiled-session.lock
+.cache/*

@@ -1,0 +1,11 @@
+If:
+  PathMatch: external/.*
+Diagnostics:
+  Suppress: '*'
+
+InlayHints:
+  BlockEnd: false
+  Designators: true
+  ParameterNames: true
+  DeducedTypes: true
+  TypeNameLimit: 24

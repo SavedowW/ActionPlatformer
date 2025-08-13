@@ -4,7 +4,6 @@
 #include "InputResolver.h"
 #include "Vector2.h"
 #include "FrameTimer.h"
-#include "Renderer.h"
 #include "Collider.h"
 #include "AnimationManager.h"
 #include "NavGraph.h"
@@ -263,7 +262,7 @@ struct Navigatable
     NavPath::Follower m_pathFollower;
 };
 
-enum class HUDPosRule
+enum class HUDPosRule : uint8_t
 {
     POS_WORLD,
     REL_TRANSFORM
@@ -278,11 +277,11 @@ struct HUDPoint
 
 struct RenderLayer
 {
-    RenderLayer(int depth_);
-    RenderLayer(const RenderLayer&);
-    RenderLayer(RenderLayer&&);
+    RenderLayer(int depth_) noexcept;
+    RenderLayer(const RenderLayer&) noexcept;
+    RenderLayer(RenderLayer&&) noexcept;
     RenderLayer &operator=(const RenderLayer&) = delete;
-    RenderLayer &operator=(RenderLayer&&);
+    RenderLayer &operator=(RenderLayer&&) noexcept;
     ~RenderLayer();
 
     int m_depth;
