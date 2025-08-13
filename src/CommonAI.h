@@ -55,8 +55,8 @@ public:
     PLAYER_STATE_T idle_, PLAYER_STATE_T walk_, std::pair<uint32_t, uint32_t> idleDurationRange_, std::pair<uint32_t, uint32_t> walkDurationRange_) :
         NodeState(stateId_, std::move(transitionableFrom_)),
         m_idle(static_cast<CharState>(idle_)),
-        m_walk(static_cast<CharState>(walk_)),
         m_idleDuration(idleDurationRange_),
+        m_walk(static_cast<CharState>(walk_)),
         m_walkDuration(walkDurationRange_)
     {}
 
@@ -160,9 +160,9 @@ public:
     NavigateGraphChase(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_,
         PLAYER_STATE_T moveTowards_, PLAYER_STATE_T jumpTowards, PLAYER_STATE_T noConnection_, PLAYER_STATE_T onSuccess_) :
         NodeState(stateId_, std::move(transitionableFrom_)),
+        m_noConnection(static_cast<CharState>(noConnection_)),
         m_moveTowards(static_cast<CharState>(moveTowards_)),
         m_jumpTowards(static_cast<CharState>(jumpTowards)),
-        m_noConnection(static_cast<CharState>(noConnection_)),
         m_onSuccess(static_cast<CharState>(onSuccess_))
     {}
     

@@ -43,6 +43,8 @@ void InputResolver::receiveEvents(GAMEPLAY_EVENTS event_, const float scale_)
         case (GAMEPLAY_EVENTS::ATTACK):
             m_currentInput.m_inputs[INPUT_BUTTON::ATTACK] = (scale_ > 0.0f ? INPUT_BUTTON_STATE::PRESSED : INPUT_BUTTON_STATE::RELEASED);
             break;
+
+        default:
     }
 }
 

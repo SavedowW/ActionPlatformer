@@ -47,9 +47,6 @@ class IRenderSymbol : public TechSymbol
 {
 public:
     virtual bool onReached(ChatMessage &message_) override;
-
-    // Symbol was naturally reached by sequence while rendering
-    virtual void onRenderReached(ChatMessageSequence &sequence_) = 0;
 };
 
 // Add itself to the sequence (which keeps current rendering state)

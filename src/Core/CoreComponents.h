@@ -34,8 +34,8 @@ struct ComponentTransform
 
 struct ComponentParticlePrimitive
 {
-    SDL_FlipMode m_flip;
-    FrameTimer<false> m_lifetime;
+    SDL_FlipMode m_flip = SDL_FLIP_NONE;
+    FrameTimer<false> m_lifetime{};
     float angle = 0.0f;
     entt::entity m_tieTransform = entt::null;
 };

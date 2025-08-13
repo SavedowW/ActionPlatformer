@@ -7,8 +7,8 @@
 NavSystem::NavSystem(entt::registry &reg_, Application &app_, NavGraph &graph_) :
     m_reg(reg_),
     m_ren(app_.getRenderer()),
-    m_graph(graph_),
-    m_textman(app_.getTextManager())
+    m_textman(app_.getTextManager()),
+    m_graph(graph_)
 {
 }
 
@@ -129,6 +129,8 @@ void NavSystem::draw(Camera &cam_)
                                 m_graph.getNodePos(oriented.second) - Vector2{1.0f, 1.0f}, 
                                 {255, 0, 0, 200}, cam_);
                             break;
+
+                        default:
                     }
                 }
             }
@@ -177,9 +179,9 @@ NavPath::Follower NavSystem::makePath(Traverse::TraitT traverseTraits_, entt::en
 
 NavPath::NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &reg_, Traverse::TraitT traits_, float targetMaxConnectionRange_) :
     m_graph(graph_),
+    m_traverseTraits(traits_),
     m_target(target_),
     m_targetMaxConnectionRange(targetMaxConnectionRange_),
-    m_traverseTraits(traits_),
     m_reg(reg_)
 {
     for (const auto &el : m_graph.m_connections)
@@ -228,8 +230,8 @@ NavPath::Status NavPath::buildUntil(const Connection * const con_)
     {
         bool requireSort = false;
 
-        for (int i = 0; i < m_front.size(); ++i)
-            for (int k = i + 1; k < m_front.size(); ++k)
+        for (auto i = 0zu; i < m_front.size(); ++i)
+            for (auto k = i + 1zu; k < m_front.size(); ++k)
                 if (m_front[i] == m_front[k])
                     std::cout << "Duplicated!" << std::endl;
 

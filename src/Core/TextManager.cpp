@@ -32,14 +32,13 @@ fonts::Symbol::Symbol(fonts::Symbol &&rhs_)
 
 fonts::Symbol::~Symbol()
 {
-    if (m_tex.m_id != -1)
-        glDeleteTextures(1, &m_tex.m_id);
+    glDeleteTextures(1, &m_tex.m_id);
 }
 
 template<typename Func, typename... Args>
 fonts::Font::Font(Func generateSymbols_, int height_, const CharChunkDistribution &distrib_, Args&&... args_) :
-    m_distrib(distrib_),
-    m_height(height_)
+    m_height(height_),
+    m_distrib(distrib_)
 {
     std::cout << "Initializing font..." << std::endl;
     static_assert(std::is_invocable_v<Func, decltype(m_symbols)&, decltype(distrib_), Args...>, "Function Func should be invokable with these arguments");
@@ -277,7 +276,7 @@ void TextManager::generateSimpleSymbols(std::vector<std::array<fonts::Symbol, fo
     for (const auto &chunkInitVal : distrib_.m_chunks)
     {
         std::array<fonts::Symbol, fonts::CHUNK_SIZE> symbols_;
-        for (auto i = 0; i < fonts::CHUNK_SIZE; ++i)
+        for (auto i = 0u; i < fonts::CHUNK_SIZE; ++i)
         {
             charsTotal++;
             uint32_t chid_8 = chunkInitVal * fonts::CHUNK_SIZE + i;
@@ -334,7 +333,7 @@ void TextManager::generateSimpleShadedSymbols(std::vector<std::array<fonts::Symb
     for (const auto &chunkInitVal : distrib_.m_chunks)
     {
         std::array<fonts::Symbol, fonts::CHUNK_SIZE> symbols_;
-        for (auto i = 0; i < fonts::CHUNK_SIZE; ++i)
+        for (auto i = 0u; i < fonts::CHUNK_SIZE; ++i)
         {
             charsTotal++;
             uint32_t chid_8 = chunkInitVal * fonts::CHUNK_SIZE + i;

@@ -140,6 +140,8 @@ void ChatboxSystem::receiveEvents(HUD_EVENTS event, const float scale_)
                     seq.takeInput();
             }
             break;
+
+        default:
     }
 }
 

@@ -10,8 +10,8 @@ EnemySystem::EnemySystem(entt::registry &reg_, Application &app_, NavSystem &nav
     m_reg(reg_),
     m_animManager(app_.getAnimationManager()),
     m_navsys(navsys_),
-    m_cam(cam_),
-    m_partsys(partsys_)
+    m_partsys(partsys_),
+    m_cam(cam_)
 {
 }
 

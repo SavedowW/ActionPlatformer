@@ -88,7 +88,7 @@ void BattleSystem::applyHit(ActorDescr attacker_, ActorDescr victim_, const Hitb
 
         if (vicHP)
         {
-            auto newhealth = vicHP->takeDamage(hit_.m_hitData.m_damage);
+            const auto newhealth = vicHP->takeDamage(hit_.m_hitData.m_damage);
 
             if (auto *hren = m_reg.try_get<HealthRendererCommonWRT>(victim_.m_id))
                 hren->takeDamage(newhealth);

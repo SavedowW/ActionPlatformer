@@ -9,8 +9,8 @@
 
 struct EntityAnywhere
 {
-    entt::registry *reg;
-    entt::entity idx;
+    entt::registry *reg = nullptr;
+    entt::entity idx = entt::null;
 };
 
 // Interface used by entities to access world data (create particles, run collision checks, cause camera shake, access navigation system)

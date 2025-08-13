@@ -26,6 +26,8 @@ void GrassTopComp::touchedPlayer(const Vector2<float> &velocity_, EntityAnywhere
                 m_state = State::FLICK_LEFT;
             }
             break;
+
+        default:
     }
 }
 

@@ -96,8 +96,8 @@ void Configuration<READ_ONLY>::save() requires (!READ_ONLY)
 }
 
 ConfigurationManager::ConfigurationManager() :
-    m_debugConf("debug"),
-    m_settings("settings")
+    m_settings("settings"),
+    m_debugConf("debug")
 {
     m_debug.m_drawColliders = m_debugConf["video"]["draw_colliders"].readOrDefault(gamedata::debug_defaults::drawColliders);
     m_debug.m_drawFocusAreas = m_debugConf["video"]["draw_focus_areas"].readOrDefault(gamedata::debug_defaults::drawFocusAreas);

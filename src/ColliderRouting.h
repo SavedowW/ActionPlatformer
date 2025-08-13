@@ -37,11 +37,6 @@ struct ColliderRoutingIterator
 {
     ColliderRoutingIterator(ColliderPointRouting &route_);
 
-    ColliderRoutingIterator (const ColliderRoutingIterator &rhs_) = delete;
-    ColliderRoutingIterator (ColliderRoutingIterator &&rhs_) = default;
-    ColliderRoutingIterator &operator=(const ColliderRoutingIterator &rhs_) = delete;
-    ColliderRoutingIterator &operator=(ColliderRoutingIterator &&rhs_) = default;
-
     ColliderPointRouting &m_route;
     size_t m_iter = 0;
 };

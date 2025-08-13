@@ -131,7 +131,6 @@ bool PhysicsSystem::attemptOffsetDown(const auto &clds_, const Vector2<float> &o
     const auto oldPos = originalPos_;
     const auto newPos = originalPos_ + Vector2<int>(0, offset_);
 
-    const auto oldPb = phys_.m_pushbox + oldPos;
     const auto newPb = phys_.m_pushbox + newPos;
 
     int highest = 0;
@@ -172,10 +171,8 @@ bool PhysicsSystem::attemptOffsetDown(const auto &clds_, const Vector2<float> &o
 
 bool PhysicsSystem::attemptOffsetUp(const auto &clds_, const Vector2<float> &originalPos_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, unsigned int offset_)
 {
-    const auto oldPos = originalPos_;
     const auto newPos = originalPos_ - Vector2<int>(0, offset_);
 
-    const auto oldPb = phys_.m_pushbox + oldPos;
     const auto newPb = phys_.m_pushbox + newPos;
 
     for (auto [idx, cld] : clds_.each())
@@ -211,10 +208,8 @@ bool PhysicsSystem::attemptOffsetUp(const auto &clds_, const Vector2<float> &ori
 bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, int offset_,
     int originalY_, unsigned int maxYOffset_, int naturalYOffset_, float &touchedSlope_, entt::entity &onGround_)
 {
-    const auto oldPos = trans_.m_pos;
     const auto newPos = trans_.m_pos + Vector2<int>(offset_, 0);
 
-    const auto oldPb = phys_.m_pushbox + oldPos;
     const auto newPb = phys_.m_pushbox + newPos;
 
     bool mustRise = false;

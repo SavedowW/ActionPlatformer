@@ -166,6 +166,8 @@ namespace Behavior
         {
             std::cout << "\"" << describeSelf() << "\" - update" << std::endl;
             // TODO:
+
+            return Status::FAILURE;
         }
 
         virtual std::string stringify(size_t intend_) const override
@@ -177,7 +179,7 @@ namespace Behavior
         }
 
     protected:
-        virtual std::string describeSelf() const
+        virtual std::string describeSelf() const override
             {
                 //return m_name + " (size=" + std::to_string(m_nodes.size()) + ")"; TODO:
                 return "";

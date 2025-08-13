@@ -244,11 +244,13 @@ public:
         GenericState(stateId_, std::move(transitionableFrom_))
     {}
 
-    using GenericState::getName;
 
     virtual std::string getName(uint32_t framesInState_) const override;
     virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
     virtual GenericState *getRealCurrentState() override;
+
+private:
+    using StateMachine::getName;
 };
 
 #endif

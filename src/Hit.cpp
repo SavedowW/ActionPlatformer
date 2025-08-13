@@ -131,22 +131,26 @@ HitStateMapping &HitStateMapping::addHitstunTransition(uint32_t level_, CharStat
     return *this;
 }
 
-HealthOwner::HealthOwner(int realHealth_):
+HealthOwner::HealthOwner(uint8_t realHealth_):
     m_realHealth(realHealth_)
 {
 }
 
-int HealthOwner::takeDamage(int damage_)
+uint8_t HealthOwner::takeDamage(uint8_t damage_)
 {
-    m_realHealth = std::max(0, m_realHealth - damage_);
+    if (m_realHealth > damage_)
+        m_realHealth -= damage_;
+    else
+        m_realHealth = 0;
+    
     return m_realHealth;
 }
 
-HealthRendererCommonWRT::HealthRendererCommonWRT(int realHealth_, AnimationManager &animationManager_, const Vector2<float> &offset_) :
-    m_offset(offset_),
-    m_realHealth(realHealth_)
+HealthRendererCommonWRT::HealthRendererCommonWRT(uint8_t realHealth_, AnimationManager &animationManager_, const Vector2<float> &offset_) :
+    m_realHealth(realHealth_),
+    m_offset(offset_)
 {
-    for (int i = 0; i < realHealth_; ++i)
+    for (auto i = 0u; i < realHealth_; ++i)
     {
         m_heartAnims.emplace_back(animationManager_, animationManager_.getAnimID("UI/heart"), LOOPMETHOD::NOLOOP);
     }
@@ -171,7 +175,7 @@ void HealthRendererCommonWRT::update()
 
             bool hasActiveAnimations = false;
 
-            for (int i = m_realHealth; i < m_heartAnims.size(); ++i)
+            for (size_t i = m_realHealth; i < static_cast<uint8_t>(m_heartAnims.size()); ++i)
             {
                 if (!m_heartAnims[i].isFinished())
                     hasActiveAnimations = true;
@@ -182,7 +186,7 @@ void HealthRendererCommonWRT::update()
             if (!hasActiveAnimations)
             {
                 m_state = DelayFadeStates::IDLE;
-                m_delayFadeTimer.begin(180);
+                m_delayFadeTimer.begin(180u);
             }
 
             break;
@@ -206,7 +210,7 @@ void HealthRendererCommonWRT::update()
     }
 }
 
-void HealthRendererCommonWRT::takeDamage(int newHealth_)
+void HealthRendererCommonWRT::takeDamage(uint8_t newHealth_)
 {
     m_realHealth = newHealth_;
     touch();

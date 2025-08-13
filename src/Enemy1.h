@@ -42,7 +42,7 @@ public:
     {
     }
 
-    inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_)
+    inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
     {
         auto res = PhysicalState::update(owner_, currentFrame_);
 

@@ -52,9 +52,9 @@ bool CameraFocusArea::checkIfEnters(const Collider &cld_, bool isOwned_) const
 
 CameraFocusArea::CameraFocusArea(Vector2<int> topLeft_, int scaledSizeX_, int scaledSizeY_, Renderer &renderer_) :
     Collider(topLeft_, Vector2{scaledSizeX_, scaledSizeY_}),
-    m_useFocusArea(topLeft_, Vector2{scaledSizeX_, scaledSizeY_}),
     m_renderer(renderer_),
-    m_scale(std::max(gamedata::global::maxCameraSize.x / static_cast<float>(scaledSizeX_), gamedata::global::maxCameraSize.y / static_cast<float>(scaledSizeY_)))
+    m_scale(std::max(gamedata::global::maxCameraSize.x / static_cast<float>(scaledSizeX_), gamedata::global::maxCameraSize.y / static_cast<float>(scaledSizeY_))),
+    m_useFocusArea(topLeft_, Vector2{scaledSizeX_, scaledSizeY_})
 {
     auto halfCamSize = gamedata::global::maxCameraSize / m_scale / 2.0f;
     m_minCameraPos = m_topLeft + halfCamSize;

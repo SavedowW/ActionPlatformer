@@ -151,9 +151,6 @@ void MoveTowards::enter(EntityAnywhere owner_, CharState from_)
 
     auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
     const auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
-    const auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
-
-    auto pb = phys.m_pushbox + trans.m_pos;
 
     if (!owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx).m_ignoredObstacles.empty())
         ai.m_requestedOrientation = ValueToOrientation(ai.m_navigationTarget.x - trans.m_pos.x);
@@ -167,7 +164,6 @@ bool MoveTowards::update(EntityAnywhere owner_, uint32_t currentFrame_)
 
     auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
     const auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
-    auto delta = ai.m_navigationTarget - trans.m_pos;
 
     ai.m_requestedState = m_walk;
     //std::cout << "m_lastPos: " << m_lastPos << std::endl;
@@ -228,6 +224,8 @@ bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
                 if (m_currentState->m_stateId != m_noConnection)
                     switchCurrentState(owner_, m_noConnection);
             return true;
+
+        default:
     }
 
     ai.m_navigationTarget = nav.m_pathFollower.m_path->m_graph.getNodePos(currentcon->m_originalCon.m_nodes[currentcon->m_nextNode]);

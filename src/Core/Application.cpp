@@ -41,7 +41,7 @@ Application::Application()
     m_renderer = std::make_unique<Renderer>(m_window->getWindow());
     m_inputSystem = std::make_unique<InputSystem>();
     m_textureManager = std::make_unique<TextureManager>();
-    m_animationManager = std::make_unique<AnimationManager>(*m_renderer);
+    m_animationManager = std::make_unique<AnimationManager>();
     m_textManager = std::make_unique<TextManager>(*m_renderer);
 
     m_inputSystem->initiateControllers();

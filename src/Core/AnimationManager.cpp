@@ -6,8 +6,7 @@
 #include <SDL3_image/SDL_image.h>
 #include <cassert>
 
-AnimationManager::AnimationManager(Renderer &renderer_) :
-    m_renderer(renderer_)
+AnimationManager::AnimationManager()
 {
     auto sprDirectory = Filesystem::getRootDirectory() + "Resources/Animations/";
 
@@ -136,9 +135,9 @@ TextureArr::~TextureArr()
 }
 
 Animation::Animation(AnimationManager &animationManager_, ResID id_, LOOPMETHOD isLoop_, int beginFrame_, int beginDirection_) :
-    m_isLoop(isLoop_),
     m_currentFrame(beginFrame_),
-    m_direction(beginDirection_)
+    m_direction(beginDirection_),
+    m_isLoop(isLoop_)
 {
     m_textures = animationManager_.getTextureArr(id_);
 }

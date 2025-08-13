@@ -77,8 +77,8 @@ struct HitboxGroup
 
 struct HitPosResult
 {
-    bool m_hitOccured;
-    Vector2<float> m_hitPos;
+    bool m_hitOccured = false;
+    Vector2<float> m_hitPos{};
 };
 
 HitPosResult detectHit(const std::vector<TemporaryCollider> &hit_, uint32_t hitActiveFrame_, const ComponentTransform &attacker_, const std::vector<TemporaryCollider> &hurtbox_, uint32_t hurtboxActiveFrame_, const ComponentTransform &victim_);
@@ -103,32 +103,32 @@ struct BattleActor
 
 struct HealthOwner
 {
-    HealthOwner(int realHealth_);
+    HealthOwner(uint8_t realHealth_);
     HealthOwner(const HealthOwner &rhs_) = delete;
     HealthOwner(HealthOwner &&rhs_) = default;
     HealthOwner &operator=(const HealthOwner &rhs_) = delete;
     HealthOwner &operator=(HealthOwner &&rhs_) = default;
 
-    int takeDamage(int damage_);
+    uint8_t takeDamage(uint8_t damage_);
 
-    int m_realHealth = 0;
+    uint8_t m_realHealth = 0;
 };
 
 // In world, relative to transform, on timers
 struct HealthRendererCommonWRT
 {
-    HealthRendererCommonWRT(int realHealth_, AnimationManager &animationManager_, const Vector2<float> &offset_);
+    HealthRendererCommonWRT(uint8_t realHealth_, AnimationManager &animationManager_, const Vector2<float> &offset_);
     HealthRendererCommonWRT(const HealthRendererCommonWRT &rhs_) = delete;
     HealthRendererCommonWRT(HealthRendererCommonWRT &&rhs_) = default;
     HealthRendererCommonWRT &operator=(const HealthRendererCommonWRT &rhs_) = delete;
     HealthRendererCommonWRT &operator=(HealthRendererCommonWRT &&rhs_) = default;
 
     void update();
-    void takeDamage(int newHealth_);
+    void takeDamage(uint8_t newHealth_);
     void touch();
 
     std::vector<Animation> m_heartAnims;
-    int m_realHealth = 0;
+    uint8_t m_realHealth = 0;
     Vector2<float> m_offset;
 
     enum class DelayFadeStates

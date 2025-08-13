@@ -149,5 +149,7 @@ void CameraSystem::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
             if (scale_ > 0)
                 m_cameraStopped = !m_cameraStopped;
             break;
+
+        default:
     }
 }

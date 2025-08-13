@@ -85,7 +85,7 @@ public:
     {
     }
 
-    inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_)
+    inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
     {
         auto res = PhysicalState::update(owner_, currentFrame_);
         if (!m_lookaheadSpeedSensitivity.isEmpty())
@@ -432,9 +432,6 @@ public:
         ParentAction::enter(owner_, from_);
 
         auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
-        auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
-
-        auto pb = physical.m_pushbox + transform.m_pos;
 
         if (physical.m_inertia.y > 0)
             physical.m_inertia.y = 0;
@@ -444,7 +441,7 @@ public:
 
     virtual void leave(EntityAnywhere owner_, CharState to_) override;
 
-    virtual void onOutdated(EntityAnywhere owner_)
+    virtual void onOutdated(EntityAnywhere owner_) override
     {
         const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
         auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);

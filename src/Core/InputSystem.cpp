@@ -178,7 +178,7 @@ void InputSystem::initiateControllers()
 
     int gamepadCount = 0;
     SDL_JoystickID *pads = SDL_GetJoysticks(&gamepadCount);
-    for (size_t i = 0; i < gamepadCount; ++i)
+    for (int i = 0; i < gamepadCount; ++i)
     {
         if (SDL_IsGamepad(pads[i]))
         {

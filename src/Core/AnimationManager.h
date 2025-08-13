@@ -52,7 +52,7 @@ struct ContainedAnimationData
 class AnimationManager
 {
 public:
-    AnimationManager(Renderer &renderer_);
+    AnimationManager();
     std::shared_ptr<TextureArr> getTextureArr(ResID id_);
     void preload(const std::string &toPreload_);
     void preload(ResID id_);
@@ -60,8 +60,6 @@ public:
     ResID getAnimID(const std::string &animName_) const;
 
 private:
-    Renderer &m_renderer;
-
     std::unordered_map<std::string, ResID> m_ids;
     std::vector<ContainedAnimationData> m_textureArrs;
 };
