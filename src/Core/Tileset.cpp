@@ -1,14 +1,14 @@
-#include <regex>
-#include "Tileset.h"
+#include "Application.h"
 #include "GameData.h"
+#include "Tileset.h"
 
 const unsigned TilesetBase::FLIPPED_HORIZONTALLY_FLAG  = 0x80000000;
 const unsigned TilesetBase::FLIPPED_VERTICALLY_FLAG    = 0x40000000;
 const unsigned TilesetBase::FLIPPED_DIAGONALLY_FLAG    = 0x20000000;
 const unsigned TilesetBase::ROTATED_HEXAGONAL_120_FLAG = 0x10000000;   
 
-Tileset::Tileset(TextureManager &texMan_, uint32_t firstgid_) :
-    m_texManager(texMan_),
+Tileset::Tileset(uint32_t firstgid_) :
+    m_texManager(Application::instance().m_textureManager),
     m_firstgid(firstgid_)
 {
 }
@@ -36,11 +36,6 @@ TileView *Tileset::getView(uint32_t id_)
     return &m_tiles[id_ - m_firstgid];
 }
 
-TilesetBase::TilesetBase(TextureManager &texMan_) :
-    m_texManager(texMan_)
-{
-}
-
 SDL_FlipMode TilesetBase::flagsToFlip(uint32_t gid_)
 {
     SDL_FlipMode res = SDL_FLIP_NONE;
@@ -57,7 +52,7 @@ SDL_FlipMode TilesetBase::flagsToFlip(uint32_t gid_)
 void TilesetBase::addTileset(const std::string &spritesheet_, uint32_t firstgid_)
 {
     std::cout << "Loading tileset from sprite \"" << spritesheet_ << "\" with first gid " << firstgid_ << std::endl;
-    m_tilesets.emplace_back(m_texManager, firstgid_);
+    m_tilesets.emplace_back(firstgid_);
     m_tilesets.back().load(spritesheet_);
 
     m_tilesetMapping.addPair(firstgid_, m_tilesets.size() - 1);
@@ -72,5 +67,5 @@ Tile TilesetBase::getTile(uint32_t gid_)
         ROTATED_HEXAGONAL_120_FLAG);
 
     const auto tilesetId = m_tilesetMapping[gid_];
-    return {m_tilesets[tilesetId].getView(gid_), flags};
+    return {.m_tile=m_tilesets[tilesetId].getView(gid_), .m_flip=flags};
 }

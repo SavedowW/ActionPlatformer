@@ -1,24 +1,27 @@
 #include "AnimationManager.h"
 #include "TimelineProperty.hpp"
+#include "Renderer.h"
 #include "JsonUtils.hpp"
 #include "FilesystemUtils.h"
 #include <nlohmann/json.hpp>
 #include <SDL3_image/SDL_image.h>
 #include <cassert>
+#include <fstream>
 
 AnimationManager::AnimationManager()
 {
-    auto sprDirectory = Filesystem::getRootDirectory() + "Resources/Animations/";
+    Filesystem::ensureDirectoryRelative("Resources/Animations");
+    const std::filesystem::path basePath(Filesystem::getRootDirectory() + "Resources/Animations/");
 
     std::cout << "=== LISTING FOUND ANIMATIONS ===" << std::endl;
-    for (const auto &entry : std::filesystem::recursive_directory_iterator(sprDirectory))
+    for (const auto &entry : std::filesystem::recursive_directory_iterator(basePath))
     {
-        std::filesystem::path dirpath = entry.path();
+        const std::filesystem::path &dirpath = entry.path();
         auto parentPath = dirpath.parent_path();
         auto fn = entry.path().filename().replace_extension();
         if (entry.is_regular_file() && dirpath.extension() == ".json" && parentPath.filename() == fn)
         {
-            auto path = Filesystem::getRelativePath(sprDirectory, parentPath);
+            auto path = Filesystem::getRelativePath(basePath, parentPath);
             std::cout << path << std::endl;
 
             ContainedAnimationData cad;
@@ -58,7 +61,7 @@ std::shared_ptr<TextureArr> AnimationManager::getTextureArr(ResID id_)
             utils::tryClaim(animdata, "origin_x", 0),
             utils::tryClaim(animdata, "origin_y", 0));
 
-        uint32_t duration = utils::tryClaim<uint32_t>(animdata, "duration", 1);
+        const auto duration = utils::tryClaim<uint32_t>(animdata, "duration", 1);
 
         TimelineProperty<int> timelineFileIds;
         std::vector<SDL_Surface*> surfaces;
@@ -66,7 +69,7 @@ std::shared_ptr<TextureArr> AnimationManager::getTextureArr(ResID id_)
 
         auto idbase = m_textureArrs[id_].m_path;
         idbase.replace_extension();
-        std::string midfix = utils::tryClaim<std::string>(animdata, "midfix", "");
+        const auto midfix = utils::tryClaim<std::string>(animdata, "midfix", "");
 
         for (auto it = animdata["frames"].cbegin(); it != animdata["frames"].cend(); it++)
         {
@@ -85,10 +88,10 @@ std::shared_ptr<TextureArr> AnimationManager::getTextureArr(ResID id_)
 
         unsigned int *texIds = Renderer::surfacesToTexture(surfaces);
 
-        std::vector<size_t> framesData;
+        std::vector<size_t> framesData(duration);
         
         for (uint32_t i = 0; i < duration; ++i)
-            framesData.push_back(fileIdsToInternal[timelineFileIds[i]]);
+            framesData[i] = fileIdsToInternal[timelineFileIds[i]];
 
         std::shared_ptr<TextureArr> reqElem(new TextureArr(texIds, surfaces.size(), duration, framesData, surfaces[0]->w, surfaces[0]->h, origin));
         m_textureArrs[id_].m_texArr = reqElem;

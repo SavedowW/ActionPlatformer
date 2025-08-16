@@ -1,5 +1,5 @@
 #include "InputHandlingSystem.h"
-#include "CoreComponents.h"
+#include "InputResolver.h"
 #include "Profile.h"
 
 InputHandlingSystem::InputHandlingSystem(entt::registry &reg_) :
@@ -11,9 +11,9 @@ void InputHandlingSystem::update()
 {
     PROFILE_FUNCTION;
 
-    auto view = m_reg.view<ComponentPlayerInput>();
+    auto view = m_reg.view<InputResolver>();
     for (auto [idx, inp] : view.each())
     {
-        inp.m_inputResolver->update();
+        inp.update();
     };
 }

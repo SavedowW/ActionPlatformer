@@ -2,14 +2,13 @@
 #define RENDER_SYSTEM_H_
 #include "Hit.h"
 #include "CoreComponents.h"
-#include "Application.h"
 #include "CameraFocusArea.h"
 #include "ColliderRouting.h"
 #include <entt/entt.hpp>
 
 struct RenderSystem : public InputReactor
 {
-    RenderSystem(entt::registry &reg_, Application &app_, Camera &camera_, ColliderRoutesCollection &rtCol_);
+    RenderSystem(entt::registry &reg_, Camera &camera_, ColliderRoutesCollection &rtCol_);
 
     void update();
     void updateDepth();

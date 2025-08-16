@@ -43,13 +43,13 @@ InputState &InputState::operator=(const InputState &rhs_)
     return *this;
 }
 
-InputState::InputState(InputState &&inputState_)
+InputState::InputState(InputState &&inputState_) noexcept
 {
     m_dir = inputState_.m_dir;
     m_inputs = std::forward<std::map<INPUT_BUTTON, INPUT_BUTTON_STATE>>(inputState_.m_inputs);
 }
 
-InputState &InputState::operator=(InputState &&rhs_)
+InputState &InputState::operator=(InputState &&rhs_) noexcept
 {
     m_dir = rhs_.m_dir;
     m_inputs = std::forward<std::map<INPUT_BUTTON, INPUT_BUTTON_STATE>>(rhs_.m_inputs);

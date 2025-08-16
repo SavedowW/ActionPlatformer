@@ -1,4 +1,5 @@
 #include "CameraFocusArea.h"
+#include "Application.h"
 #include "GameData.h"
 
 Vector2<float> calcTL(Vector2<float> topLeft_, const Vector2<float> &size_)
@@ -13,11 +14,10 @@ Vector2<float> calcTL(Vector2<float> topLeft_, const Vector2<float> &size_)
     return topLeft_;
 }
 
-CameraFocusArea::CameraFocusArea(Vector2<int> topLeft_, Vector2<int> size_, Renderer &renderer_) :
+CameraFocusArea::CameraFocusArea(const Vector2<int> &topLeft_, const Vector2<int> &size_) :
     CameraFocusArea(calcTL(topLeft_, size_),
         std::max(gamedata::global::minCameraSize.x, size_.x),
-        std::max(gamedata::global::minCameraSize.y, size_.y),
-        renderer_)
+        std::max(gamedata::global::minCameraSize.y, size_.y))
 {
 }
 
@@ -50,9 +50,9 @@ bool CameraFocusArea::checkIfEnters(const Collider &cld_, bool isOwned_) const
         return cld_.getOwnOverlapPortion(m_useFocusArea) > 0.8; 
 }
 
-CameraFocusArea::CameraFocusArea(Vector2<int> topLeft_, int scaledSizeX_, int scaledSizeY_, Renderer &renderer_) :
+CameraFocusArea::CameraFocusArea(const Vector2<int> &topLeft_, int scaledSizeX_, int scaledSizeY_) :
     Collider(topLeft_, Vector2{scaledSizeX_, scaledSizeY_}),
-    m_renderer(renderer_),
+    m_renderer(Application::instance().m_renderer),
     m_scale(std::max(gamedata::global::maxCameraSize.x / static_cast<float>(scaledSizeX_), gamedata::global::maxCameraSize.y / static_cast<float>(scaledSizeY_))),
     m_useFocusArea(topLeft_, Vector2{scaledSizeX_, scaledSizeY_})
 {

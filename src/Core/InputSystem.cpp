@@ -1,4 +1,5 @@
 #include "InputSystem.h"
+#include "Application.h"
 #include "JsonUtils.hpp"
 #include "FilesystemUtils.h"
 #include <iostream>
@@ -23,6 +24,8 @@ InputSystem::InputSystem() :
         std::cout << "Loading config from " << m_configPath << std::endl;
         importMappingEnsureUnique(m_configPath);
     }
+
+    initiateControllers();
 }
 
 void InputSystem::handleInput()
@@ -354,10 +357,29 @@ inline void InputSystem::resolveBinding(const std::map<InputT, EventT> &bindings
     }
 }
 
-InputReactor::InputReactor(InputSystem &input_) :
-    m_input(input_)
+InputReactor::InputReactor() :
+    m_input(Application::instance().m_inputSystem)
 {
 }
+
+InputReactor::InputReactor(const InputReactor &rhs_) :
+    m_input(rhs_.m_input),
+    m_inputEnabled(rhs_.m_inputEnabled)
+{
+    for (const auto &el : rhs_.m_gameplaySubscriptions)
+        subscribe(el);
+
+    for (const auto &el : rhs_.m_hudSubscriptions)
+        subscribe(el);
+}
+
+InputReactor::InputReactor(InputReactor &&rhs_) noexcept :
+    m_input(rhs_.m_input),
+    m_inputEnabled(rhs_.m_inputEnabled)
+{
+
+}
+
 
 void InputReactor::receiveEvents(GAMEPLAY_EVENTS, const float)
 {

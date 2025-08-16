@@ -1,8 +1,9 @@
 #ifndef ANIMATION_MANAGER_H_
 #define ANIMATION_MANAGER_H_
-#include "TextureManager.h"
-#include <fstream>
+#include "Vector2.h"
 #include <filesystem>
+#include <unordered_map>
+#include <vector>
 
 //Texture array structure
 struct TextureArr
@@ -64,7 +65,7 @@ private:
     std::vector<ContainedAnimationData> m_textureArrs;
 };
 
-enum class LOOPMETHOD
+enum class LOOPMETHOD : uint8_t
 {
     NOLOOP,
     JUMP_LOOP,

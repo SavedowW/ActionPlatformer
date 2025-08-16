@@ -5,8 +5,8 @@
 #include "Vector2.h"
 #include <map>
 
-enum class INPUT_BUTTON {UP, DOWN, LEFT, RIGHT, ATTACK};
-enum class INPUT_BUTTON_STATE {PRESSED, HOLD, RELEASED, OFF};
+enum class INPUT_BUTTON : uint8_t {UP, DOWN, LEFT, RIGHT, ATTACK};
+enum class INPUT_BUTTON_STATE : uint8_t {PRESSED, HOLD, RELEASED, OFF};
 
 struct InputState
 {
@@ -28,8 +28,8 @@ struct InputState
     InputState() = default;
     InputState(const InputState &inputState_);
     InputState &operator=(const InputState &rhs_);
-    InputState(InputState &&inputState_);
-    InputState &operator=(InputState &&rhs_);
+    InputState(InputState &&inputState_) noexcept;
+    InputState &operator=(InputState &&rhs_) noexcept;
 };
 
 inline std::ostream& operator<< (std::ostream& out_, const InputState& inState_)

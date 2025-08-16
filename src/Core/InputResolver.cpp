@@ -1,11 +1,5 @@
 #include "InputResolver.h"
 
-InputResolver::InputResolver(InputSystem &input_) :
-    InputReactor(input_)
-{
-
-}
-
 void InputResolver::subscribePlayer()
 {
     subscribe(GAMEPLAY_EVENTS::UP);

@@ -1,13 +1,14 @@
 #include "NavSystem.h"
+#include "Application.h"
 #include "CoreComponents.h"
 #include "Profile.h"
 #include "Configuration.h"
 #include <limits>
 
-NavSystem::NavSystem(entt::registry &reg_, Application &app_, NavGraph &graph_) :
+NavSystem::NavSystem(entt::registry &reg_, NavGraph &graph_) :
     m_reg(reg_),
-    m_ren(app_.getRenderer()),
-    m_textman(app_.getTextManager()),
+    m_ren(Application::instance().m_renderer),
+    m_textman(Application::instance().m_textManager),
     m_graph(graph_)
 {
 }

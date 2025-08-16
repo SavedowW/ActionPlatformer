@@ -1,4 +1,5 @@
 #include "Hit.h"
+#include "Application.h"
 
 uint32_t Hit::m_lastId = 0;
 
@@ -146,13 +147,14 @@ uint8_t HealthOwner::takeDamage(uint8_t damage_)
     return m_realHealth;
 }
 
-HealthRendererCommonWRT::HealthRendererCommonWRT(uint8_t realHealth_, AnimationManager &animationManager_, const Vector2<float> &offset_) :
+HealthRendererCommonWRT::HealthRendererCommonWRT(uint8_t realHealth_, const Vector2<float> &offset_) :
     m_realHealth(realHealth_),
     m_offset(offset_)
 {
+    auto &animmgmt = Application::instance().m_animationManager;
     for (auto i = 0u; i < realHealth_; ++i)
     {
-        m_heartAnims.emplace_back(animationManager_, animationManager_.getAnimID("UI/heart"), LOOPMETHOD::NOLOOP);
+        m_heartAnims.emplace_back(animmgmt, animmgmt.getAnimID("UI/heart"), LOOPMETHOD::NOLOOP);
     }
 }
 

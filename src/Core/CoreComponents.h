@@ -221,19 +221,6 @@ struct ComponentAnimationRenderable
     bool m_drawOutline = false;
 };
 
-struct ComponentPlayerInput
-{
-    ComponentPlayerInput() = default;
-    ComponentPlayerInput(std::unique_ptr<InputResolver> &&inputResolver_);
-
-    ComponentPlayerInput (const ComponentPlayerInput &rhs_) = delete;
-    ComponentPlayerInput (ComponentPlayerInput &&rhs_) = default;
-    ComponentPlayerInput &operator=(const ComponentPlayerInput &rhs_) = delete;
-    ComponentPlayerInput &operator=(ComponentPlayerInput &&rhs_) = default;
-
-    std::unique_ptr<InputResolver> m_inputResolver;
-};
-
 struct ComponentDynamicCameraTarget
 {
     ComponentDynamicCameraTarget() = default;
@@ -277,16 +264,21 @@ struct HUDPoint
 
 struct RenderLayer
 {
-    RenderLayer(int depth_) noexcept;
+    RenderLayer(int depth_, bool visible_ = true) noexcept;
     RenderLayer(const RenderLayer&) noexcept;
     RenderLayer(RenderLayer&&) noexcept;
     RenderLayer &operator=(const RenderLayer&) = delete;
     RenderLayer &operator=(RenderLayer&&) noexcept;
     ~RenderLayer();
 
+    int getDepth() const noexcept;
+    bool isVisible() const noexcept;
+
+    static bool m_dirtyOrder;
+
+private:
     int m_depth;
     bool m_visible = true;
-    static bool m_dirtyOrder;
 };
 
 struct MoveCollider2Points

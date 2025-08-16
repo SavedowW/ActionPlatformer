@@ -1,13 +1,12 @@
 #ifndef COMMON_SCREEN_LOG_H_
 #define COMMON_SCREEN_LOG_H_
 
-#include "Application.h"
 #include "TextManager.h"
 
 class ImmediateScreenLog
 {
 public:
-    ImmediateScreenLog(Application &application_, int font_, fonts::HOR_ALIGN alignment_, int offsetPerLine_);
+    ImmediateScreenLog(int font_, fonts::HOR_ALIGN alignment_, int offsetPerLine_);
     void addRecord(const std::string &record_);
     void dump(Vector2<float> origin_);
     ~ImmediateScreenLog() = default;

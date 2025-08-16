@@ -2,8 +2,6 @@
 #include "FilesystemUtils.h"
 #include "GameData.h"
 #include "Configuration.h"
-#include "JsonUtils.hpp"
-#include <chrono>
 
 Renderer::Renderer(SDL_Window *window_) :
     m_window(window_)

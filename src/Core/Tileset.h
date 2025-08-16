@@ -19,7 +19,7 @@ struct Tile
 class Tileset
 {
 public:
-    Tileset(TextureManager &texMan_, uint32_t firstgid_);
+    Tileset(uint32_t firstgid_);
     void load(const std::string &spritesheet_);
     TileView *getView(uint32_t id_);
 
@@ -37,7 +37,6 @@ private:
 class TilesetBase
 {
 public:
-    TilesetBase(TextureManager &texMan_);
     void addTileset(const std::string &spritesheet_, uint32_t firstgid_);
     Tile getTile(uint32_t gid_);
 
@@ -52,7 +51,6 @@ private:
 
     std::vector<Tileset> m_tilesets;
     TimelineProperty<size_t> m_tilesetMapping;
-    TextureManager m_texManager;
 };
 
 #endif

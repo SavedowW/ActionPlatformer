@@ -1,4 +1,5 @@
 #include "EnemySystem.h"
+#include "Application.h"
 #include "CoreComponents.h"
 #include "StateMachine.h"
 #include "Enemy1.h"
@@ -6,9 +7,9 @@
 #include "ResetHandlers.h"
 #include "Behavior.hpp"
 
-EnemySystem::EnemySystem(entt::registry &reg_, Application &app_, NavSystem &navsys_, Camera &cam_, ParticleSystem &partsys_) :
+EnemySystem::EnemySystem(entt::registry &reg_, NavSystem &navsys_, Camera &cam_, ParticleSystem &partsys_) :
     m_reg(reg_),
-    m_animManager(app_.getAnimationManager()),
+    m_animManager(Application::instance().m_animationManager),
     m_navsys(navsys_),
     m_partsys(partsys_),
     m_cam(cam_)
@@ -48,7 +49,7 @@ entt::entity EnemySystem::makeEnemy()
     ai.m_chaseTarget = m_playerId;
 
     m_reg.emplace<HealthOwner>(enemyId, 3); // TODO: reset
-    m_reg.emplace<HealthRendererCommonWRT>(enemyId, 3, m_animManager, Vector2{0.0f, -28.0f}); // TODO: reset
+    m_reg.emplace<HealthRendererCommonWRT>(enemyId, 3, Vector2{0.0f, -28.0f}); // TODO: reset
 
     /*auto *proxySwitchState = new ProxySelectionState(
         Enemy1State::META_PROXY_SWITCH, {Enemy1State::NONE, {}}, 
@@ -100,7 +101,7 @@ entt::entity EnemySystem::makeEnemy()
     navigateChase->setInitialState(Enemy1State::IDLE);
     navigateChase->switchCurrentState({&m_reg, enemyId}, Enemy1State::IDLE);
 
-    ai.m_sm.addState(std::unique_ptr<GenericState>(std::move(navigateChase)));
+    ai.m_sm.addState(std::unique_ptr<GenericState>(navigateChase));
     ai.m_sm.setInitialState(Enemy1State::META_MOVE_TOWARDS);
     ai.m_sm.switchCurrentState({&m_reg, enemyId}, Enemy1State::META_MOVE_TOWARDS);
 

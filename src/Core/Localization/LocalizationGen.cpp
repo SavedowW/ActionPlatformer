@@ -1,7 +1,7 @@
 #include "LocalizationGen.h"
-#include "Application.h"
 #include "FilesystemUtils.h"
 #include <nlohmann/json.hpp>
+#include <fstream>
 
 ll::LocalMap ll::m_stringsru;
 ll::LocalMap ll::m_stringsen;

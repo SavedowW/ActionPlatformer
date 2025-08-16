@@ -1,6 +1,6 @@
 #ifndef BATTLE_SYSTEM_H_
 #define BATTLE_SYSTEM_H_
-#include "Application.h"
+#include "Camera.h"
 #include "FixedQueue.hpp"
 #include <entt/entt.hpp>
 
@@ -19,7 +19,7 @@ struct ActorDescr
 
 struct BattleSystem
 {
-    BattleSystem(entt::registry &reg_, Application &app_, Camera &cam_);
+    BattleSystem(entt::registry &reg_, Camera &cam_);
 
     void update();
     void handleAttacks();
@@ -28,7 +28,6 @@ struct BattleSystem
 
 private:
     entt::registry &m_reg;
-    Application &m_app;
     Camera &m_cam;
 
     std::set<uint32_t> m_presentHits;

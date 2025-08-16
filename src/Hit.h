@@ -117,7 +117,7 @@ struct HealthOwner
 // In world, relative to transform, on timers
 struct HealthRendererCommonWRT
 {
-    HealthRendererCommonWRT(uint8_t realHealth_, AnimationManager &animationManager_, const Vector2<float> &offset_);
+    HealthRendererCommonWRT(uint8_t realHealth_, const Vector2<float> &offset_);
     HealthRendererCommonWRT(const HealthRendererCommonWRT &rhs_) = delete;
     HealthRendererCommonWRT(HealthRendererCommonWRT &&rhs_) = default;
     HealthRendererCommonWRT &operator=(const HealthRendererCommonWRT &rhs_) = delete;
@@ -131,7 +131,7 @@ struct HealthRendererCommonWRT
     uint8_t m_realHealth = 0;
     Vector2<float> m_offset;
 
-    enum class DelayFadeStates
+    enum class DelayFadeStates : uint8_t
     {
         INACTIVE,
         FADE_IN,

@@ -52,9 +52,9 @@ def generateCpp(pathCpp_):
     with open(pathCpp_, 'w+', encoding='utf-8') as f:
         f.write(
 """#include "LocalizationGen.h"
-#include "Application.h"
 #include "FilesystemUtils.h"
 #include <nlohmann/json.hpp>
+#include <fstream>
 
 """)
         for lang in langs:

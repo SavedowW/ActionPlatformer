@@ -8,44 +8,49 @@
 #include "TextureManager.h"
 #include "AnimationManager.h"
 #include <memory>
-#include <filesystem>
 #include <SDL3_mixer/SDL_mixer.h>
 #include "TextManager.h"
 
-namespace gamedata
+namespace gamedata::levels
 {
-    namespace levels
-    {
-        inline constexpr int numberOfLevels = 2;
-        inline constexpr int initialLevelId = 1;
-    }
+    inline constexpr int numberOfLevels = 2;
+    inline constexpr int initialLevelId = 1;
 }
+
+class SDLCore
+{
+public:
+    SDLCore();
+    ~SDLCore();
+};
 
 class Application
 {
-public:
-    Application();
-    ~Application();
+private:
+    SDLCore m_sdlCore;
+    Window m_window;
 
+public:
+    static Application &instance();
     void run();
 
-    void setLevel(int levelId_, Level *level_);
+    void setLevel(int levelId_, std::unique_ptr<Level>&&);
 
-    Renderer &getRenderer();
-    InputSystem &getInputSystem();
-    TextureManager &getTextureManager();
-    AnimationManager &getAnimationManager();
-    TextManager &getTextManager();
+    Application(const Application&) = delete;
+    Application(Application&&) = delete;
+    Application &operator=(const Application&) = delete;
+    Application &operator=(Application&&) = delete;
+
+    Renderer m_renderer;
+    InputSystem m_inputSystem;
+    TextureManager m_textureManager;
+    AnimationManager m_animationManager;
+    TextManager m_textManager;
 
 private:
-    std::unique_ptr<Window> m_window;
-    std::unique_ptr<Renderer> m_renderer;
-    std::unique_ptr<InputSystem> m_inputSystem;
-    std::unique_ptr<TextureManager> m_textureManager;
-    std::unique_ptr<AnimationManager> m_animationManager;
-    std::unique_ptr<TextManager> m_textManager;
+    Application();
 
-    Level* m_levels[gamedata::levels::numberOfLevels] {nullptr};
+    std::array<std::unique_ptr<Level>, gamedata::levels::numberOfLevels> m_levels{nullptr};
     LevelResult m_levelResult = {gamedata::levels::initialLevelId};
 };
 

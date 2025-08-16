@@ -1,22 +1,23 @@
 #include "HUDSystem.h"
+#include "Application.h"
 #include "CoreComponents.h"
 #include "StateMachine.h"
 #include "GameData.h"
 #include "Localization/LocalizationGen.h"
 #include "Configuration.h"
 
-HudSystem::HudSystem(entt::registry &reg_, Application &app_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, uint64_t &frameTime_) :
-    m_renderer(app_.getRenderer()),
-    m_textManager(app_.getTextManager()),
+HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, uint64_t &frameTime_) :
+    m_renderer(Application::instance().m_renderer),
+    m_textManager(Application::instance().m_textManager),
     m_reg(reg_),
     m_cam(cam_),
     m_lvlId(lvlId_),
     m_lvlSize(lvlSize_),
     m_frameTime(frameTime_),
-    m_commonLog(app_, 0, fonts::HOR_ALIGN::LEFT, 12),
-    m_playerLog(app_, 0, fonts::HOR_ALIGN::RIGHT, 12)
+    m_commonLog(0, fonts::HOR_ALIGN::LEFT, 12),
+    m_playerLog(0, fonts::HOR_ALIGN::RIGHT, 12)
 {
-    auto &texman = app_.getTextureManager();
+    auto &texman = Application::instance().m_textureManager;
 
     m_arrowIn = texman.getTexture(texman.getTexID("UI/Arrow2"));
     m_arrowOut = texman.getTexture(texman.getTexID("UI/Arrow1"));
@@ -68,7 +69,7 @@ void HudSystem::drawPlayerDebug()
     const auto &ptransform = m_reg.get<ComponentTransform>(m_playerId);
     const auto &pphysical = m_reg.get<ComponentPhysical>(m_playerId);
     const auto &psm = m_reg.get<StateMachine>(m_playerId);
-    const auto &pinp = m_reg.get<ComponentPlayerInput>(m_playerId);
+    const auto &pinp = m_reg.get<InputResolver>(m_playerId);
 
     std::string ignoredObstacles = "";
     for (const auto &el : obsfall.m_ignoredObstacles)
@@ -89,7 +90,7 @@ void HudSystem::drawPlayerDebug()
 
     m_playerLog.dump({gamedata::global::hudLayerResolution.x - 1.0f, 1.0f});
 
-    auto inputs = pinp.m_inputResolver->getCurrentInputDir();
+    auto inputs = pinp.getCurrentInputDir();
 
     Vector2<float> arrowPos[] = {
         Vector2{320.0f, 25.0f},

@@ -1,20 +1,26 @@
 #include "Stage1.h"
 #include "Application.h"
 #include "FilesystemUtils.h"
-#include "Configuration.h"
 
 #include <iostream>
-#include <string>
-#include <stack>
+
+//#define EXPERIMENTS
 
 int main(int, char**)
 {
+#ifdef EXPERIMENTS
+
+    std::cout << "Success!" << std::endl;
+    return 0;
+
+#else
+
     try
     {
         std::cout << Filesystem::getRootDirectory() << std::endl;
-        Application app;
+        auto &app = Application::instance();
         
-        app.setLevel(1, new Stage1(app, {2048, 2048}, 1));
+        app.setLevel(1, std::make_unique<Stage1>(Vector2{2048, 2048}, 1));
         app.run();
     }
     catch (std::exception &ex_)
@@ -26,4 +32,6 @@ int main(int, char**)
     }
 
     return 0;
+
+#endif
 }

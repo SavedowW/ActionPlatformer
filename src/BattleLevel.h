@@ -3,7 +3,6 @@
 
 #include "Level.h"
 #include "Camera.h"
-#include "Application.h"
 #include "LevelBuilder.h"
 #include "PhysicsSystem.h"
 #include "PlayerSystem.h"
@@ -25,8 +24,8 @@
 class BattleLevel : public Level
 {
 public:
-    BattleLevel(Application &application_, const Vector2<float>& size_, int lvlId_);
-    virtual void enter() override;
+    BattleLevel(const Vector2<int>& size_, int lvlId_);
+    void enter() override;
 
     void receiveEvents(GAMEPLAY_EVENTS event, const float scale_) override;
 

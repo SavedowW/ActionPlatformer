@@ -4,13 +4,11 @@
 #include "EnumMapping.hpp"
 #include <map>
 #include <vector>
-#include <functional>
-#include <memory>
 #include <set>
 
 //List of possible gameplay events
 //Anything that is inherited from InputReactor can subscribe to them
-enum class GAMEPLAY_EVENTS
+enum class GAMEPLAY_EVENTS : uint8_t
 {
     QUIT,
     UP,
@@ -29,7 +27,7 @@ enum class GAMEPLAY_EVENTS
 };
 
 // Events used for menus and hud in general
-enum class HUD_EVENTS
+enum class HUD_EVENTS : uint8_t
 {
     UP,
     DOWN,
@@ -399,7 +397,6 @@ public:
     void subscribe(HUD_EVENTS ev_, Subscriber sub_);
     void unsubscribe(HUD_EVENTS ev_, Subscriber sub_);
 
-    void initiateControllers();
 
 
 private:
@@ -407,6 +404,7 @@ private:
     void send(HUD_EVENTS ev_, float val_);
     std::vector<Subscriber> m_gameplaySubscribers[(int)GAMEPLAY_EVENTS::NONE];
     std::vector<Subscriber> m_hudSubscribers[(int)HUD_EVENTS::NONE];
+    void initiateControllers();
 
     template<typename InputT, typename ButtonT, typename EventT>
     void resolveBinding(const std::map<InputT, EventT> &bindings_, const ButtonT &input_, float value_);
@@ -438,8 +436,11 @@ private:
 class InputReactor
 {
 public:
-    //Input reactor needs pointer to  InputSystem
-    InputReactor(InputSystem &input_);
+    InputReactor();
+    InputReactor(const InputReactor&);
+    InputReactor(InputReactor&&) noexcept;
+    InputReactor &operator=(const InputReactor&) = delete;
+    InputReactor &operator=(InputReactor&&) = delete;
 
     virtual void receiveEvents(GAMEPLAY_EVENTS, const float);
     virtual void receiveEvents(HUD_EVENTS, const float);

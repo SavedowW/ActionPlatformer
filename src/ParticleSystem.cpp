@@ -1,10 +1,11 @@
 #include "ParticleSystem.h"
 #include "CoreComponents.h"
 #include "Profile.h"
+#include "Application.h"
 
-ParticleSystem::ParticleSystem(entt::registry &reg_, Application &app_) :
+ParticleSystem::ParticleSystem(entt::registry &reg_) :
     m_registry(reg_),
-    m_animmgmt(app_.getAnimationManager())
+    m_animmgmt(Application::instance().m_animationManager)
 {
 }
 

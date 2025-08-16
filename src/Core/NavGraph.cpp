@@ -1,10 +1,10 @@
 #include "NavGraph.h"
+#include "Application.h"
 #include "Configuration.h"
-#include <algorithm>
 
-NavGraph::NavGraph(Application &app_) :
-    m_ren(app_.getRenderer()),
-    m_textman(app_.getTextManager())
+NavGraph::NavGraph() :
+    m_ren(Application::instance().m_renderer),
+    m_textman(Application::instance().m_textManager)
 {
 }
 

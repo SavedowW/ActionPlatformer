@@ -1,6 +1,5 @@
 #ifndef NAV_SYSTEM_H_
 #define NAV_SYSTEM_H_
-#include "Application.h"
 #include "NavGraph.h"
 #include "Camera.h"
 #include <entt/entt.hpp>
@@ -10,7 +9,7 @@ struct NavSystem;
 // A view to a selected connection for pathfinding algo
 struct ConnectionDescr
 {
-    enum class Status
+    enum class Status : uint8_t
     {
         UNRESOLVED,
         FOUND,
@@ -42,7 +41,7 @@ struct ConnectionDescr
 class NavPath
 {
 public:
-    enum class Status
+    enum class Status : uint8_t
     {
         FOUND,
         NOT_FOUND,
@@ -103,7 +102,7 @@ public:
 */
 struct NavSystem
 {
-    NavSystem(entt::registry &reg_, Application &app_, NavGraph &graph_);
+    NavSystem(entt::registry &reg_, NavGraph &graph_);
 
     void update();
     void draw(Camera &cam_);

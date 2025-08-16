@@ -5,8 +5,7 @@
 #include "Profile.h"
 #include "Configuration.h"
 
-CameraSystem::CameraSystem(entt::registry &reg_, Application &app_, Camera &cam_) :
-    InputReactor(app_.getInputSystem()),
+CameraSystem::CameraSystem(entt::registry &reg_, Camera &cam_) :
     m_reg(reg_),
     m_cam(cam_)
 {

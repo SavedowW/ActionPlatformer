@@ -1,9 +1,11 @@
 #include "BattleSystem.h"
 #include "StateMachine.h"
 #include "Profile.h"
+#include "Application.h"
 
-BattleSystem::BattleSystem(entt::registry &reg_, Application &app_, Camera &cam_) :
-    m_reg(reg_), m_app(app_), m_cam(cam_)
+BattleSystem::BattleSystem(entt::registry &reg_, Camera &cam_) :
+    m_reg(reg_),
+    m_cam(cam_)
 {
 }
 
@@ -68,7 +70,7 @@ void BattleSystem::handleAttacks()
 
 void BattleSystem::debugDraw()
 {
-    auto &rnd = m_app.getRenderer();
+    auto &rnd = Application::instance().m_renderer;
     for (size_t i = 0; i < m_appliedHits.getFilled(); ++i)
     {
         const auto &el = m_appliedHits[i];

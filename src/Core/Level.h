@@ -1,7 +1,6 @@
 #ifndef LEVEL_H_
 #define LEVEL_H_
 
-#include <memory>
 #include "InputSystem.h"
 #include "Timer.h"
 #include "Vector2.h"
@@ -13,12 +12,10 @@ struct LevelResult
 	int nextLvl;
 };
 
-enum class MenuLevels { MAINMENU, NONE };
-
 class Level : public InputReactor
 {
 public:
-    Level(Application &application_, const Vector2<int> &size_, int lvlId_);
+    Level(const Vector2<int> &size_, int lvlId_);
 
     virtual void enter();
 	virtual void leave();
@@ -36,9 +33,13 @@ protected:
     const Vector2<int> m_size;
     int m_levelId;
     LevelResult m_returnVal;
-    enum class STATE {ENTER, RUNNING, LEAVE} m_state;
+    enum class STATE : uint8_t
+    {
+        ENTER,
+        RUNNING,
+        LEAVE
+    } m_state;
     Timer m_frameTimer;
-    Application &m_application;
 
     uint64_t m_timeForFrame;
     uint64_t m_lastFrameTimeNS;

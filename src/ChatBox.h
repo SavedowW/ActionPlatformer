@@ -1,12 +1,13 @@
 #ifndef CHATBOX_H_
 #define CHATBOX_H_
-#include "Application.h"
+#include "FrameTimer.h"
+#include "InputSystem.h"
 #include "Texture.h"
-#include "CoreComponents.h"
+#include "TextManager.h"
 #include <entt/entt.hpp>
 #include <stack>
 
-enum class ChatBoxSide
+enum class ChatBoxSide : uint8_t
 {
     STRICT_TOP, // Always on top even if it has to leave the screen
     STRICT_BOTTOM, // Always in the bottom even if it has to leave the screen
@@ -46,7 +47,7 @@ public:
 class IRenderSymbol : public TechSymbol
 {
 public:
-    virtual bool onReached(ChatMessage &message_) override;
+    bool onReached(ChatMessage &message_) override;
 };
 
 // Add itself to the sequence (which keeps current rendering state)
@@ -54,7 +55,7 @@ template<typename OwnT>
 class RenderSymbol : public IRenderSymbol
 {
 public:
-    virtual void onRenderReached(ChatMessageSequence &sequence_) override;
+    void onRenderReached(ChatMessageSequence &sequence_) override;
 };
 
 // Remove actual symbol from the sequence (which keeps current rendering state)
@@ -62,7 +63,7 @@ template<typename OwnT>
 class RenderDropSymbol : public IRenderSymbol
 {
 public:
-    virtual void onRenderReached(ChatMessageSequence &sequence_) override;
+    void onRenderReached(ChatMessageSequence &sequence_) override;
 };
 
 /*
@@ -140,9 +141,13 @@ struct ChatMessage
     size_t m_currentProceedingCharacter = 0;
     size_t m_firstCharacterForFadingIn = 0;
 
-    enum class MessageState { APPEAR, IDLE } m_currentState = MessageState::APPEAR;
+    enum class MessageState : uint8_t
+    {
+        APPEAR,
+        IDLE
+    } m_currentState = MessageState::APPEAR;
 
-    void compileAndSetSize(const TextManager &textMan_);
+    void compileAndSetSize();
     void skip();
 
     void proceedUntilNonTechCharacter();
@@ -153,7 +158,7 @@ struct ChatMessageSequence
     ChatMessageSequence(entt::entity src_, const ChatBoxSide &side_, bool fitScreen_, bool proceedByInput_, bool claimInputs_, bool returnInputs_);
     ChatMessageSequence(ChatMessageSequence &&) = default;
     ChatMessageSequence &operator=(ChatMessageSequence &&) = default;
-    void compileAndSetSize(const TextManager &textMan_);
+    void compileAndSetSize();
     void takeInput();
     const fonts::Symbol* currentSymbol() const;
 
@@ -176,7 +181,7 @@ struct ChatMessageSequence
     // Return inputs to the player once the sequence is over
     bool m_returnInputs = false;
 
-    enum class BoxState { APPEAR, IDLE, DISAPPEAR } m_currentState = BoxState::APPEAR;
+    enum class BoxState : uint8_t { APPEAR, IDLE, DISAPPEAR } m_currentState = BoxState::APPEAR;
 
     std::vector<ChatMessage> m_messages;
     ChatMessage *m_currentMessage = nullptr;
@@ -187,7 +192,7 @@ struct ChatMessageSequence
 class ChatboxSystem : public InputReactor
 {
 public:
-    ChatboxSystem(entt::registry &reg_, Application &app_, Camera &camera_);
+    ChatboxSystem(entt::registry &reg_, Camera &camera_);
     
     void setPlayerEntity(entt::entity playerId_);
 
@@ -201,8 +206,8 @@ public:
 
 private:
     entt::registry &m_reg;
-    Application &m_app;
     Camera &m_camera;
+    Renderer &m_renderer;
     std::vector<ChatMessageSequence> m_sequences;
 
     entt::entity m_playerId;

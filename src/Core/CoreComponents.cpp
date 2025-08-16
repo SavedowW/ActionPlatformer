@@ -93,11 +93,6 @@ bool ComponentObstacleFallthrough::setIgnoreObstacle(int obstacleId_)
     return false;
 }
 
-ComponentPlayerInput::ComponentPlayerInput(std::unique_ptr<InputResolver> &&inputResolver_) :
-    m_inputResolver(std::move(inputResolver_))
-{
-}
-
 ComponentStaticCollider::ComponentStaticCollider(const Vector2<float> &pos_, const SlopeCollider &collider_, int obstacleId_) :
     m_obstacleId(obstacleId_),
     m_proto(collider_),
@@ -202,8 +197,9 @@ bool Flash::update()
     return ++m_currentFrame >= m_fullDuration;
 }
 
-RenderLayer::RenderLayer(int depth_) noexcept :
-    m_depth(depth_)
+RenderLayer::RenderLayer(int depth_, bool visible_) noexcept :
+    m_depth(depth_),
+    m_visible(visible_)
 {
     m_dirtyOrder = true;
 }
@@ -228,6 +224,16 @@ RenderLayer &RenderLayer::operator=(RenderLayer &&rhs_) noexcept
     m_visible = rhs_.m_visible;
 
     return *this;
+}
+
+int RenderLayer::getDepth() const noexcept
+{
+    return m_depth;
+}
+
+bool RenderLayer::isVisible() const noexcept
+{
+    return m_visible;
 }
 
 RenderLayer::~RenderLayer()

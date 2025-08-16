@@ -1,10 +1,9 @@
 #ifndef LEVEL_BUILDER_H_
 #define LEVEL_BUILDER_H_
 #include "ColliderRouting.h"
-#include "Application.h"
+#include "NavGraph.h"
 #include "Tileset.h"
 #include "EnvironmentSystem.h"
-#include "StateMachine.h"
 #include <entt/entt.hpp>
 #include <nlohmann/json.hpp>
 
@@ -13,7 +12,7 @@ class NavGraph;
 class LevelBuilder
 {
 public:
-    LevelBuilder(Application &app_, entt::registry &reg_);
+    LevelBuilder(entt::registry &reg_);
     void buildLevel(const std::string &mapDescr_, entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_);
 
 private:
@@ -57,7 +56,6 @@ private:
 
     std::map<std::string, FactoryMethod> m_factories;
 
-    Application &m_app;
     entt::registry &m_reg;
 
     TilesetBase m_tilebase;

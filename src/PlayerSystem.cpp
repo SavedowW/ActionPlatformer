@@ -1,16 +1,18 @@
 #include "PlayerSystem.h"
+#include "PlayableCharacter.h"
 #include "ResetHandlers.h"
+#include "Application.h"
 
-PlayerSystem::PlayerSystem(entt::registry &reg_, Application &app_) :
+PlayerSystem::PlayerSystem(entt::registry &reg_) :
     m_reg(reg_),
-    m_animManager(app_.getAnimationManager())
+    m_animManager(Application::instance().m_animationManager)
 {
     
 }
 
 void PlayerSystem::setup(entt::entity playerId_)
 {
-    auto [trans, phys, inp, animrnd, sm, transreset, smreset] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentPlayerInput, ComponentAnimationRenderable, StateMachine,
+    auto [trans, phys, inp, animrnd, sm, transreset, smreset] = m_reg.get<ComponentTransform, ComponentPhysical, InputResolver, ComponentAnimationRenderable, StateMachine,
         ComponentReset<ComponentTransform>, ComponentReset<StateMachine>>(playerId_);
 
     if (m_reg.all_of<ComponentSpawnLocation>(playerId_))
@@ -50,25 +52,25 @@ void PlayerSystem::setup(entt::entity playerId_)
     m_animManager.preload("Char1/particles/air_attack_trace");
 
 
-    phys.m_pushbox = {Vector2{-7.0f, -32.0f}, Vector2{14.0f, 32.0f}};
+    phys.m_pushbox = {.m_topLeft=Vector2{-7.0f, -32.0f}, .m_size=Vector2{14.0f, 32.0f}};
     phys.m_gravity = {0.0f, 0.5f};
 
 
-    inp.m_inputResolver->subscribePlayer();
-    inp.m_inputResolver->setInputEnabled();
+    inp.subscribePlayer();
+    inp.setInputEnabled();
 
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerActionWallPrejump(
             m_animManager.getAnimID("Char1/wall_prejump"), {CharacterState::NONE, {CharacterState::WALL_CLING}},
-            std::move(ParticleTemplate{1, Vector2<float>{-8.00f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_jump"), 21,
-                7}.setTiePosRules(TiePosRule::TIE_TO_WALL))))
+            ParticleTemplate{1, Vector2<float>{-8.00f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_jump"), 21,
+                7}.setTiePosRules(TiePosRule::TIE_TO_WALL)))
         ->addTransitionOnTouchedGround(0, CharacterState::IDLE)
         .setHurtboxes({
             {
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {.m_collider={.m_topLeft={-6, -28}, .m_size={12, 28}}, .m_timeline=TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
@@ -81,8 +83,8 @@ void PlayerSystem::setup(entt::entity playerId_)
     sm.addState(std::unique_ptr<GenericState>(
         &(new PlayerActionWallCling(
             m_animManager.getAnimID("Char1/wall_cling"), {CharacterState::NONE, {CharacterState::FLOAT}},
-        std::move(ParticleTemplate{1, Vector2<float>{0.0f, 25.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_slide"), 21,
-                7}.setTiePosRules(TiePosRule::TIE_TO_WALL))))
+        ParticleTemplate{1, Vector2<float>{0.0f, 25.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_slide"), 21,
+                7}.setTiePosRules(TiePosRule::TIE_TO_WALL)))
         ->setDrag(TimelineProperty<Vector2<float>>({
             {0, {1.0f, 0.2f}},
             {1, {1.0f, 0.4f}},

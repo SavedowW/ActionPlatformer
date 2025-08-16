@@ -2,9 +2,10 @@
 #include "TextManager.h"
 #include "FilesystemUtils.h"
 #include "utf8.h"
+#include "Application.h"
 #include <fstream>
 
-fonts::Symbol& fonts::Symbol::operator=(fonts::Symbol &&rhs_)
+fonts::Symbol& fonts::Symbol::operator=(fonts::Symbol &&rhs_) noexcept
 {
     m_minx = rhs_.m_minx;
     m_maxx = rhs_.m_maxx;
@@ -18,7 +19,7 @@ fonts::Symbol& fonts::Symbol::operator=(fonts::Symbol &&rhs_)
     return *this;
 }
 
-fonts::Symbol::Symbol(fonts::Symbol &&rhs_)
+fonts::Symbol::Symbol(fonts::Symbol &&rhs_) noexcept
 {
     m_minx = rhs_.m_minx;
     m_maxx = rhs_.m_maxx;
@@ -36,13 +37,13 @@ fonts::Symbol::~Symbol()
 }
 
 template<typename Func, typename... Args>
-fonts::Font::Font(Func generateSymbols_, int height_, const CharChunkDistribution &distrib_, Args&&... args_) :
+fonts::Font::Font(Renderer &renderer_, Func generateSymbols_, int height_, const CharChunkDistribution &distrib_, Args&&... args_)
+    requires std::invocable<Func, Renderer&, std::vector<std::array<Symbol, CHUNK_SIZE>>&, decltype(distrib_), Args...> :
     m_height(height_),
     m_distrib(distrib_)
 {
     std::cout << "Initializing font..." << std::endl;
-    static_assert(std::is_invocable_v<Func, decltype(m_symbols)&, decltype(distrib_), Args...>, "Function Func should be invokable with these arguments");
-    generateSymbols_(m_symbols, distrib_, std::forward<Args>(args_)...);
+    generateSymbols_(renderer_, m_symbols, distrib_, std::forward<Args>(args_)...);
 }
 
 const fonts::Symbol &fonts::Font::operator[](uint32_t ch_) const
@@ -54,17 +55,17 @@ const fonts::Symbol &fonts::Font::operator[](uint32_t ch_) const
 TextManager::TextManager(Renderer &renderer_) :
     m_charChunks(Filesystem::getRootDirectory() + "Resources/GeneralCharacterList.txt"),
     m_renderer(renderer_),
-    m_fonts{fonts::Font(generateSimpleShadedSymbols, 12, m_charChunks, renderer_, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  12, SDL_Color{255, 255, 255, 255}, SDL_Color{100, 100, 100, 255}), // Screen debug data
-    fonts::Font(generateSimpleSymbols, 10, m_charChunks, renderer_, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  10, gamedata::colors::LVL1), // For npc debug
-    fonts::Font(generateSimpleSymbols, 8, m_charChunks, renderer_, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  8, SDL_Color{255, 255, 255, 255}), // For navigation system
-    fonts::Font(generateSimpleSymbols, 16, m_charChunks, renderer_, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  16, gamedata::colors::LVL1)} // Used for chatbox
+    m_fonts{fonts::Font(renderer_, generateSimpleShadedSymbols, 12, m_charChunks, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  12, SDL_Color{255, 255, 255, 255}, SDL_Color{100, 100, 100, 255}), // Screen debug data
+    fonts::Font(renderer_, generateSimpleSymbols, 10, m_charChunks, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  10, gamedata::colors::LVL1), // For npc debug
+    fonts::Font(renderer_, generateSimpleSymbols, 8, m_charChunks, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  8, SDL_Color{255, 255, 255, 255}), // For navigation system
+    fonts::Font(renderer_, generateSimpleSymbols, 16, m_charChunks, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  16, gamedata::colors::LVL1)} // Used for chatbox
     //m_fonts{fonts::Font(generateOutlinedSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf",  24, 2, SDL_Color{0, 0, 0, 255}, SDL_Color{0, 100, 0, 255})}
     //m_fonts{fonts::Font(generateOutlinedTexturedSymbols, m_charChunks, *renderer_, basePath_, "/Resources/Fonts/Silkscreen.ttf", "/Resources/Fonts/fontBack.png",  24, 2, SDL_Color{0, 0, 0, 255})}
 {
 }
 
 
-/*void TextManager::generateOutlinedTexturedSymbols(std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, Renderer &renderer_, const std::string &basePath_, const std::string &font_, const std::string &texture_, int size_, int outlineWidth_, const SDL_Color &outlineColor_)
+/*void TextManager::generateOutlinedTexturedSymbols(std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, const std::string &basePath_, const std::string &font_, const std::string &texture_, int size_, int outlineWidth_, const SDL_Color &outlineColor_)
 {
     std::cout << "Run " << __func__ << " generator\n";
     TTF_Font *font = TTF_OpenFont((basePath_ + font_).c_str(), size_);
@@ -167,7 +168,7 @@ TextManager::TextManager(Renderer &renderer_) :
     std::cout << generated << " characters generated out of " << charsTotal << ", " << notProvided << " characters not provided\n";
 }*/
 
-/*void TextManager::generateOutlinedSymbols(std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, Renderer &renderer_, const std::string &basePath_, const std::string &font_, int size_, int outlineWidth_, const SDL_Color &color_, const SDL_Color &outlineColor_)
+/*void TextManager::generateOutlinedSymbols(std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, const std::string &basePath_, const std::string &font_, int size_, int outlineWidth_, const SDL_Color &color_, const SDL_Color &outlineColor_)
 {
     std::cout << "Run " << __func__ << " generator\n";
     TTF_Font *font = TTF_OpenFont((basePath_ + font_).c_str(), size_);
@@ -259,7 +260,7 @@ TextManager::TextManager(Renderer &renderer_) :
     std::cout << generated << " characters generated out of " << charsTotal << ", " << notProvided << " characters not provided\n";
 }*/
 
-void TextManager::generateSimpleSymbols(std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, Renderer &renderer_, const std::string &basePath_, const std::string &font_, int size_, const SDL_Color &color_)
+void TextManager::generateSimpleSymbols(Renderer &renderer_, std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, const std::string &basePath_, const std::string &font_, int size_, const SDL_Color &color_)
 {
     std::cout << "Run " << __func__ << " generator" << std::endl;
     TTF_Font *font = TTF_OpenFont((basePath_ + font_).c_str(), size_);
@@ -316,7 +317,7 @@ void TextManager::generateSimpleSymbols(std::vector<std::array<fonts::Symbol, fo
     std::cout << generated << " characters generated out of " << charsTotal << ", " << notProvided << " characters not provided" << std::endl;
 }
 
-void TextManager::generateSimpleShadedSymbols(std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, Renderer &renderer_, const std::string &basePath_, const std::string &font_, int size_, const SDL_Color &color_, const SDL_Color &shadeColor_)
+void TextManager::generateSimpleShadedSymbols(Renderer &renderer_, std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, const std::string &basePath_, const std::string &font_, int size_, const SDL_Color &color_, const SDL_Color &shadeColor_)
 {
     std::cout << "Run " << __func__ << " generator" << std::endl;
     TTF_Font *font = TTF_OpenFont((basePath_ + font_).c_str(), size_);

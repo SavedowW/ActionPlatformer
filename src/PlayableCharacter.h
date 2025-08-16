@@ -90,9 +90,9 @@ public:
         if (!m_lookaheadSpeedSensitivity.isEmpty())
             owner_.reg->get<ComponentDynamicCameraTarget>(owner_.idx).m_lookaheadSpeedSensitivity = m_lookaheadSpeedSensitivity[currentFrame_];
 
-        const auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
+        const auto &compInput = owner_.reg->get<InputResolver>(owner_.idx);
         auto &compFallthrough = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
-        if (m_canFallThrough[currentFrame_] && compInput.m_inputResolver->getInputQueue()[0].isInputActive(INPUT_BUTTON::DOWN))
+        if (m_canFallThrough[currentFrame_] && compInput.getInputQueue()[0].isInputActive(INPUT_BUTTON::DOWN))
             compFallthrough.setIgnoringObstacles();
 
         InputComparatorHoldLeft leftDrift;
@@ -100,7 +100,7 @@ public:
         InputComparatorHoldUp upDrift;
 
         auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
-        const auto &inq = compInput.m_inputResolver->getInputQueue();
+        const auto &inq = compInput.getInputQueue();
 
         if (m_allowAirDrift)
         {
@@ -162,10 +162,10 @@ public:
 
         const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
         const auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
-        const auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
+        const auto &compInput = owner_.reg->get<InputResolver>(owner_.idx);
 
         auto orientation = transform.m_orientation;
-        const auto &inq = compInput.m_inputResolver->getInputQueue();
+        const auto &inq = compInput.getInputQueue();
 
         bool possibleToLeft = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle <= 0 || physical.m_onSlopeWithAngle <= m_alignedSlopeMax) && (!FORCE_TOWARDS_INPUT || inq[0].m_dir.x <= 0);
         bool possibleToRight = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle >= 0 || -physical.m_onSlopeWithAngle <= m_alignedSlopeMax) && (!FORCE_TOWARDS_INPUT || inq[0].m_dir.x >= 0);
@@ -292,7 +292,7 @@ protected:
 class PlayerActionWallCling: public PlayerState<false, true, false, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail>
 {
 public:
-    PlayerActionWallCling(ResID anim_, StateMarker transitionableFrom_, ParticleTemplate &&slideParticle_) :
+    PlayerActionWallCling(ResID anim_, StateMarker transitionableFrom_, const ParticleTemplate &slideParticle_) :
         PlayerState<false, true, false, InputComparatorBufferedHoldRight, InputComparatorBufferedHoldLeft, false, InputComparatorFail, InputComparatorFail>(CharacterState::WALL_CLING, std::move(transitionableFrom_), anim_),
         m_transitionOnLeave(CharacterState::FLOAT),
         m_slideParticle(slideParticle_)
@@ -318,9 +318,9 @@ public:
         m_particleTimer.begin(0);
     }
 
-    virtual void leave(EntityAnywhere owner_, CharState to_) override;
+    void leave(EntityAnywhere owner_, CharState to_) override;
 
-    inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
+    inline bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
     {
         ParentAction::update(owner_, currentFrame_);
 
@@ -369,9 +369,9 @@ public:
 
         const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
         auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
-        const auto &[compInput, cworld] = owner_.reg->get<ComponentPlayerInput, World>(owner_.idx);
+        const auto &[compInput, cworld] = owner_.reg->get<InputResolver, World>(owner_.idx);
 
-        const auto &inq = compInput.m_inputResolver->getInputQueue();
+        const auto &inq = compInput.getInputQueue();
         auto pb = physical.m_pushbox + transform.m_pos;
 
         if (physical.m_onGround != entt::null)
@@ -417,7 +417,7 @@ protected:
 class PlayerActionWallPrejump: public PlayerState<true, false, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>
 {
 public:
-    PlayerActionWallPrejump(ResID anim_, StateMarker transitionableFrom_, ParticleTemplate &&jumpParticle_) :
+    PlayerActionWallPrejump(ResID anim_, StateMarker transitionableFrom_, const ParticleTemplate &jumpParticle_) :
         PlayerState<true, false, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>(CharacterState::WALL_CLING_PREJUMP, std::move(transitionableFrom_), anim_),
         m_jumpParticle(jumpParticle_)
     {
@@ -426,7 +426,7 @@ public:
         setAppliedInertiaMultiplier(Vector2{0.0f, 0.0f});
     }
 
-    inline virtual void enter(EntityAnywhere owner_, CharState from_) override
+    inline void enter(EntityAnywhere owner_, CharState from_) override
     {
         ParentAction::enter(owner_, from_);
 
@@ -438,16 +438,16 @@ public:
             physical.m_velocity.y = 0;
     }
 
-    virtual void leave(EntityAnywhere owner_, CharState to_) override;
+    void leave(EntityAnywhere owner_, CharState to_) override;
 
-    virtual void onOutdated(EntityAnywhere owner_) override
+    void onOutdated(EntityAnywhere owner_) override
     {
         const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
         auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
-        auto &compInput = owner_.reg->get<ComponentPlayerInput>(owner_.idx);
+        auto &compInput = owner_.reg->get<InputResolver>(owner_.idx);
         auto &world = owner_.reg->get<World>(owner_.idx);
 
-        const auto &inq = compInput.m_inputResolver->getInputQueue();
+        const auto &inq = compInput.getInputQueue();
 
         Vector2<float> targetSpeed;
         int orient = static_cast<int>(transform.m_orientation);

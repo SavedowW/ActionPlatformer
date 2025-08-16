@@ -3,11 +3,11 @@
 #include "EnvComponents.h"
 #include "GameData.h"
 #include "Configuration.h"
+#include "Application.h"
 
-RenderSystem::RenderSystem(entt::registry &reg_, Application &app_, Camera &camera_, ColliderRoutesCollection &rtCol_) :
-    InputReactor(app_.getInputSystem()),
+RenderSystem::RenderSystem(entt::registry &reg_, Camera &camera_, ColliderRoutesCollection &rtCol_) :
     m_reg(reg_),
-    m_renderer(app_.getRenderer()),
+    m_renderer(Application::instance().m_renderer),
     m_camera(camera_),
     m_routesCollection(rtCol_)
 {
@@ -49,7 +49,7 @@ void RenderSystem::updateDepth()
         std::cout << "Updating depth" << std::endl;
         m_reg.sort<RenderLayer>([](const RenderLayer &lhs_, const RenderLayer &rhs_)
         {
-            return lhs_.m_depth > rhs_.m_depth;
+            return lhs_.getDepth() > rhs_.getDepth();
         });
     }
 
@@ -66,7 +66,7 @@ void RenderSystem::draw()
     const auto renderable = m_reg.view<RenderLayer>();
 
     for (auto [idx, renlayer] : renderable.each())
-        if (renlayer.m_visible)
+        if (renlayer.isVisible())
             handleDepthInstance(idx);
 
     for (auto [idx, trans, hren] : viewHealthOwners.each())

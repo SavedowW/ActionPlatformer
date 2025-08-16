@@ -1,20 +1,13 @@
 #include "FilesystemUtils.h"
 #include <SDL3/SDL.h>
 
+#include <algorithm>
+#include <filesystem>
+
 namespace
 {
-    std::string m_rootDirectory;
-}
-
-void Filesystem::setRootDirectory(const std::string &directory_)
-{
-    m_rootDirectory = directory_ + "/";
-    std::replace(m_rootDirectory.begin(), m_rootDirectory.end(), '\\', '/');
-}
-
-std::string Filesystem::getRootDirectory()
-{
-    if (m_rootDirectory.empty())
+    // TODO: find a way to avoid iteration on real release build
+    std::string generateRootDirectory()
     {
         auto pathptr = SDL_GetBasePath();
         if (!pathptr)
@@ -28,10 +21,17 @@ std::string Filesystem::getRootDirectory()
         if (ppath.empty())
             throw std::runtime_error("Failed to find \"build/\" directory");
 
-        m_rootDirectory = ppath.parent_path().string() + "/";
-        std::replace(m_rootDirectory.begin(), m_rootDirectory.end(), '\\', '/');
+        auto rootDir = ppath.parent_path().string() + "/";
+        std::ranges::replace(rootDir, '\\', '/');
+
+        return rootDir;
     }
 
+    const std::string m_rootDirectory = generateRootDirectory();
+}
+
+std::string Filesystem::getRootDirectory()
+{
     return m_rootDirectory;
 }
 
@@ -43,13 +43,13 @@ void Filesystem::ensureDirectoryRelative(const std::string &directory_)
 std::string Filesystem::getRelativePath(const std::filesystem::path &basePath_, const std::filesystem::path &fullPath_)
 {
     auto p = std::filesystem::relative(fullPath_, basePath_).string();
-    std::replace(p.begin(), p.end(), '\\', '/');
+    std::ranges::replace(p, '\\', '/');
     return p;
 }
 
 std::string Filesystem::removeExtention(const std::string &filePath_)
 {
-    size_t lastindex = filePath_.find_last_of("."); 
+    size_t lastindex = filePath_.find_last_of('.'); 
     std::string rawName = filePath_.substr(0, lastindex); 
 
     return rawName;

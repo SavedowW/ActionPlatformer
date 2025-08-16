@@ -1,17 +1,12 @@
 #ifndef INPUT_RESOLVER_H_
 #define INPUT_RESOLVER_H_
 
-#include "FixedQueue.hpp"
-#include <map>
 #include "InputState.h"
 #include "InputSystem.h"
-#include <vector>
 
 class InputResolver : public InputReactor
 {
 public:
-    InputResolver(InputSystem &input_);
-
     void subscribePlayer();
     void unsubscribePlayer();
     void receiveEvents(GAMEPLAY_EVENTS event_, const float scale_) override;

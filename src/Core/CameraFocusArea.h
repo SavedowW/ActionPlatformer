@@ -8,7 +8,7 @@
 class CameraFocusArea : public Collider
 {
 public:
-    CameraFocusArea(Vector2<int> topLeft_, Vector2<int> size_, Renderer &renderer_);
+    CameraFocusArea(const Vector2<int> &topLeft_, const Vector2<int> &size_);
     Vector2<float> getCameraTargetPosition(const Vector2<float> &playerFocusPosition_);
     bool checkIfEnters(const Collider &cld_, bool isOwned_) const;
     float getScale() const;
@@ -16,7 +16,7 @@ public:
     void overrideFocusArea(const Collider &area_);
 
 private:
-    CameraFocusArea(Vector2<int> topLeft_, int scaledSizeX_, int scaledSizeY_, Renderer &renderer_);
+    CameraFocusArea(const Vector2<int> &topLeft_, int scaledSizeX_, int scaledSizeY_);
     
     Renderer &m_renderer;
     float m_scale;

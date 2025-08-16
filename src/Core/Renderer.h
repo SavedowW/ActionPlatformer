@@ -5,15 +5,12 @@
 #include "Camera.h"
 #include "Shader.h"
 #include "Vector2.h"
-#include "Texture.h"
 
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_opengl.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
-#include <iostream>
 
 class Renderer
 {

@@ -4,13 +4,13 @@
 
 TextureManager::TextureManager()
 {
-	auto sprPath = Filesystem::getRootDirectory() + "Resources/Sprites/";
-	std::filesystem::path basePath(sprPath);
+    Filesystem::ensureDirectoryRelative("Resources/Sprites");
+	const std::filesystem::path basePath(Filesystem::getRootDirectory() + "Resources/Sprites/");
 
 	std::cout << "=== LISTING FOUND TEXTURES ===\n";
-	for (const auto &entry : std::filesystem::recursive_directory_iterator(sprPath))
+	for (const auto &entry : std::filesystem::recursive_directory_iterator(basePath))
 	{
-		std::filesystem::path dirpath = entry.path();
+		const std::filesystem::path &dirpath = entry.path();
 		if (entry.is_regular_file() && dirpath.extension() == ".png")
 		{
 			auto path = Filesystem::getRelativePath(basePath, dirpath);

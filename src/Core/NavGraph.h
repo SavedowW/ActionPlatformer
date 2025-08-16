@@ -1,10 +1,10 @@
 #ifndef NAV_GRAPH_H_
 #define NAV_GRAPH_H_
+#include "Renderer.h"
+#include "TextManager.h"
 #include "Vector2.h"
-#include "Application.h"
 #include "Camera.h"
 #include <cstdint>
-#include <set>
 #include <vector>
 
 struct Node;
@@ -76,7 +76,7 @@ struct Node
 class NavGraph
 {
 public:
-    NavGraph(Application &app_);
+    NavGraph();
 
     NodeID makeNode(const Vector2<float> &pos_);
     ConnectionID makeConnection(NodeID node1_, NodeID node2_, Traverse::TraitT traverseTo2_, Traverse::TraitT traverseTo1_);

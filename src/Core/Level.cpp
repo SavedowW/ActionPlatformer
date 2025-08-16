@@ -1,8 +1,6 @@
 #include "Level.h"
-#include "Application.h"
 #include "Profile.h"
 #include "GameData.h"
-#include <thread>
 
 #if 0
 static std::string nicetime(const uint64_t &ns_)
@@ -11,11 +9,9 @@ static std::string nicetime(const uint64_t &ns_)
 }
 #endif
 
-Level::Level(Application &application_, const Vector2<int> &size_, int lvlId_) :
-	InputReactor(application_.getInputSystem()),
+Level::Level(const Vector2<int> &size_, int lvlId_) :
 	m_size(size_),
 	m_levelId(lvlId_),
-	m_application(application_),
 	m_timeForFrame(1'000'000'000 / gamedata::global::framerate),
 	m_lastFrameTimeNS{0}
 {

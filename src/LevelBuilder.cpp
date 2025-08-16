@@ -1,4 +1,5 @@
 #include "LevelBuilder.h"
+#include "Application.h"
 #include "JsonUtils.hpp"
 #include "NavGraph.h"
 #include "CoreComponents.h"
@@ -14,14 +15,13 @@
 template <>
 void LevelBuilder::makeObject<GrassTopComp>(const Vector2<int> &pos_, bool visible_, int layer_)
 {
-    auto &animManager = m_app.getAnimationManager();
+    auto &animManager = Application::instance().m_animationManager;
 
     auto objEnt = m_reg.create();
     auto &trans = m_reg.emplace<ComponentTransform>(objEnt, pos_, ORIENTATION::RIGHT);
 
     auto &animrnd = m_reg.emplace<ComponentAnimationRenderable>(objEnt);
-    auto &renLayer = m_reg.emplace<RenderLayer>(objEnt, layer_);
-    renLayer.m_visible = visible_;
+    m_reg.emplace<RenderLayer>(objEnt, layer_, visible_);
 
     animrnd.loadAnimation(animManager, animManager.getAnimID("Environment/grass_single_top"));
     animrnd.loadAnimation(animManager, animManager.getAnimID("Environment/grass_single_top_flickL"), LOOPMETHOD::NOLOOP);
@@ -50,10 +50,8 @@ void addTrigger(entt::registry &reg_, const Trigger &trg_)
     reg_.emplace<ComponentTrigger>(newid, trg_);
 }
 
-LevelBuilder::LevelBuilder(Application &app_, entt::registry &reg_) :
-    m_app(app_),
-    m_reg(reg_),
-    m_tilebase(app_.getTextureManager())
+LevelBuilder::LevelBuilder(entt::registry &reg_) :
+    m_reg(reg_)
 {
 #define ADD_NAME_FACTORY_PAIR(classname) m_factories.emplace(#classname , &LevelBuilder::makeObject<classname>)
 
@@ -304,7 +302,7 @@ void LevelBuilder::loadTileLayer(const nlohmann::json &json_)
         tilelayer.m_posOffset = pos - trans.m_pos;
     }
 
-    m_reg.emplace<RenderLayer>(entity, depth).m_visible = utils::tryClaim(json_, "visible", true);
+    m_reg.emplace<RenderLayer>(entity, depth, utils::tryClaim(json_, "visible", true));
 
     int tileLinearPos = 0;
     for (const uint32_t tile : json_["data"])
@@ -483,7 +481,7 @@ void LevelBuilder::loadFocusLayer(const nlohmann::json &json_)
             Vector2<int> size = {area["width"], area["height"]};
 
             auto newfocus = m_reg.create();
-            m_reg.emplace<CameraFocusArea>(newfocus, tl, size, m_app.getRenderer());
+            m_reg.emplace<CameraFocusArea>(newfocus, tl, size);
 
             if (area.contains("properties"))
             {

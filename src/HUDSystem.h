@@ -1,6 +1,5 @@
 #ifndef HUD_SYSTEM_H_
 #define HUD_SYSTEM_H_
-#include "Application.h"
 #include "Texture.h"
 #include "ImmediateScreenLog.h"
 #include "CommonAI.h"
@@ -47,7 +46,7 @@ protected:
 struct HudSystem
 {
 public:
-    HudSystem(entt::registry &reg_, Application &app_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, uint64_t &frameTime_);
+    HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, uint64_t &frameTime_);
 
     void draw();
     void drawCommonDebug();

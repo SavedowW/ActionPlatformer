@@ -6,11 +6,7 @@
 class Stage1 : public BattleLevel
 {
 public:
-    Stage1(Application &application_, const Vector2<float>& size_, int lvlId_);
-
-    virtual void enter() override;
-
-    virtual void update() override;
+    Stage1(const Vector2<int>& size_, int lvlId_);
 
     virtual ~Stage1() = default;
 };

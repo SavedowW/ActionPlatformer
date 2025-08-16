@@ -1,9 +1,10 @@
 #ifndef PARTICLE_SYSTEM_H_
 #define PARTICLE_SYSTEM_H_
-#include "Application.h"
+#include "AnimationManager.h"
+#include "Vector2.h"
 #include <entt/entt.hpp>
 
-enum class TiePosRule
+enum class TiePosRule : uint8_t
 {
     TIE_TO_WALL,
     TIE_TO_GROUND,
@@ -11,7 +12,7 @@ enum class TiePosRule
     NONE
 };
 
-enum class TieLifetimeRule
+enum class TieLifetimeRule : uint8_t
 {
     DESTROY_ON_STATE_LEAVE,
     NONE
@@ -60,7 +61,7 @@ struct ParticleRecipe
 class ParticleSystem
 {
 public:
-    ParticleSystem(entt::registry &reg_, Application &app_);
+    ParticleSystem(entt::registry &reg_);
 
     void makeParticle(const ParticleRecipe &particle_, std::vector<entt::entity> *placeId_ = nullptr);
 
