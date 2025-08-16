@@ -574,15 +574,17 @@ void ChatMessage::proceedUntilNonTechCharacter()
     m_currentProceedingCharacter++;
     while (m_currentProceedingCharacter < m_symbols.size())
     {
-        if (const TechSymbol* techsym = dynamic_cast<const TechSymbol*>(m_symbols[m_currentProceedingCharacter]))
+        if (const auto* techsym = dynamic_cast<const TechSymbol*>(m_symbols[m_currentProceedingCharacter]))
         {
             m_symbolAppearTimers[m_currentProceedingCharacter].beginAt(1, 1);
             auto *p = const_cast<TechSymbol*>(techsym);
             auto res = p->onReached(*this);
             if (!res)
                 break;
+            m_currentProceedingCharacter++;
         }
-        m_currentProceedingCharacter++;
+        else
+            break;
     }
 }
 
