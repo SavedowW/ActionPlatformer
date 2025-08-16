@@ -3,7 +3,7 @@
 
 #include <SDL3/SDL.h>
 #include <string>
-#include "Vector2.h"
+#include "Vector2.hpp"
 
 class Window
 {

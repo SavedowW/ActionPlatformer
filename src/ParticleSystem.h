@@ -1,8 +1,9 @@
 #ifndef PARTICLE_SYSTEM_H_
 #define PARTICLE_SYSTEM_H_
 #include "AnimationManager.h"
-#include "Vector2.h"
+#include "Vector2.hpp"
 #include <entt/entt.hpp>
+#include <SDL3/SDL.h>
 
 enum class TiePosRule : uint8_t
 {

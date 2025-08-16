@@ -2,6 +2,7 @@
 #include "Application.h"
 #include "CoreComponents.h"
 #include "GameData.h"
+#include "InputResolver.h"
 #include "utf8.h"
 
 uint32_t ChatMessage::m_defaultCharacterDelay = 2;

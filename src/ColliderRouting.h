@@ -1,7 +1,6 @@
 #ifndef COLLIDER_ROUTING_H_
 #define COLLIDER_ROUTING_H_
-#include "Vector2.h"
-#include "FrameTimer.h"
+#include "Vector2.hpp"
 #include <vector>
 
 struct RoutingPoint

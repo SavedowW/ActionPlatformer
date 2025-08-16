@@ -1,6 +1,6 @@
 #ifndef ANIMATION_MANAGER_H_
 #define ANIMATION_MANAGER_H_
-#include "Vector2.h"
+#include "Vector2.hpp"
 #include <filesystem>
 #include <unordered_map>
 #include <vector>

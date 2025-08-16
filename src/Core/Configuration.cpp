@@ -1,6 +1,7 @@
 #include "Configuration.h"
 #include "FilesystemUtils.h"
 #include "GameData.h"
+#include <fstream>
 
 template <bool READ_ONLY>
 ConfigurationView<READ_ONLY>::ConfigurationView(nlohmann::json &dataRef_, bool &dirtyRef_) :

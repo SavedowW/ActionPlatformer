@@ -1,6 +1,6 @@
 #ifndef STATE_MACHINE_H_
 #define STATE_MACHINE_H_
-#include "Vector2.h"
+#include "Vector2.hpp"
 #include "StateMarker.hpp"
 #include "World.h"
 #include "Hit.h"

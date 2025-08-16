@@ -1,6 +1,7 @@
 #ifndef PLAYABLE_CHARACTER_H_
 #define PLAYABLE_CHARACTER_H_
 #include "CoreComponents.h"
+#include "InputResolver.h"
 #include "StateMachine.h"
 #include "InputComparators.h"
 #include "EnumMapping.hpp"

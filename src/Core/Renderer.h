@@ -4,7 +4,7 @@
 #include "Collider.h"
 #include "Camera.h"
 #include "Shader.h"
-#include "Vector2.h"
+#include "Vector2.hpp"
 
 #include <glad/glad.h>
 #include <SDL3/SDL.h>

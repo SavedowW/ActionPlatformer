@@ -1,6 +1,5 @@
 #ifndef UTILS_H_
 #define UTILS_H_
-#include <SDL3/SDL.h> // TODO: remove SDL dependency from utils
 #include <string>
 #include <sstream>
 #include <vector>
@@ -9,6 +8,8 @@
 
 // resource id - for animations, textures, etc
 using ResID = size_t;
+
+using std::literals::string_literals::operator""s;
 
 template <typename T>
 concept Numeric = std::is_arithmetic_v<T>;
@@ -44,7 +45,8 @@ namespace utils
         template<typename T2>
         operator T2() noexcept
         {
-            assert(cnt != 0);
+            if (cnt == 0)
+                return 0;
             return sum / cnt;
         }
 
@@ -120,26 +122,6 @@ namespace utils
     {
     	T alpha = (val - min) / (max - min);
         return clamp<T>(alpha, 0, 1);
-    }
-
-    template<bool REMOVE_HASHTAG>
-    inline SDL_Color hexToCol(const std::string &s_)
-    {
-        int offset = (REMOVE_HASHTAG ? 1 : 0);
-
-        SDL_Color col = {255, 255, 255, 255};
-        unsigned tmp = 0;
-
-        std::istringstream(s_.substr(0 + offset, 2)) >> std::hex >> tmp;
-        col.r = tmp;
-
-        std::istringstream(s_.substr(2 + offset, 2)) >> std::hex >> tmp;
-        col.g = tmp;
-
-        std::istringstream(s_.substr(4 + offset, 2)) >> std::hex >> tmp;
-        col.b = tmp;
-
-        return col;
     }
 
     // Gets portion of l1, overlapped by l2, result is in range [0, 1]
@@ -258,6 +240,14 @@ namespace utils
         }
 
         return res;
+    }
+
+    inline std::string padToRight(const size_t &len_, const std::string &line_)
+    {
+        if (line_.size() >= len_)
+            return line_;
+
+        return std::string(len_ - line_.size(), ' ') + line_;
     }
 
     inline std::string strip(std::string line_)

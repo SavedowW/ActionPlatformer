@@ -1,8 +1,8 @@
 #ifndef PROFILE_H_
 #define PROFILE_H_
 #include "Timer.h"
-#include "Logger.h"
-#include <unordered_map>
+#include "Logger.h" // IWYU pragma: keep
+#include <vector>
 
 //#define DUMP_PROFILE_CONSOLE
 //#define DUMP_PROFILE_UI // TODO:
@@ -14,89 +14,82 @@
 class TimeStatistic
 {
 public:
-    TimeStatistic() = default;
-
-    TimeStatistic &operator+=(const uint64_t &rhs_)
-    {
-        m_sum += rhs_;
-        m_cnt++;
-        return *this;
-    }
-
-    uint64_t avg() const
-    {
-        return m_sum / m_cnt;
-    }
-
-    uint64_t sum() const
-    {
-        return m_sum;
-    }
-
-    int count() const
-    {
-        return m_cnt;
-    }
-
-    inline bool isSet() const
-    {
-        return m_cnt > 0;
-    }
+    TimeStatistic &operator+=(const uint64_t &rhs_) noexcept;
+    uint64_t avg() const noexcept;
+    uint64_t sum() const noexcept;
+    int count() const noexcept;
+    void reset() noexcept;
 
 private:
     uint64_t m_sum = 0;
     uint64_t m_cnt = 0;
+};
 
+struct CallData
+{
+    [[maybe_unused]]
+    const std::string m_funcName;
+
+    [[maybe_unused]]
+    const std::string m_location;
+
+    [[maybe_unused]]
+    const unsigned int m_line;
+
+    TimeStatistic m_timeStat;
 };
 
 class ProfileTimer : public Timer
 {
 public:
-    ProfileTimer(const char *identifier_, const std::string &functionName_);
-    void stop();
+    ProfileTimer(const size_t &id_) noexcept;
+    void stop() noexcept;
     ~ProfileTimer();
 
 private:
     bool m_stopped = false;
-    std::string m_identifier;
+    const size_t &m_id;
 };
 
 class Profiler
 {
 public:
-    static Profiler &instance();
-    void addRecord(const std::string &identifier_, uint64_t duration_);
-    void addName(const char *identifier_, const std::string &name_);
-    void cleanFrame();
-    void dump() const;
+    static Profiler &instance() noexcept;
+    void addRecord(const size_t &id_, uint64_t duration_) noexcept;
+    size_t addName(const char *location_, const std::string &name_, int line_) noexcept;
+    void cleanFrame() noexcept;
+    void dump() const noexcept;
 
 private:
-    std::unordered_map<std::string, TimeStatistic> m_calls;
-    std::unordered_map<std::string, std::string> m_names;
+    std::vector<CallData> m_calls;
+    size_t m_longestFuncName = 0;
 };
 
-class SingleProfileRegister
-{
-public:
-    SingleProfileRegister(const char *identifier_, const std::string &name_);
-};
+size_t registerProfilePlace(const char *file_, const std::string &functionName_, int line_) noexcept;
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
-#define FILE_LINE_STRING TOSTRING(__FILE__) "_" TOSTRING(__LINE__)
+#define FILENAME __FILE__
+#define LINENUM __LINE__
 #define CONCATENATE_DETAIL(x, y) x##y
 #define CONCATENATE(x, y) CONCATENATE_DETAIL(x, y)
-#define VARNAME(name) CONCATENATE(name, __LINE__)##_SRw453ytueh
+#define VARNAME(name) CONCATENATE(CONCATENATE(name, __LINE__), _SRw453ytueh)
+
+#ifdef __clang__
+#define FUNCNAME __PRETTY_FUNCTION__
+#else
+#define FUNCNAME __FUNCSIG__
+#endif
+
 
 #ifdef DUMP_PROFILE
 
-#define PROFILE_FUNCTION static SingleProfileRegister VARNAME(NAMEREG)(FILE_LINE_STRING, utils::prettifyFunction(__FUNCSIG__)); ProfileTimer VARNAME(PROFILETMR)(FILE_LINE_STRING, utils::prettifyFunction(__FUNCSIG__));
-#define PROFILE_SCOPE(scopename) static SingleProfileRegister VARNAME(NAMEREG)(FILE_LINE_STRING, #scopename); ProfileTimer VARNAME(PROFILETMR)(FILE_LINE_STRING, utils::prettifyFunction(__FUNCSIG__));
+#define PROFILE_FUNCTION static auto VARNAME(NAMEREG) = registerProfilePlace(FILENAME, utils::prettifyFunction(FUNCNAME), LINENUM); \
+        ProfileTimer VARNAME(PROFILETMR)(VARNAME(NAMEREG));
 
 #else
 
 #define PROFILE_FUNCTION
-#define PROFILE_SCOPE(scopename)
 
 #endif
 

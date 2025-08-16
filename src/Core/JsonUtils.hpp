@@ -1,7 +1,7 @@
 #ifndef JSON_UTILS_H_
 #define JSON_UTILS_H_
 #include "EnumMapping.hpp"
-#include "Vector2.h"
+#include "Vector2.hpp"
 #include <set>
 #include <nlohmann/json.hpp>
 

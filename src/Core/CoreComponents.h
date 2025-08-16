@@ -1,8 +1,7 @@
 #ifndef CORE_COMPONENTS_H_
 #define CORE_COMPONENTS_H_
 #include "Tileset.h"
-#include "InputResolver.h"
-#include "Vector2.h"
+#include "Vector2.hpp"
 #include "FrameTimer.h"
 #include "Collider.h"
 #include "AnimationManager.h"

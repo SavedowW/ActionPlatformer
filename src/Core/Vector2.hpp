@@ -1,11 +1,9 @@
 #ifndef VECTOR2_H_
 #define VECTOR2_H_
-#include "Utils.h"
+#include "Utils.hpp"
 #include "EnumMapping.hpp"
 #include <cmath>
 #include <iostream>
-#include <type_traits>
-#include <map>
 #include <sstream>
 #include <cassert>
 

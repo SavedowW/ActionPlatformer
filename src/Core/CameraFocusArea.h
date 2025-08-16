@@ -3,7 +3,7 @@
 
 #include "RectCollider.h"
 #include "Renderer.h"
-#include "Vector2.h"
+#include "Vector2.hpp"
 
 class CameraFocusArea : public Collider
 {

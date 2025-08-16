@@ -1,6 +1,6 @@
 #ifndef COLLIDER_H_
 #define COLLIDER_H_
-#include "Vector2.h"
+#include "Vector2.hpp"
 #include "RectCollider.h"
 
 /*

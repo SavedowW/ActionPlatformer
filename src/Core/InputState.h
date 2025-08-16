@@ -2,7 +2,7 @@
 #define INPUT_STATE_H_
 
 #include "FixedQueue.hpp"
-#include "Vector2.h"
+#include "Vector2.hpp"
 #include <map>
 
 enum class INPUT_BUTTON : uint8_t {UP, DOWN, LEFT, RIGHT, ATTACK};

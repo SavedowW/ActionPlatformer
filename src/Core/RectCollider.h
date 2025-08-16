@@ -1,6 +1,6 @@
 #ifndef RECT_COLLIDER_H_
 #define RECT_COLLIDER_H_
-#include "Vector2.h"
+#include "Vector2.hpp"
 
 enum class OverlapResult : uint8_t
 {
@@ -39,7 +39,7 @@ struct Collider
     public:
     constexpr inline Collider operator+(const Vector2<int>& rhs_) const
     {
-        return { m_topLeft + rhs_ + Vector2{1, 1}, m_size };
+        return { .m_topLeft=m_topLeft + rhs_ + Vector2{1, 1}, .m_size=m_size };
     }
 
     constexpr inline int getLeftEdge() const

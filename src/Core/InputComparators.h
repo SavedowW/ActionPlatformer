@@ -1,7 +1,6 @@
 #ifndef INPUT_COMPARATORS_H_
 #define INPUT_COMPARATORS_H_
 
-#include "Vector2.h"
 #include "InputState.h"
 
 class InputComparator

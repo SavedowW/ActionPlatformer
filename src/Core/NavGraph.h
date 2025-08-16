@@ -2,7 +2,7 @@
 #define NAV_GRAPH_H_
 #include "Renderer.h"
 #include "TextManager.h"
-#include "Vector2.h"
+#include "Vector2.hpp"
 #include "Camera.h"
 #include <cstdint>
 #include <vector>

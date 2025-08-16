@@ -1,9 +1,7 @@
 #ifndef GAMEDATA_H_
 #define GAMEDATA_H_
-#include <string_view>
 #include <SDL3/SDL.h>
-#include "Vector2.h"
-#include <array>
+#include "Vector2.hpp"
 
 // TODO: move properties to config file
 // split remaining ones and defaults into different files

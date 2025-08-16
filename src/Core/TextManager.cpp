@@ -2,7 +2,6 @@
 #include "TextManager.h"
 #include "FilesystemUtils.h"
 #include "utf8.h"
-#include "Application.h"
 #include <fstream>
 
 fonts::Symbol& fonts::Symbol::operator=(fonts::Symbol &&rhs_) noexcept

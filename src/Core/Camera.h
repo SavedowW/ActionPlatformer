@@ -1,7 +1,7 @@
 #ifndef CAMERA_H_
 #define CAMERA_H_
 
-#include "Vector2.h"
+#include "Vector2.hpp"
 #include "FrameTimer.h"
 
 class Camera

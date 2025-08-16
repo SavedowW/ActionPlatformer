@@ -7,9 +7,9 @@
 #include "InputSystem.h"
 #include "TextureManager.h"
 #include "AnimationManager.h"
+#include "TextManager.h"
 #include <memory>
 #include <SDL3_mixer/SDL_mixer.h>
-#include "TextManager.h"
 
 namespace gamedata::levels
 {

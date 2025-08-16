@@ -1,7 +1,7 @@
 #ifndef SHADER_H_
 #define SHADER_H_
 
-#include "Utils.h"
+#include "Utils.hpp"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>

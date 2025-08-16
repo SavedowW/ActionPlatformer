@@ -1,5 +1,6 @@
 #ifndef HUD_SYSTEM_H_
 #define HUD_SYSTEM_H_
+#include "FixedQueue.hpp"
 #include "Texture.h"
 #include "ImmediateScreenLog.h"
 #include "CommonAI.h"
@@ -9,7 +10,7 @@ template<Numeric T, size_t len, uint8_t updatePeriod>
 class AveragingQueue : public FixedQueue<T, len>
 {
 public:
-    virtual void push(const T &val_) override
+    void push(const T &val_) override
     {
         auto &current = FixedQueue<T, len>::m_data[FixedQueue<T, len>::m_nextToFill];
 

@@ -90,7 +90,7 @@ public:
     }
 
     // Requires only move constructor
-    TimelineProperty(TimelineProperty<T> &&rhs_)
+    TimelineProperty(TimelineProperty<T> &&rhs_) noexcept
     {
         m_keys = std::move(rhs_.m_keys);
         m_values = std::move(rhs_.m_values);
@@ -104,7 +104,7 @@ public:
     }
 
     // Requires only move constructor
-    TimelineProperty& operator=(TimelineProperty<T> &&rhs_)
+    TimelineProperty& operator=(TimelineProperty<T> &&rhs_) noexcept
     {
         m_keys = std::move(rhs_.m_keys);
         m_values = std::move(rhs_.m_values);
@@ -119,7 +119,7 @@ public:
         return *this;
     }
 
-    bool isEmpty() const
+    bool isEmpty() const noexcept
     {
         return m_isEmpty;
     }

@@ -1,6 +1,7 @@
 #include "HUDSystem.h"
 #include "Application.h"
 #include "CoreComponents.h"
+#include "InputResolver.h"
 #include "StateMachine.h"
 #include "GameData.h"
 #include "Localization/LocalizationGen.h"
