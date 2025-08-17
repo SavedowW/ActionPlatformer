@@ -3,7 +3,12 @@
 
 #include <string>
 #include <map>
-#include <typeinfo>
+
+template<typename T>
+struct typedata
+{
+    static const std::string name;
+};
 
 template<typename T>
 const std::map<T, std::string> &makeDirectMap();
@@ -55,5 +60,15 @@ inline const std::map<std::string, EnumType> &makeReversedMap<EnumType>() \
 #define ENUM_INIT(EnumType, Value, Line) {EnumType::Value, Line}
 #define ENUM_INIT_NODOTS(Value, Line) {Value, Line}
 #define ENUM_AUTO(EnumType, Value) {EnumType::Value, #Value}
+
+#define T_NAME(Type, Name) \
+template<> \
+constexpr std::string typedata<Type>::name = Name \
+
+#define T_NAME_AUTO(Type) \
+template<> \
+const std::string typedata<Type>::name = #Type \
+
+// TODO: recursive name
 
 #endif

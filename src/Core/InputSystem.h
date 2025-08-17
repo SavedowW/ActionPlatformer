@@ -1,7 +1,7 @@
 #ifndef INPUT_H_
 #define INPUT_H_
 #include <SDL3/SDL.h>
-#include "EnumMapping.hpp"
+#include "StaticMapping.hpp"
 #include <map>
 #include <vector>
 #include <set>

@@ -24,8 +24,8 @@ public:
 
 private:
     using LocalMap = std::array<std::string, 6>;
-    static LocalMap m_stringsen;
     static LocalMap m_stringsru;
+    static LocalMap m_stringsen;
     static LocalMap *m_currentStrings;
 };
 

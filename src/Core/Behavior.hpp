@@ -2,7 +2,7 @@
 #define BEHAVIOR_H_
 #include "StateCommon.h"
 #include "FrameTimer.h"
-#include "EnumMapping.hpp"
+#include "StaticMapping.hpp"
 #include <memory>
 #include <iostream>
 

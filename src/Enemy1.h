@@ -3,8 +3,7 @@
 #include "CoreComponents.h"
 #include "StateMachine.h"
 #include "CommonAI.h"
-#include "EnumMapping.hpp"
-#include <map>
+#include "StaticMapping.hpp"
 
 enum class Enemy1State : CharState
 {

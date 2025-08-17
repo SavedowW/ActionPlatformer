@@ -51,6 +51,7 @@ FilesystemUtils.cpp
 Shader.cpp
 Configuration.cpp
 Behavior.cpp
+StaticMapping.cpp
 Localization/LocalizationGen.cpp
 )
 

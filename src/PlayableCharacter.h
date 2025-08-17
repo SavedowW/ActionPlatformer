@@ -4,7 +4,7 @@
 #include "InputResolver.h"
 #include "StateMachine.h"
 #include "InputComparators.h"
-#include "EnumMapping.hpp"
+#include "StaticMapping.hpp"
 #include <map>
 
 enum class CharacterState : CharState {

@@ -5,7 +5,7 @@
 #include "World.h"
 #include "Hit.h"
 #include "CoreComponents.h"
-#include "EnumMapping.hpp"
+#include "StaticMapping.hpp"
 #include "StateCommon.h"
 
 class GenericState;

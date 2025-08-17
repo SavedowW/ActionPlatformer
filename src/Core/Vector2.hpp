@@ -1,7 +1,7 @@
 #ifndef VECTOR2_H_
 #define VECTOR2_H_
 #include "Utils.hpp"
-#include "EnumMapping.hpp"
+#include "StaticMapping.hpp"
 #include <cmath>
 #include <iostream>
 #include <sstream>
