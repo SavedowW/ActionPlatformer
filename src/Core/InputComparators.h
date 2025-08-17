@@ -3,101 +3,95 @@
 
 #include "InputState.h"
 
-class InputComparator
+class InputComparatorIdle
 {
 public:
-    virtual bool operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_ = 0) const = 0;
+    static bool check(const InputQueue &inputQueue_, unsigned int extendBuffer_);
 };
 
-class InputComparatorIdle : public InputComparator
+class InputComparatorHoldRight
 {
 public:
-    bool operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const final;
+    static bool check(const InputQueue &inputQueue_, unsigned int extendBuffer_);
 };
 
-class InputComparatorHoldRight : public InputComparator
+class InputComparatorHoldLeft
 {
 public:
-    bool operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const final;
+    static bool check(const InputQueue &inputQueue_, unsigned int extendBuffer_);
 };
 
-class InputComparatorHoldLeft : public InputComparator
+class InputComparatorBufferedHoldRight
 {
 public:
-    bool operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const final;
+    static bool check(const InputQueue &inputQueue_, unsigned int extendBuffer_);
 };
 
-class InputComparatorBufferedHoldRight : public InputComparator
+class InputComparatorBufferedHoldLeft
 {
 public:
-    bool operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const final;
+    static bool check(const InputQueue &inputQueue_, unsigned int extendBuffer_);
 };
 
-class InputComparatorBufferedHoldLeft : public InputComparator
+class InputComparatorHoldUp
 {
 public:
-    bool operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const final;
+    static bool check(const InputQueue &inputQueue_, unsigned int extendBuffer_);
 };
 
-class InputComparatorHoldUp : public InputComparator
+class InputComparatorHoldDown
 {
 public:
-    bool operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const final;
-};
-
-class InputComparatorHoldDown : public InputComparator
-{
-public:
-    bool operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const final;
+    static bool check(const InputQueue &inputQueue_, unsigned int extendBuffer_);
 };
 
 
-class InputComparatorTapUp : public InputComparator
+class InputComparatorTapUp
 {
 public:
-    bool operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const final;
+    static bool check(const InputQueue &inputQueue_, unsigned int extendBuffer_);
 };
 
-class InputComparatorTapAnyDown : public InputComparator
+class InputComparatorTapAnyDown
 {
 public:
-    bool operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const final;
+    static bool check(const InputQueue &inputQueue_, unsigned int extendBuffer_);
 };
 
-class InputComparatorTapUpRight : public InputComparator
+class InputComparatorTapUpRight
 {
 public:
-    bool operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const final;
+    static bool check(const InputQueue &inputQueue_, unsigned int extendBuffer_);
 };
 
-class InputComparatorTapUpLeft : public InputComparator
+class InputComparatorTapUpLeft
 {
 public:
-    bool operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const final;
+    static bool check(const InputQueue &inputQueue_, unsigned int extendBuffer_);
 };
 
-class InputComparatorFail : public InputComparator
+class InputComparatorFail
 {
 public:
-    bool operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const final;
+    static bool check(const InputQueue &inputQueue_, unsigned int extendBuffer_);
 };
 
-class InputComparatorTapAttack : public InputComparator
+class InputComparatorTapAttack
 {
 public:
-    bool operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const final;
+    static bool check(const InputQueue &inputQueue_, unsigned int extendBuffer_);
 };
 
-class InputComparatorTapAnyRight : public InputComparator
+class InputComparatorTapAnyRight
 {
 public:
-    bool operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const final;
+    static bool check(const InputQueue &inputQueue_, unsigned int extendBuffer_);
 };
 
-class InputComparatorTapAnyLeft : public InputComparator
+class InputComparatorTapAnyLeft
 {
 public:
-    bool operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const final;
+    static bool check(const InputQueue &inputQueue_, unsigned int extendBuffer_);
 };
 
 #endif

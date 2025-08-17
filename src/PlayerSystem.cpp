@@ -1,6 +1,6 @@
 #include "PlayerSystem.h"
 #include "Core/InputResolver.h"
-#include "PlayableCharacter.h"
+#include "PlayableCharacter.hpp"
 #include "StateMachine.h"
 #include "ResetHandlers.h"
 #include "Core/Application.h"

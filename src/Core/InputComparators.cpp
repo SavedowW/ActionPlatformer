@@ -23,12 +23,12 @@ bool recursivelySearchInput(const InputQueue &inputQueue_, Vector2<VecT> (&input
 }
 #endif
 
-bool InputComparatorIdle::operator()(const InputQueue&, unsigned int) const
+bool InputComparatorIdle::check(const InputQueue&, unsigned int)
 {
     return true;
 }
 
-bool InputComparatorHoldRight::operator()(const InputQueue &inputQueue_, unsigned int) const
+bool InputComparatorHoldRight::check(const InputQueue &inputQueue_, unsigned int)
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -36,7 +36,7 @@ bool InputComparatorHoldRight::operator()(const InputQueue &inputQueue_, unsigne
     return inputQueue_[0].m_dir.x > 0;
 }
 
-bool InputComparatorHoldLeft::operator()(const InputQueue &inputQueue_, unsigned int) const
+bool InputComparatorHoldLeft::check(const InputQueue &inputQueue_, unsigned int)
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -44,7 +44,7 @@ bool InputComparatorHoldLeft::operator()(const InputQueue &inputQueue_, unsigned
     return inputQueue_[0].m_dir.x < 0;
 }
 
-bool InputComparatorTapUp::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
+bool InputComparatorTapUp::check(const InputQueue &inputQueue_, unsigned int extendBuffer_)
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -61,7 +61,7 @@ bool InputComparatorTapUp::operator()(const InputQueue &inputQueue_, unsigned in
     return false;
 }
 
-bool InputComparatorTapAnyDown::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
+bool InputComparatorTapAnyDown::check(const InputQueue &inputQueue_, unsigned int extendBuffer_)
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -79,7 +79,7 @@ bool InputComparatorTapAnyDown::operator()(const InputQueue &inputQueue_, unsign
 }
 
 
-bool InputComparatorTapUpRight::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
+bool InputComparatorTapUpRight::check(const InputQueue &inputQueue_, unsigned int extendBuffer_)
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -95,7 +95,7 @@ bool InputComparatorTapUpRight::operator()(const InputQueue &inputQueue_, unsign
     return false;
 }
 
-bool InputComparatorTapUpLeft::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
+bool InputComparatorTapUpLeft::check(const InputQueue &inputQueue_, unsigned int extendBuffer_)
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -111,7 +111,7 @@ bool InputComparatorTapUpLeft::operator()(const InputQueue &inputQueue_, unsigne
     return false;
 }
 
-bool InputComparatorHoldUp::operator()(const InputQueue &inputQueue_, unsigned int) const
+bool InputComparatorHoldUp::check(const InputQueue &inputQueue_, unsigned int)
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -119,7 +119,7 @@ bool InputComparatorHoldUp::operator()(const InputQueue &inputQueue_, unsigned i
     return inputQueue_[0].m_dir.y < 0;
 }
 
-bool InputComparatorHoldDown::operator()(const InputQueue &inputQueue_, unsigned int) const
+bool InputComparatorHoldDown::check(const InputQueue &inputQueue_, unsigned int)
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -127,12 +127,12 @@ bool InputComparatorHoldDown::operator()(const InputQueue &inputQueue_, unsigned
     return inputQueue_[0].m_dir.y > 0;
 }
 
-bool InputComparatorFail::operator()(const InputQueue&, unsigned int) const
+bool InputComparatorFail::check(const InputQueue&, unsigned int)
 {
     return false;
 }
 
-bool InputComparatorTapAttack::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
+bool InputComparatorTapAttack::check(const InputQueue &inputQueue_, unsigned int extendBuffer_)
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -148,7 +148,7 @@ bool InputComparatorTapAttack::operator()(const InputQueue &inputQueue_, unsigne
     return false;
 }
 
-bool InputComparatorTapAnyRight::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
+bool InputComparatorTapAnyRight::check(const InputQueue &inputQueue_, unsigned int extendBuffer_)
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -168,7 +168,7 @@ bool InputComparatorTapAnyRight::operator()(const InputQueue &inputQueue_, unsig
     return false;
 }
 
-bool InputComparatorTapAnyLeft::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
+bool InputComparatorTapAnyLeft::check(const InputQueue &inputQueue_, unsigned int extendBuffer_)
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -188,7 +188,7 @@ bool InputComparatorTapAnyLeft::operator()(const InputQueue &inputQueue_, unsign
     return false;
 }
 
-bool InputComparatorBufferedHoldRight::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
+bool InputComparatorBufferedHoldRight::check(const InputQueue &inputQueue_, unsigned int extendBuffer_)
 {
     if (inputQueue_.getFilled() == 0)
         return false;
@@ -204,7 +204,7 @@ bool InputComparatorBufferedHoldRight::operator()(const InputQueue &inputQueue_,
     return false;
 }
 
-bool InputComparatorBufferedHoldLeft::operator()(const InputQueue &inputQueue_, unsigned int extendBuffer_) const
+bool InputComparatorBufferedHoldLeft::check(const InputQueue &inputQueue_, unsigned int extendBuffer_)
 {
     if (inputQueue_.getFilled() == 0)
         return false;

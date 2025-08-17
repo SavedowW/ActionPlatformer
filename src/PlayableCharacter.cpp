@@ -1,4 +1,4 @@
-#include "PlayableCharacter.h"
+#include "PlayableCharacter.hpp"
 
 void PlayerActionWallCling::leave(EntityAnywhere owner_, CharState to_)
 {

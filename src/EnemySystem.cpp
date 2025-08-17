@@ -1,7 +1,7 @@
 #include "EnemySystem.h"
 #include "Core/Application.h"
 #include "Core/CoreComponents.h"
-#include "StateMachine.h"
+#include "StateMachine.hpp"
 #include "Enemy1.h"
 #include "Core/NavGraph.h"
 #include "ResetHandlers.h"

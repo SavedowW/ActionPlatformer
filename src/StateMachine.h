@@ -37,22 +37,13 @@ public:
     virtual std::string getName() const;
 
     template<typename PLAYER_STATE_T>
-    void switchCurrentState(EntityAnywhere owner_, PLAYER_STATE_T stateId_)
-    {
-        if (static_cast<CharState>(stateId_) != std::numeric_limits<CharState>::max())
-            switchCurrentState(owner_, m_states[m_stateIds[static_cast<CharState>(stateId_)]].get());
-    }
+    void switchCurrentState(EntityAnywhere owner_, PLAYER_STATE_T stateId_);
 
     void switchCurrentState(EntityAnywhere owner_, const std::vector<CharState>::iterator &current_,
         const std::vector<CharState>::iterator &end_);
     
     template<typename PLAYER_STATE_T>
-    inline void setInitialState(PLAYER_STATE_T state_)
-    {
-        auto initstate = static_cast<CharState>(state_);
-        m_framesInState = 0;
-        m_currentState = m_states[m_stateIds[initstate]].get();
-    }
+    void setInitialState(PLAYER_STATE_T state_);
 
     virtual ~StateMachine() = default;
 
@@ -80,12 +71,7 @@ public:
     virtual GenericState *getRealCurrentState();
 
     template<typename PLAYER_STATE_T>
-    GenericState &setOutdatedTransition(PLAYER_STATE_T state_, uint32_t duration_)
-    {
-        m_transitionOnOutdated = static_cast<CharState>(state_);
-        m_duration = duration_;
-        return *this;
-    }
+    GenericState &setOutdatedTransition(PLAYER_STATE_T state_, uint32_t duration_);
 
     GenericState &setParticlesSingle(TimelineProperty<ParticleTemplate> &&particlesSingle_);
     GenericState &setParticlesLoopable(TimelineProperty<ParticleTemplate> &&particlesLoopable_, uint32_t loopDuration_);
@@ -128,16 +114,9 @@ class PhysicalState: public GenericState
 {
 public:
     template<typename PLAYER_STATE_T>
-    PhysicalState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_, ResID anim_) :
-        GenericState(stateId_, std::move(transitionableFrom_)),
-        m_anim(anim_),
-        m_appliedInertiaMultiplier(Vector2{1.0f, 1.0f}),
-        m_drag(Vector2{1.0f, 0.0f}),
-        m_transitionVelocityMultiplier(Vector2{1.0f, 1.0f}),
-        m_canFallThrough(true)
-    {}
+    PhysicalState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_, ResID anim_);
 
-    virtual void leave(EntityAnywhere owner_, CharState to_) override;
+    void leave(EntityAnywhere owner_, CharState to_) override;
 
     template<typename PLAYER_STATE_T>
     PhysicalState &addTransitionOnTouchedGround(uint32_t sinceFrame_, PLAYER_STATE_T transition_)
@@ -146,22 +125,14 @@ public:
         return *this;
     }
 
-    virtual void enter(EntityAnywhere owner_, CharState from_) override;
-    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+    void enter(EntityAnywhere owner_, CharState from_) override;
+    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
 
     template<typename PLAYER_STATE_T>
-    inline PhysicalState &setTransitionOnLostGround(PLAYER_STATE_T state_)
-    {
-        m_transitionOnLostGround = static_cast<CharState>(state_);
-        return *this;
-    }
+    inline PhysicalState &setTransitionOnLostGround(PLAYER_STATE_T state_);
 
     template<typename PLAYER_STATE_T>
-    PhysicalState &addTransitionAnim(PLAYER_STATE_T oldState_, ResID anim_)
-    {
-        m_uniqueTransitionAnims[static_cast<CharState>(oldState_)] = anim_;
-        return *this;
-    }
+    PhysicalState &addTransitionAnim(PLAYER_STATE_T oldState_, ResID anim_);
 
     void updateActor(BattleActor &battleActor_) const;
 
@@ -183,7 +154,7 @@ public:
     PhysicalState &setHurtboxes(Hurtbox &&hurtboxes_);
     PhysicalState &addHit(HitboxGroup &&hit_);
     PhysicalState &setHitStateMapping(HitStateMapping &&hitStateMapping_);
-    virtual bool transitionableInto(CharState targetStateId_, uint32_t currentFrame_) const override;
+    bool transitionableInto(CharState targetStateId_, uint32_t currentFrame_) const override;
 
 
     virtual void onTouchedGround(EntityAnywhere owner_);
@@ -242,14 +213,11 @@ class NodeState: public StateMachine, public GenericState
 {
 public:
     template<typename PLAYER_STATE_T>
-    NodeState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_) :
-        GenericState(stateId_, std::move(transitionableFrom_))
-    {}
+    NodeState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_);
 
-
-    virtual std::string getName(uint32_t framesInState_) const override;
-    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
-    virtual GenericState *getRealCurrentState() override;
+    std::string getName(uint32_t framesInState_) const override;
+    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+    GenericState *getRealCurrentState() override;
 
 private:
     using StateMachine::getName;

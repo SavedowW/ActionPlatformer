@@ -1,4 +1,4 @@
-#include "StateMachine.h"
+#include "StateMachine.hpp"
 
 GenericState *StateMachine::getRealCurrentState()
 {

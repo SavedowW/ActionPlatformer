@@ -1,6 +1,6 @@
 #ifndef PLAYABLE_CHARACTER_H_
 #define PLAYABLE_CHARACTER_H_
-#include "StateMachine.h"
+#include "StateMachine.hpp"
 #include "Core/CoreComponents.h"
 #include "Core/InputResolver.h"
 #include "Core/InputComparators.h"
@@ -42,18 +42,18 @@ SERIALIZE_ENUM(CharacterState, {
     ENUM_AUTO(CharacterState, NONE),
 })
 
-template<bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN>
-inline ORIENTATION attemptInput(const InputComparator &cmpL_, const InputComparator &cmpR_, ORIENTATION currentOrientation_, const InputQueue &iq_, int val_)
+template<bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN, typename CMP_LEFT, typename CMP_RIGHT>
+inline ORIENTATION attemptInput(ORIENTATION currentOrientation_, const InputQueue &iq_, int val_)
 {
     if (REQUIRE_ALIGNMENT)
     {
-        if (currentOrientation_ == ORIENTATION::RIGHT && cmpR_(iq_, val_) || currentOrientation_ == ORIENTATION::LEFT && cmpL_(iq_, val_))
+        if (currentOrientation_ == ORIENTATION::RIGHT && CMP_RIGHT::check(iq_, val_) || currentOrientation_ == ORIENTATION::LEFT && CMP_LEFT::check(iq_, val_))
             return currentOrientation_;
     }
     else
     {
-        auto lValid = cmpL_(iq_, val_);
-        auto rValid = cmpR_(iq_, val_);
+        auto lValid =  CMP_LEFT::check(iq_, val_);
+        auto rValid = CMP_RIGHT::check(iq_, val_);
 
         if (rValid && currentOrientation_ == ORIENTATION::RIGHT)
             return ORIENTATION::RIGHT;
@@ -84,7 +84,7 @@ public:
     {
     }
 
-    inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
+    inline bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
     {
         auto res = PhysicalState::update(owner_, currentFrame_);
         if (!m_lookaheadSpeedSensitivity.isEmpty())
@@ -95,28 +95,24 @@ public:
         if (m_canFallThrough[currentFrame_] && compInput.getInputQueue()[0].isInputActive(INPUT_BUTTON::DOWN))
             compFallthrough.setIgnoringObstacles();
 
-        InputComparatorHoldLeft leftDrift;
-        InputComparatorHoldRight rightDrift;
-        InputComparatorHoldUp upDrift;
-
         auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
         const auto &inq = compInput.getInputQueue();
 
         if (m_allowAirDrift)
         {
-            if (leftDrift(inq, 0))
+            if (InputComparatorHoldLeft::check(inq, 0))
             {
                 if (phys.m_velocity.x > -2.5f)
                     phys.m_velocity.x -= 0.15f;
             }
 
-            if (rightDrift(inq, 0))
+            if (InputComparatorHoldRight::check(inq, 0))
             {
                 if (phys.m_velocity.x < 2.5f)
                     phys.m_velocity.x += 0.15f;
             }
 
-            if (phys.m_velocity.y < 0 && upDrift(inq, 0))
+            if (phys.m_velocity.y < 0 && InputComparatorHoldUp::check(inq, 0))
             {
                 if (m_parent->m_framesInState < 10)
                     phys.m_velocity.y -= 0.4f;
@@ -136,16 +132,18 @@ public:
         bool possibleToLeft = (!m_alignedSlopeMax.has_value() || phys.m_onSlopeWithAngle <= 0 || phys.m_onSlopeWithAngle <= m_alignedSlopeMax);
         bool possibleToRight = (!m_alignedSlopeMax.has_value() || phys.m_onSlopeWithAngle >= 0 || -phys.m_onSlopeWithAngle <= m_alignedSlopeMax);
 
-        InputComparatorFail failin;
+        ORIENTATION inres = ORIENTATION::UNSPECIFIED;
+        if (possibleToLeft && possibleToRight)
+            inres = attemptInput<true, false, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT>(orientation, inq, 0);
+        else if (possibleToLeft)
+            inres = attemptInput<true, false, CMP_PROCEED_LEFT, InputComparatorFail >(orientation, inq, 0);
+        else if (possibleToRight)
+            inres = attemptInput<true, false, InputComparatorFail, CMP_PROCEED_RIGHT >(orientation, inq, 0);
 
-        auto &lInput = (possibleToLeft ? static_cast<const InputComparator&>(m_cmpProcLeft) : static_cast<const InputComparator&>(failin));
-        auto &rInput = (possibleToRight ? static_cast<const InputComparator&>(m_cmpProcRight) : static_cast<const InputComparator&>(failin));
-
-        auto inres = attemptInput<true, false>(lInput, rInput, orientation, inq, 0);
         return inres == ORIENTATION::UNSPECIFIED;
     }
 
-    inline virtual void enter(EntityAnywhere owner_, CharState from_) override
+    inline void enter(EntityAnywhere owner_, CharState from_) override
     {
         PhysicalState::enter(owner_, from_);
 
@@ -155,35 +153,10 @@ public:
             owner_.reg->get<ComponentDynamicCameraTarget>(owner_.idx).m_lookaheadSpeedSensitivity = {1.0f, 1.0f};
     }
 
-    inline virtual ORIENTATION isPossible(EntityAnywhere owner_) const override
-    {
-        if (PhysicalState::isPossible(owner_) == ORIENTATION::UNSPECIFIED)
-            return ORIENTATION::UNSPECIFIED;
+    ORIENTATION isPossible(EntityAnywhere owner_) const override;
 
-        const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
-        const auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
-        const auto &compInput = owner_.reg->get<InputResolver>(owner_.idx);
-
-        auto orientation = transform.m_orientation;
-        const auto &inq = compInput.getInputQueue();
-
-        bool possibleToLeft = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle <= 0 || physical.m_onSlopeWithAngle <= m_alignedSlopeMax) && (!FORCE_TOWARDS_INPUT || inq[0].m_dir.x <= 0);
-        bool possibleToRight = (!m_alignedSlopeMax.has_value() || physical.m_onSlopeWithAngle >= 0 || -physical.m_onSlopeWithAngle <= m_alignedSlopeMax) && (!FORCE_TOWARDS_INPUT || inq[0].m_dir.x >= 0);
-
-        InputComparatorFail failin;
-
-        auto &lInput = (possibleToLeft ? static_cast<const InputComparator&>(m_cmpLeft) : static_cast<const InputComparator&>(failin));
-        auto &rInput = (possibleToRight ? static_cast<const InputComparator&>(m_cmpRight) : static_cast<const InputComparator&>(failin));
-
-        return attemptInput<REQUIRE_ALIGNMENT, FORCE_REALIGN | FORCE_TOWARDS_INPUT>(lInput, rInput, orientation, inq, m_extendedBuffer);
-    }
-
-    inline PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
-        &setAlignedSlopeMax(float alignedSlopeMax_)
-    {
-        m_alignedSlopeMax = alignedSlopeMax_;
-        return *this;
-    }
+    inline auto
+        &setAlignedSlopeMax(float alignedSlopeMax_);
 
     inline PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
         &setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>&& lookaheadSpeedSensitivity_)
@@ -215,10 +188,6 @@ public:
 
 protected:
     const Collider m_pushbox;
-    CMP_LEFT m_cmpLeft;
-    CMP_RIGHT m_cmpRight;
-    CMP_PROCEED_LEFT m_cmpProcLeft;
-    CMP_PROCEED_RIGHT m_cmpProcRight;
 
     std::optional<float> m_alignedSlopeMax;
     bool m_realignOnSwitchForInput = false;
@@ -362,7 +331,7 @@ public:
         return false;
     }
 
-    inline virtual ORIENTATION isPossible(EntityAnywhere owner_) const override
+    inline ORIENTATION isPossible(EntityAnywhere owner_) const override
     {
         if (PhysicalState::isPossible(owner_) == ORIENTATION::UNSPECIFIED)
             return ORIENTATION::UNSPECIFIED;
@@ -379,7 +348,7 @@ public:
 
         if (physical.peekRawOffset().x >= -0.001)
         {
-            if (m_cmpLeft(inq, 0))
+            if (InputComparatorBufferedHoldRight::check(inq, 0))
             {
                 auto touchedWall = cworld.isWallAt(ORIENTATION::LEFT, pb.m_topLeft + Vector2{pb.m_size.x, pb.m_size.y / 2});
                 if (touchedWall != entt::null) 
@@ -392,7 +361,7 @@ public:
         
         if (physical.peekRawOffset().x <= 0.001)
         {
-            if (m_cmpRight(inq, 0))
+            if (InputComparatorBufferedHoldLeft::check(inq, 0))
             {
                 auto touchedWall = cworld.isWallAt(ORIENTATION::RIGHT, pb.m_topLeft + Vector2{-1, pb.m_size.y / 2});
                 if (touchedWall != entt::null) 
@@ -452,9 +421,9 @@ public:
         Vector2<float> targetSpeed;
         int orient = static_cast<int>(transform.m_orientation);
 
-        bool upIn = m_u(inq, 0);
-        bool sideIn = (orient > 0 ? m_r(inq, 0) : m_l(inq, 0));
-        bool downIn = m_d(inq, 0);
+        bool upIn = InputComparatorHoldUp::check(inq, 0);
+        bool sideIn = (orient > 0 ? InputComparatorHoldRight::check(inq, 0) : InputComparatorHoldLeft::check(inq, 0));
+        bool downIn = InputComparatorHoldDown::check(inq, 0);
 
         bool fall = false;
 
@@ -500,10 +469,6 @@ public:
 
 protected:
     using ParentAction = PlayerState<true, false, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>;
-    InputComparatorHoldLeft m_l;
-    InputComparatorHoldRight m_r;
-    InputComparatorHoldUp m_u;
-    InputComparatorHoldDown m_d;
 
     ParticleTemplate m_jumpParticle;
 };
