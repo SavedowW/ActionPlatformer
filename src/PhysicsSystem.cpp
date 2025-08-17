@@ -1,5 +1,6 @@
 #include "PhysicsSystem.h"
-#include "Profile.h"
+#include "Core/Profile.h"
+#include "StateMachine.h"
 
 PhysicsSystem::PhysicsSystem(entt::registry &reg_, Vector2<int> levelSize_) :
     m_reg(reg_),

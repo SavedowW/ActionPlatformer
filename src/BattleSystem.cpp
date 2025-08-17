@@ -1,7 +1,7 @@
 #include "BattleSystem.h"
 #include "StateMachine.h"
-#include "Profile.h"
-#include "Application.h"
+#include "Core/Profile.h"
+#include "Core/Application.h"
 
 BattleSystem::BattleSystem(entt::registry &reg_, Camera &cam_) :
     m_reg(reg_),

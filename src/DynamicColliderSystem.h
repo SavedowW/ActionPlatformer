@@ -2,6 +2,7 @@
 #define DYNAMIC_COLLIDER_SYSTEM_H_
 #include "World.h"
 #include "ColliderRouting.h"
+#include "Core/CoreComponents.h"
 #include <entt/entt.hpp>
 
 struct DynamicColliderSystem

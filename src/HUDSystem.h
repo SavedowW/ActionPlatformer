@@ -1,8 +1,8 @@
 #ifndef HUD_SYSTEM_H_
 #define HUD_SYSTEM_H_
-#include "FixedQueue.hpp"
-#include "Texture.h"
-#include "ImmediateScreenLog.h"
+#include "Core/FixedQueue.hpp"
+#include "Core/Texture.h"
+#include "Core/ImmediateScreenLog.h"
 #include "CommonAI.h"
 #include <entt/entt.hpp>
 

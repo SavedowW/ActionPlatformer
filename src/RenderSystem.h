@@ -1,9 +1,9 @@
 #ifndef RENDER_SYSTEM_H_
 #define RENDER_SYSTEM_H_
 #include "Hit.h"
-#include "InputSystem.h"
-#include "CoreComponents.h"
-#include "CameraFocusArea.h"
+#include "Core/InputSystem.h"
+#include "Core/CoreComponents.h"
+#include "Core/CameraFocusArea.h"
 #include "ColliderRouting.h"
 #include <entt/entt.hpp>
 

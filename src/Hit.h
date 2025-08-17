@@ -1,11 +1,11 @@
 #ifndef HIT_H_
 #define HIT_H_
-#include "AnimationManager.h"
-#include "TimelineProperty.hpp"
-#include "RectCollider.h"
-#include "CoreComponents.h"
-#include "StateCommon.h"
-#include "FrameTimer.h"
+#include "Core/AnimationManager.h"
+#include "Core/TimelineProperty.hpp"
+#include "Core/RectCollider.h"
+#include "Core/CoreComponents.h"
+#include "Core/StateCommon.h"
+#include "Core/FrameTimer.h"
 #include <set>
 
 enum class HurtTrait {

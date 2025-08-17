@@ -1,12 +1,14 @@
 #ifndef STATE_MACHINE_H_
 #define STATE_MACHINE_H_
-#include "Vector2.hpp"
-#include "StateMarker.hpp"
+#include "Core/Vector2.hpp"
+#include "Core/StateMarker.hpp"
 #include "World.h"
 #include "Hit.h"
-#include "CoreComponents.h"
-#include "StaticMapping.hpp"
-#include "StateCommon.h"
+#include "Core/CoreComponents.h"
+#include "Core/StaticMapping.hpp"
+#include "Core/StateCommon.h"
+
+//TODO: split, move general stuff into core
 
 class GenericState;
 

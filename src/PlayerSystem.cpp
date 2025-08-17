@@ -1,9 +1,9 @@
 #include "PlayerSystem.h"
-#include "InputResolver.h"
+#include "Core/InputResolver.h"
 #include "PlayableCharacter.h"
 #include "StateMachine.h"
 #include "ResetHandlers.h"
-#include "Application.h"
+#include "Core/Application.h"
 
 PlayerSystem::PlayerSystem(entt::registry &reg_) :
     m_reg(reg_),

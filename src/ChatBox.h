@@ -1,9 +1,9 @@
 #ifndef CHATBOX_H_
 #define CHATBOX_H_
-#include "FrameTimer.h"
-#include "InputSystem.h"
-#include "Texture.h"
-#include "TextManager.h"
+#include "Core/FrameTimer.h"
+#include "Core/InputSystem.h"
+#include "Core/Texture.h"
+#include "Core/TextManager.h"
 #include <entt/entt.hpp>
 #include <stack>
 

@@ -1,6 +1,6 @@
 #include "EnvironmentSystem.h"
-#include "CoreComponents.h"
 #include "EnvComponents.h"
+#include "Core/CoreComponents.h"
 
 EnvironmentSystem::EnvironmentSystem(entt::registry &reg_) :
     m_reg(reg_)

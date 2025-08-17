@@ -1,11 +1,11 @@
 #include "EnemySystem.h"
-#include "Application.h"
-#include "CoreComponents.h"
+#include "Core/Application.h"
+#include "Core/CoreComponents.h"
 #include "StateMachine.h"
 #include "Enemy1.h"
-#include "NavGraph.h"
+#include "Core/NavGraph.h"
 #include "ResetHandlers.h"
-#include "Behavior.hpp"
+#include "Core/Behavior.hpp"
 
 EnemySystem::EnemySystem(entt::registry &reg_, NavSystem &navsys_, Camera &cam_, ParticleSystem &partsys_) :
     m_reg(reg_),

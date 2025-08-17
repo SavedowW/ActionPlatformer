@@ -1,8 +1,6 @@
 #ifndef BATTLE_LEVEL_H_
 #define BATTLE_LEVEL_H_
 
-#include "Level.h"
-#include "Camera.h"
 #include "LevelBuilder.h"
 #include "PhysicsSystem.h"
 #include "PlayerSystem.h"
@@ -11,15 +9,17 @@
 #include "HUDSystem.h"
 #include "InputHandlingSystem.h"
 #include "EnemySystem.h"
-#include "NavGraph.h"
 #include "AISystem.h"
-#include "NavSystem.h"
 #include "DynamicColliderSystem.h"
 #include "ParticleSystem.h"
 #include "BattleSystem.h"
 #include "ChatBox.h"
 #include "ColliderRouting.h"
 #include "EnvironmentSystem.h"
+#include "Core/NavSystem.h"
+#include "Core/Level.h"
+#include "Core/Camera.h"
+#include "Core/NavGraph.h"
 
 class BattleLevel : public Level
 {

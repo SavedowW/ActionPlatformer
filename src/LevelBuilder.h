@@ -1,8 +1,8 @@
 #ifndef LEVEL_BUILDER_H_
 #define LEVEL_BUILDER_H_
 #include "ColliderRouting.h"
-#include "NavGraph.h"
-#include "Tileset.h"
+#include "Core/NavGraph.h"
+#include "Core/Tileset.h"
 #include "EnvironmentSystem.h"
 #include <entt/entt.hpp>
 #include <nlohmann/json.hpp>

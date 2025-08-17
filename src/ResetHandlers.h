@@ -1,8 +1,8 @@
 #ifndef RESET_HANDLERS_H_
 #define RESET_HANDLERS_H_
-#include "CoreComponents.h"
 #include "ColliderRouting.h"
 #include "StateMachine.h"
+#include "Core/CoreComponents.h"
 
 template <typename... T>
 class ComponentResetStatic

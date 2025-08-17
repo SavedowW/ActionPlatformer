@@ -1,10 +1,10 @@
 #ifndef CAMERA_SYSTEM_H_
 #define CAMERA_SYSTEM_H_
-#include "Camera.h"
-#include "FrameTimer.h"
-#include "Renderer.h"
-#include "InputSystem.h"
-#include "Camera.h"
+#include "Core/Camera.h"
+#include "Core/FrameTimer.h"
+#include "Core/Renderer.h"
+#include "Core/InputSystem.h"
+#include "Core/Camera.h"
 #include <entt/entt.hpp>
 #include <optional>
 

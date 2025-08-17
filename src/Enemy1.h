@@ -1,9 +1,9 @@
 #ifndef ENEMY_1_H_
 #define ENEMY_1_H_
-#include "CoreComponents.h"
+#include "Core/CoreComponents.h"
 #include "StateMachine.h"
 #include "CommonAI.h"
-#include "StaticMapping.hpp"
+#include "Core/StaticMapping.hpp"
 
 enum class Enemy1State : CharState
 {

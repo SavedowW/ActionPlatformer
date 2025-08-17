@@ -1,5 +1,5 @@
 #include "CommonAI.h"
-#include "NavSystem.h"
+#include "Core/NavSystem.h"
 
 void AIState::enter(EntityAnywhere owner_, CharState from_)
 {

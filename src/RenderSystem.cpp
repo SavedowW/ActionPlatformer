@@ -1,9 +1,9 @@
 #include "RenderSystem.h"
-#include "Profile.h"
 #include "EnvComponents.h"
-#include "GameData.h"
-#include "Configuration.h"
-#include "Application.h"
+#include "Core/Profile.h"
+#include "Core/GameData.h"
+#include "Core/Configuration.h"
+#include "Core/Application.h"
 
 RenderSystem::RenderSystem(entt::registry &reg_, Camera &camera_, ColliderRoutesCollection &rtCol_) :
     m_reg(reg_),

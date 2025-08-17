@@ -1,5 +1,5 @@
 #include "AISystem.h"
-#include "Profile.h"
+#include "Core/Profile.h"
 
 AISystem::AISystem(entt::registry &reg_) :
     m_reg(reg_)

@@ -1,6 +1,6 @@
 #ifndef COLLIDER_ROUTING_H_
 #define COLLIDER_ROUTING_H_
-#include "Vector2.hpp"
+#include "Core/Vector2.hpp"
 #include <vector>
 
 struct RoutingPoint

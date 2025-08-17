@@ -1,7 +1,6 @@
 #ifndef PHYSICS_SYSTEM_H_
 #define PHYSICS_SYSTEM_H_
-#include "CoreComponents.h"
-#include "StateMachine.h"
+#include "Core/CoreComponents.h"
 #include <entt/entt.hpp>
 
 struct PhysicsSystem

@@ -1,7 +1,7 @@
 #ifndef BATTLE_SYSTEM_H_
 #define BATTLE_SYSTEM_H_
-#include "Camera.h"
-#include "FixedQueue.hpp"
+#include "Core/Camera.h"
+#include "Core/FixedQueue.hpp"
 #include <entt/entt.hpp>
 
 struct BattleActor;

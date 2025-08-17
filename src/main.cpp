@@ -1,6 +1,6 @@
 #include "Stage1.h"
-#include "Application.h"
-#include "FilesystemUtils.h"
+#include "Core/Application.h"
+#include "Core/FilesystemUtils.h"
 
 #include <iostream>
 

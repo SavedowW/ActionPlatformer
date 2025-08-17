@@ -1,11 +1,10 @@
 #ifndef PLAYABLE_CHARACTER_H_
 #define PLAYABLE_CHARACTER_H_
-#include "CoreComponents.h"
-#include "InputResolver.h"
 #include "StateMachine.h"
-#include "InputComparators.h"
-#include "StaticMapping.hpp"
-#include <map>
+#include "Core/CoreComponents.h"
+#include "Core/InputResolver.h"
+#include "Core/InputComparators.h"
+#include "Core/StaticMapping.hpp"
 
 enum class CharacterState : CharState {
     IDLE,

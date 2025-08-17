@@ -1,9 +1,9 @@
 #include "CameraSystem.h"
-#include "CameraFocusArea.h"
-#include "CoreComponents.h"
-#include "GameData.h"
-#include "Profile.h"
-#include "Configuration.h"
+#include "Core/CameraFocusArea.h"
+#include "Core/CoreComponents.h"
+#include "Core/GameData.h"
+#include "Core/Profile.h"
+#include "Core/Configuration.h"
 
 CameraSystem::CameraSystem(entt::registry &reg_, Camera &cam_) :
     m_reg(reg_),

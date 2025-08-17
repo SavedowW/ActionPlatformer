@@ -1,7 +1,7 @@
 #ifndef AI_SYSTEM_H_
 #define AI_SYSTEM_H_
-#include "Application.h"
 #include "CommonAI.h"
+#include "Core/Application.h"
 #include <entt/entt.hpp>
 
 struct AISystem

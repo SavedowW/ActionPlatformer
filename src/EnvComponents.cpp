@@ -1,4 +1,5 @@
 #include "EnvComponents.h"
+#include "Core/CoreComponents.h"
 
 const Collider GrassTopComp::m_colliderRight{Vector2{14, -6}, Vector2{2, 6}};
 const Collider GrassTopComp::m_colliderLeft{Vector2{-14, -6}, Vector2{2, 6}};

@@ -2,9 +2,6 @@
 #define TEXTURE_H_
 
 #include "Vector2.hpp"
-#include <glad/glad.h>
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_opengl.h>
 
 class TextureManager;
 
@@ -25,9 +22,9 @@ public:
     TextureResource() = default;
     TextureResource(const std::string &name_, const Vector2<int> &size_, const unsigned int id_);
     TextureResource(const TextureResource &tex_) = delete;
-    TextureResource& operator=(const TextureResource &tex_) =delete;
-    TextureResource(TextureResource &&tex_);
-    TextureResource& operator=(TextureResource &&tex_);
+    TextureResource& operator=(const TextureResource &tex_) = delete;
+    TextureResource(TextureResource &&tex_) noexcept;
+    TextureResource& operator=(TextureResource &&tex_) noexcept;
     ~TextureResource();
 
     void cleanSelf();

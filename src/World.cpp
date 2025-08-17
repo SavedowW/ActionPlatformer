@@ -1,5 +1,5 @@
 #include "World.h"
-#include "CoreComponents.h"
+#include "Core/CoreComponents.h"
 
 World::World(entt::registry &reg_, Camera &cam_, ParticleSystem &partsys_, NavSystem &navsys_) :
     m_registry(reg_),

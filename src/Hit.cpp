@@ -1,5 +1,5 @@
 #include "Hit.h"
-#include "Application.h"
+#include "Core/Application.h"
 
 uint32_t Hit::m_lastId = 0;
 

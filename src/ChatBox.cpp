@@ -1,9 +1,9 @@
+#include "Core/Application.h"
+#include "Core/CoreComponents.h"
+#include "Core/GameData.h"
+#include "Core/InputResolver.h"
+#include "Core/utf8.h"
 #include "ChatBox.h"
-#include "Application.h"
-#include "CoreComponents.h"
-#include "GameData.h"
-#include "InputResolver.h"
-#include "utf8.h"
 
 uint32_t ChatMessage::m_defaultCharacterDelay = 2;
 uint32_t ChatMessage::m_defaultAppearDuration = 12;

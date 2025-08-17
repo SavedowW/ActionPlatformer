@@ -1,6 +1,6 @@
 #include "InputHandlingSystem.h"
-#include "InputResolver.h"
-#include "Profile.h"
+#include "Core/InputResolver.h"
+#include "Core/Profile.h"
 
 InputHandlingSystem::InputHandlingSystem(entt::registry &reg_) :
     m_reg(reg_)

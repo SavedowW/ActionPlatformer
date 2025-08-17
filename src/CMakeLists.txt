@@ -35,7 +35,6 @@ ResetHandlers.cpp
 
 set(INCLUDE_DIRS
 ${CMAKE_CURRENT_LIST_DIR}
-${CMAKE_CURRENT_LIST_DIR}/Core
 ${CMAKE_SOURCE_DIR}/external/glm
 )
 

@@ -1,10 +1,9 @@
 #ifndef WORLD
 #define WORLD
-#include "Trigger.h"
-#include "CoreComponents.h"
+#include "Core/Trigger.h"
 #include "ParticleSystem.h"
-#include "NavSystem.h"
-#include "Camera.h"
+#include "Core/NavSystem.h"
+#include "Core/Camera.h"
 #include <entt/entt.hpp>
 
 struct EntityAnywhere

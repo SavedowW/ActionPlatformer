@@ -1,6 +1,6 @@
 #include "DynamicColliderSystem.h"
-#include "CoreComponents.h"
-#include "Profile.h"
+#include "Core/CoreComponents.h"
+#include "Core/Profile.h"
 
 DynamicColliderSystem::DynamicColliderSystem(entt::registry &reg_) :
     m_reg(reg_)

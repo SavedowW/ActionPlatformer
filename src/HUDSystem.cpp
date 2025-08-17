@@ -1,11 +1,11 @@
 #include "HUDSystem.h"
-#include "Application.h"
-#include "CoreComponents.h"
-#include "InputResolver.h"
 #include "StateMachine.h"
-#include "GameData.h"
-#include "Localization/LocalizationGen.h"
-#include "Configuration.h"
+#include "Core/Application.h"
+#include "Core/CoreComponents.h"
+#include "Core/InputResolver.h"
+#include "Core/GameData.h"
+#include "Core/Localization/LocalizationGen.h"
+#include "Core/Configuration.h"
 
 HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, uint64_t &frameTime_) :
     m_renderer(Application::instance().m_renderer),

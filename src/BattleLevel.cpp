@@ -1,11 +1,11 @@
-#include "Application.h"
-#include "GameData.h"
-#include "InputResolver.h"
-#include "Localization/LocalizationGen.h"
 #include "BattleLevel.h"
-#include "ResetHandlers.h"
 #include "World.h"
-#include "Profile.h"
+#include "ResetHandlers.h"
+#include "Core/GameData.h"
+#include "Core/Application.h"
+#include "Core/InputResolver.h"
+#include "Core/Localization/LocalizationGen.h"
+#include "Core/Profile.h"
 
 BattleLevel::BattleLevel(const Vector2<int>& size_, int lvlId_) :
     Level(size_, lvlId_),

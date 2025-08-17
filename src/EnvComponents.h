@@ -1,7 +1,7 @@
 #ifndef ENV_COMPONENTS_H_
 #define ENV_COMPONENTS_H_
 #include "World.h"
-#include "Collider.h"
+#include "Core/Collider.h"
 
 struct GrassTopComp
 {

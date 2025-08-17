@@ -1,4 +1,7 @@
 #include "Texture.h"
+#include "glad/glad.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_opengl.h>
 
 void TextureResource::cleanSelf()
 {
@@ -16,7 +19,7 @@ TextureResource::TextureResource(const std::string &name_, const Vector2<int> &s
 {
 }
 
-TextureResource::TextureResource(TextureResource &&tex_) :
+TextureResource::TextureResource(TextureResource &&tex_) noexcept :
     Texture(tex_),
     m_name(tex_.m_name)
 {
@@ -28,7 +31,7 @@ TextureResource::TextureResource(TextureResource &&tex_) :
     tex_.m_name = "<DELETED>";
 }
 
-TextureResource &TextureResource::operator=(TextureResource &&tex_)
+TextureResource &TextureResource::operator=(TextureResource &&tex_) noexcept
 {
     cleanSelf();
         

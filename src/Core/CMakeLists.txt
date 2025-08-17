@@ -55,9 +55,14 @@ StaticMapping.cpp
 Localization/LocalizationGen.cpp
 )
 
+set(CORE_INCLUDE_DIRS
+${CMAKE_CURRENT_LIST_DIR}
+${CMAKE_SOURCE_DIR}/external/glm
+)
+
 add_library (Core ${CORE_SRC_FILES})
 
 set_property(TARGET Core PROPERTY CXX_STANDARD 23)
 
-include_directories(${INCLUDE_DIRS})
+include_directories(${CORE_INCLUDE_DIRS})
 target_link_libraries(Core ${LINK_LIBRARIES})
