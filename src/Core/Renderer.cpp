@@ -1,7 +1,9 @@
 #include "Renderer.h"
 #include "FilesystemUtils.h"
 #include "GameData.h"
+#include "Shader.hpp"
 #include "Configuration.h"
+#include <SDL3/SDL_opengl.h>
 
 Renderer::Renderer(SDL_Window *window_) :
     m_window(window_)

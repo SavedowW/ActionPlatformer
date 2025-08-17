@@ -1,5 +1,6 @@
 #include "TextureManager.h"
 #include "FilesystemUtils.h"
+#include "glad/glad.h"
 #include <SDL3_image/SDL_image.h>
 
 TextureManager::TextureManager()

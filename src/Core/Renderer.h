@@ -7,7 +7,6 @@
 #include "Vector2.hpp"
 
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_opengl.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 

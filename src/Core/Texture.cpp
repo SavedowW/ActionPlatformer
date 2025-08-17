@@ -1,7 +1,6 @@
 #include "Texture.h"
 #include "glad/glad.h"
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_opengl.h>
 
 void TextureResource::cleanSelf()
 {

@@ -1,4 +1,4 @@
-#include "Shader.h"
+#include "Shader.hpp"
 #include "Logger.h"
 #include <iostream>
 #include <fstream>
@@ -164,7 +164,7 @@ void Shader::validateProgram(unsigned int object_)
     }
 }
 
-GLint Shader::claimUniformLoc(const char *name_)
+int Shader::claimUniformLoc(const char *name_)
 {
     auto res = glGetUniformLocation(m_id, name_);
     if (res == -1)

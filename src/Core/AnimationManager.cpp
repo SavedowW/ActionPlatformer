@@ -4,6 +4,7 @@
 #include "JsonUtils.hpp"
 #include "FilesystemUtils.h"
 #include <nlohmann/json.hpp>
+#include "glad/glad.h"
 #include <SDL3_image/SDL_image.h>
 #include <cassert>
 #include <fstream>

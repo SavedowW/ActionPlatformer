@@ -2,7 +2,6 @@
 #define SHADER_H_
 
 #include "Utils.hpp"
-#include "glad/glad.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <string>
@@ -24,29 +23,16 @@ public:
 
     // utility functions
     template<Numeric T>
-    inline void setFloat(const char *name_, T value_)
-    {
-        glUniform1f(claimUniformLoc(name_), static_cast<float>(value_));
-    }
-
+    inline void setFloat(const char *name_, T value_);
     
     template<Numeric T>
-    inline void setVector2f(const char *name_, T x_, T y_)
-    {
-        glUniform2f(claimUniformLoc(name_), static_cast<float>(x_), static_cast<float>(y_));
-    }
+    inline void setVector2f(const char *name_, T x_, T y_);
 
     template<Numeric T>
-    inline void setVector3f(const char *name_, T x_, T y_, T z_)
-    {
-        glUniform3f(claimUniformLoc(name_), static_cast<float>(x_), static_cast<float>(y_), static_cast<float>(z_));
-    }
+    inline void setVector3f(const char *name_, T x_, T y_, T z_);
 
     template<Numeric T>
-    inline void setVector4f(const char *name_, T x_, T y_, T z_, T w_)
-    {
-        glUniform4f(claimUniformLoc(name_), static_cast<float>(x_), static_cast<float>(y_), static_cast<float>(z_), static_cast<float>(w_));
-    }
+    inline void setVector4f(const char *name_, T x_, T y_, T z_, T w_);
 
     void setVector2f(const char *name_, const glm::vec2 &value_);
     void setVector3f(const char *name_, const glm::vec3 &value_);
@@ -59,7 +45,7 @@ public:
 
     void validateShader(unsigned int object_); 
     void validateProgram(unsigned int object_);
-    GLint claimUniformLoc(const char *name_);
+    int claimUniformLoc(const char *name_);
 
     unsigned int m_id = 0; 
 };
