@@ -8,12 +8,12 @@
 #include "Core/FrameTimer.h"
 #include <set>
 
-enum class HurtTrait {
+enum class HurtTrait : uint8_t {
     VULNERABLE,
     NORMAL
 };
 
-enum class BattleTeams {
+enum class BattleTeams : uint8_t {
     PLAYER,
     ENEMIES,
     NONE
