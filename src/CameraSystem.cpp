@@ -150,5 +150,6 @@ void CameraSystem::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
             break;
 
         default:
+        break;
     }
 }

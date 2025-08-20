@@ -1,4 +1,5 @@
 #include "CoreComponents.h"
+#include "StaticMapping.hpp"
 
 ComponentTransform::ComponentTransform(const Vector2<int> &pos_, ORIENTATION orient_) :
     m_pos(pos_), m_orientation(orient_)
@@ -247,3 +248,24 @@ MoveCollider2Points::MoveCollider2Points(const Vector2<float> offset_) :
     m_offset(offset_)
 {
 }
+
+T_NAME_AUTO(ComponentTransform);
+T_NAME_AUTO(ComponentParticlePrimitive);
+T_NAME_AUTO(ComponentSpawnLocation);
+T_NAME_AUTO(ComponentParticlePhysics);
+T_NAME_AUTO(ComponentPhysical);
+T_NAME_AUTO(PhysicalEvents);
+T_NAME_AUTO(ComponentStaticCollider);
+T_NAME_AUTO(SwitchCollider);
+T_NAME_AUTO(ComponentTrigger);
+T_NAME_AUTO(ComponentObstacleFallthrough);
+T_NAME_AUTO(ComponentAnimationRenderable);
+T_NAME_AUTO(ComponentDynamicCameraTarget);
+T_NAME_AUTO(Navigatable);
+T_NAME_AUTO(HUDPoint);
+T_NAME_AUTO(RenderLayer);
+T_NAME_AUTO(MoveCollider2Points);
+T_NAME_AUTO(TilemapLayer);
+T_NAME_AUTO(Flash);
+T_NAME_AUTO(FlashDelayedLinear);
+T_NAME_AUTO(HUDPosRule);

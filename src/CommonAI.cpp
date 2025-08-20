@@ -226,6 +226,7 @@ bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
             return true;
 
         default:
+        break;
     }
 
     ai.m_navigationTarget = nav.m_pathFollower.m_path->m_graph.getNodePos(currentcon->m_originalCon.m_nodes[currentcon->m_nextNode]);

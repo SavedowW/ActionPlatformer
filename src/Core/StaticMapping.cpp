@@ -1,4 +1,5 @@
 #include "StaticMapping.hpp"
+#include <cstdint>
 
 T_NAME_AUTO(int);
 T_NAME_AUTO(double);

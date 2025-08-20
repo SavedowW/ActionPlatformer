@@ -50,7 +50,7 @@ public:
 private:
     Application();
 
-    std::array<std::unique_ptr<Level>, gamedata::levels::numberOfLevels> m_levels{nullptr};
+    std::array<std::unique_ptr<Level>, gamedata::levels::numberOfLevels> m_levels;
     LevelResult m_levelResult = {gamedata::levels::initialLevelId};
 };
 

@@ -29,6 +29,7 @@ void GrassTopComp::touchedPlayer(const Vector2<float> &velocity_, EntityAnywhere
             break;
 
         default:
+        break;
     }
 }
 

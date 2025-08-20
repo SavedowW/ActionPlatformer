@@ -67,7 +67,7 @@ ResID TextureManager::getTexID(const std::string &texName_) const
 	{
     	return m_ids.at(texName_);
 	}
-	catch (std::out_of_range exc_)
+	catch (const std::out_of_range &exc_)
 	{
 		throw std::runtime_error("Failed to find texture " + texName_ + " : " + exc_.what());
 	}

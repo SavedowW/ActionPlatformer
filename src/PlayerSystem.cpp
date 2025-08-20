@@ -306,7 +306,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {.m_collider={.m_topLeft={-6, -28}, .m_size={12, 28}}, .m_timeline=TimelineProperty<bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )

@@ -124,7 +124,7 @@ ResID AnimationManager::getAnimID(const std::string &animName_) const
     {
         return m_ids.at(animName_);
     }
-    catch (std::out_of_range exc_)
+    catch (const std::out_of_range &exc_)
     {
         throw std::runtime_error("Failed to find animation " + animName_ + " : " + exc_.what());
     }

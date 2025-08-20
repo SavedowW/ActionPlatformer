@@ -39,6 +39,7 @@ void InputResolver::receiveEvents(GAMEPLAY_EVENTS event_, const float scale_)
             break;
 
         default:
+        break;
     }
 }
 

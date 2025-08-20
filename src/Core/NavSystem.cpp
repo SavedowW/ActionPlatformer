@@ -132,6 +132,7 @@ void NavSystem::draw(Camera &cam_)
                             break;
 
                         default:
+                        break;
                     }
                 }
             }

@@ -244,3 +244,7 @@ void HealthRendererCommonWRT::touch()
             break;
     }
 }
+
+T_NAME_AUTO(BattleActor);
+T_NAME_AUTO(HealthOwner);
+T_NAME_AUTO(HealthRendererCommonWRT);
