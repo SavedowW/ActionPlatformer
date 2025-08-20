@@ -142,7 +142,7 @@ bool PhysicsSystem::attemptOffsetDown(const auto &clds_, const Vector2<float> &o
             continue;
 
         auto overlap = cld.m_resolved.checkOverlap(newPb, highest);
-        if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
+        if ((overlap & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
         {
             if (cld.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(cld.m_obstacleId) || oldPos.y - highest > 0))
                 continue;
@@ -182,7 +182,7 @@ bool PhysicsSystem::attemptOffsetUp(const auto &clds_, const Vector2<float> &ori
             continue;
 
         auto overlap = cld.m_resolved.checkOverlap(newPb);
-        if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
+        if ((overlap & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
         {
             if (cld.m_obstacleId && !obsFallthrough_.touchedObstacleBottom(cld.m_obstacleId))
                 continue;
@@ -229,7 +229,7 @@ bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, ComponentTransfor
         auto overlap = cld.m_resolved.checkOverlap(newPb, highest);
 
         // If we touched collider
-        if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
+        if ((overlap & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
         {
             highest--;
 
@@ -463,7 +463,7 @@ std::pair<entt::entity, const SlopeCollider*> PhysicsSystem::getHighestVerticalM
 
         int height = 0;
         auto horOverlap = areaCld_.m_resolved.checkOverlap(cld_, height);
-        if (checkCollision(horOverlap, OverlapResult::OVERLAP_X))
+        if ((horOverlap & OverlapResult::OVERLAP_X) == OverlapResult::OVERLAP_X)
         {
             if (height >= baseCoord && (foundGround == entt::null || height < coord_))
             {
@@ -492,7 +492,7 @@ bool PhysicsSystem::isInsidePushbox(const Collider &pb_, const entt::entity &idx
         const auto pb2 = phys.m_pushbox + trans.m_pos;
         const auto overlap = pb_.checkOverlap(pb2);
 
-        if (checkCollision(overlap, OverlapResult::OVERLAP_BOTH))
+        if ((overlap & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
             return true;
     }
 
@@ -523,7 +523,7 @@ void PhysicsSystem::updateTouchedObstacles(const Collider &pb_, ComponentObstacl
         if (obsFallthrough_.m_overlappedObstacles.contains(cld.m_obstacleId))
             continue;
 
-        if (checkCollision(cld.m_resolved.checkOverlap(pb_), OverlapResult::OVERLAP_BOTH))
+        if ((cld.m_resolved.checkOverlap(pb_) & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
             obsFallthrough_.m_overlappedObstacles.insert(cld.m_obstacleId);
     }
 }

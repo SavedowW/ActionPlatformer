@@ -1,5 +1,6 @@
 #ifndef COLLIDER_H_
 #define COLLIDER_H_
+#include "StateCommon.h"
 #include "Vector2.hpp"
 #include "RectCollider.h"
 
@@ -38,8 +39,8 @@ struct SlopeCollider
     Vector2<int> m_points[4];
     void generatePoints();
 
-    OverlapResult checkOverlap(const Collider &cld_) const;
-    OverlapResult checkOverlap(const Collider &cld_, int &highestPoint_) const;
+    Flag<OverlapResult> checkOverlap(const Collider &cld_) const;
+    Flag<OverlapResult> checkOverlap(const Collider &cld_, int &highestPoint_) const;
 
     int getOrientationDir() const;
 

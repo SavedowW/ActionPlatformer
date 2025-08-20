@@ -28,7 +28,7 @@ void EnvironmentSystem::update(entt::entity)
                     
                 auto pb = phys2.m_pushbox + trans2.m_pos;
                 auto res = pb.checkOverlap(grassPb);
-                if (checkCollision(res, OverlapResult::OVERLAP_BOTH))
+                if ((res & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
                     grass.touchedPlayer(phys2.m_appliedOffset, {&m_reg, idx});
             }
         }

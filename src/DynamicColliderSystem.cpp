@@ -62,7 +62,7 @@ bool DynamicColliderSystem::isOverlappingWithDynamic(const SlopeCollider &cld_)
         auto pb = phys.m_pushbox + trans.m_pos;
         int dump = 0;
         auto res = cld_.checkOverlap(pb, dump);
-        if (checkCollision(res, OverlapResult::OVERLAP_BOTH))
+        if ((res & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
             return true;
     }
 
@@ -77,7 +77,7 @@ bool DynamicColliderSystem::isObstacleOverlappingWithDynamic(const SlopeCollider
         auto pb = phys.m_pushbox + trans.m_pos;
         int dump = 0;
         auto res = cld_.checkOverlap(pb, dump);
-        if (checkCollision(res, OverlapResult::OVERLAP_BOTH))
+        if ((res & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
         {
             if (!m_reg.all_of<ComponentObstacleFallthrough>(idx))
                 return true;
@@ -158,7 +158,7 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
         if (offset.y != 0)
         {
             auto newColres = newcldYOnly.checkOverlap(pb, newHighest);
-            bool collision = (checkCollision(oldColres, OverlapResult::OVERLAP_BOTH) || checkCollision(newColres, OverlapResult::OVERLAP_BOTH));
+            bool collision = ((oldColres & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH || (newColres & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH);
 
             // If moving up
             if (offset.y < 0)
@@ -179,7 +179,7 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
             else if (offset.y > 0)
             {
                 // If was standing on top
-                if (checkCollision(oldColres, OverlapResult::OVERLAP_X) && oldpos.y == oldHighest - 1)
+                if ((oldColres & OverlapResult::OVERLAP_X) == OverlapResult::OVERLAP_X && oldpos.y == oldHighest - 1)
                 {
                     if (fallthrough && scld_.m_obstacleId && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
                         continue;
@@ -229,7 +229,7 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
             if (offset.x > 0)
             {
                 // If now collides
-                if (checkCollision(newColres, OverlapResult::OVERLAP_BOTH))
+                if ((newColres & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
                 {
                     auto rightest = newcld.getMostRightAt(pb);
                     auto onSlope = !(rightest == newcldYOnly.m_points[1].x);
@@ -269,7 +269,7 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                     continue;
 
                 // If now collides
-                if (checkCollision(newColres, OverlapResult::OVERLAP_BOTH))
+                if ((newColres & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
                 {
                     //std::cout << "Teleporting to left\n";
                     // Teleport to right edge
@@ -288,7 +288,7 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
             }
 
             // If stands on it
-            if (!teleported && (phys.m_onGround != entt::null) && checkCollision(oldColres, OverlapResult::OVERLAP_X) && abs(trans.m_pos.y - newHighest) <= 1.0f)
+            if (!teleported && (phys.m_onGround != entt::null) && (oldColres & OverlapResult::OVERLAP_X) == OverlapResult::OVERLAP_X && abs(trans.m_pos.y - newHighest) <= 1.0f)
             {
                 if (fallthrough && scld_.m_obstacleId && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
                     continue;

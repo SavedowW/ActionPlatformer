@@ -1,5 +1,6 @@
 #ifndef RECT_COLLIDER_H_
 #define RECT_COLLIDER_H_
+#include "StateCommon.h"
 #include "Vector2.hpp"
 
 enum class OverlapResult : uint8_t
@@ -9,26 +10,6 @@ enum class OverlapResult : uint8_t
     OVERLAP_Y = 0b10,
     OVERLAP_BOTH = 0b11
 };
-
-constexpr inline OverlapResult operator|(const OverlapResult& lhs_, const OverlapResult& rhs_)
-{
-    return static_cast<OverlapResult>(static_cast<uint8_t>(lhs_) | static_cast<uint8_t>(rhs_));
-}
-
-constexpr inline OverlapResult operator&(const OverlapResult& lhs_, const OverlapResult& rhs_)
-{
-    return static_cast<OverlapResult>(static_cast<uint8_t>(lhs_) & static_cast<uint8_t>(rhs_));
-}
-
-constexpr inline OverlapResult &operator|=(OverlapResult& lhs_, const OverlapResult& rhs_)
-{
-    return lhs_ = lhs_ | rhs_;
-}
-
-constexpr bool checkCollision(const OverlapResult &res_, const OverlapResult &expected_)
-{
-    return (res_ & expected_) == expected_;
-}
 
 //Only rectangle hitbox
 struct Collider
@@ -63,9 +44,9 @@ struct Collider
     }
 
     //First 6 bits describe horizontal overlap, second 6 bits - vertical
-    inline OverlapResult checkOverlap(const Collider& rhs_) const
+    inline Flag<OverlapResult> checkOverlap(const Collider& rhs_) const
     {
-        OverlapResult res = OverlapResult::NONE;
+        Flag<OverlapResult> res = OverlapResult::NONE;
 
         if (!( (getRightEdge() < rhs_.getLeftEdge()) || (getLeftEdge() > rhs_.getRightEdge()) ))
             res |= OverlapResult::OVERLAP_X;

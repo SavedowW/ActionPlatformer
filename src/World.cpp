@@ -19,7 +19,7 @@ bool World::isAreaFree(const Collider &cld_, bool considerObstacles_) const
             continue;
 
         auto colres = cld.m_resolved.checkOverlap(cld_);
-        if (checkCollision(colres, OverlapResult::OVERLAP_BOTH))
+        if ((colres & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
             return false;
     }
 
@@ -35,7 +35,7 @@ bool World::isOverlappingObstacle(const Collider &cld_) const
         if (cld.m_isEnabled && cld.m_obstacleId)
         {
             auto colres = cld.m_resolved.checkOverlap(cld_);
-            if (checkCollision(colres, OverlapResult::OVERLAP_BOTH))
+            if ((colres & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
                 return true;
         }
     }
@@ -49,11 +49,11 @@ EntityAnywhere World::getOverlappedTrigger(const Collider &cld_, Trigger::Tag ta
 
     for (auto [idx, trg] : trgview.each())
     {
-        if ((trg.m_trigger.m_tag & tag_) == tag_ && checkCollision(trg.m_trigger.checkOverlap(cld_), OverlapResult::OVERLAP_BOTH))
-            return {&m_registry, idx};
+        if ((trg.m_trigger.m_tag & tag_) == tag_ && (trg.m_trigger.checkOverlap(cld_) & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
+            return {.reg=&m_registry, .idx=idx};
     }
 
-    return {nullptr};
+    return {.reg=nullptr};
 }
 
 entt::entity World::isWallAt(const ORIENTATION checkSide_, const Vector2<int> &pos_) const
