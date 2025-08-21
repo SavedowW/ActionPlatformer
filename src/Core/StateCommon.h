@@ -18,7 +18,7 @@ public:
 
     constexpr operator bool() const noexcept
     {
-        static_cast<UT>(m_flag);
+        return static_cast<UT>(m_flag);
     }
 
     constexpr operator T() const noexcept

@@ -11,6 +11,7 @@ Stage1.cpp
 LevelBuilder.cpp
 PlayableCharacter.cpp
 StateMachine.cpp
+StateMachineEx.cpp
 PhysicsSystem.cpp
 PlayerSystem.cpp
 RenderSystem.cpp
