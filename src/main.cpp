@@ -14,11 +14,36 @@
 
 #define EXPERIMENTS
 
+template<typename... Fs>
+auto callChain(const std::tuple<Fs...> &tuple_)
+{
+    return std::get<2>(tuple_)(std::get<1>(tuple_)(std::get<0>(tuple_)(1)));
+}
+
+template<size_t idx = 0, typename... TCallable>
+constexpr auto callRecursive(std::tuple<TCallable...> &tuple_, const auto &default_)
+{
+    if constexpr (idx == sizeof...(TCallable) - 1)
+        return std::get<sizeof...(TCallable) - idx - 1>(tuple_)(default_);
+    else
+        return std::get<sizeof...(TCallable) - idx - 1>(tuple_)(callRecursive<idx + 1>(tuple_, default_));
+}
 
 int main(int, char**)
 {
-    std::cout << std::bitset<8>(int8_t(0b01)) << std::endl;
-    std::cout << std::bitset<8>(int8_t(-2)) << std::endl;
+
+    std::tuple tpl([](const char *i_){
+        return std::atoi(i_);
+    }, [](int i_){
+        return i_ * 0.5f;
+    }, [](float i_){
+        return i_ + 0.5;
+    });
+
+    std::cout << callRecursive(tpl, "1") << std::endl;
+
+    return 0;
+
 #ifdef EXPERIMENTS
 
     entt::registry  reg;
