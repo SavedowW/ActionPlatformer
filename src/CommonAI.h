@@ -22,7 +22,7 @@ public:
         GenericState(stateId_, std::move(transitionableFrom_))
     {}
 
-    virtual void enter(EntityAnywhere owner_, CharState from_) override;
+    void enter(EntityAnywhere owner_, CharState from_) override;
 
     AIState &setEnterRequestedState(std::optional<CharState> m_enterRequestedState_);
     AIState &setEnterRequestedOrientation(std::optional<ORIENTATION> enterRequestedOrientation_);
@@ -40,7 +40,7 @@ public:
         GenericState(stateId_, std::move(transitionableFrom_))
     {}
 
-    virtual void enter(EntityAnywhere owner_, CharState from_) override;
+    void enter(EntityAnywhere owner_, CharState from_) override;
 
 protected:
     std::optional<CharState> m_enterRequestedState;
@@ -60,7 +60,7 @@ public:
         m_walkDuration(walkDurationRange_)
     {}
 
-    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
 
 protected:
     bool m_isWalking = false;
@@ -85,8 +85,8 @@ public:
         m_idleRange(idleRange_)
     {}
 
-    virtual void enter(EntityAnywhere owner_, CharState from_) override;
-    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+    void enter(EntityAnywhere owner_, CharState from_) override;
+    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
 
 protected:
     CharState m_idle;
@@ -130,8 +130,8 @@ public:
         m_walk(static_cast<CharState>(walk_))
     {}
 
-    virtual void enter(EntityAnywhere owner_, CharState from_) override;
-    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+    void enter(EntityAnywhere owner_, CharState from_) override;
+    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
 
 private:
     CharState m_walk;
@@ -147,7 +147,7 @@ public:
         m_prejump(static_cast<CharState>(prejump_))
     {}
 
-    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
 
 private:
     CharState m_prejump;
@@ -166,8 +166,8 @@ public:
         m_onSuccess(static_cast<CharState>(onSuccess_))
     {}
     
-    virtual void enter(EntityAnywhere owner_, CharState from_) override;
-    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+    void enter(EntityAnywhere owner_, CharState from_) override;
+    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
 
 private:
     CharState m_noConnection;

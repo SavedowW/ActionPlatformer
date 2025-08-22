@@ -4,12 +4,50 @@ Checks: >
   clang-analyzer-*,
   modernize-*,
   performance-*,
-  -performance-avoid-endl, # Used on purpose since output wont necessarily be flushed otherwise
   readability-*,
-  -readability-magic-numbers, # maybe later
   bugprone-*,
+  cppcoreguidelines-*,
+
   -modernize-use-nodiscard,
-  -modernize-use-trailing-return-type, # Stylistically meh
+  # Too much extra lines for not too much clarity
+
+  -performance-avoid-endl,
+  # Used on purpose since output wont necessarily be flushed otherwise
+
+  -readability-magic-numbers,
+  # Maybe later
+
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  # Unreasonable
+
+  -cppcoreguidelines-special-member-functions,
+  # Too much extra lines for not too much clarity
+
+  -modernize-use-trailing-return-type,
+  # Stylistically meh
+
+  -bugprone-easily-swappable-parameters,
+  # Important, but not now
+
+  -readability-uppercase-literal-suffix,
+  # Taste
+
+  -readability-avoid-unconditional-preprocessor-if,
+  # That's a good use case for preprocessor if
+
+  -readability-braces-around-statements,
+  # Taste
+
+  # -readability-function-cognitive-complexity,
+  # Requires a deep rework to fix (though important)
+
+  -readability-identifier-length,
+  # Too strict
+
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
+  # Pointless, const helps with internal logic and ref forces the client
+  #    to ensure correct lifetime and makes relationship clearer
+
   #-performance-no-int-to-ptr,
   #-bugprone-easily-swappable-parameters,
   #-cppcoreguidelines-avoid-c-arrays,

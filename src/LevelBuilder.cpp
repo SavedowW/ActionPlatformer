@@ -384,14 +384,10 @@ void LevelBuilder::loadCollisionLayer(const nlohmann::json &json_, ColliderRoute
                 }
             }
 
-            Vector2<int> points[4] = {
-                {minx, miny_at_minx},
-                {maxx, miny_at_maxx},
-                {maxx, maxy_at_maxx},
-                {minx, maxy_at_minx},
-            };
-
-            scld.set(points);
+            scld.set({.tl = {minx, miny_at_minx}, 
+                               .tr = {maxx, miny_at_maxx}, 
+                               .br = {maxx, maxy_at_maxx},
+                               .bl = {minx, maxy_at_minx}});
         }
         else
         {

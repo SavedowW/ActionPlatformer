@@ -27,9 +27,7 @@ public:
     BattleLevel(const Vector2<int>& size_, int lvlId_);
     void enter() override;
 
-    void receiveEvents(GAMEPLAY_EVENTS event, const float scale_) override;
-
-    virtual ~BattleLevel() = default;
+    void receiveEvents(GAMEPLAY_EVENTS event, float scale_) override;
 
 protected:
     void update() override;

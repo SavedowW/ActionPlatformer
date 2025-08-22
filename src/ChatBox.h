@@ -74,7 +74,7 @@ class SymbolDelay : public TechSymbol
 public:
     SymbolDelay(int delay_);
 
-    virtual bool onReached(ChatMessage &message_) override;
+    bool onReached(ChatMessage &message_) override;
 
 private:
     int m_delay = 0;
@@ -91,7 +91,7 @@ class SymbolSetCharacterSpeed : public TechSymbol
 public:
     SymbolSetCharacterSpeed(uint32_t characterDelay_, uint32_t appearDuration_);
 
-    virtual bool onReached(ChatMessage &message_) override;
+    bool onReached(ChatMessage &message_) override;
 
 private:
     uint32_t m_characterDelay = 0;

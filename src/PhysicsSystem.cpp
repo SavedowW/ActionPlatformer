@@ -189,7 +189,7 @@ bool PhysicsSystem::attemptOffsetUp(const auto &clds_, const Vector2<float> &ori
 
             //std::cout << "Touched ceiling, stopping at bottom, offset.y < 0\n";
 
-            auto overlapPortion = utils::getOverlapPortion(newPb.getLeftEdge(), newPb.getRightEdge(), cld.m_resolved.m_points[0].x, cld.m_resolved.m_points[1].x);
+            auto overlapPortion = utils::getOverlapPortion(newPb.getLeftEdge(), newPb.getRightEdge(), cld.m_resolved.m_points.tl.x, cld.m_resolved.m_points.tr.x);
 
             if (overlapPortion >= 0.7f)
             {
@@ -255,7 +255,7 @@ bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, ComponentTransfor
                 if (cld.m_obstacleId && !obsFallthrough_.touchedObstacleSide(cld.m_obstacleId))
                     continue;
 
-                auto overlapPortion = utils::getOverlapPortion(newPb.getTopEdge(), newPb.getBottomEdge(), highest, cld.m_resolved.m_points[2].y);
+                auto overlapPortion = utils::getOverlapPortion(newPb.getTopEdge(), newPb.getBottomEdge(), highest, cld.m_resolved.m_points.br.y);
 
                 if (overlapPortion >= 0.15)
                 {

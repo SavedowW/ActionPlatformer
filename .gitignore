@@ -8,3 +8,4 @@
 *.tiled-session
 *.tiled-session.lock
 .cache/*
+tidy.log

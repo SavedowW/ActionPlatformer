@@ -12,7 +12,7 @@
 #include <type_traits>
 #include <vector>
 
-#define EXPERIMENTS
+//#define EXPERIMENTS
 
 template<typename... Fs>
 auto callChain(const std::tuple<Fs...> &tuple_)
@@ -31,6 +31,7 @@ constexpr auto callRecursive(std::tuple<TCallable...> &tuple_, const auto &defau
 
 int main(int, char**)
 {
+#ifdef EXPERIMENTS
 
     std::tuple tpl([](const char *i_){
         return std::atoi(i_);
@@ -43,8 +44,6 @@ int main(int, char**)
     std::cout << callRecursive(tpl, "1") << std::endl;
 
     return 0;
-
-#ifdef EXPERIMENTS
 
     entt::registry  reg;
     entt::entity ent = reg.create();

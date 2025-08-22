@@ -455,10 +455,10 @@ void Renderer::drawCollider(const SlopeCollider &cld_, const SDL_Color &fillCol_
 
     m_rectShader.setVector4f("color", fillCol_.r / 255.0f, fillCol_.g / 255.0f, fillCol_.b / 255.0f, fillCol_.a / 255.0f);
     
-    m_rectShader.setVector2f("vertices[0]", cld_.m_points[0].x - camTL.x, cld_.m_points[0].y - camTL.y);
-    m_rectShader.setVector2f("vertices[1]", cld_.m_points[1].x - camTL.x + 1, cld_.m_points[1].y - camTL.y);
-    m_rectShader.setVector2f("vertices[2]", cld_.m_points[2].x - camTL.x + 1, cld_.m_points[2].y - camTL.y + 1);
-    m_rectShader.setVector2f("vertices[3]", cld_.m_points[3].x - camTL.x, cld_.m_points[3].y - camTL.y + 1);
+    m_rectShader.setVector2f("vertices[0]", cld_.m_points.tl.x - camTL.x, cld_.m_points.tl.y - camTL.y);
+    m_rectShader.setVector2f("vertices[1]", cld_.m_points.tr.x - camTL.x + 1, cld_.m_points.tr.y - camTL.y);
+    m_rectShader.setVector2f("vertices[2]", cld_.m_points.br.x - camTL.x + 1, cld_.m_points.br.y - camTL.y + 1);
+    m_rectShader.setVector2f("vertices[3]", cld_.m_points.bl.x - camTL.x, cld_.m_points.bl.y - camTL.y + 1);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }

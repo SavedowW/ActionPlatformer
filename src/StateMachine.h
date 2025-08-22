@@ -66,6 +66,9 @@ public:
         m_stateName(serialize<PLAYER_STATE_T>(stateId_))
     {}
 
+    GenericState &operator=(const GenericState&) = delete;
+    GenericState &operator=(GenericState&&) = delete;
+
     void setParent(StateMachine *parent_);
 
     virtual GenericState *getRealCurrentState();

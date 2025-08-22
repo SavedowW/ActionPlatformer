@@ -4,6 +4,10 @@
 #include "Core/FixedQueue.hpp"
 #include <entt/entt.hpp>
 
+namespace battle_debug {
+    inline constexpr size_t lastHitsShown = 5;
+}
+
 struct BattleActor;
 class StateMachine;
 struct ComponentTransform;
@@ -31,7 +35,7 @@ private:
     Camera &m_cam;
 
     std::set<uint32_t> m_presentHits;
-    FixedQueue<Vector2<float>, 5> m_appliedHits;
+    FixedQueue<Vector2<float>, battle_debug::lastHitsShown> m_appliedHits;
 
 };
 

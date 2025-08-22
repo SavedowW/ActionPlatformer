@@ -21,13 +21,29 @@ size.y  |      | p1
          size.x
 */
 
+template<typename VT>
+struct Quad
+{
+    // Top Left
+    Vector2<int> tl;
+
+    // Top Right
+    Vector2<int> tr;
+
+    // Bottom Right
+    Vector2<int> br;
+
+    // Bottom Left
+    Vector2<int> bl;
+};
+
 struct SlopeCollider
 {
     SlopeCollider() = default;
     SlopeCollider(const Vector2<int> &tlPos_, const Vector2<int> &size_, float topAngleCoef_);
-    SlopeCollider(const Vector2<int> (&vertices_)[4]);
+    SlopeCollider(const Quad<int> &vertices_);
     void set(const Vector2<int> &tlPos_, const Vector2<int> &size_, float topAngleCoef_);
-    void set(const Vector2<int> (&vertices_)[4]);
+    void set(const Quad<int> &vertices_);
     Vector2<int> m_tlPos;
     Vector2<int> m_size;
     float m_topAngleCoef = 0.0f;
@@ -36,7 +52,7 @@ struct SlopeCollider
     bool m_hasSlope = false;
     bool m_hasBox = false;
 
-    Vector2<int> m_points[4];
+    Quad<int> m_points;
     void generatePoints();
 
     Flag<OverlapResult> checkOverlap(const Collider &cld_) const;
