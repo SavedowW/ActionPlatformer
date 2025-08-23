@@ -5,13 +5,6 @@ GenericState *StateMachine::getRealCurrentState()
     return m_currentState->getRealCurrentState();
 }
 
-void StateMachine::addState(std::unique_ptr<GenericState> &&state_)
-{
-    m_stateIds[state_->m_stateId] = m_states.size();
-    state_->setParent(this);
-    m_states.push_back(std::move(state_));
-}
-
 void StateMachine::switchCurrentState(EntityAnywhere owner_, GenericState *state_)
 {
     m_currentState->leave(owner_, state_->m_stateId);

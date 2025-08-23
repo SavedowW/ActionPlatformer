@@ -71,39 +71,30 @@ entt::entity EnemySystem::makeEnemy()
 
     ai.m_sm.addState(std::unique_ptr<GenericState>(std::move(proxySwitchState)));*/
 
-    auto *navigateChase = new NavigateGraphChase(
-        Enemy1State::META_NAVIGATE_GRAPH_CHASE, {},
+    auto &navigateChase = ai.m_sm.addState<NavigateGraphChase>(
+        Enemy1State::META_NAVIGATE_GRAPH_CHASE, StateMarker{},
         Enemy1State::META_MOVE_TOWARDS, Enemy1State::PREJUMP, Enemy1State::IDLE, Enemy1State::META_BLIND_CHASE);
 
-    navigateChase->addState(std::unique_ptr<GenericState>(
-        new MoveTowards(
-        Enemy1State::META_MOVE_TOWARDS, {}, 
-        Enemy1State::RUN)
-    ));
+    navigateChase.addState<MoveTowards>(
+        Enemy1State::META_MOVE_TOWARDS, StateMarker{}, 
+        Enemy1State::RUN);
 
-    navigateChase->addState(std::unique_ptr<GenericState>(
-        new JumpTowards(
-        Enemy1State::PREJUMP, {},
-        Enemy1State::PREJUMP)
-    ));
+    navigateChase.addState<JumpTowards>(
+        Enemy1State::PREJUMP, StateMarker{},
+        Enemy1State::PREJUMP);
 
-    navigateChase->addState(std::unique_ptr<GenericState>(
-        new AIStateNull(
-        Enemy1State::IDLE, {})
-    ));
+    navigateChase.addState<AIStateNull>(
+        Enemy1State::IDLE, StateMarker{});
 
-    navigateChase->addState(std::unique_ptr<GenericState>(
-        new BlindChaseState(
-            Enemy1State::META_BLIND_CHASE, {},
-            Enemy1State::IDLE, Enemy1State::RUN, 30)
-    ));
+    navigateChase.addState<BlindChaseState>(
+            Enemy1State::META_BLIND_CHASE, StateMarker{},
+            Enemy1State::IDLE, Enemy1State::RUN, 30);
 
-    navigateChase->setInitialState(Enemy1State::IDLE);
-    navigateChase->switchCurrentState({&m_reg, enemyId}, Enemy1State::IDLE);
+    navigateChase.setInitialState(Enemy1State::IDLE);
+    navigateChase.switchCurrentState({.reg=&m_reg, .idx=enemyId}, Enemy1State::IDLE);
 
-    ai.m_sm.addState(std::unique_ptr<GenericState>(navigateChase));
     ai.m_sm.setInitialState(Enemy1State::META_MOVE_TOWARDS);
-    ai.m_sm.switchCurrentState({&m_reg, enemyId}, Enemy1State::META_MOVE_TOWARDS);
+    ai.m_sm.switchCurrentState({.reg=&m_reg, .idx=enemyId}, Enemy1State::META_MOVE_TOWARDS);
 
     auto &animrnd = m_reg.emplace<ComponentAnimationRenderable>(enemyId);
     m_reg.emplace<ComponentResetStatic<ComponentAnimationRenderable>>(enemyId);
@@ -122,10 +113,9 @@ entt::entity EnemySystem::makeEnemy()
 
     auto &sm = m_reg.emplace<StateMachine>(enemyId);
 
-    sm.addState(std::unique_ptr<GenericState>(
-        &(new NPCState<true, true>(
-            Enemy1State::RUN, {Enemy1State::IDLE, Enemy1State::RUN}, m_animManager.getAnimID("Enemy1/run")))
-        ->setGravity(Vector2{0.0f, 0.0f})
+    sm.addState<NPCState<true, true>>(
+            Enemy1State::RUN, StateMarker{Enemy1State::IDLE, Enemy1State::RUN}, m_animManager.getAnimID("Enemy1/run"))
+        .setGravity(Vector2{0.0f, 0.0f})
         .setUpdateMovementData(
             TimelineProperty(Vector2{1.0f, 1.0f}), // Vel mul
             TimelineProperty<Vector2<float>>( 
@@ -153,14 +143,12 @@ entt::entity EnemySystem::makeEnemy()
                 )
             }
         })
-        .setCanFallThrough(TimelineProperty<bool>(true))
-    ));
+        .setCanFallThrough(TimelineProperty<bool>(true));
 
-    sm.addState(std::unique_ptr<GenericState>(
-        &(new AimedPrejump(
-            Enemy1State::PREJUMP, {Enemy1State::IDLE, Enemy1State::RUN}, m_animManager.getAnimID("Enemy1/prejump"),
-            0.3f, 1.5f))
-        ->setGravity(Vector2{0.0f, 0.0f})
+    sm.addState<AimedPrejump>(
+            Enemy1State::PREJUMP, StateMarker{Enemy1State::IDLE, Enemy1State::RUN}, m_animManager.getAnimID("Enemy1/prejump"),
+            0.3f, 1.5f)
+        .setGravity(Vector2{0.0f, 0.0f})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(Enemy1State::FLOAT)
         .setMagnetLimit(4)
@@ -183,13 +171,11 @@ entt::entity EnemySystem::makeEnemy()
             {1, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_jump"), 22,
                 7}},
             {2, {}},
-            }))
-    ));
+            }));
 
-    sm.addState(std::unique_ptr<GenericState>(
-        &(new NPCState<false, false>(
-            Enemy1State::IDLE, {Enemy1State::IDLE, Enemy1State::RUN}, m_animManager.getAnimID("Enemy1/idle")))
-        ->setGravity(Vector2{0.0f, 0.0f})
+    sm.addState<NPCState<false, false>>(
+            Enemy1State::IDLE, StateMarker{Enemy1State::IDLE, Enemy1State::RUN}, m_animManager.getAnimID("Enemy1/idle"))
+        .setGravity(Vector2{0.0f, 0.0f})
         .setDrag(TimelineProperty<Vector2<float>>({{0, Vector2{0.1f, 0.1f}}, {3, Vector2{0.5f, 0.5f}}}))
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(Enemy1State::FLOAT)
@@ -212,13 +198,11 @@ entt::entity EnemySystem::makeEnemy()
         .setHitStateMapping(std::move(HitStateMapping()
             .addHitstunTransition(0, std::numeric_limits<CharState>::max())
             .addHitstunTransition(2, static_cast<CharState>(Enemy1State::PREJUMP))
-            ))
-    ));
+            ));
 
-    sm.addState(std::unique_ptr<GenericState>(
-        &(new AimedFloat(
-            Enemy1State::FLOAT, {}, m_animManager.getAnimID("Enemy1/float")))
-        ->setGravity(Vector2<float>{0.0f, 0.3f})
+    sm.addState<AimedFloat>(
+            Enemy1State::FLOAT, StateMarker{}, m_animManager.getAnimID("Enemy1/float"))
+        .setGravity(Vector2<float>{0.0f, 0.3f})
         .setDrag(Vector2<float>{0.0f, 0.0f})
         .setHurtboxes({
             {
@@ -232,8 +216,7 @@ entt::entity EnemySystem::makeEnemy()
             }
         })
         .addTransitionOnTouchedGround(0, Enemy1State::IDLE)
-        .setNoLanding(TimelineProperty<bool>({{0, true}, {4, false}}))
-    ));
+        .setNoLanding(TimelineProperty<bool>({{0, true}, {4, false}}));
 
     sm.setInitialState(Enemy1State::FLOAT);
     m_reg.emplace<ComponentReset<StateMachine>>(enemyId).m_defaultStates = {static_cast<CharState>(Enemy1State::FLOAT)};

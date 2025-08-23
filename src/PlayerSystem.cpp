@@ -61,12 +61,11 @@ void PlayerSystem::setup(entt::entity playerId_)
     inp.subscribePlayer();
     inp.setInputEnabled();
 
-    sm.addState(std::unique_ptr<GenericState>(
-        &(new PlayerActionWallPrejump(
-            m_animManager.getAnimID("Char1/wall_prejump"), {CharacterState::WALL_CLING},
+    sm.addState<PlayerActionWallPrejump>(
+            m_animManager.getAnimID("Char1/wall_prejump"), StateMarker{CharacterState::WALL_CLING},
             ParticleTemplate{1, Vector2<float>{-8.00f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_jump"), 21,
-                7}.setTiePosRules(TiePosRule::TIE_TO_WALL)))
-        ->addTransitionOnTouchedGround(0, CharacterState::IDLE)
+                7}.setTiePosRules(TiePosRule::TIE_TO_WALL))
+        .addTransitionOnTouchedGround(0, CharacterState::IDLE)
         .setHurtboxes({
             {
                 HurtboxGroup(
@@ -79,15 +78,13 @@ void PlayerSystem::setup(entt::entity playerId_)
             }
         })
         .setDrag(TimelineProperty(Vector2<float>{1.0f, 0.5f}))
-        .setOutdatedTransition(CharacterState::FLOAT, 3)
-    ));
+        .setOutdatedTransition(CharacterState::FLOAT, 3);
 
-    sm.addState(std::unique_ptr<GenericState>(
-        &(new PlayerActionWallCling(
-            m_animManager.getAnimID("Char1/wall_cling"), {CharacterState::FLOAT},
+    sm.addState<PlayerActionWallCling>(
+            m_animManager.getAnimID("Char1/wall_cling"), StateMarker{CharacterState::FLOAT},
         ParticleTemplate{1, Vector2<float>{0.0f, 25.0f}, m_animManager.getAnimID("Char1/particles/particle_wall_slide"), 21,
-                7}.setTiePosRules(TiePosRule::TIE_TO_WALL)))
-        ->setDrag(TimelineProperty<Vector2<float>>({
+                7}.setTiePosRules(TiePosRule::TIE_TO_WALL))
+        .setDrag(TimelineProperty<Vector2<float>>({
             {0, {1.0f, 0.2f}},
             {1, {1.0f, 0.4f}},
             }))
@@ -102,14 +99,11 @@ void PlayerSystem::setup(entt::entity playerId_)
                     }, HurtTrait::NORMAL
                 )
             }
-        })
-    ));
+        });
 
-
-    sm.addState(std::unique_ptr<GenericState>(
-        &(new PlayerState<false, true, false, InputComparatorTapUpLeft, InputComparatorTapUpRight, true, InputComparatorIdle, InputComparatorIdle>(
-            CharacterState::PREJUMP_FORWARD, {CharacterState::IDLE, CharacterState::PRERUN, CharacterState::RUN, CharacterState::RUN_RECOVERY, CharacterState::LANDING_RECOVERY}, m_animManager.getAnimID("Char1/prejump")))
-        ->setAlignedSlopeMax(0.5f)
+    sm.addState<PlayerState<false, true, false, InputComparatorTapUpLeft, InputComparatorTapUpRight, true, InputComparatorIdle, InputComparatorIdle>>(
+            CharacterState::PREJUMP_FORWARD, StateMarker{CharacterState::IDLE, CharacterState::PRERUN, CharacterState::RUN, CharacterState::RUN_RECOVERY, CharacterState::LANDING_RECOVERY}, m_animManager.getAnimID("Char1/prejump"))
+        .setAlignedSlopeMax(0.5f)
         .setGravity(Vector2<float>{0.0f, 0.0f})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
@@ -152,13 +146,11 @@ void PlayerSystem::setup(entt::entity playerId_)
             {1, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_jump"), 22,
                 7}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {2, {}},
-            }))
-    ));
+            }));
 
-    sm.addState(std::unique_ptr<GenericState>(
-        &(new PlayerState<false, false, false, InputComparatorTapUp, InputComparatorTapUp, true, InputComparatorIdle, InputComparatorIdle>(
-            CharacterState::PREJUMP, {CharacterState::IDLE, CharacterState::PRERUN, CharacterState::RUN, CharacterState::RUN_RECOVERY, CharacterState::LANDING_RECOVERY}, m_animManager.getAnimID("Char1/prejump")))
-        ->setGravity(Vector2<float>{0.0f, 0.0f})
+    sm.addState<PlayerState<false, false, false, InputComparatorTapUp, InputComparatorTapUp, true, InputComparatorIdle, InputComparatorIdle>>(
+            CharacterState::PREJUMP, StateMarker{CharacterState::IDLE, CharacterState::PRERUN, CharacterState::RUN, CharacterState::RUN_RECOVERY, CharacterState::LANDING_RECOVERY}, m_animManager.getAnimID("Char1/prejump"))
+        .setGravity(Vector2<float>{0.0f, 0.0f})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
         .setMagnetLimit(TimelineProperty<unsigned int>(4))
@@ -199,13 +191,11 @@ void PlayerSystem::setup(entt::entity playerId_)
             {1, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_jump"), 22,
                 7}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {2, {}},
-            }))
-    ));
+            }));
 
-    sm.addState(std::unique_ptr<GenericState>(
-        &(new PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>(
-            CharacterState::ATTACK_1, {CharacterState::IDLE, CharacterState::PRERUN, CharacterState::RUN, CharacterState::RUN_RECOVERY, CharacterState::LANDING_RECOVERY}, m_animManager.getAnimID("Char1/attack1")))
-        ->setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>({
+    sm.addState<PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>>(
+            CharacterState::ATTACK_1, StateMarker{CharacterState::IDLE, CharacterState::PRERUN, CharacterState::RUN, CharacterState::RUN_RECOVERY, CharacterState::LANDING_RECOVERY}, m_animManager.getAnimID("Char1/attack1"))
+        .setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>({
                     {0, {0.0f, 1.0f}},
                     {8, {1.0f, 1.0f}}
                 }))
@@ -272,19 +262,14 @@ void PlayerSystem::setup(entt::entity playerId_)
                 .setNotDependOnGroundAngle()},
             {5, {}},
         }))
-        .setOutdatedTransition(CharacterState::IDLE, 30)
-    ));
+        .setOutdatedTransition(CharacterState::IDLE, 30);
 
-    // TODO: grounded particles that only appear if there is a ground in front of you
-    sm.addState(std::unique_ptr<GenericState>(
-        new PlayerActionAttack1Chain(
-            m_animManager.getAnimID("Char1/attack1_chain"), m_animManager.getAnimID("Char1/particles/attack1_chain_trace"))
-    ));
+    sm.addState<PlayerActionAttack1Chain>(
+            m_animManager.getAnimID("Char1/attack1_chain"), m_animManager.getAnimID("Char1/particles/attack1_chain_trace"));
 
-    sm.addState(std::unique_ptr<GenericState>(
-        &(new PlayerState<true, false, false, InputComparatorFail, InputComparatorFail, true, InputComparatorHoldLeft, InputComparatorHoldRight>(
-            CharacterState::RUN, {}, m_animManager.getAnimID("Char1/run")))
-        ->setGravity(Vector2<float>{0.0f, 0.0f})
+    sm.addState<PlayerState<true, false, false, InputComparatorFail, InputComparatorFail, true, InputComparatorHoldLeft, InputComparatorHoldRight>>(
+            CharacterState::RUN, StateMarker{}, m_animManager.getAnimID("Char1/run"))
+        .setGravity(Vector2<float>{0.0f, 0.0f})
         .setUpdateMovementData(
             TimelineProperty(Vector2<float>{1.0f, 1.0f}), // Vel mul
             TimelineProperty<Vector2<float>>( 
@@ -327,13 +312,11 @@ void PlayerSystem::setup(entt::entity playerId_)
             {30, ParticleTemplate{1, Vector2<float>{-13.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_run_loop"), 21,
                 7}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {31, {}},
-            }), 50)
-    ));
+            }), 50);
 
-    sm.addState(std::unique_ptr<GenericState>(
-        &(new PlayerState<false, true, false, InputComparatorHoldLeft, InputComparatorHoldRight, true, InputComparatorHoldLeft, InputComparatorHoldRight>(
-            CharacterState::PRERUN, {CharacterState::IDLE, CharacterState::RUN, CharacterState::LANDING_RECOVERY}, m_animManager.getAnimID("Char1/prerun")))
-        ->setGravity(Vector2<float>{0.0f, 0.0f})
+    sm.addState<PlayerState<false, true, false, InputComparatorHoldLeft, InputComparatorHoldRight, true, InputComparatorHoldLeft, InputComparatorHoldRight>>(
+            CharacterState::PRERUN, StateMarker{CharacterState::IDLE, CharacterState::RUN, CharacterState::LANDING_RECOVERY}, m_animManager.getAnimID("Char1/prerun"))
+        .setGravity(Vector2<float>{0.0f, 0.0f})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
         .setMagnetLimit(TimelineProperty<unsigned int>(4))
@@ -362,13 +345,11 @@ void PlayerSystem::setup(entt::entity playerId_)
                 )
             }
         })
-        .setOutdatedTransition(CharacterState::RUN, 5)
-    ));
+        .setOutdatedTransition(CharacterState::RUN, 5);
 
-    sm.addState(std::unique_ptr<GenericState>(
-        &(new PlayerState<true, false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>(
-            CharacterState::RUN_RECOVERY, {CharacterState::PRERUN, CharacterState::RUN}, m_animManager.getAnimID("Char1/run_recovery")))
-        ->setGravity(Vector2<float>{0.0f, 0.0f})
+    sm.addState<PlayerState<true, false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>>(
+            CharacterState::RUN_RECOVERY, StateMarker{CharacterState::PRERUN, CharacterState::RUN}, m_animManager.getAnimID("Char1/run_recovery"))
+        .setGravity(Vector2<float>{0.0f, 0.0f})
         .setDrag(Vector2<float>{0.5f, 0.0f})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
@@ -394,13 +375,11 @@ void PlayerSystem::setup(entt::entity playerId_)
                 )
             }
         })
-        .setOutdatedTransition(CharacterState::IDLE, 9)
-    ));
+        .setOutdatedTransition(CharacterState::IDLE, 9);
 
-    sm.addState(std::unique_ptr<GenericState>(
-        &(new PlayerState<false, false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>(
-            CharacterState::IDLE, {}, m_animManager.getAnimID("Char1/idle")))
-        ->setGravity(Vector2<float>{0.0f, 0.0f})
+    sm.addState<PlayerState<false, false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>>(
+            CharacterState::IDLE, StateMarker{}, m_animManager.getAnimID("Char1/idle"))
+        .setGravity(Vector2<float>{0.0f, 0.0f})
         .setDrag(TimelineProperty<Vector2<float>>({{0, Vector2{0.1f, 0.1f}}, {3, Vector2{0.5f, 0.5f}}}))
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
@@ -419,13 +398,11 @@ void PlayerSystem::setup(entt::entity playerId_)
         .setCanFallThrough(TimelineProperty<bool>(true))
         .setUpdateSpeedLimitData(
             TimelineProperty(Vector2<float>{9999.9f, 0.0f}),
-            TimelineProperty(Vector2<float>{9999.9f, 0.0f}))
-    ));
+            TimelineProperty(Vector2<float>{9999.9f, 0.0f}));
 
-    sm.addState(std::unique_ptr<GenericState>(
-        &(new PlayerState<true, false, false, InputComparatorFail, InputComparatorFail, false, InputComparatorIdle, InputComparatorIdle>(
-            CharacterState::LANDING_RECOVERY, {}, m_animManager.getAnimID("Char1/landing_recovery")))
-        ->setGravity(Vector2<float>{0.0f, 0.0f})
+    sm.addState<PlayerState<true, false, false, InputComparatorFail, InputComparatorFail, false, InputComparatorIdle, InputComparatorIdle>>(
+            CharacterState::LANDING_RECOVERY, StateMarker{}, m_animManager.getAnimID("Char1/landing_recovery"))
+        .setGravity(Vector2<float>{0.0f, 0.0f})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
         .setMagnetLimit(TimelineProperty<unsigned int>(4))
@@ -445,13 +422,11 @@ void PlayerSystem::setup(entt::entity playerId_)
             {0, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_land"), 36,
                 7}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {1, {}},
-            }))
-    ));
+            }));
 
-    sm.addState(std::unique_ptr<GenericState>(
-        &(new PlayerState<true, false, false, InputComparatorFail, InputComparatorFail, false, InputComparatorIdle, InputComparatorIdle>(
-            CharacterState::HARD_LANDING_RECOVERY, {}, m_animManager.getAnimID("Char1/landing_recovery")))
-        ->setGravity(Vector2<float>{0.0f, 0.0f})
+    sm.addState<PlayerState<true, false, false, InputComparatorFail, InputComparatorFail, false, InputComparatorIdle, InputComparatorIdle>>(
+            CharacterState::HARD_LANDING_RECOVERY, StateMarker{}, m_animManager.getAnimID("Char1/landing_recovery"))
+        .setGravity(Vector2<float>{0.0f, 0.0f})
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(CharacterState::FLOAT)
         .setMagnetLimit(TimelineProperty<unsigned int>(4))
@@ -471,13 +446,11 @@ void PlayerSystem::setup(entt::entity playerId_)
             {0, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_land"), 36,
                 7}.setTiePosRules(TiePosRule::TIE_TO_GROUND)},
             {1, {}},
-            }))
-    ));
+            }));
 
-    sm.addState(std::unique_ptr<GenericState>(
-        &(new PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>(
-            CharacterState::AIR_ATTACK, {CharacterState::FLOAT}, m_animManager.getAnimID("Char1/air_attack")))
-        ->allowAirDrift()
+    sm.addState<PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>>(
+            CharacterState::AIR_ATTACK, StateMarker{CharacterState::FLOAT}, m_animManager.getAnimID("Char1/air_attack"))
+        .allowAirDrift()
         .setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>({
                     {0, {0.1f, 1.0f}},
                     {5, {0.2f, 1.0f}},
@@ -513,13 +486,11 @@ void PlayerSystem::setup(entt::entity playerId_)
                 .setNotDependOnGroundAngle()},
             {8, {}},
         }))
-        .setOutdatedTransition(CharacterState::FLOAT, 35)
-    ));
+        .setOutdatedTransition(CharacterState::FLOAT, 35);
 
-    sm.addState(std::unique_ptr<GenericState>(
-        &(new PlayerActionFloat(
-            m_animManager.getAnimID("Char1/float"), {}))
-        ->allowAirDrift()
+    sm.addState<PlayerActionFloat>(
+            m_animManager.getAnimID("Char1/float"), StateMarker{})
+        .allowAirDrift()
         .setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>({
                     {0, {0.5f, 0.5f}},
                     {6, {1.0f, 1.0f}}
@@ -538,8 +509,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 )
             }
         })
-        .setConvertVelocityOnSwitch(false, true)
-    ));
+        .setConvertVelocityOnSwitch(false, true);
 
     sm.setInitialState(CharacterState::FLOAT);
     smreset.m_defaultStates = {static_cast<CharState>(CharacterState::FLOAT)}; // TODO: allow any type

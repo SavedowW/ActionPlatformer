@@ -471,6 +471,7 @@ protected:
     ParticleTemplate m_jumpParticle;
 };
 
+// TODO: make so that grounded particles only appear if there's a ground in front of you
 class PlayerActionAttack1Chain: public PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>
 {
 public:

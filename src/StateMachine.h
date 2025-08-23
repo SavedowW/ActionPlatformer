@@ -29,7 +29,8 @@ public:
 
     virtual GenericState *getRealCurrentState();
 
-    void addState(std::unique_ptr<GenericState> &&state_);
+    template<typename T, typename... Args>
+    T &addState(Args&&... args_);
     void switchCurrentState(EntityAnywhere owner_, GenericState *state_);
     bool attemptTransition(EntityAnywhere owner_, GenericState* until_);
 

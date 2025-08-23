@@ -1,6 +1,16 @@
 #ifndef STATE_MACHINE_HPP_
 #define STATE_MACHINE_HPP_
 #include "StateMachine.h"
+#include <memory>
+
+template<typename T, typename... Args>
+T &StateMachine::addState(Args&&... args_)
+{
+    T &ref = *dynamic_cast<T*>(m_states.emplace_back(std::make_unique<T>(std::forward<Args>(args_)...)).get());
+    m_stateIds[ref.m_stateId] = m_states.size() - 1;
+    ref.setParent(this);
+    return ref;
+}
 
 template<typename PLAYER_STATE_T>
 void StateMachine::switchCurrentState(EntityAnywhere owner_, PLAYER_STATE_T stateId_)
