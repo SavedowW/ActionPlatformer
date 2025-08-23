@@ -59,8 +59,8 @@ public:
     void renderTile(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_, const Vector2<int> &tilesetPixelsPos_);
 
 private:
-    SDL_GLContext m_context;
-    SDL_Window *m_window;
+    SDL_Window *m_window = nullptr;
+    SDL_GLContext m_context = nullptr;
 
     Shader m_rectShader;
     Shader m_screenShader;
@@ -71,17 +71,17 @@ private:
     Shader m_tileShader;
     Shader m_circleShader;
 
-    unsigned int m_rectVAO;
-    unsigned int m_screenVAO;
-    unsigned int m_spriteVAO;
+    unsigned int m_rectVAO = 0;
+    unsigned int m_screenVAO = 0;
+    unsigned int m_spriteVAO = 0;
 
-    unsigned int m_renderTarget;
-    unsigned int m_renderTargetTexture;
+    unsigned int m_renderTarget = 0;
+    unsigned int m_renderTargetTexture = 0;
 
-    unsigned int m_renderHudTarget;
-    unsigned int m_renderHudTargetTexture;
+    unsigned int m_renderHudTarget = 0;
+    unsigned int m_renderHudTargetTexture = 0;
 
-    unsigned int m_intermTexture;
+    unsigned int m_intermTexture = 0;
 };
 
 #endif

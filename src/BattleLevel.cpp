@@ -28,7 +28,7 @@ BattleLevel::BattleLevel(const Vector2<int>& size_, int lvlId_) :
 {
     auto playerId = m_registry.create();
 
-    const auto &ptrans = m_registry.emplace<ComponentTransform>(playerId, Vector2{313, 352}, ORIENTATION::RIGHT);
+    const auto &ptrans = m_registry.emplace<ComponentTransform>(playerId);
     m_registry.emplace<ComponentReset<ComponentTransform>>(playerId, ptrans.m_pos, ptrans.m_orientation);
 
     m_registry.emplace<ComponentPhysical>(playerId);

@@ -18,6 +18,7 @@ enum class ChatBoxSide : uint8_t
 
 struct ChatMessage;
 struct ChatMessageSequence;
+class SymbolRenderShake;
 
 class InlinedValueHandler
 {
@@ -56,6 +57,11 @@ class RenderSymbol : public IRenderSymbol
 {
 public:
     void onRenderReached(ChatMessageSequence &sequence_) override;
+
+private:
+    RenderSymbol() = default;
+
+    friend SymbolRenderShake;
 };
 
 // Remove actual symbol from the sequence (which keeps current rendering state)
@@ -197,7 +203,7 @@ public:
     void setPlayerEntity(entt::entity playerId_);
 
     void addSequence(ChatMessageSequence &&seq_);
-    void receiveEvents(HUD_EVENTS event, const float scale_) override;
+    void receiveEvents(HUD_EVENTS event, float scale_) override;
 
     void renderText(ChatMessageSequence &seq_, const Vector2<int> &tl_);
 
@@ -210,7 +216,7 @@ private:
     Renderer &m_renderer;
     std::vector<ChatMessageSequence> m_sequences;
 
-    entt::entity m_playerId;
+    entt::entity m_playerId = entt::null;
 
     std::shared_ptr<Texture> m_chatboxEdge;
     std::shared_ptr<Texture> m_chatboxPointer;

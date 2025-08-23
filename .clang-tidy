@@ -14,6 +14,7 @@ Checks: >
   -performance-avoid-endl,
   # Used on purpose since output wont necessarily be flushed otherwise
 
+  -cppcoreguidelines-avoid-magic-numbers,
   -readability-magic-numbers,
   # Maybe later
 
@@ -47,6 +48,15 @@ Checks: >
   -cppcoreguidelines-avoid-const-or-ref-data-members,
   # Pointless, const helps with internal logic and ref forces the client
   #    to ensure correct lifetime and makes relationship clearer
+
+  -readability-math-missing-parentheses,
+  # 
+
+  -readability-named-parameter,
+  #
+
+  -readability-implicit-bool-conversion,
+  # Much better with C-style SDL
 
   #-performance-no-int-to-ptr,
   #-bugprone-easily-swappable-parameters,

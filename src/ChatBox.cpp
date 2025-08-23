@@ -3,6 +3,7 @@
 #include "Core/GameData.h"
 #include "Core/InputResolver.h"
 #include "Core/utf8.h"
+#include <memory>
 #include "ChatBox.h"
 
 uint32_t ChatMessage::m_defaultCharacterDelay = 2;
@@ -63,27 +64,26 @@ std::unique_ptr<fonts::Symbol> processCommand(const std::string &cmd_)
     InlinedValueHandler val(eqpos != std::string::npos ? cmd_.substr(eqpos + 1) : "");
 
     if (cmd == "delay")
-        return std::unique_ptr<fonts::Symbol>(new SymbolDelay(val.getParam<int>(0)));
-    else if (cmd == "charspd")
-    {
-        return std::unique_ptr<fonts::Symbol>(new SymbolSetCharacterSpeed(
+        return std::make_unique<SymbolDelay>(val.getParam<int>(0));
+
+    if (cmd == "charspd") {
+        return std::make_unique<SymbolSetCharacterSpeed>(
             val.getParam(0, ChatMessage::m_defaultCharacterDelay),
             val.getParam(1, ChatMessage::m_defaultAppearDuration)
-        ));
+        );
     }
-    else if (cmd == "shake")
-    {
-        return std::unique_ptr<fonts::Symbol>(new SymbolRenderShake(
+
+    if (cmd == "shake") {
+        return std::make_unique<SymbolRenderShake>(
             val.getParam(0, 0),
             val.getParam(1, 0),
             val.getParam(2, 1.0f)
-        ));
+        );
     }
 
-    else if (cmd == "/shake")
-    {
-        return std::unique_ptr<fonts::Symbol>(new RenderDropSymbol<SymbolRenderShake>);
-    }
+
+    if (cmd == "/shake")
+        return std::make_unique<RenderDropSymbol<SymbolRenderShake>>();
 
     return nullptr;
 }
@@ -191,7 +191,7 @@ void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<int> &tl
             m_renderer.renderTexture(sym->m_tex.m_id, Vector2{pos.x, pos.y - 5 + int(5 * progress)} + offset, sym->m_tex.m_size, SDL_FLIP_NONE, progress);
             pos.x += sym->m_advance;
         }
-        else if (auto renSym = const_cast<IRenderSymbol*>(dynamic_cast<const IRenderSymbol*>(sym)))
+        else if (auto *renSym = const_cast<IRenderSymbol*>(dynamic_cast<const IRenderSymbol*>(sym)))
         {
             renSym->onRenderReached(seq_);
         }

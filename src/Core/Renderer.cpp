@@ -6,11 +6,11 @@
 #include <SDL3/SDL_opengl.h>
 
 Renderer::Renderer(SDL_Window *window_) :
-    m_window(window_)
+    m_window(window_),
+    m_context(SDL_GL_CreateContext( window_ )) // SDL_GL_DestroyContext()
 {
-    m_context = SDL_GL_CreateContext( window_ );
     if (!m_context)
-        std::cout << "OpenGL context could not be created! SDL Error: " << SDL_GetError() << std::endl;
+        throw std::runtime_error(std::string("Failed to compile shader:\n") + SDL_GetError());
 
     if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
     {
@@ -30,17 +30,17 @@ Renderer::Renderer(SDL_Window *window_) :
     m_tileShader.load(Filesystem::getRootDirectory() + "/src/core/Shader/Tilemap.vert", Filesystem::getRootDirectory() + "/src/core/Shader/Sprite.frag");
     m_circleShader.load(Filesystem::getRootDirectory() + "/src/core/Shader/Rect.vert", Filesystem::getRootDirectory() + "/src/core/Shader/Circle.frag");
 
-    unsigned int rectVBO;
-    uint32_t rectVertices[] = { // TL, TR, BR, BL
-        0,
-        1,
-        2,
-        3,
-        0,
-        2
+    unsigned int rectVBO = 0;
+    std::array<uint32_t, 6> rectVertices { // TL, TR, BR, BL
+        0, // TL
+        1, // TR
+        2, // BR
+        3, // BL
+        0, // TL
+        2  // BR
     };
 
-    float texCoords[] = {
+    const std::array<float, 18> texCoords {
         0.0f, 0.0f, 0.0f,
         1.0f, 1.0f, 0.0f,
         2.0f, 1.0f, 1.0f,
@@ -50,22 +50,22 @@ Renderer::Renderer(SDL_Window *window_) :
     };
 
     // To render framebuffer on screen
-    float screenVertices[] = {
+    std::array<float, 30> screenVertices {
         // positions          // texture Coords
-        -1.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-         1.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-         1.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+         1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+         1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
 
-        -1.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-         1.0f,  1.0f,  0.0f,  1.0f, 1.0f,					
-        -1.0f,  1.0f,  0.0f,  0.0f, 1.0f
+        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+         1.0f,  1.0f, 0.0f, 1.0f, 1.0f,					
+        -1.0f,  1.0f, 0.0f, 0.0f, 1.0f
     };
 
     // Rectangle indices
     glGenVertexArrays(1, &m_rectVAO);  
     glGenBuffers(1, &rectVBO);
     glBindBuffer(GL_ARRAY_BUFFER, rectVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(rectVertices), rectVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(rectVertices), rectVertices.data(), GL_STATIC_DRAW);
     glBindVertexArray(m_rectVAO);
     glEnableVertexAttribArray(0);
     glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, 1 * sizeof(uint32_t), (void*)0);
@@ -74,27 +74,27 @@ Renderer::Renderer(SDL_Window *window_) :
 
 
     // screen
-    unsigned int quadVBO;
+    unsigned int quadVBO = 0;
     glGenVertexArrays(1, &m_screenVAO);
     glGenBuffers(1, &quadVBO);
     glBindVertexArray(m_screenVAO);
     glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(screenVertices), &screenVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(screenVertices), screenVertices.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
     glBindVertexArray(0);
 
 
     // sprite
-    unsigned int spriteVBO;
+    unsigned int spriteVBO = 0;
     glGenVertexArrays(1, &m_spriteVAO);
     glGenBuffers(1, &spriteVBO);
     glBindVertexArray(m_spriteVAO);
     glBindBuffer(GL_ARRAY_BUFFER, spriteVBO);
 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(texCoords), &texCoords, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(texCoords), texCoords.data(), GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -103,7 +103,7 @@ Renderer::Renderer(SDL_Window *window_) :
 
 
     // Projection matrix
-    glm::mat4 projection = glm::ortho(0.0f, 640.0f, 
+    glm::mat4 projection = glm::ortho(0.0f, 640.0f,
         360.0f, 0.0f, -1.0f, 1.0f);
     m_rectShader.use();
     m_rectShader.setMatrix4("projection", projection);
@@ -205,7 +205,7 @@ unsigned int Renderer::surfaceToTexture(SDL_Surface *sur_)
     if (!sur_)
         throw std::runtime_error("Trying to create texture from non-existing surface");
 
-    unsigned int res;
+    unsigned int res = 0;
 
     glGenTextures(1, &res);
     glBindTexture(GL_TEXTURE_2D, res);
@@ -234,7 +234,7 @@ unsigned int *Renderer::surfacesToTexture(const std::vector<SDL_Surface *> &surf
         }
     }
 
-    unsigned int *ids = new unsigned int[surfaces_.size()];
+    auto *ids = new unsigned int[surfaces_.size()];
 
     glGenTextures(static_cast<int>(surfaces_.size()), ids);
 

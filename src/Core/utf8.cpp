@@ -1,30 +1,29 @@
 #include "utf8.h"
 #include <iostream>
+#include <span>
 
 uint8_t utf8::readCharSize(const char *ch_)
 {
     if ((*ch_ & oct4) == oct4)
         return 4;
-    else if ((*ch_ & oct3) == oct3)
+    if ((*ch_ & oct3) == oct3)
         return 3;
-    else if ((*ch_ & oct2) == oct2)
+    if ((*ch_ & oct2) == oct2)
         return 2;
-    else
-        return 1;
+    return 1;
 }
 
 uint8_t utf8::readCharSize(uint32_t ch_)
 {
-    const auto *tmp = reinterpret_cast<const char *>(&ch_);
+    const auto bytes = std::span(reinterpret_cast<const char *>(&ch_), 4);
     //uint8_t arr[] = {tmp[3], tmp[2], tmp[1], tmp[0]};
-    if (tmp[3]) // arr[0]
+    if (bytes[3]) // arr[0]
         return 4;
-    else if (tmp[2]) // arr[1]
+    if (bytes[2]) // arr[1]
         return 3;
-    else if (tmp[1]) // arr[2]
+    if (bytes[1]) // arr[2]
         return 2;
-    else
-        return 1;
+    return 1;
 }
 
 uint32_t utf8::readChar(const char *ch_)
@@ -56,18 +55,18 @@ const char *utf8::iterateForward(const char *u8char_)
 
 std::string &utf8::appendChar(std::string &s_, const char *u8char_)
 {
-    return s_.append(reinterpret_cast<const char*>(u8char_), readCharSize(u8char_));
+    return s_.append(u8char_, readCharSize(u8char_));
 }
 
 std::string &utf8::appendChar(std::string &s_, const char *u8char_, uint8_t sz_)
 {
-    return s_.append(reinterpret_cast<const char*>(u8char_), sz_);
+    return s_.append(u8char_, sz_);
 }
 
 std::string &utf8::appendChars(std::string &s_, const char *u8char_, size_t cnt_)
 {
     size_t fullsz = 0;
-    auto *it = u8char_;
+    const auto *it = u8char_;
     while (cnt_-- && *it)
     {
         auto sz = readCharSize(it);

@@ -1,7 +1,7 @@
 #ifndef UTF8_H_
 #define UTF8_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <bitset>
 
@@ -16,7 +16,7 @@ namespace utf8
     template <typename T>
     inline std::string numericToString(T value_)
     {
-        std::string res = "";
+        std::string res;
         const uint8_t *ptr = reinterpret_cast<const uint8_t*>(&value_);
         int8_t sz = sizeof(T);
         while (--sz >= 0)
@@ -33,7 +33,7 @@ namespace utf8
     template <typename T>
     inline std::string numericToString(T value_, const std::string &chunkSeparator_)
     {
-        std::string res = "";
+        std::string res;
         const uint8_t *ptr = reinterpret_cast<const uint8_t*>(&value_);
         int8_t sz = sizeof(T);
         while (--sz >= 0)
