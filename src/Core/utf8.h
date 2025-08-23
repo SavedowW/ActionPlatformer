@@ -4,6 +4,14 @@
 #include <cstdint>
 #include <string>
 #include <bitset>
+#include <array>
+#include <type_traits>
+
+template<typename T> requires std::is_integral_v<T>
+union CharRep {
+        T full;
+        std::array<uint8_t, sizeof(T)> bytes;
+};
 
 namespace utf8
 {
@@ -11,6 +19,8 @@ namespace utf8
     inline constexpr uint8_t oct4 = 0b11110000;
     inline constexpr uint8_t oct3 = 0b11100000;
     inline constexpr uint8_t oct2 = 0b11000000;
+
+    
 
     // Represent all bytes of any number in binary form, like "10101010'10101010'101..."
     template <typename T>

@@ -1,4 +1,5 @@
 #include "utf8.h"
+#include <bit>
 #include <iostream>
 #include <span>
 
@@ -15,15 +16,10 @@ uint8_t utf8::readCharSize(const char *ch_)
 
 uint8_t utf8::readCharSize(uint32_t ch_)
 {
-    const auto bytes = std::span(reinterpret_cast<const char *>(&ch_), 4);
-    //uint8_t arr[] = {tmp[3], tmp[2], tmp[1], tmp[0]};
-    if (bytes[3]) // arr[0]
-        return 4;
-    if (bytes[2]) // arr[1]
-        return 3;
-    if (bytes[1]) // arr[2]
-        return 2;
-    return 1;
+    const int leadingZeroBits = std::countl_zero(ch_);
+    const int significantBytes = 4 - leadingZeroBits / 8;
+
+    return static_cast<uint8_t>(significantBytes);
 }
 
 uint32_t utf8::readChar(const char *ch_)

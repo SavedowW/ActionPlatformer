@@ -1,4 +1,7 @@
+#include "Core/CallChain.h"
+#include "Core/Utils.hpp"
 #include "StateMachineEx.hpp"
+#include "Core/CallChain.hpp"
 #include "Core/CoreComponents.h"
 #include "Core/StaticMapping.hpp"
 #include "Stage1.h"
@@ -12,38 +15,31 @@
 #include <type_traits>
 #include <vector>
 
-//#define EXPERIMENTS
+#define EXPERIMENTS
 
-template<typename... Fs>
-auto callChain(const std::tuple<Fs...> &tuple_)
+#ifdef EXPERIMENTS
+class Multiplier
 {
-    return std::get<2>(tuple_)(std::get<1>(tuple_)(std::get<0>(tuple_)(1)));
-}
+public:
+    Multiplier(float mul_) :
+        m_mul(mul_)
+    {}
 
-template<size_t idx = 0, typename... TCallable>
-constexpr auto callRecursive(std::tuple<TCallable...> &tuple_, const auto &default_)
-{
-    if constexpr (idx == sizeof...(TCallable) - 1)
-        return std::get<sizeof...(TCallable) - idx - 1>(tuple_)(default_);
-    else
-        return std::get<sizeof...(TCallable) - idx - 1>(tuple_)(callRecursive<idx + 1>(tuple_, default_));
-}
+    auto operator()(const auto &arg_)
+    {
+        std::cout << __PRETTY_FUNCTION__ << " : " << m_callCount++ << std::endl;
+        return arg_ * m_mul;
+    }
+
+private:
+    int m_callCount = 0;
+    const float m_mul;
+};
+#endif
 
 int main(int, char**)
 {
 #ifdef EXPERIMENTS
-
-    std::tuple tpl([](const char *i_){
-        return std::atoi(i_);
-    }, [](int i_){
-        return i_ * 0.5f;
-    }, [](float i_){
-        return i_ + 0.5;
-    });
-
-    std::cout << callRecursive(tpl, "1") << std::endl;
-
-    return 0;
 
     entt::registry  reg;
     entt::entity ent = reg.create();
@@ -51,7 +47,30 @@ int main(int, char**)
     reg.emplace<ComponentPhysical>(ent);
     reg.emplace<ComponentAnimationRenderable>(ent);
 
-    EStateMachine sm( "root",
+#if 0
+    callable::Chain chain([](const char *i_){
+        return std::atoi(i_);
+    }, Multiplier(2.5f),
+    [](auto i_){
+        return i_ * 0.5f;
+    }, [](auto i_){
+        std::cout <<  i_ + 1.7 << std::endl;
+    });
+
+    chain("1");
+    chain("2");
+
+    callable::EachResolved eachChain(UpdateVelocity{1.0f, -5.118f}, UpdatePos{5, 13}, ChangeAnim{123123});
+    eachChain(reg.get<ComponentTransform, ComponentPhysical, ComponentAnimationRenderable>(ent));
+
+    std::cout << reg.get<ComponentTransform>(ent).m_pos << ", " << serialize(reg.get<ComponentTransform>(ent).m_orientation) << std::endl;
+    std::cout << reg.get<ComponentPhysical>(ent).m_velocity << std::endl;
+    std::cout << reinterpret_cast<ResID>(reg.get<ComponentAnimationRenderable>(ent).m_currentAnimation) << std::endl;
+
+    return 0;
+#endif
+
+    EStateMachine sm("root",
         CompoundState(UpdateVelocity{}, ChangeAnim{}),
         CompoundState(UpdateVelocity{}),
         CompoundState(UpdateVelocity{}, UpdatePos{}, ChangeAnim{})
