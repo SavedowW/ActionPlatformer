@@ -5,8 +5,11 @@
 
 using CharState = uint8_t;
 
+template <typename T>
+concept TEnum = std::is_enum_v<T>;
+
 // Wrapper for enums used as flags
-template<typename T> requires std::is_enum_v<T>
+template<TEnum T>
 class Flag
 {
 using UT = std::underlying_type_t<T>;

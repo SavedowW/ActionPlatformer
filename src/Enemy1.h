@@ -15,8 +15,7 @@ enum class Enemy1State : CharState
     IDLE,
     FLOAT,
     PREJUMP,
-    RUN,
-    NONE
+    RUN
 };
 
 SERIALIZE_ENUM(Enemy1State, {

@@ -20,8 +20,7 @@ enum class CharacterState : CharState {
     WALL_CLING_PREJUMP,
     ATTACK_1,
     ATTACK_1_CHAIN,
-    AIR_ATTACK,
-    NONE
+    AIR_ATTACK
 };
 
 SERIALIZE_ENUM(CharacterState, {
@@ -39,7 +38,6 @@ SERIALIZE_ENUM(CharacterState, {
     ENUM_AUTO(CharacterState, ATTACK_1),
     ENUM_AUTO(CharacterState, ATTACK_1_CHAIN),
     ENUM_AUTO(CharacterState, AIR_ATTACK),
-    ENUM_AUTO(CharacterState, NONE),
 })
 
 template<bool REQUIRE_ALIGNMENT, bool FORCE_REALIGN, typename CMP_LEFT, typename CMP_RIGHT>
@@ -84,7 +82,7 @@ public:
     {
     }
 
-    inline bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
+    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
     {
         auto res = PhysicalState::update(owner_, currentFrame_);
         if (!m_lookaheadSpeedSensitivity.isEmpty())
@@ -143,7 +141,7 @@ public:
         return inres == ORIENTATION::UNSPECIFIED;
     }
 
-    inline void enter(EntityAnywhere owner_, CharState from_) override
+    void enter(EntityAnywhere owner_, CharState from_) override
     {
         PhysicalState::enter(owner_, from_);
 
@@ -158,28 +156,28 @@ public:
     inline auto
         &setAlignedSlopeMax(float alignedSlopeMax_);
 
-    inline PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
+    PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
         &setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>&& lookaheadSpeedSensitivity_)
     {
         m_lookaheadSpeedSensitivity = std::move(lookaheadSpeedSensitivity_);
         return *this;
     }
 
-    inline PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
+    PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
         &setRealignOnSwitch(bool realignOnSwitch_)
     {
         m_realignOnSwitchForInput = realignOnSwitch_;
         return *this;
     }
 
-    inline PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
+    PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
         &setExtendedBuffer(uint32_t extendedBuffer_)
     {
         m_extendedBuffer = extendedBuffer_;
         return *this;
     }
 
-    inline PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
+    PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
         &allowAirDrift()
     {
         m_allowAirDrift = true;
@@ -207,7 +205,7 @@ public:
     {
     }
 
-    inline virtual void enter(EntityAnywhere owner_, CharState from_) override
+    virtual void enter(EntityAnywhere owner_, CharState from_) override
     {
         ParentAction::enter(owner_, from_);
 
@@ -218,7 +216,7 @@ public:
             phys.m_velocity.y += 2.0f;
     }
 
-    inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
+    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
     {
         auto res = ParentAction::update(owner_, currentFrame_);
 
@@ -270,7 +268,7 @@ public:
         setConvertVelocityOnSwitch(true, false);
     }
 
-    inline virtual void enter(EntityAnywhere owner_, CharState from_) override
+    virtual void enter(EntityAnywhere owner_, CharState from_) override
     {
         ParentAction::enter(owner_, from_);
 
@@ -289,7 +287,7 @@ public:
 
     void leave(EntityAnywhere owner_, CharState to_) override;
 
-    inline bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
+    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
     {
         ParentAction::update(owner_, currentFrame_);
 
@@ -331,7 +329,7 @@ public:
         return false;
     }
 
-    inline ORIENTATION isPossible(EntityAnywhere owner_) const override
+    ORIENTATION isPossible(EntityAnywhere owner_) const override
     {
         if (PhysicalState::isPossible(owner_) == ORIENTATION::UNSPECIFIED)
             return ORIENTATION::UNSPECIFIED;
@@ -395,7 +393,7 @@ public:
         setAppliedInertiaMultiplier(Vector2{0.0f, 0.0f});
     }
 
-    inline void enter(EntityAnywhere owner_, CharState from_) override
+    void enter(EntityAnywhere owner_, CharState from_) override
     {
         ParentAction::enter(owner_, from_);
 
@@ -476,8 +474,8 @@ protected:
 class PlayerActionAttack1Chain: public PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>
 {
 public:
-    inline PlayerActionAttack1Chain(ResID anim_, ResID animTrace_) :
-        PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>(CharacterState::ATTACK_1_CHAIN, {CharacterState::NONE, {}}, anim_)
+    PlayerActionAttack1Chain(ResID anim_, ResID animTrace_) :
+        PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>(CharacterState::ATTACK_1_CHAIN, {}, anim_)
     {
         setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>({
                     {0, {0.0f, 0.0f}},
@@ -541,7 +539,7 @@ public:
             {8, {0.3f, 0.3f}},
             }));
         setRecoveryFrames(TimelineProperty<StateMarker>({
-            {0, StateMarker{CharacterState::NONE, {}}}
+            {0, StateMarker{}}
             }));
         setParticlesSingle(TimelineProperty<ParticleTemplate>({
             {0, {}},
@@ -555,7 +553,7 @@ public:
         setOutdatedTransition(CharacterState::IDLE, 46);
     }
 
-    inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
+    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
     {
         auto updateres = PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>::update(owner_, currentFrame_);
 

@@ -32,6 +32,20 @@ const std::string &serialize(const T &value_)
 }
 
 template<typename T>
+const auto &generateMaxValue()
+{
+    static const std::map<T, std::string> &m = makeDirectMap<T>();
+    return m.crbegin()->first;
+}
+
+template<typename T>
+const auto &getMaxValue()
+{
+    static const auto &maxValue = generateMaxValue<T>();
+    return maxValue;
+}
+
+template<typename T>
 bool isSerializable(const T &value_)
 {
     static const std::map<T, std::string> &m = makeDirectMap<T>();
