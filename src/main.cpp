@@ -18,23 +18,6 @@
 #define EXPERIMENTS
 
 #ifdef EXPERIMENTS
-class Multiplier
-{
-public:
-    Multiplier(float mul_) :
-        m_mul(mul_)
-    {}
-
-    auto operator()(const auto &arg_)
-    {
-        std::cout << __PRETTY_FUNCTION__ << " : " << m_callCount++ << std::endl;
-        return arg_ * m_mul;
-    }
-
-private:
-    int m_callCount = 0;
-    const float m_mul;
-};
 #endif
 
 int main(int, char**)
@@ -63,17 +46,13 @@ int main(int, char**)
     callable::EachResolved eachChain(UpdateVelocity{1.0f, -5.118f}, UpdatePos{5, 13}, ChangeAnim{123123});
     eachChain(reg.get<ComponentTransform, ComponentPhysical, ComponentAnimationRenderable>(ent));
 
-    std::cout << reg.get<ComponentTransform>(ent).m_pos << ", " << serialize(reg.get<ComponentTransform>(ent).m_orientation) << std::endl;
-    std::cout << reg.get<ComponentPhysical>(ent).m_velocity << std::endl;
-    std::cout << reinterpret_cast<ResID>(reg.get<ComponentAnimationRenderable>(ent).m_currentAnimation) << std::endl;
-
     return 0;
 #endif
 
     EStateMachine sm("root",
-        CompoundState(UpdateVelocity{}, ChangeAnim{}),
-        CompoundState(UpdateVelocity{}),
-        CompoundState(UpdateVelocity{}, UpdatePos{}, ChangeAnim{})
+        CompoundState(UpdateBody(UpdateVelocity{.x=1.0f, .y=-5.118f}, ChangeAnim{123123}))
+        //CompoundState(UpdateVelocity{}),
+        //CompoundState(UpdateVelocity{}, UpdatePos{}, ChangeAnim{})
     );
 
     sm.dump(std::cout, 0);
@@ -81,6 +60,12 @@ int main(int, char**)
     decltype(sm)::Iterator it(sm);
 
     sm.update(it, {.reg=&reg, .idx=ent});
+
+    std::cout << "Results: " << std::endl;
+
+    std::cout << reg.get<ComponentTransform>(ent).m_pos << ", " << serialize(reg.get<ComponentTransform>(ent).m_orientation) << std::endl;
+    std::cout << reg.get<ComponentPhysical>(ent).m_velocity << std::endl;
+    std::cout << reinterpret_cast<ResID>(reg.get<ComponentAnimationRenderable>(ent).m_currentAnimation) << std::endl;
 
     std::cout << "Success!" << std::endl;
     return 0;

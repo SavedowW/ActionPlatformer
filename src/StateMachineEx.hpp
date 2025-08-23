@@ -1,12 +1,18 @@
 #ifndef STATE_MACHINE_EX_HPP_
 #define STATE_MACHINE_EX_HPP_
 #include "StateMachineEx.h"
+#include "Core/CallChain.hpp"
 
 template<typename T>
 void dumpType()
 {
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 }
+
+template<typename... TCallable>
+UpdateBody<TCallable...>::UpdateBody(TCallable&&... callables_) :
+    BodyType(std::forward<TCallable>(callables_)...)
+{}
 
 template<typename T>
 constexpr auto collectAllDependencies()
@@ -40,7 +46,7 @@ void StateAdapter<UpdArg, T>::dump(std::ostream& out_, int indent_) const
 }
 
 template<typename UpdArg, typename T>
-void StateAdapter<UpdArg, T>::update(UpdArg arg_) const
+void StateAdapter<UpdArg, T>::update(UpdArg arg_)
 {
     std::cout << "Adapting call from: " << std::endl;
     dumpType<UpdArg>();
@@ -56,42 +62,36 @@ void StateAdapter<UpdArg, T>::update(UpdArg arg_) const
     T::update(refs);
 }
 
-template<typename... TComponents>
-CompoundState<TComponents...>::CompoundState(TComponents&&... components_) :
-    m_components(std::forward<TComponents>(components_)...)
+template<typename... TUpdateComponents>
+CompoundState<TUpdateComponents...>::CompoundState(UpdateBody<TUpdateComponents...> &&updateBody_) :
+    m_updateBody(std::move(updateBody_))
 {
 }
 
-template<typename... TComponents>
-void CompoundState<TComponents...>::update(Dependencies::toTupleRefs dependencies_) const
+template<typename... TUpdateComponents>
+void CompoundState<TUpdateComponents...>::update(Dependencies::toTupleRefs dependencies_)
 {
     std::cout << "Real update with ";
     dumpType<decltype(dependencies_)>();
     
-    std::apply([&](const auto&... comps) // Components
-    {
-        (([&]<typename... Ts>(TypeList<Ts...>) // Logic component's dependencies
-        {
-            comps.update(std::get<Ts&>(dependencies_)...);
-        }(typename std::remove_reference<decltype(comps)>::type::Dependencies())), ...);
-    }, m_components);
+    m_updateBody(dependencies_);
 }
 
-template<typename... TComponents>
-void CompoundState<TComponents...>::dump(std::ostream& out_, int indent_) const
+template<typename... TUpdateComponents>
+void CompoundState<TUpdateComponents...>::dump(std::ostream& out_, int indent_) const
 {
     out_ << std::string(indent_, ' ') << '+' << ttypedata<CompoundState>::name << "\n";
 
     ([&]
     {
-        out_ << std::string(indent_ + 1, ' ') << '>' << typedata<TComponents>::name << "\n";
+        out_ << std::string(indent_ + 1, ' ') << '>' << typedata<TUpdateComponents>::name << "\n";
 
     } (), ...);
 }
 
 
 template<typename... TStates>
-EStateMachine<TStates...>::Iterator::Iterator(const EStateMachine<TStates...> &machine_) :
+EStateMachine<TStates...>::Iterator::Iterator(EStateMachine<TStates...> &machine_) :
     m_currentState(machine_.getInitialState())
 {}
 
@@ -119,7 +119,7 @@ void EStateMachine<TStates...>::dump(std::ostream& out_, int indent_) const
 }
 
 template<typename... TStates>
-void EStateMachine<TStates...>::update(Iterator &it_, EntityAnywhere owner_) const
+void EStateMachine<TStates...>::update(Iterator &it_, EntityAnywhere owner_)
 {
     assert(it_.m_currentState);
 
@@ -134,7 +134,7 @@ void EStateMachine<TStates...>::update(Iterator &it_, EntityAnywhere owner_) con
 }
 
 template<typename... TStates>
-auto EStateMachine<TStates...>::getInitialState() const
+auto EStateMachine<TStates...>::getInitialState()
 {
     return m_states.front().get();
 }

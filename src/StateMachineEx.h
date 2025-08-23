@@ -1,11 +1,11 @@
 #ifndef STATE_MACHINE_EX_H_
 #define STATE_MACHINE_EX_H_
 #include "World.h"
+#include "Core/CallChain.h"
 #include "Core/TypeList.hpp"
 #include "Core/CoreComponents.h"
 #include <cstdint>
 #include <iostream>
-#include <type_traits>
 
 enum class EORIENTATION : int8_t
 {
@@ -15,9 +15,23 @@ enum class EORIENTATION : int8_t
     ALL =         0b11
 };
 
+// Component of a CompoundState
+// Represents it's update call
+// Each component is called every time, callable::EachResolved resolves dependencies
+template<typename... TCallable>
+struct UpdateBody : public callable::EachResolved<TCallable...>
+{
+private:
+    using BodyType = callable::EachResolved<TCallable...>;
+
+public:
+    UpdateBody(TCallable&&... callables_);
+};
+
 template<typename T>
 void dumpType();
 
+// Same as below, but for a single type
 template<typename T>
 constexpr auto collectAllDependencies();
 
@@ -34,30 +48,28 @@ template<typename... Ts>
 using getUniqueDependencies = decltype(getUniqueFromDeps(collectAllDependencies<Ts...>()));
 
 
-struct UpdatePos
-{
+// Placeholders
+struct UpdatePos {
     int x = 0, y = 0;
 
     using Dependencies = TypeList<ComponentTransform>;
     void update(ComponentTransform&) const;
 };
-
-struct UpdateVelocity
-{
+struct UpdateVelocity {
     float x = 0.f, y = 0.f;
 
     using Dependencies = TypeList<ComponentPhysical, ComponentTransform>;
     void update(ComponentPhysical&, ComponentTransform&) const;
 };
-
-struct ChangeAnim
-{
+struct ChangeAnim {
     ResID anim = 0;
 
     using Dependencies = TypeList<ComponentTransform, ComponentPhysical, ComponentAnimationRenderable>;
     void update(ComponentTransform&, ComponentPhysical&, ComponentAnimationRenderable&) const;
 };
 
+// Interface for a compound state
+// Shouldn't be inherited from by anything else
 template<typename UpdArg>
 class ICompoundState
 {
@@ -70,9 +82,11 @@ public:
     ICompoundState &operator=(ICompoundState&&) noexcept = default;
     virtual void dump(std::ostream& out_, int indent_) const = 0;
 
-    virtual void update(UpdArg) const = 0;
+    virtual void update(UpdArg) = 0;
 };
 
+// Hides actual arguments for T from interface
+//    and resolves dependencies to only the required ones
 template<typename UpdArg, typename T>
 class StateAdapter : public T, public ICompoundState<UpdArg>
 {
@@ -81,7 +95,7 @@ public:
     StateAdapter(Args&&... args_);
 
     void dump(std::ostream& out_, int indent_) const override;
-    void update(UpdArg arg_) const override;
+    void update(UpdArg arg_) override;
 };
 
 template<typename... Args>
@@ -90,26 +104,26 @@ class CompoundPipe
 
 };
 
-template<typename... TComponents>
+template<typename... TUpdateComponents>
 class CompoundState
 {
 public:
-    using Dependencies = getUniqueDependencies<TComponents...>;
+    using Dependencies = getUniqueDependencies<TUpdateComponents...>;
 
-    CompoundState(TComponents&&... components_);
+    CompoundState(UpdateBody<TUpdateComponents...> &&updateBody_);
 
     CompoundState(const CompoundState&) = delete;
     CompoundState(CompoundState&&) noexcept = default;
     CompoundState &operator=(const CompoundState&) = delete;
     CompoundState &operator=(CompoundState&&) noexcept = default;
 
-    void update(Dependencies::toTupleRefs dependencies_) const;
+    void update(Dependencies::toTupleRefs dependencies_) ;
 
 
     void dump(std::ostream& out_, int indent_) const;
 
 protected:
-    std::tuple<TComponents...> m_components;
+    UpdateBody<TUpdateComponents...> m_updateBody;
 };
 
 template<typename... TStates>
@@ -120,18 +134,18 @@ public:
 
     struct Iterator
     {
-        Iterator(const EStateMachine<TStates...> &machine_);
+        Iterator(EStateMachine<TStates...> &machine_);
 
-        const ICompoundState<typename Dependencies::toTupleRefs> *m_currentState = nullptr;
+        ICompoundState<typename Dependencies::toTupleRefs> *m_currentState = nullptr;
     };
 
     EStateMachine(std::string &&name_, TStates&&... states_);
 
     void dump(std::ostream& out_, int indent_) const;
 
-    void update(Iterator &it_, EntityAnywhere owner_) const;
+    void update(Iterator &it_, EntityAnywhere owner_);
 
-    auto getInitialState() const;
+    auto getInitialState();
 
 
 protected:
