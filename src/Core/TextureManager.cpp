@@ -35,17 +35,16 @@ std::shared_ptr<Texture> TextureManager::getTexture(ResID id_)
 		//Logger::print("Texture arr is preloaded\n");
 		return m_textures_[id_].m_preloaded;
 	}
-	else if (m_textures_[id_].m_tex.expired())
+
+	if (m_textures_[id_].m_tex.expired())
 	{
 		//auto sprPath = m_rootPath + "/Resources/Sprites/";
 		auto reqElem = loadTexture((m_textures_[id_].m_path).c_str());
 		m_textures_[id_].m_tex = reqElem;
 		return reqElem;
 	}
-	else
-	{
-		return m_textures_[id_].m_tex.lock();
-	}
+	
+	return m_textures_[id_].m_tex.lock();
 }
 
 void TextureManager::preload(const std::string &toPreload_)

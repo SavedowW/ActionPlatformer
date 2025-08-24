@@ -20,7 +20,7 @@ class TextureResource : public Texture
 {
 public:
     TextureResource() = default;
-    TextureResource(const std::string &name_, const Vector2<int> &size_, const unsigned int id_);
+    TextureResource(const std::string &name_, const Vector2<int> &size_, unsigned int id_);
     TextureResource(const TextureResource &tex_) = delete;
     TextureResource& operator=(const TextureResource &tex_) = delete;
     TextureResource(TextureResource &&tex_) noexcept;
