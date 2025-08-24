@@ -250,10 +250,12 @@ MoveCollider2Points::MoveCollider2Points(const Vector2<float> offset_) :
 }
 
 T_NAME_AUTO(ComponentTransform);
+T_NAME_AUTO(const ComponentTransform);
 T_NAME_AUTO(ComponentParticlePrimitive);
 T_NAME_AUTO(ComponentSpawnLocation);
 T_NAME_AUTO(ComponentParticlePhysics);
 T_NAME_AUTO(ComponentPhysical);
+T_NAME_AUTO(const ComponentPhysical);
 T_NAME_AUTO(PhysicalEvents);
 T_NAME_AUTO(ComponentStaticCollider);
 T_NAME_AUTO(SwitchCollider);

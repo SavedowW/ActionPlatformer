@@ -15,6 +15,28 @@ enum class EORIENTATION : int8_t
     ALL =         0b11
 };
 
+
+// Same as below, but for a single type
+template<typename T>
+constexpr auto collectAllDependencies();
+
+// Take unique components, return all their dependencies (at Ty::Dependencies) in 1 list
+template<typename T, typename... Ty>
+constexpr auto collectAllDependencies() requires (sizeof...(Ty) > 0);
+
+// Take unique components, return all their dependencies (at Ty::Dependencies) in 1 list
+template<typename... Ty>
+constexpr auto collectAllDependencies() requires (sizeof...(Ty) == 0);
+
+// Take type list, return type list with only unique types
+template<typename... Ts>
+constexpr auto getUniqueFromDeps(TypeList<Ts...>);
+
+// Take list of types, get only unique dependencies (at Ts::Dependencies)
+template<typename... Ts>
+using getUniqueDependencies = decltype(getUniqueFromDeps(collectAllDependencies<Ts...>()));
+
+
 // Component of a CompoundState
 // Represents it's update call
 // Each component is called every time, callable::EachResolved resolves dependencies
@@ -25,28 +47,48 @@ private:
     using BodyType = callable::EachResolved<TCallable...>;
 
 public:
+    using Dependencies = getUniqueDependencies<TCallable...>;
     UpdateBody(TCallable&&... callables_);
 };
+
+// Component of a CompoundState
+// Represents it's incoming pipe to which other states connect
+// Each component is called every time, callable::EachResolved resolves dependencies
+template<typename... TCallable>
+class CompoundInPipe : public callable::EachResolved<TCallable...>
+{
+private:
+    using BodyType = callable::EachResolved<TCallable...>;
+
+public:
+    using Dependencies = getUniqueDependencies<TCallable...>;
+    CompoundInPipe(TCallable&&... callables_);
+};
+
+// Component of a CompoundState
+// Represents it's outgoing pipe, connected to a certain incoming pipe
+// Each component is called every time, callable::EachResolved resolves dependencies
+/*template<typename... TCallable>
+class CompoundOutPipe : public callable::EachResolved<TCallable...>
+{
+private:
+    using BodyType = callable::EachResolved<TCallable...>;
+
+public:
+    using Dependencies = getUniqueDependencies<TCallable...>;
+    CompoundOutPipe(TCallable&&... callables_);
+};*/
+
+template<typename... TPipes>
+constexpr auto InPipeSet(TPipes&&... pipes_);
 
 
 template<typename T>
 void dumpType();
 
-// Same as below, but for a single type
-template<typename T>
-constexpr auto collectAllDependencies();
-
-// Take unique components, return all their dependencies (at Ty::Dependencies) in 1 list
-template<typename T, typename... Ty>
-constexpr auto collectAllDependencies() requires (sizeof...(Ty) > 0);
-
-// Take type list, return type list with only unique types
-template<typename... Ts>
-constexpr auto getUniqueFromDeps(TypeList<Ts...>);
-
-// Take list of types, get only unique dependencies (at Ts::Dependencies)
-template<typename... Ts>
-using getUniqueDependencies = decltype(getUniqueFromDeps(collectAllDependencies<Ts...>()));
+// Specialization in case of an empty typelist
+//template<typename... Ts> requires (sizeof...(Ts) == 0)
+//using getUniqueDependencies = decltype(getUniqueFromDeps(collectAllDependencies<Ts...>()));
 
 
 // Placeholders
@@ -65,8 +107,8 @@ struct UpdateVelocity {
 struct ChangeAnim {
     ResID anim = 0;
 
-    using Dependencies = TypeList<ComponentTransform, ComponentPhysical, ComponentAnimationRenderable>;
-    void update(ComponentTransform&, ComponentPhysical&, ComponentAnimationRenderable&) const;
+    using Dependencies = TypeList<const ComponentTransform, const ComponentPhysical, ComponentAnimationRenderable>;
+    void update(const ComponentTransform&, const ComponentPhysical&, ComponentAnimationRenderable&) const;
 };
 
 // Interface for a compound state
@@ -99,35 +141,26 @@ public:
     void update(UpdArg arg_) override;
 };
 
-// Component of a CompoundState
-// Represents it's incoming pipe to which other states connect
-// Each component is called every time, callable::EachResolved resolves dependencies
-template<typename... Args>
-class CompoundPipe
-{
-
-};
-
-template<typename... TUpdateComponents>
+template<typename TUpdateBody, typename TInPipes>
 class CompoundState
 {
 public:
-    using Dependencies = getUniqueDependencies<TUpdateComponents...>;
+    using Dependencies = typename TUpdateBody::Dependencies;
 
-    CompoundState(UpdateBody<TUpdateComponents...> &&updateBody_);
+    CompoundState(TUpdateBody &&updateBody_, TInPipes &&inPipes_);
 
     CompoundState(const CompoundState&) = delete;
     CompoundState(CompoundState&&) noexcept = default;
     CompoundState &operator=(const CompoundState&) = delete;
     CompoundState &operator=(CompoundState&&) noexcept = default;
 
-    void update(Dependencies::toTupleRefs dependencies_) ;
-
+    void update(Dependencies::toTupleRefs dependencies_);
 
     void dump(std::ostream& out_, int indent_) const;
 
 protected:
-    UpdateBody<TUpdateComponents...> m_updateBody;
+    TUpdateBody m_updateBody;
+    TInPipes m_inPipes;
 };
 
 template<typename... TStates>

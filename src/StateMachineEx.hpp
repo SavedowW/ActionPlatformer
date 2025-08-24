@@ -14,6 +14,18 @@ UpdateBody<TCallable...>::UpdateBody(TCallable&&... callables_) :
     BodyType(std::forward<TCallable>(callables_)...)
 {}
 
+template<typename... TCallable>
+CompoundInPipe<TCallable...>::CompoundInPipe(TCallable&&... callables_) :
+    BodyType(std::forward<TCallable>(callables_)...)
+{}
+
+template<typename... TPipes>
+constexpr auto formInPipeSet(TPipes&&... pipes_)
+{
+    return std::make_tuple(std::forward<TPipes>(pipes_)...);
+}
+
+
 template<typename T>
 constexpr auto collectAllDependencies()
 {
@@ -24,6 +36,13 @@ template<typename T, typename... Ty>
 constexpr auto collectAllDependencies() requires (sizeof...(Ty) > 0)
 {
     return typename T::Dependencies() + collectAllDependencies<Ty...>();
+}
+
+// Take unique components, return all their dependencies (at Ty::Dependencies) in 1 list
+template<typename... Ty>
+constexpr auto collectAllDependencies() requires (sizeof...(Ty) == 0)
+{
+    return TypeList<>{};
 }
 
 template<typename... Ts>
@@ -40,9 +59,9 @@ StateAdapter<UpdArg, T>::StateAdapter(Args&&... args_) :
 {}
 
 template<typename UpdArg, typename T>
-void StateAdapter<UpdArg, T>::dump(std::ostream& out_, int indent_) const
+void StateAdapter<UpdArg, T>::dump(std::ostream&, int) const
 {
-    T::dump(out_, indent_);
+    //T::dump(out_, indent_);
 }
 
 template<typename UpdArg, typename T>
@@ -62,14 +81,15 @@ void StateAdapter<UpdArg, T>::update(UpdArg arg_)
     T::update(refs);
 }
 
-template<typename... TUpdateComponents>
-CompoundState<TUpdateComponents...>::CompoundState(UpdateBody<TUpdateComponents...> &&updateBody_) :
-    m_updateBody(std::move(updateBody_))
+template<typename TUpdateBody, typename TInPipes>
+CompoundState<TUpdateBody, TInPipes>::CompoundState(TUpdateBody &&updateBody_, TInPipes &&inPipes_) :
+    m_updateBody(std::move(updateBody_)),
+    m_inPipes(std::move(inPipes_))
 {
 }
 
-template<typename... TUpdateComponents>
-void CompoundState<TUpdateComponents...>::update(Dependencies::toTupleRefs dependencies_)
+template<typename TUpdateBody, typename TInPipes>
+void CompoundState<TUpdateBody, TInPipes>::update(Dependencies::toTupleRefs dependencies_)
 {
     std::cout << "Real update with ";
     dumpType<decltype(dependencies_)>();
@@ -77,16 +97,10 @@ void CompoundState<TUpdateComponents...>::update(Dependencies::toTupleRefs depen
     m_updateBody(dependencies_);
 }
 
-template<typename... TUpdateComponents>
-void CompoundState<TUpdateComponents...>::dump(std::ostream& out_, int indent_) const
+template<typename TUpdateBody, typename TInPipes>
+void CompoundState<TUpdateBody, TInPipes>::dump(std::ostream&, int) const
 {
-    out_ << std::string(indent_, ' ') << '+' << ttypedata<CompoundState>::name << "\n";
-
-    ([&]
-    {
-        out_ << std::string(indent_ + 1, ' ') << '>' << typedata<TUpdateComponents>::name << "\n";
-
-    } (), ...);
+    // No dump yet
 }
 
 
@@ -97,7 +111,7 @@ EStateMachine<TStates...>::Iterator::Iterator(EStateMachine<TStates...> &machine
 
 template<typename... TStates>
 EStateMachine<TStates...>::EStateMachine(std::string &&name_, TStates&&... states_) :
-    m_name(name_)
+    m_name(std::move(name_))
 {
     ([&]
     {
@@ -106,16 +120,16 @@ EStateMachine<TStates...>::EStateMachine(std::string &&name_, TStates&&... state
 }
 
 template<typename... TStates>
-void EStateMachine<TStates...>::dump(std::ostream& out_, int indent_) const
+void EStateMachine<TStates...>::dump(std::ostream&, int) const
 {
-    out_ << std::string(indent_, ' ') << m_name << " => ";
+    /*out_ << std::string(indent_, ' ') << m_name << " => ";
     Dependencies::dump(out_);
     out_ << "\n";
 
     for (const auto &state : m_states)
     {
         state->dump(out_, indent_ + 2);
-    }
+    }*/
 }
 
 template<typename... TStates>

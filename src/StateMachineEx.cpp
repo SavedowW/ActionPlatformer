@@ -22,7 +22,7 @@ void UpdateVelocity::update(ComponentPhysical &phys_, ComponentTransform &trans_
     trans_.m_orientation = (x > 0 ? ORIENTATION::RIGHT : ORIENTATION::LEFT);
 }
 
-void ChangeAnim::update(ComponentTransform&, ComponentPhysical&, ComponentAnimationRenderable &ren_) const
+void ChangeAnim::update(const ComponentTransform&, const ComponentPhysical&, ComponentAnimationRenderable &ren_) const
 {
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 

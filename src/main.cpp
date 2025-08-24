@@ -15,7 +15,7 @@
 #include <type_traits>
 #include <vector>
 
-//#define EXPERIMENTS
+#define EXPERIMENTS
 
 #ifdef EXPERIMENTS
 #endif
@@ -50,7 +50,12 @@ int main(int, char**)
 #endif
 
     EStateMachine sm("root",
-        CompoundState(UpdateBody(UpdateVelocity{.x=1.0f, .y=-5.118f}, ChangeAnim{123123}))
+        CompoundState(
+            UpdateBody(UpdateVelocity{.x=1.0f, .y=-5.118f}, ChangeAnim{123123}),
+            formInPipeSet(
+                CompoundInPipe(UpdateVelocity{.x=0.0f, .y=-5.0f}),
+                CompoundInPipe())
+        )
         //CompoundState(UpdateVelocity{}),
         //CompoundState(UpdateVelocity{}, UpdatePos{}, ChangeAnim{})
     );
