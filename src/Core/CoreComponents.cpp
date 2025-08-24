@@ -175,13 +175,13 @@ uint8_t FlashDelayedLinear::getFlashAlpha() const
 {
     if (m_currentFrame < m_delayDuration)
         return 255;
-    else
-        return static_cast<uint8_t>(255 * (1.0f - static_cast<float>(m_currentFrame - m_delayDuration) / m_fadeDuration));
+
+    return static_cast<uint8_t>(255 * (1.0f - static_cast<float>(m_currentFrame - m_delayDuration) / m_fadeDuration));
 }
 
 std::unique_ptr<Flash> FlashDelayedLinear::clone() const
 {
-    return std::unique_ptr<Flash>(new FlashDelayedLinear(m_delayDuration, m_fadeDuration, m_currentFrame));
+    return std::make_unique<FlashDelayedLinear>(m_delayDuration, m_fadeDuration, m_currentFrame);
 }
 
 Flash::Flash(uint32_t duration_, uint32_t firstFrame) :

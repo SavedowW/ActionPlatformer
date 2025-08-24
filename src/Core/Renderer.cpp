@@ -223,20 +223,21 @@ unsigned int Renderer::surfaceToTexture(SDL_Surface *sur_)
     return res;
 }
 
-unsigned int *Renderer::surfacesToTexture(const std::vector<SDL_Surface *> &surfaces_)
+std::vector<unsigned int> Renderer::surfacesToTexture(const std::vector<SDL_Surface *> &surfaces_)
 {
+    assert(!surfaces_.empty());
     for (const auto &el : surfaces_)
     {
         if (!el)
         {
             std::cout << "Trying to create texture from non-existing surface in array" << std::endl;
-            return nullptr;
+            return {};
         }
     }
 
-    auto *ids = new unsigned int[surfaces_.size()];
+    std::vector<unsigned int> ids(surfaces_.size(), 0);
 
-    glGenTextures(static_cast<int>(surfaces_.size()), ids);
+    glGenTextures(static_cast<int>(surfaces_.size()), ids.data());
 
     for (size_t i = 0; i < surfaces_.size(); ++i)
     {
@@ -258,7 +259,7 @@ unsigned int *Renderer::surfacesToTexture(const std::vector<SDL_Surface *> &surf
 
 unsigned int Renderer::createTextureRGBA(int width_, int height_)
 {
-    unsigned int texid;
+    unsigned int texid = 0;
 
     // Generating intermediate texture
     glGenTextures(1, &texid);
@@ -585,7 +586,7 @@ void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, 
     renderTexture(tex_, pos_ - camTL, size_, flip_, alpha_);
 }
 
-void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_, float degrees_, const Vector2<int> pivot_)
+void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_, float degrees_, const Vector2<int> &pivot_)
 {
     glBindVertexArray(m_spriteVAO);
     m_spriteShaderRotate.use();
@@ -614,19 +615,10 @@ void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, 
         rgt = pos_.x + size_.x;
     }
 
-
-    Vector2<int> vertices[] =
-    {
-        {lft, top},
-        {rgt, top},
-        {rgt, bot},
-        {lft, bot}
-    };
-
-    m_spriteShaderRotate.setVector2f("vertices[0]", vertices[0].x, vertices[0].y);
-    m_spriteShaderRotate.setVector2f("vertices[1]", vertices[1].x, vertices[1].y);
-    m_spriteShaderRotate.setVector2f("vertices[2]", vertices[2].x, vertices[2].y);
-    m_spriteShaderRotate.setVector2f("vertices[3]", vertices[3].x, vertices[3].y);
+    m_spriteShaderRotate.setVector2f("vertices[0]", lft, top);
+    m_spriteShaderRotate.setVector2f("vertices[1]", rgt, top);
+    m_spriteShaderRotate.setVector2f("vertices[2]", rgt, bot);
+    m_spriteShaderRotate.setVector2f("vertices[3]", lft, bot);
     m_spriteShaderRotate.setFloat("angle", utils::degreesToRadians(degrees_));
     m_spriteShaderRotate.setVector2f("pivotPoint", realPivot.x, realPivot.y);
 
@@ -635,7 +627,7 @@ void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_, float degrees_, const Vector2<int> pivot_, const Camera &cam_)
+void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_, float degrees_, const Vector2<int> &pivot_, const Camera &cam_)
 {
     Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
     renderTexture(tex_, pos_ - camTL, size_, flip_, degrees_, pivot_);

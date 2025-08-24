@@ -8,14 +8,14 @@
 //Texture array structure
 struct TextureArr
 {
-    TextureArr(unsigned int* tex_, size_t amount_, uint32_t totalDuration_, const std::vector<size_t> &framesData_, int w_, int h_, const Vector2<int> &origin_) :
-        m_tex(tex_),
+    TextureArr(std::vector<unsigned int> &&tex_, size_t amount_, uint32_t totalDuration_, std::vector<size_t> &&framesData_, int w_, int h_, const Vector2<int> &origin_) :
+        m_tex(std::move(tex_)),
         m_amount(amount_),
         m_w(w_),
         m_h(h_),
         m_totalDuration(totalDuration_),
         m_origin(origin_),
-        m_framesData(framesData_)
+        m_framesData(std::move(framesData_))
     {
     }
 
@@ -25,7 +25,7 @@ struct TextureArr
     }
 
     //Texture array and required info
-    unsigned int* m_tex;
+    std::vector<unsigned int> m_tex;
     size_t m_amount;
     int m_w, m_h;
     uint32_t m_totalDuration;

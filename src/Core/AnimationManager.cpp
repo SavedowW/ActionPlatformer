@@ -87,14 +87,14 @@ std::shared_ptr<TextureArr> AnimationManager::getTextureArr(ResID id_)
             timelineFileIds.addPair(key, fileid);
         }
 
-        unsigned int *texIds = Renderer::surfacesToTexture(surfaces);
+        auto texIds = Renderer::surfacesToTexture(surfaces);
 
         std::vector<size_t> framesData(duration);
         
         for (uint32_t i = 0; i < duration; ++i)
             framesData[i] = fileIdsToInternal[timelineFileIds[i]];
 
-        std::shared_ptr<TextureArr> reqElem(new TextureArr(texIds, surfaces.size(), duration, framesData, surfaces[0]->w, surfaces[0]->h, origin));
+        auto reqElem = std::make_shared<TextureArr>(std::move(texIds), surfaces.size(), duration, std::move(framesData), surfaces[0]->w, surfaces[0]->h, origin);
         m_textureArrs[id_].m_texArr = reqElem;
         return reqElem;
     }
@@ -134,8 +134,7 @@ ResID AnimationManager::getAnimID(const std::string &animName_) const
 TextureArr::~TextureArr()
 {
     //Logger::print("Release " + intToString(amount) + " textures\n");
-    glDeleteTextures(static_cast<int>(m_amount), m_tex);
-    delete[] m_tex;
+    glDeleteTextures(static_cast<int>(m_amount), m_tex.data());
 }
 
 Animation::Animation(AnimationManager &animationManager_, ResID id_, LOOPMETHOD isLoop_, int beginFrame_, int beginDirection_) :

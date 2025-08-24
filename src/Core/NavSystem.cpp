@@ -4,6 +4,8 @@
 #include "Profile.h"
 #include "Configuration.h"
 #include <limits>
+#include <memory>
+#include <memory>
 
 NavSystem::NavSystem(entt::registry &reg_, NavGraph &graph_) :
     m_reg(reg_),
@@ -160,23 +162,19 @@ NavPath::Follower NavSystem::makePath(Traverse::TraitT traverseTraits_, entt::en
     auto found = m_paths.find(traverseTraits_);
     if (found == m_paths.end())
     {
-        auto newpath = std::shared_ptr<NavPath>(new NavPath(m_graph, goal_, m_reg, traverseTraits_, maxTarRange_));
+        auto newpath = std::make_shared<NavPath>(m_graph, goal_, m_reg, traverseTraits_, maxTarRange_);
         m_paths[traverseTraits_] = newpath;
-        return NavPath::Follower{newpath};
+        return NavPath::Follower{.m_path=newpath};
     }
-    else
+
+    if (found->second.expired())
     {
-        if (found->second.expired())
-        {
-            auto newpath = std::shared_ptr<NavPath>(new NavPath(m_graph, goal_, m_reg, traverseTraits_, maxTarRange_));
-            found->second = newpath;
-            return NavPath::Follower{newpath};
-        }
-        else
-        {
-            return NavPath::Follower{found->second.lock()};
-        }
+        auto newpath = std::make_shared<NavPath>(m_graph, goal_, m_reg, traverseTraits_, maxTarRange_);
+        found->second = newpath;
+        return NavPath::Follower{.m_path=newpath};
     }
+
+    return NavPath::Follower{.m_path=found->second.lock()};
 }
 
 NavPath::NavPath(const NavGraph &graph_, entt::entity target_, entt::registry &reg_, Traverse::TraitT traits_, float targetMaxConnectionRange_) :

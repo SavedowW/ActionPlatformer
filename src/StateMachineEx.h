@@ -28,6 +28,7 @@ public:
     UpdateBody(TCallable&&... callables_);
 };
 
+
 template<typename T>
 void dumpType();
 
@@ -98,6 +99,9 @@ public:
     void update(UpdArg arg_) override;
 };
 
+// Component of a CompoundState
+// Represents it's incoming pipe to which other states connect
+// Each component is called every time, callable::EachResolved resolves dependencies
 template<typename... Args>
 class CompoundPipe
 {
