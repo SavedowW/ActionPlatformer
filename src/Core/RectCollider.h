@@ -18,51 +18,50 @@ struct Collider
     Vector2<int> m_size;
     
     public:
-    constexpr inline Collider operator+(const Vector2<int>& rhs_) const
+    constexpr Collider operator+(const Vector2<int>& rhs_) const
     {
         return { .m_topLeft=m_topLeft + rhs_ + Vector2{1, 1}, .m_size=m_size };
     }
 
-    constexpr inline int getLeftEdge() const
+    constexpr int getLeftEdge() const
     {
         return m_topLeft.x;
     }
 
-    constexpr inline int getRightEdge() const
+    constexpr int getRightEdge() const
     {
         return m_topLeft.x + m_size.x - 1;
     }
 
-    constexpr inline int getTopEdge() const
+    constexpr int getTopEdge() const
     {
         return m_topLeft.y;
     }
 
-    constexpr inline int getBottomEdge() const
+    constexpr int getBottomEdge() const
     {
         return m_topLeft.y + m_size.y - 1;
     }
 
-    //First 6 bits describe horizontal overlap, second 6 bits - vertical
-    inline Flag<OverlapResult> checkOverlap(const Collider& rhs_) const
+    Flag<OverlapResult> checkOverlap(const Collider& rhs_) const
     {
         Flag<OverlapResult> res = OverlapResult::NONE;
 
-        if (!( (getRightEdge() < rhs_.getLeftEdge()) || (getLeftEdge() > rhs_.getRightEdge()) ))
+        if ( (getRightEdge() >= rhs_.getLeftEdge()) && (getLeftEdge() <= rhs_.getRightEdge()) )
             res |= OverlapResult::OVERLAP_X;
 
-        if (!( (getBottomEdge() < rhs_.getTopEdge()) || (getTopEdge() > rhs_.getBottomEdge()) ))
+        if ( (getBottomEdge() >= rhs_.getTopEdge()) && (getTopEdge() <= rhs_.getBottomEdge()) )
             res |= OverlapResult::OVERLAP_Y;
 
         return res;
     }
 
-    constexpr inline int getSquare() const
+    constexpr int getSquare() const
     {
         return m_size.x * m_size.y;
     }
 
-    constexpr inline float getOwnOverlapPortion(const Collider &rhs_) const
+    constexpr float getOwnOverlapPortion(const Collider &rhs_) const
     {
         Vector2<int> tl_max{std::max(getLeftEdge(), rhs_.getLeftEdge()), std::max(getTopEdge(), rhs_.getTopEdge())};
         Vector2<int> br_min{std::min(getRightEdge(), rhs_.getRightEdge()), std::min(getBottomEdge(), rhs_.getBottomEdge())};
@@ -73,7 +72,7 @@ struct Collider
         return float((br_min - tl_max + Vector2{1, 1}).square()) / m_size.square();
     }
 
-    constexpr inline Collider getOverlapArea(const Collider &rhs_) const
+    constexpr Collider getOverlapArea(const Collider &rhs_) const
     {
         Vector2<int> tl_max{std::max(getLeftEdge(), rhs_.getLeftEdge()), std::max(getTopEdge(), rhs_.getTopEdge())};
         Vector2<int> br_min{std::min(getRightEdge(), rhs_.getRightEdge()), std::min(getBottomEdge(), rhs_.getBottomEdge())};
@@ -81,7 +80,7 @@ struct Collider
         return Collider(tl_max, br_min - tl_max + Vector2{1, 1});
     }
 
-    constexpr inline bool includesPoint(const Vector2<int> point_) const
+    constexpr bool includesPoint(const Vector2<int> point_) const
     {
         auto delta = (point_ - m_topLeft);
         return delta.x < m_size.x && delta.y < m_size.y && delta.x >= 0 && delta.y >= 0;

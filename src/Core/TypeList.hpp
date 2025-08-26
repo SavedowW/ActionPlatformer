@@ -41,4 +41,37 @@ struct unique<TypeList<Ts...>, U, Us...>
 template <typename... Ts>
 using uniqueTypeList = typename unique<TypeList<>, Ts...>::type;
 
+
+// Same as below, but for a single type
+template<typename T>
+constexpr auto collectAllDependencies()
+{
+    return typename T::Dependencies();
+}
+
+// Take unique components, return all their dependencies (at Ty::Dependencies) in 1 list
+template<typename T, typename... Ty>
+constexpr auto collectAllDependencies() requires (sizeof...(Ty) > 0)
+{
+    return typename T::Dependencies() + collectAllDependencies<Ty...>();
+}
+
+// Take unique components, return all their dependencies (at Ty::Dependencies) in 1 list
+template<typename... Ty>
+constexpr auto collectAllDependencies() requires (sizeof...(Ty) == 0)
+{
+    return TypeList<>{};
+}
+
+// Take type list, return type list with only unique types
+template<typename... Ts>
+constexpr auto getUniqueFromDeps(TypeList<Ts...>)
+{
+    return uniqueTypeList<Ts...>();
+}
+
+// Take list of types, get only unique dependencies (at Ts::Dependencies)
+template<typename... Ts>
+using getUniqueDependencies = decltype(getUniqueFromDeps(collectAllDependencies<Ts...>()));
+
 #endif

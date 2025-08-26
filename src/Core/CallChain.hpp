@@ -12,20 +12,20 @@ Chain<TCallable...>::Chain(TCallable&&... callables_) :
 {}
 
 template<typename... TCallable>
-template<typename Arg>
-constexpr auto Chain<TCallable...>::operator()(const Arg& arg_)
+template<typename Arg, typename... Args>
+constexpr auto Chain<TCallable...>::operator()(const Arg& arg_, Args&... args_)
 {
-    return callRecursive(arg_);
+    return callRecursive(arg_, args_...);
 }
 
 template<typename... TCallable>
-template<size_t idx>
-constexpr auto Chain<TCallable...>::callRecursive(const auto &default_)
+template<size_t idx, typename... Args>
+constexpr auto Chain<TCallable...>::callRecursive(const auto &default_, Args&... args_)
 {
     if constexpr (idx == sizeof...(TCallable) - 1)
-        return std::get<sizeof...(TCallable) - idx - 1>(m_callables)(default_);
+        return std::get<sizeof...(TCallable) - idx - 1>(m_callables)(default_, args_...);
     else
-        return std::get<sizeof...(TCallable) - idx - 1>(m_callables)(callRecursive<idx + 1>(default_));
+        return std::get<sizeof...(TCallable) - idx - 1>(m_callables)(callRecursive<idx + 1>(default_), args_...);
 }
 
 template<typename... TCallable>

@@ -152,9 +152,9 @@ Vector2<float> ComponentParticlePhysics::peekRawOffset() const
 Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_)
 {
     if (trans_.m_orientation == ORIENTATION::LEFT)
-        return Collider{{trans_.m_pos.x - col_.m_topLeft.x - col_.m_size.x + 1, trans_.m_pos.y + col_.m_topLeft.y + 1}, col_.m_size};
-    else
-        return Collider{trans_.m_pos + col_.m_topLeft + Vector2{1, 1}, col_.m_size};
+        return Collider{.m_topLeft={trans_.m_pos.x - col_.m_topLeft.x - col_.m_size.x + 1, trans_.m_pos.y + col_.m_topLeft.y + 1}, .m_size=col_.m_size};
+
+    return Collider{.m_topLeft=trans_.m_pos + col_.m_topLeft + Vector2{1, 1}, .m_size=col_.m_size};
 }
 
 bool checkCurrentHitstop(entt::registry &reg_, const entt::entity &idx_)

@@ -64,7 +64,7 @@ int main(int, char**)
 
     decltype(sm)::Iterator it(sm);
 
-    sm.update(it, {.reg=&reg, .idx=ent});
+    sm.update(reg);
 
     std::cout << "Results: " << std::endl;
 

@@ -1,7 +1,6 @@
 #ifndef STATE_MACHINE_EX_HPP_
 #define STATE_MACHINE_EX_HPP_
 #include "StateMachineEx.h"
-#include "Core/CallChain.hpp"
 
 template<typename T>
 void dumpType()
@@ -19,36 +18,25 @@ CompoundInPipe<TCallable...>::CompoundInPipe(TCallable&&... callables_) :
     BodyType(std::forward<TCallable>(callables_)...)
 {}
 
+
+template<typename ConditionChain, typename RuleChain>
+CompoundOutPipe<ConditionChain, RuleChain>::CompoundOutPipe(ConditionChain &&conditionChain_, RuleChain &&ruleChain_) :
+    m_condition(std::move(conditionChain_)),
+    m_rule(std::move(ruleChain_))
+{}
+
+template<typename ConditionChain, typename RuleChain>
+template<typename... Components>
+auto CompoundOutPipe<ConditionChain, RuleChain>::condition(std::tuple<Components&...> &args_)
+{
+    return m_condition(args_);
+}
+
+
 template<typename... TPipes>
 constexpr auto formInPipeSet(TPipes&&... pipes_)
 {
     return std::make_tuple(std::forward<TPipes>(pipes_)...);
-}
-
-
-template<typename T>
-constexpr auto collectAllDependencies()
-{
-    return typename T::Dependencies();
-}
-
-template<typename T, typename... Ty>
-constexpr auto collectAllDependencies() requires (sizeof...(Ty) > 0)
-{
-    return typename T::Dependencies() + collectAllDependencies<Ty...>();
-}
-
-// Take unique components, return all their dependencies (at Ty::Dependencies) in 1 list
-template<typename... Ty>
-constexpr auto collectAllDependencies() requires (sizeof...(Ty) == 0)
-{
-    return TypeList<>{};
-}
-
-template<typename... Ts>
-constexpr auto getUniqueFromDeps(TypeList<Ts...>)
-{
-    return uniqueTypeList<Ts...>();
 }
 
 
@@ -133,9 +121,15 @@ void EStateMachine<TStates...>::dump(std::ostream&, int) const
 }
 
 template<typename... TStates>
-void EStateMachine<TStates...>::update(Iterator &it_, EntityAnywhere owner_)
+void EStateMachine<TStates...>::update(entt::registry &reg_)
 {
-    assert(it_.m_currentState);
+    Dependencies::dump(std::cout);
+    auto view = [&]<typename... Deps>(TypeList<Deps...>) {
+        
+        return reg_.view<Deps...>();
+    }(Dependencies());
+
+    /*assert(it_.m_currentState);
 
     auto refs = [&owner_]<typename... TDependency>(TypeList<TDependency...>){
         return owner_.reg->get<TDependency...>(owner_.idx);
@@ -144,7 +138,7 @@ void EStateMachine<TStates...>::update(Iterator &it_, EntityAnywhere owner_)
     std::cout << "Updating from: ";
     dumpType<decltype(refs)>();
 
-    it_.m_currentState->update(refs);
+    it_.m_currentState->update(refs);*/
 }
 
 template<typename... TStates>

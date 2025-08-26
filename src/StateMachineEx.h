@@ -4,6 +4,7 @@
 #include "Core/CallChain.h"
 #include "Core/TypeList.hpp"
 #include "Core/CoreComponents.h"
+#include "entt/entity/fwd.hpp"
 #include <cstdint>
 #include <iostream>
 
@@ -16,39 +17,18 @@ enum class EORIENTATION : int8_t
 };
 
 
-// Same as below, but for a single type
-template<typename T>
-constexpr auto collectAllDependencies();
-
-// Take unique components, return all their dependencies (at Ty::Dependencies) in 1 list
-template<typename T, typename... Ty>
-constexpr auto collectAllDependencies() requires (sizeof...(Ty) > 0);
-
-// Take unique components, return all their dependencies (at Ty::Dependencies) in 1 list
-template<typename... Ty>
-constexpr auto collectAllDependencies() requires (sizeof...(Ty) == 0);
-
-// Take type list, return type list with only unique types
-template<typename... Ts>
-constexpr auto getUniqueFromDeps(TypeList<Ts...>);
-
-// Take list of types, get only unique dependencies (at Ts::Dependencies)
-template<typename... Ts>
-using getUniqueDependencies = decltype(getUniqueFromDeps(collectAllDependencies<Ts...>()));
-
-
 // Component of a CompoundState
 // Represents it's update call
 // Each component is called every time, callable::EachResolved resolves dependencies
 template<typename... TCallable>
 struct UpdateBody : public callable::EachResolved<TCallable...>
 {
-private:
-    using BodyType = callable::EachResolved<TCallable...>;
-
 public:
     using Dependencies = getUniqueDependencies<TCallable...>;
     UpdateBody(TCallable&&... callables_);
+    
+private:
+    using BodyType = callable::EachResolved<TCallable...>;
 };
 
 // Component of a CompoundState
@@ -57,27 +37,32 @@ public:
 template<typename... TCallable>
 class CompoundInPipe : public callable::EachResolved<TCallable...>
 {
-private:
-    using BodyType = callable::EachResolved<TCallable...>;
-
 public:
     using Dependencies = getUniqueDependencies<TCallable...>;
     CompoundInPipe(TCallable&&... callables_);
+
+private:
+    using BodyType = callable::EachResolved<TCallable...>;
 };
 
 // Component of a CompoundState
 // Represents it's outgoing pipe, connected to a certain incoming pipe
-// Each component is called every time, callable::EachResolved resolves dependencies
-/*template<typename... TCallable>
-class CompoundOutPipe : public callable::EachResolved<TCallable...>
+// Condition is a condition to enter the state (inputs, orientation, etc)
+// Rule is a logic to be executed before transition if the condition is fulfilled
+template<typename ConditionChain, typename RuleChain>
+class CompoundOutPipe
 {
-private:
-    using BodyType = callable::EachResolved<TCallable...>;
-
 public:
-    using Dependencies = getUniqueDependencies<TCallable...>;
-    CompoundOutPipe(TCallable&&... callables_);
-};*/
+    using Dependencies = getUniqueDependencies<typename ConditionChain::Dependencies, typename RuleChain::Dependencies>;
+    CompoundOutPipe(ConditionChain &&conditionChain_, RuleChain &&ruleChain_);
+
+    template<typename... Components>
+    auto condition(std::tuple<Components&...> &args_);
+
+private:
+    ConditionChain m_condition;
+    RuleChain m_rule;
+};
 
 template<typename... TPipes>
 constexpr auto InPipeSet(TPipes&&... pipes_);
@@ -107,7 +92,7 @@ struct UpdateVelocity {
 struct ChangeAnim {
     ResID anim = 0;
 
-    using Dependencies = TypeList<const ComponentTransform, const ComponentPhysical, ComponentAnimationRenderable>;
+    using Dependencies = TypeList<ComponentTransform, ComponentPhysical, ComponentAnimationRenderable>;
     void update(const ComponentTransform&, const ComponentPhysical&, ComponentAnimationRenderable&) const;
 };
 
@@ -180,7 +165,7 @@ public:
 
     void dump(std::ostream& out_, int indent_) const;
 
-    void update(Iterator &it_, EntityAnywhere owner_);
+    void update(entt::registry &reg_);
 
     auto getInitialState();
 
