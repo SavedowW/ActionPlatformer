@@ -1,6 +1,5 @@
 #ifndef STATE_MACHINE_EX_H_
 #define STATE_MACHINE_EX_H_
-#include "World.h"
 #include "Core/CallChain.h"
 #include "Core/TypeList.hpp"
 #include "Core/CoreComponents.h"

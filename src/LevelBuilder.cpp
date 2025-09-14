@@ -137,23 +137,30 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
     }
 }
 
-entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obstacleId_, ColliderPointRouting *route_)
+entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obstacleId_, ColliderPointRouting &route_)
 {
     auto newid = m_reg.create();
-    auto &tr = m_reg.emplace<ComponentTransform>(newid, worldCld_.m_tlPos, ORIENTATION::RIGHT);
-    m_reg.emplace<ComponentStaticCollider>(newid, ComponentStaticCollider(tr.m_pos, SlopeCollider({0, 0}, worldCld_.m_size, worldCld_.m_topAngleCoef), obstacleId_));
-    if (route_)
-    {
-        m_reg.emplace<MoveCollider2Points>(newid, worldCld_.m_tlPos + worldCld_.m_size / 2.0f - route_->m_origin.m_pos);
-        m_reg.emplace<ColliderRoutingIterator>(newid, *route_);
-        m_reg.emplace<ComponentResetStatic<MoveCollider2Points>>(newid);
-        m_reg.emplace<ComponentResetStatic<ColliderRoutingIterator>>(newid);
-    }
+    auto &tr = m_reg.emplace<ComponentTransform>(newid, worldCld_.topLeft(), ORIENTATION::RIGHT);
+    m_reg.emplace<ComponentStaticCollider>(newid, ComponentStaticCollider(tr.m_pos, worldCld_.movedBy(-worldCld_.topLeft()), obstacleId_));
+
+    m_reg.emplace<MoveCollider2Points>(newid, route_.m_origin.m_pos - worldCld_.topLeft());
+    m_reg.emplace<ColliderRoutingIterator>(newid, route_);
+    m_reg.emplace<ComponentResetStatic<MoveCollider2Points>>(newid);
+    m_reg.emplace<ComponentResetStatic<ColliderRoutingIterator>>(newid);
 
     return newid;
 }
 
-Traverse::TraitT LevelBuilder::lineToTraverse(const std::string &line_) const
+entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obstacleId_)
+{
+    auto newid = m_reg.create();
+    auto &tr = m_reg.emplace<ComponentTransform>(newid, worldCld_.topLeft(), ORIENTATION::RIGHT);
+    m_reg.emplace<ComponentStaticCollider>(newid, ComponentStaticCollider(tr.m_pos, worldCld_.movedBy(-worldCld_.topLeft()), obstacleId_));
+    
+    return newid;
+}
+
+Traverse::TraitT LevelBuilder::lineToTraverse(const std::string &line_)
 {
     std::vector<TraverseTraits> traits;
     bool requireFallthrough = false;
@@ -355,8 +362,7 @@ void LevelBuilder::loadCollisionLayer(const nlohmann::json &json_, ColliderRoute
             int miny_at_minx = std::numeric_limits<int>::max();
             int miny_at_maxx = std::numeric_limits<int>::max();
 
-            int maxy_at_minx = std::numeric_limits<int>::min();
-            int maxy_at_maxx = std::numeric_limits<int>::min();
+            int maxy = std::numeric_limits<int>::min();
 
             for (const auto &vertex : cld["polygon"])
             {
@@ -368,35 +374,26 @@ void LevelBuilder::loadCollisionLayer(const nlohmann::json &json_, ColliderRoute
                 minx = std::min(minx, vvx.x);
                 maxx = std::max(maxx, vvx.x);
 
+                maxy = std::max(maxy, vvx.y);
+
                 if (vvx.x == minx)
-                {
                     miny_at_minx = std::min(miny_at_minx, vvx.y);
-                    maxy_at_minx = std::max(maxy_at_minx, vvx.y);
-                }
                 else if (vvx.x == maxx)
-                {
                     miny_at_maxx = std::min(miny_at_maxx, vvx.y);
-                    maxy_at_maxx = std::max(maxy_at_maxx, vvx.y);
-                }
                 else
-                {
                     throw std::logic_error("Failed to read polygon vertex for collider: x coord is not min or max");
-                }
             }
 
-            scld.set({.tl = {minx, miny_at_minx}, 
-                               .tr = {maxx, miny_at_maxx}, 
-                               .br = {maxx, maxy_at_maxx},
-                               .bl = {minx, maxy_at_minx}});
+            scld.set({minx, miny_at_minx}, {maxx - 1, miny_at_maxx}, maxy - 1);
         }
         else
         {
-            Vector2<float> size{
-                static_cast<float>(cld["width"]),
-                static_cast<float>(cld["height"])
+            Vector2<int> size{
+                static_cast<int>(cld["width"]),
+                static_cast<int>(cld["height"])
             };
 
-            scld.set(tl, size, 0);
+            scld.set(tl, tl.add(size.x - 1, 0), tl.y + size.y - 1);
         }
 
         if (cld.contains("properties"))
@@ -410,7 +407,7 @@ void LevelBuilder::loadCollisionLayer(const nlohmann::json &json_, ColliderRoute
             }
         }
 
-        m_colliderIds[objectId] = addCollider(scld, obstacleId, route);
+        m_colliderIds[objectId] = (route ? addCollider(scld, obstacleId, *route) : addCollider(scld, obstacleId));
     }
 }
 
@@ -536,7 +533,7 @@ void LevelBuilder::loadColliderRoutingLayer(const nlohmann::json &json_, Collide
                 {
                     std::string ruledescr = prop["value"];
                     std::stringstream ss(ruledescr);
-                    int from;
+                    int from = 0;
                     std::string to;
                     ss >> from;
                     ss >> to;

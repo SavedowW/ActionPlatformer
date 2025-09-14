@@ -49,7 +49,7 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentTransform &trans_, Co
 
     twop_.m_timer.update();
 
-    const Vector2<float> newtl = twop_.m_point2 + (twop_.m_point1 - twop_.m_point2) * twop_.m_timer.getProgressNormalized() - scld_.m_proto.m_size / 2.0f;
+    const Vector2<float> newtl = twop_.m_point2 + (twop_.m_point1 - twop_.m_point2) * twop_.m_timer.getProgressNormalized();
 
     moveColliderAt(trans_, scld_, newtl);
 }
@@ -117,13 +117,13 @@ void DynamicColliderSystem::solveRouteIter(MoveCollider2Points &m2p_, ColliderRo
 
 void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, ComponentStaticCollider &scld_, const Vector2<int> &newtl_)
 {
+    const Vector2<float> offset = newtl_ - trans_.m_pos;
+
     // Resolved collider with full offset applied
-    const SlopeCollider newcld(newtl_, scld_.m_proto.m_size, scld_.m_proto.m_topAngleCoef);
+    const SlopeCollider newcld = scld_.m_proto.movedBy(newtl_);
 
     // Resolved collider with only Y offset applied
-    const SlopeCollider newcldYOnly(Vector2{trans_.m_pos.x, newtl_.y}, scld_.m_proto.m_size, scld_.m_proto.m_topAngleCoef);
-
-    const Vector2<float> offset = newtl_ - trans_.m_pos;
+    const SlopeCollider newcldYOnly = scld_.m_proto.movedBy({trans_.m_pos.x, newtl_.y});
 
     const auto dynamics = m_reg.view<ComponentTransform, ComponentPhysical>();
     for (auto [idx, trans, phys] : dynamics.each())
@@ -146,10 +146,10 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
         int oldHighest = 0;
         int newHighest = 0;
 
-        bool attachedLeft = (phys.m_onWall != entt::null) && trans.m_orientation == ORIENTATION::LEFT && oldRightEdge + 1 == scld_.m_resolved.m_points.tl.x
-                        && pb.m_topLeft.y + pb.m_size.y / 2 >= scld_.m_resolved.m_points.tl.y && pb.m_topLeft.y + pb.m_size.y / 2 <= scld_.m_resolved.m_points.bl.y;
-        bool attachedRight = (phys.m_onWall != entt::null) && trans.m_orientation == ORIENTATION::RIGHT && oldLeftEdge - 1 == scld_.m_resolved.m_points.tr.x
-                        && pb.m_topLeft.y + pb.m_size.y / 2 >= scld_.m_resolved.m_points.tr.y && pb.m_topLeft.y + pb.m_size.y / 2 <= scld_.m_resolved.m_points.br.y;
+        const bool attachedLeft = (phys.m_onWall != entt::null) && trans.m_orientation == ORIENTATION::LEFT && oldRightEdge + 1 == scld_.m_resolved.leftX()
+                        && pb.m_topLeft.y + pb.m_size.y / 2 >= scld_.m_resolved.leftY() && pb.m_topLeft.y + pb.m_size.y / 2 <= scld_.m_resolved.bottomY();
+        const bool attachedRight = (phys.m_onWall != entt::null) && trans.m_orientation == ORIENTATION::RIGHT && oldLeftEdge - 1 == scld_.m_resolved.rightX()
+                        && pb.m_topLeft.y + pb.m_size.y / 2 >= scld_.m_resolved.rightY() && pb.m_topLeft.y + pb.m_size.y / 2 <= scld_.m_resolved.bottomY();
         
 
         auto oldColres = scld_.m_resolved.checkOverlap(pb, oldHighest);
@@ -192,14 +192,14 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                 }
 
                 // If was below and now overlaps
-                else if (collision && oldTop > scld_.m_resolved.m_points.br.y)
+                else if (collision && oldTop > scld_.m_resolved.bottomY())
                 {
                     if (fallthrough && scld_.m_obstacleId && !fallthrough->touchedObstacleBottom(scld_.m_obstacleId))
                         continue;
 
                     //std::cout << "Teleporting entity to bottom while moving platform down" << std::endl;
                     // Teleport to bottom
-                    trans.m_pos.y = newcld.m_points.br.y + pb.m_size.y;
+                    trans.m_pos.y = newcld.bottomY() + pb.m_size.y;
                     pb = phys.m_pushbox + trans.m_pos;
                 }
             }
@@ -208,10 +208,10 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
             if (attachedLeft || attachedRight)
             {
                 //std::cout << "Attached, pushing in the movement direction (vertical)" << std::endl;
-                if (trans.m_orientation == ORIENTATION::LEFT && oldRightEdge + 1 == scld_.m_resolved.m_points.tl.x
-                        && pb.m_topLeft.y + pb.m_size.y / 2 >= scld_.m_resolved.m_points.tl.y && pb.m_topLeft.y + pb.m_size.y / 2 <= scld_.m_resolved.m_points.bl.y ||
-                    trans.m_orientation == ORIENTATION::RIGHT && oldLeftEdge - 1 == scld_.m_resolved.m_points.tr.x
-                        && pb.m_topLeft.y + pb.m_size.y / 2 >= scld_.m_resolved.m_points.tr.y && pb.m_topLeft.y + pb.m_size.y / 2 <= scld_.m_resolved.m_points.br.y)
+                if (trans.m_orientation == ORIENTATION::LEFT && oldRightEdge + 1 == scld_.m_resolved.leftX()
+                        && pb.m_topLeft.y + pb.m_size.y / 2 >= scld_.m_resolved.leftY() && pb.m_topLeft.y + pb.m_size.y / 2 <= scld_.m_resolved.bottomY() ||
+                    trans.m_orientation == ORIENTATION::RIGHT && oldLeftEdge - 1 == scld_.m_resolved.rightX()
+                        && pb.m_topLeft.y + pb.m_size.y / 2 >= scld_.m_resolved.rightY() && pb.m_topLeft.y + pb.m_size.y / 2 <= scld_.m_resolved.bottomY())
                 {
                     phys.m_extraoffset.y = (abs(phys.m_extraoffset.y) > abs(offset.y) ? phys.m_extraoffset.y : offset.y);
                 }
@@ -232,12 +232,10 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                 if ((newColres & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
                 {
                     auto rightest = newcld.getMostRightAt(pb);
-                    auto onSlope = !(rightest == newcldYOnly.m_points.tr.x);
+                    auto onSlope = !(rightest == newcldYOnly.rightX());
 
-                    if (fallthrough && onSlope && scld_.m_obstacleId && !fallthrough->touchedObstacleSlope(scld_.m_obstacleId))
-                        continue;
-
-                    else if (fallthrough && !onSlope && scld_.m_obstacleId && !fallthrough->touchedObstacleSide(scld_.m_obstacleId))
+                    if (fallthrough &&  onSlope && scld_.m_obstacleId && !fallthrough->touchedObstacleSlope(scld_.m_obstacleId) ||
+                        fallthrough && !onSlope && scld_.m_obstacleId && !fallthrough->touchedObstacleSide(scld_.m_obstacleId))
                         continue;
 
                     //std::cout << "Teleporting to right " << rand() << std::endl;
@@ -260,12 +258,10 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
             else if (offset.x < 0)
             {
                 auto leftest = newcld.getMostLeftAt(pb);
-                auto onSlope = !(leftest == newcldYOnly.m_points.tl.x);
+                auto onSlope = !(leftest == newcldYOnly.leftX());
 
-                if (fallthrough && onSlope && scld_.m_obstacleId && !fallthrough->touchedObstacleSlope(scld_.m_obstacleId))
-                    continue;
-
-                else if (fallthrough && !onSlope && scld_.m_obstacleId && !fallthrough->touchedObstacleSide(scld_.m_obstacleId))
+                if (fallthrough &&  onSlope && scld_.m_obstacleId && !fallthrough->touchedObstacleSlope(scld_.m_obstacleId) ||
+                    fallthrough && !onSlope && scld_.m_obstacleId && !fallthrough->touchedObstacleSide(scld_.m_obstacleId))
                     continue;
 
                 // If now collides

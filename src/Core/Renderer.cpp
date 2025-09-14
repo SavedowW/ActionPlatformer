@@ -449,17 +449,17 @@ void Renderer::drawCollider(const Collider &cld_, const SDL_Color &fillCol_, con
 
 void Renderer::drawCollider(const SlopeCollider &cld_, const SDL_Color &fillCol_, const Camera &cam_)
 {
-    Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
+    const Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
 
     glBindVertexArray(m_rectVAO);
     m_rectShader.use();
 
     m_rectShader.setVector4f("color", fillCol_.r / 255.0f, fillCol_.g / 255.0f, fillCol_.b / 255.0f, fillCol_.a / 255.0f);
     
-    m_rectShader.setVector2f("vertices[0]", cld_.m_points.tl.x - camTL.x, cld_.m_points.tl.y - camTL.y);
-    m_rectShader.setVector2f("vertices[1]", cld_.m_points.tr.x - camTL.x + 1, cld_.m_points.tr.y - camTL.y);
-    m_rectShader.setVector2f("vertices[2]", cld_.m_points.br.x - camTL.x + 1, cld_.m_points.br.y - camTL.y + 1);
-    m_rectShader.setVector2f("vertices[3]", cld_.m_points.bl.x - camTL.x, cld_.m_points.bl.y - camTL.y + 1);
+    m_rectShader.setVector2f("vertices[0]", cld_.leftX() - camTL.x, cld_.leftY() - camTL.y);
+    m_rectShader.setVector2f("vertices[1]", cld_.rightX() - camTL.x + 1, cld_.rightY() - camTL.y);
+    m_rectShader.setVector2f("vertices[2]", cld_.rightX() - camTL.x + 1, cld_.bottomY() - camTL.y + 1);
+    m_rectShader.setVector2f("vertices[3]", cld_.leftX() - camTL.x, cld_.bottomY() - camTL.y + 1);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
@@ -481,7 +481,7 @@ void Renderer::renderTextureOutlined(const unsigned int tex_, const Vector2<int>
     glBindVertexArray(m_spriteVAO);
     m_spriteOutlinedShader.use();
 
-    int top, bot, lft, rgt;
+    int top = 0, bot = 0, lft = 0, rgt = 0;
     if (flip_ & SDL_FLIP_VERTICAL)
     {
         top = pos_.y + size_.y;
@@ -503,19 +503,10 @@ void Renderer::renderTextureOutlined(const unsigned int tex_, const Vector2<int>
         rgt = pos_.x + size_.x;
     }
 
-
-    Vector2<int> vertices[] =
-    {
-        {lft, top},
-        {rgt, top},
-        {rgt, bot},
-        {lft, bot}
-    };
-
-    m_spriteOutlinedShader.setVector2f("vertices[0]", vertices[0].x, vertices[0].y);
-    m_spriteOutlinedShader.setVector2f("vertices[1]", vertices[1].x, vertices[1].y);
-    m_spriteOutlinedShader.setVector2f("vertices[2]", vertices[2].x, vertices[2].y);
-    m_spriteOutlinedShader.setVector2f("vertices[3]", vertices[3].x, vertices[3].y);
+    m_spriteOutlinedShader.setVector2f("vertices[0]", lft, top);
+    m_spriteOutlinedShader.setVector2f("vertices[1]", rgt, top);
+    m_spriteOutlinedShader.setVector2f("vertices[2]", rgt, bot);
+    m_spriteOutlinedShader.setVector2f("vertices[3]", lft, bot);
 
     glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_2D, tex_);

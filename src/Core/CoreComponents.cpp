@@ -97,7 +97,7 @@ bool ComponentObstacleFallthrough::setIgnoreObstacle(int obstacleId_)
 ComponentStaticCollider::ComponentStaticCollider(const Vector2<float> &pos_, const SlopeCollider &collider_, int obstacleId_) :
     m_obstacleId(obstacleId_),
     m_proto(collider_),
-    m_resolved(pos_, collider_.m_size, collider_.m_topAngleCoef)
+    m_resolved(collider_.movedBy(pos_))
 {
 
 }
@@ -244,7 +244,7 @@ RenderLayer::~RenderLayer()
 
 bool RenderLayer::m_dirtyOrder = false;
 
-MoveCollider2Points::MoveCollider2Points(const Vector2<float> offset_) :
+MoveCollider2Points::MoveCollider2Points(const Vector2<float> &offset_) :
     m_offset(offset_)
 {
 }

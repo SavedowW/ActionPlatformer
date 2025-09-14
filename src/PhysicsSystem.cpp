@@ -151,15 +151,13 @@ bool PhysicsSystem::attemptOffsetDown(const auto &clds_, const Vector2<float> &o
 
             if (!noLanding_)
             {
-                if (cld.m_resolved.m_topAngleCoef != 0)
-                    touchedSlope_ = cld.m_resolved.m_topAngleCoef;
+                if (!cld.m_resolved.isFlat())
+                    touchedSlope_ = cld.m_resolved.topAngleCoef();
                 onGround_ = idx;
             }
 
-            if (phys_.m_velocity.y > 0)
-                phys_.m_velocity.y = 0;
-            if (phys_.m_inertia.y > 0)
-                phys_.m_inertia.y = 0;
+            phys_.m_velocity.y = std::min<float>(phys_.m_velocity.y, 0);
+            phys_.m_inertia.y = std::min<float>(phys_.m_inertia.y, 0);
 
             return false;
         }
@@ -189,7 +187,7 @@ bool PhysicsSystem::attemptOffsetUp(const auto &clds_, const Vector2<float> &ori
 
             //std::cout << "Touched ceiling, stopping at bottom, offset.y < 0\n";
 
-            auto overlapPortion = utils::getOverlapPortion(newPb.getLeftEdge(), newPb.getRightEdge(), cld.m_resolved.m_points.tl.x, cld.m_resolved.m_points.tr.x);
+            auto overlapPortion = utils::getOverlapPortion(newPb.getLeftEdge(), newPb.getRightEdge(), cld.m_resolved.leftX(), cld.m_resolved.rightX());
 
             if (overlapPortion >= 0.7f)
             {
@@ -246,7 +244,7 @@ bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, ComponentTransfor
                     completeHighest = highest;
                     mustRise = true;
                     onGround = idx;
-                    touchedSlope = cld.m_resolved.m_topAngleCoef;
+                    touchedSlope = cld.m_resolved.topAngleCoef();
                 }
             }
             // If its an actual wall
@@ -255,7 +253,7 @@ bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, ComponentTransfor
                 if (cld.m_obstacleId && !obsFallthrough_.touchedObstacleSide(cld.m_obstacleId))
                     continue;
 
-                auto overlapPortion = utils::getOverlapPortion(newPb.getTopEdge(), newPb.getBottomEdge(), highest, cld.m_resolved.m_points.br.y);
+                auto overlapPortion = utils::getOverlapPortion(newPb.getTopEdge(), newPb.getBottomEdge(), highest, cld.m_resolved.bottomY());
 
                 if (overlapPortion >= 0.15)
                 {
@@ -285,10 +283,8 @@ bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, ComponentTransfor
                 onGround_ = onGround;
             }
 
-            if (phys_.m_velocity.y > 0)
-                phys_.m_velocity.y = 0;
-            if (phys_.m_inertia.y > 0)
-                phys_.m_inertia.y = 0;
+            phys_.m_velocity.y = std::min<float>(phys_.m_velocity.y, 0);
+            phys_.m_inertia.y = std::min<float>(phys_.m_inertia.y, 0);
         }
     }
     else
@@ -342,7 +338,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
     // X axis movement handling
     {
         const int originalY = trans_.m_pos.y;
-        const unsigned int maxOffsetY = static_cast<unsigned int>(1.3f * abs(offset.x));
+        const auto maxOffsetY = static_cast<unsigned int>(1.3f * abs(static_cast<float>(offset.x)));
 
         // Moving to the right
         if (offset.x > 0)
@@ -428,8 +424,8 @@ bool PhysicsSystem::magnetEntity(const auto &clds_, ComponentTransform &trans_, 
     if (phys_.m_magnetLimit <= 0)
         return false;
 
-    auto pb = phys_.m_pushbox + trans_.m_pos;
-    auto bot = pb.getBottomEdge();
+    const auto pb = phys_.m_pushbox + trans_.m_pos;
+    const auto bot = pb.getBottomEdge();
 
     int height = trans_.m_pos.y;
     const auto [found, pcld] = getHighestVerticalMagnetCoord(clds_, pb, height, obsFallthrough_.m_ignoredObstacles, obsFallthrough_.m_isIgnoringObstacles.isActive());
@@ -441,7 +437,7 @@ bool PhysicsSystem::magnetEntity(const auto &clds_, ComponentTransform &trans_, 
             //std::cout << "MAGNET: " << magnetRange << std::endl;
             trans_.m_pos.y = height - 1;
             phys_.m_lastSlopeAngle = phys_.m_onSlopeWithAngle;
-            phys_.m_onSlopeWithAngle = (bot > pcld->m_highestSlopePoint ? pcld->m_topAngleCoef : 0.0f);
+            phys_.m_onSlopeWithAngle = (bot > pcld->highestPoint() ? pcld->topAngleCoef() : 0.0f);
             phys_.m_onGround = found;
             return true;
         }

@@ -21,13 +21,13 @@ SERIALIZE_ENUM(ORIENTATION, {
 })
 
 template<Numeric T>
-inline constexpr ORIENTATION ValueToOrientation(const T &rhs_) noexcept
+constexpr ORIENTATION ValueToOrientation(const T &rhs_) noexcept
 {
     return static_cast<ORIENTATION>((rhs_ > 0) - (rhs_ < 0));
 }
 
 template<Numeric T>
-inline constexpr int ValueToOrientationInt(const T &rhs_) noexcept
+constexpr int ValueToOrientationInt(const T &rhs_) noexcept
 {
     return static_cast<int>((rhs_ > 0) - (rhs_ < 0));
 }
@@ -37,27 +37,25 @@ template <Numeric T>
 struct Vector2
 {
     T x, y;
-    constexpr inline Vector2(T nx = 0, T ny = 0) noexcept
-    {
-        x = nx;
-        y = ny;
-    }
+    constexpr Vector2(T nx = 0, T ny = 0) noexcept :
+        x(nx),
+        y(ny)
+    {}
 
     template <Numeric TR>
-    constexpr inline Vector2(const Vector2<TR> &rhs) noexcept
+    constexpr Vector2(const Vector2<TR> &rhs) noexcept :
+        x(static_cast<T>(rhs.x)),
+        y(static_cast<T>(rhs.y))
     {
-        x = static_cast<T>(rhs.x);
-        y = static_cast<T>(rhs.y);
     }
 
-    constexpr inline Vector2(ORIENTATION orient_) noexcept
-    {
-        x = static_cast<T>(orient_);
-        y = 0;
-    }
+    constexpr Vector2(ORIENTATION orient_) noexcept :
+        x(static_cast<T>(orient_)),
+        y(0)
+    {}
 
     template <Numeric TR>
-    constexpr inline Vector2<T> &operator=(const Vector2<TR> &rhs) noexcept
+    constexpr Vector2<T> &operator=(const Vector2<TR> &rhs) noexcept
     {
         x = static_cast<T>(rhs.x);
         y = static_cast<T>(rhs.y);
@@ -65,51 +63,51 @@ struct Vector2
     }
 
     template <Numeric TR>
-    constexpr inline bool operator==(const Vector2<TR> &rhs) const noexcept
+    constexpr bool operator==(const Vector2<TR> &rhs) const noexcept
     {
         return (x == rhs.x && y == rhs.y);
     }
 
-    constexpr inline bool operator==(const ORIENTATION &rhs_) const noexcept
+    constexpr bool operator==(const ORIENTATION &rhs_) const noexcept
     {
         return (x == static_cast<T>(rhs_));
     }
 
-    constexpr inline operator ORIENTATION() const noexcept
+    constexpr operator ORIENTATION() const noexcept
     {
         return static_cast<ORIENTATION>(x);
     }
 
-    constexpr inline ORIENTATION getOrientation() const noexcept
+    constexpr ORIENTATION getOrientation() const noexcept
     {
         return static_cast<ORIENTATION>(ValueToOrientation(x));
     }
 
     template<Numeric TR>
-    constexpr inline auto operator+(const Vector2<TR>& rhs) const noexcept -> Vector2<decltype(x+rhs.x)>
+    constexpr auto operator+(const Vector2<TR>& rhs) const noexcept -> Vector2<decltype(x+rhs.x)>
     {
         return { x + rhs.x, y + rhs.y };
     }
 
     template<Numeric TR>
-    constexpr inline auto operator-(const Vector2<TR>& rhs) const noexcept -> Vector2<decltype(x-rhs.x)>
+    constexpr auto operator-(const Vector2<TR>& rhs) const noexcept -> Vector2<decltype(x-rhs.x)>
     {
         return { x - rhs.x, y - rhs.y };
     }
 
-    constexpr inline Vector2<T> operator-() const noexcept
+    constexpr Vector2<T> operator-() const noexcept
     {
         return { -x, -y };
     }
 
     template<Numeric TR>
-    constexpr inline auto operator*(const TR& num) const noexcept -> Vector2<decltype(x*num)>
+    constexpr auto operator*(const TR& num) const noexcept -> Vector2<decltype(x*num)>
     {
         return { x * num, y * num };
     }
 
     template<Numeric TR>
-    constexpr inline auto operator/(const TR& num) const noexcept -> Vector2<decltype(x/num)>
+    constexpr auto operator/(const TR& num) const noexcept -> Vector2<decltype(x/num)>
     {
         assert(num != 0);
 
@@ -117,7 +115,7 @@ struct Vector2
     }
 
     template<Numeric TR>
-    constexpr inline Vector2<T> &operator+=(const Vector2<TR>& rhs) noexcept
+    constexpr Vector2<T> &operator+=(const Vector2<TR>& rhs) noexcept
     {
         x += rhs.x;
         y += rhs.y;
@@ -125,7 +123,7 @@ struct Vector2
     }
 
     template<Numeric TR>
-    constexpr inline Vector2<T> operator-=(const Vector2<TR>& rhs) noexcept
+    constexpr Vector2<T> operator-=(const Vector2<TR>& rhs) noexcept
     {
         x -= rhs.x;
         y -= rhs.y;
@@ -133,7 +131,7 @@ struct Vector2
     }
 
     template<Numeric TR>
-    constexpr inline Vector2<T> operator*=(const TR& num) noexcept
+    constexpr Vector2<T> operator*=(const TR& num) noexcept
     {
         x *= num;
         y *= num;
@@ -141,42 +139,42 @@ struct Vector2
     }
 
     template<Numeric TR>
-    constexpr inline Vector2<T> operator/=(const TR& num) noexcept
+    constexpr Vector2<T> operator/=(const TR& num) noexcept
     {
         x /= num;
         y /= num;
         return *this;
     }
 
-    constexpr inline auto length() const noexcept
+    constexpr auto length() const noexcept
     {
         return sqrt(x * x + y * y);
     }
 
-    constexpr inline auto sqLength() const noexcept
+    constexpr auto sqLength() const noexcept
     {
         return x * x + y * y;
     }
 
     [[nodiscard]]
-    constexpr inline auto abs() const noexcept
+    constexpr auto abs() const noexcept
     {
         return Vector2{std::abs(x), std::abs(y)};
     }
 
     [[nodiscard]]
-    constexpr inline auto pow(float pow_) const noexcept
+    constexpr auto pow(float pow_) const noexcept
     {
         return Vector2{std::pow(x, pow_), std::pow(y, pow_)};
     }
 
-    constexpr inline auto square() const noexcept
+    constexpr auto square() const noexcept
     {
         return x * y;
     }
 
     [[nodiscard]]
-    constexpr inline Vector2<decltype(x / sqrt(x))> normalised() const noexcept
+    constexpr Vector2<decltype(x / sqrt(x))> normalised() const noexcept
     {
         float l = sqrt(x * x + y * y);
         if (l == 0.0f)
@@ -187,45 +185,52 @@ struct Vector2
 
     template<Numeric TR>
     [[nodiscard]]
-    constexpr inline auto mulComponents(const Vector2<TR>& rhs) const noexcept -> Vector2<decltype(x * rhs.x)>
+    constexpr auto mulComponents(const Vector2<TR>& rhs) const noexcept -> Vector2<decltype(x * rhs.x)>
     {
         return { x * rhs.x, y * rhs.y };
     }
 
     template<Numeric TR>
     [[nodiscard]]
-    constexpr inline auto mulComponents(const TR &x_, const TR &y_) const noexcept -> Vector2<decltype(x * x_)>
+    constexpr auto mulComponents(const TR &x_, const TR &y_) const noexcept -> Vector2<decltype(x * x_)>
     {
         return { x * x_, y * y_ };
     }
 
     template<Numeric TR>
     [[nodiscard]]
-    constexpr inline auto sub(const TR &x_, const TR &y_) const noexcept -> Vector2<decltype(x - x_)>
+    constexpr auto add(const TR &x_, const TR &y_) const noexcept -> Vector2<decltype(x - x_)>
+    {
+        return { x + x_, y + y_ };
+    }
+
+    template<Numeric TR>
+    [[nodiscard]]
+    constexpr auto sub(const TR &x_, const TR &y_) const noexcept -> Vector2<decltype(x - x_)>
     {
         return { x - x_, y - y_ };
     }
 
     template<Numeric TR>
-    constexpr inline auto dot(const Vector2<TR>& rhs) const noexcept -> decltype(x * rhs.x)
+    constexpr auto dot(const Vector2<TR>& rhs) const noexcept -> decltype(x * rhs.x)
     {
         return x * rhs.x + y * rhs.y;
     }
 
     template<Numeric TR>
-    constexpr inline auto cross(const Vector2<TR>& rhs) const noexcept -> decltype(x * rhs.x)
+    constexpr auto cross(const Vector2<TR>& rhs) const noexcept -> decltype(x * rhs.x)
     {
         return x * rhs.y - y * rhs.x;
     }
 
     template<bool ON_ZEROES = true, Numeric T2>
-    constexpr inline bool areAlignedOnX(const Vector2<T2> &rhs_) const noexcept
+    constexpr bool areAlignedOnX(const Vector2<T2> &rhs_) const noexcept
     {
         return utils::sameSign<ON_ZEROES, T, T2>(x, rhs_.x);
     }
 
     template<bool ON_ZEROES = true, Numeric T2>
-    constexpr inline bool areAlignedOnY(const Vector2<T2> &rhs_) const noexcept
+    constexpr bool areAlignedOnY(const Vector2<T2> &rhs_) const noexcept
     {
         return utils::sameSign<ON_ZEROES, T, T2>(y, rhs_.y);
     }

@@ -136,8 +136,8 @@ struct ComponentStaticCollider
 
 struct SwitchCollider
 {
-    uint32_t m_durationEnabled;
-    uint32_t m_durationDisabled;
+    uint32_t m_durationEnabled = 0;
+    uint32_t m_durationDisabled = 0;
     FrameTimer<true> m_timer;
     bool m_isEnabled = true;
 
@@ -282,7 +282,7 @@ private:
 
 struct MoveCollider2Points
 {
-    MoveCollider2Points(const Vector2<float> offset_);
+    MoveCollider2Points(const Vector2<float> &offset_);
     Vector2<float> m_point1;
     Vector2<float> m_point2;
     const Vector2<float> m_offset;

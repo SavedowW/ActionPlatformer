@@ -32,8 +32,9 @@ private:
         int m_priority;
     };
 
-    entt::entity addCollider(const SlopeCollider &worldCld_, int obstacleId_, ColliderPointRouting *route_);
-    Traverse::TraitT lineToTraverse(const std::string &line_) const;
+    entt::entity addCollider(const SlopeCollider &worldCld_, int obstacleId_, ColliderPointRouting &route_);
+    entt::entity addCollider(const SlopeCollider &worldCld_, int obstacleId_);
+    static Traverse::TraitT lineToTraverse(const std::string &line_);
 
     void loadTileset(const std::filesystem::path &jsonLoc_, uint32_t firstgid_);
     void loadUtilTileset(const std::filesystem::path &jsonLoc_, uint32_t firstgid_);

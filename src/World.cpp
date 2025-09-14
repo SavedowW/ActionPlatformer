@@ -66,12 +66,12 @@ entt::entity World::isWallAt(const ORIENTATION checkSide_, const Vector2<int> &p
 
         if (checkSide_ == ORIENTATION::LEFT)
         {
-            if (cld.m_resolved.m_points.tl.x == pos_.x && cld.m_resolved.m_points.tl.y <= pos_.y && cld.m_resolved.m_points.bl.y >= pos_.y)
+            if (cld.m_resolved.leftX() == pos_.x && cld.m_resolved.leftY() <= pos_.y && cld.m_resolved.bottomY() >= pos_.y)
                 return idx;
         }
         else if (checkSide_ == ORIENTATION::RIGHT)
         {
-            if (cld.m_resolved.m_points.tr.x == pos_.x && cld.m_resolved.m_points.tr.y <= pos_.y && cld.m_resolved.m_points.br.y >= pos_.y)
+            if (cld.m_resolved.rightX() == pos_.x && cld.m_resolved.rightY() <= pos_.y && cld.m_resolved.bottomY() >= pos_.y)
                 return idx;
         }
     }

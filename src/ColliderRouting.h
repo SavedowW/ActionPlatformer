@@ -34,9 +34,9 @@ struct ColliderRoutesCollection
 
 struct ColliderRoutingIterator
 {
-    ColliderRoutingIterator(ColliderPointRouting &route_);
+    ColliderRoutingIterator(const ColliderPointRouting &route_);
 
-    ColliderPointRouting &m_route;
+    const ColliderPointRouting &m_route;
     size_t m_iter = 0;
 };
 

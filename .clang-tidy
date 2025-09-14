@@ -58,6 +58,9 @@ Checks: >
   -readability-implicit-bool-conversion,
   # Much better with C-style SDL
 
+  -readability-isolate-declaration,
+  # Taste
+
   #-performance-no-int-to-ptr,
   #-bugprone-easily-swappable-parameters,
   #-cppcoreguidelines-avoid-c-arrays,
