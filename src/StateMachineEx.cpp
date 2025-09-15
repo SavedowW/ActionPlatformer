@@ -9,14 +9,14 @@ TT_NAME_AUTO(CompoundState);
 
 void UpdatePos::update(ComponentTransform &trans_) const
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    std::cout << FUNCNAME << std::endl;
 
     trans_.m_pos = {x, y};
 }
 
 void UpdateVelocity::update(ComponentPhysical &phys_, ComponentTransform &trans_) const
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    std::cout << FUNCNAME << std::endl;
 
     phys_.m_velocity = {x, y};
     trans_.m_orientation = (x > 0 ? ORIENTATION::RIGHT : ORIENTATION::LEFT);
@@ -24,7 +24,7 @@ void UpdateVelocity::update(ComponentPhysical &phys_, ComponentTransform &trans_
 
 void ChangeAnim::update(const ComponentTransform&, const ComponentPhysical&, ComponentAnimationRenderable &ren_) const
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    std::cout << FUNCNAME << std::endl;
 
     ren_.m_currentAnimation = reinterpret_cast<Animation*>(anim);
 }

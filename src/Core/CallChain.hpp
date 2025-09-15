@@ -37,7 +37,7 @@ template<typename... TCallable>
 template<typename... Args>
 constexpr void EachResolved<TCallable...>::operator()(std::tuple<Args...> args_)
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    std::cout << FUNCNAME << std::endl;
     std::apply([&](const auto&... callable_) {
         (([&]<typename... Ts>(TypeList<Ts...>) // Logic component's dependencies
         {

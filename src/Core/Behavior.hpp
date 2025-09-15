@@ -5,6 +5,7 @@
 #include "StaticMapping.hpp"
 #include <memory>
 #include <iostream>
+#include <array>
 
 namespace Behavior
 {
@@ -135,8 +136,9 @@ namespace Behavior
                 return m_name + " (size=" + std::to_string(m_nodes.size()) + ")";
             }
 
-        std::array<std::unique_ptr<NodeBase>, sizeof...(Ts)> m_nodes;
-        decltype(m_nodes)::iterator m_it;
+        using ContainerT = std::array<std::unique_ptr<NodeBase>, sizeof...(Ts)>;
+        ContainerT m_nodes;
+        ContainerT::iterator m_it;
     };
 
     class RequestState : public NodeBase

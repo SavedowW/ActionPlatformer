@@ -1,11 +1,12 @@
 #ifndef STATE_MACHINE_EX_HPP_
 #define STATE_MACHINE_EX_HPP_
 #include "StateMachineEx.h"
+#include "Core/Profile.h"
 
 template<typename T>
 void dumpType()
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    std::cout << FUNCNAME << std::endl;
 }
 
 template<typename... TCallable>

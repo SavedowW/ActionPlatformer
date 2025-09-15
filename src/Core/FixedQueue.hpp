@@ -1,8 +1,8 @@
 #ifndef FIXED_QUEUE_H_
 #define FIXED_QUEUE_H_
-
 #include <stdexcept>
 #include <iostream>
+#include <array>
 
 template <typename T, size_t len>
 class FixedQueue

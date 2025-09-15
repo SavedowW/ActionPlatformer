@@ -230,8 +230,8 @@ NavPath::Status NavPath::buildUntil(const Connection * const con_)
     {
         bool requireSort = false;
 
-        for (auto i = 0zu; i < m_front.size(); ++i)
-            for (auto k = i + 1zu; k < m_front.size(); ++k)
+        for (size_t i = 0; i < m_front.size(); ++i)
+            for (size_t k = i + 1; k < m_front.size(); ++k)
                 if (m_front[i] == m_front[k])
                     std::cout << "Duplicated!" << std::endl;
 

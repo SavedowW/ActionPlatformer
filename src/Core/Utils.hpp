@@ -9,8 +9,6 @@
 // resource id - for animations, textures, etc
 using ResID = size_t;
 
-using std::literals::string_literals::operator""s;
-
 template <typename T>
 concept Numeric = std::is_arithmetic_v<T>;
 
