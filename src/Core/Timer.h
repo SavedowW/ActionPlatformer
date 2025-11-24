@@ -1,8 +1,7 @@
-#ifndef TIMER_H_
-#define TIMER_H_
-#include <stdint.h>
+#pragma once
 #include <string>
 
+// Works in nanoseconds
 class Timer
 {
 public:
@@ -17,5 +16,3 @@ public:
 private:
     uint64_t m_timeBegin = 0;
 };
-
-#endif

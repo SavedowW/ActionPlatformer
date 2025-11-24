@@ -14,7 +14,7 @@ void dumpErrors();
 class Shader
 {
 public:
-    Shader();
+    Shader() = default;
 
     void load(const std::string &vSourcePath_, const std::string &fSourcePath_);
 

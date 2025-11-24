@@ -52,6 +52,8 @@ Shader.cpp
 Configuration.cpp
 Behavior.cpp
 StaticMapping.cpp
+ECS/ComponentExtractor.cpp
+ECS/ComponentRegistry.cpp
 Localization/LocalizationGen.cpp
 )
 

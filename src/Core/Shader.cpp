@@ -64,10 +64,6 @@ void dumpErrors()
         std::cout << res << std::endl;
 }
 
-Shader::Shader()
-{
-}
-
 void Shader::load(const std::string &vSourcePath_, const std::string &fSourcePath_)
 {
     std::string vCode;

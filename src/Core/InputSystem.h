@@ -387,6 +387,10 @@ struct ControllerDescription
     SDL_Gamepad *m_controller;
 };
 
+/*
+    TODO: It's a bad idea to keep pointers to components or their members,
+        it would be better to integrate this system with ECS
+*/
 class InputSystem
 {
 public:

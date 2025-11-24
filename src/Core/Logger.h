@@ -1,6 +1,7 @@
 #ifndef LOGGER_H_
 #define LOGGER_H_
 #include <string>
+#include <sstream>
 
 #define catch_extend(args) \
 catch (std::exception &ex_) \

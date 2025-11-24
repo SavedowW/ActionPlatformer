@@ -1,4 +1,5 @@
 #include "PhysicsSystem.h"
+#include "Core/CoreComponents.h"
 #include "Core/Profile.h"
 #include "StateMachine.h"
 
@@ -42,7 +43,7 @@ void PhysicsSystem::updateSMs()
         if (checkCurrentHitstop(m_reg, idx))
             continue;
 
-        sm.update({&m_reg, idx}, 0);
+        sm.update({.reg=&m_reg, .idx=idx}, 0);
     }
 
     /* TODO: notably faster in release build, but harder to debug even with seq, might add debug flags to enable parallel execution
