@@ -64,7 +64,7 @@ public:
     TextManager(Renderer &renderer_);
 
     //void renderText(const std::string &text_, int fontid_, Vector2<int> pos_, fonts::HOR_ALIGN horAlign_ = fonts::HOR_ALIGN::LEFT, Camera *cam_ = nullptr);
-    void renderText(const std::string &text_, int fontid_, Vector2<int> pos_, fonts::HOR_ALIGN horAlign_ = fonts::HOR_ALIGN::LEFT, Camera *cam_ = nullptr);
+    void renderText(const std::string &text_, int fontid_, Vector2<int> pos_, fonts::HOR_ALIGN horAlign_ = fonts::HOR_ALIGN::LEFT, const Camera *cam_ = nullptr);
 
     const fonts::Symbol *getSymbol(int fontid_, uint32_t ch_) const;
     int getFontHeight(int fontid_) const;

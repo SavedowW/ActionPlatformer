@@ -12,7 +12,7 @@ public:
     Vector2<float> getCameraTargetPosition(const Vector2<float> &playerFocusPosition_);
     bool checkIfEnters(const Collider &cld_, bool isOwned_) const;
     float getScale() const;
-    void draw(const Camera &cam_);
+    void draw(const Camera &cam_) const;
     void overrideFocusArea(const Collider &area_);
 
 private:

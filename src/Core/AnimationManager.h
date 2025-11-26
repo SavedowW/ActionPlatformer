@@ -85,7 +85,7 @@ class Animation
 public:
     Animation(AnimationManager &animationManager_, ResID id_, LOOPMETHOD isLoop_ = LOOPMETHOD::JUMP_LOOP, int beginFrame_ = -1, int beginDirection_ = 1);
     void update();
-    unsigned int getSprite();
+    unsigned int getSprite() const;
     bool isFinished();
     void switchDir();
     void setDir(int dir_);
@@ -107,7 +107,7 @@ private:
         Cannot be unsigned due to first frame logic:
         on the first frame animation is used, it should show first frame no matter if the update was called or not
     */
-    int m_currentFrame;
+    mutable int m_currentFrame;
     int m_direction;
     LOOPMETHOD m_isLoop;
     void animFinished();

@@ -82,7 +82,7 @@ public:
     ConnectionID makeConnection(NodeID node1_, NodeID node2_, Traverse::TraitT traverseTo2_, Traverse::TraitT traverseTo1_);
     std::pair<const Connection *, float> findClosestConnection(const Vector2<float> &pos_, Traverse::TraitT options_) const;
 
-    void draw(Camera &cam_);
+    void draw(const Camera &cam_) const;
     Vector2<float> getConnectionCenter(const Connection &con_) const;
     float getDistToConnection(const Connection &con_, const Vector2<float> &pos_) const;
 

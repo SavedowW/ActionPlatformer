@@ -144,7 +144,7 @@ void Animation::update()
         m_currentFrame += m_direction;
 }
 
-unsigned int Animation::getSprite()
+unsigned int Animation::getSprite() const
 {
     if (m_currentFrame == -1)
         m_currentFrame = 0;
@@ -156,8 +156,8 @@ bool Animation::isFinished()
 {
     if (m_direction > 0)
         return m_currentFrame == static_cast<int>(m_textures->m_totalDuration - 1);
-    else
-        return !m_currentFrame;
+    
+    return !m_currentFrame;
 }
 
 void Animation::switchDir()

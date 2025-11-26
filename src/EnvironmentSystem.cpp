@@ -14,15 +14,15 @@ void EnvironmentSystem::update(entt::entity)
 
     for (auto [idx, trans, grass] : grassTops.each())
     {
-        if (grass.update({&m_reg, idx}))
+        if (grass.update({.reg=&m_reg, .idx=idx}))
         {
             for (auto [idx2, trans2, phys2] : physicals.each())
             {
                 Collider grassPb;
                 if (phys2.m_appliedOffset.x > 0.01f)
-                    grassPb = GrassTopComp::m_colliderRight + trans.m_pos;
+                    grassPb = GrassTopComp::colliderRight + trans.m_pos;
                 else if (phys2.m_appliedOffset.x <= -0.01f)
-                    grassPb = GrassTopComp::m_colliderLeft + trans.m_pos;
+                    grassPb = GrassTopComp::colliderLeft + trans.m_pos;
                 else
                     continue;
                     

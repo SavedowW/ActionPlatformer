@@ -1,8 +1,8 @@
 #include "EnvComponents.h"
 #include "Core/CoreComponents.h"
 
-const Collider GrassTopComp::m_colliderRight{Vector2{14, -6}, Vector2{2, 6}};
-const Collider GrassTopComp::m_colliderLeft{Vector2{-14, -6}, Vector2{2, 6}};
+const Collider GrassTopComp::colliderRight{.m_topLeft=Vector2{14, -6}, .m_size=Vector2{2, 6}};
+const Collider GrassTopComp::colliderLeft{.m_topLeft=Vector2{-14, -6}, .m_size=Vector2{2, 6}};
 ResID GrassTopComp::m_idleAnimId = 0;
 ResID GrassTopComp::m_flickLeftAnimId = 0;
 ResID GrassTopComp::m_flickRightAnimId = 0;

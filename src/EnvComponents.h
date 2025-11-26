@@ -11,8 +11,8 @@ public:
     // True if requires collision check
     bool update(EntityAnywhere self_);
 
-    static const Collider m_colliderRight;
-    static const Collider m_colliderLeft;
+    static const Collider colliderRight;
+    static const Collider colliderLeft;
     static ResID m_idleAnimId;
     static ResID m_flickLeftAnimId;
     static ResID m_flickRightAnimId;

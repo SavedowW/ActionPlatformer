@@ -21,7 +21,7 @@ void CameraSystem::update()
         return;
 
     Vector2<int> target;
-    auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(m_playerId);
+    auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(playerId);
 
     if (phys.m_appliedOffset.x != 0)
     {
@@ -130,11 +130,11 @@ bool CameraSystem::updateFocus(const Collider &playerPb_)
     return false;
 }
 
-void CameraSystem::debugDraw(Renderer &ren_, Camera &cam_)
+void CameraSystem::debugDraw(Renderer &ren_, const Camera &cam_) const
 {
     if (ConfigurationManager::instance().m_debug.m_drawCameraOffset)
     {
-        auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(m_playerId);
+        auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(playerId);
         ren_.drawLine(trans.m_pos, trans.m_pos + dtar.m_offset, {188, 74, 155, 255}, cam_);
         ren_.drawLine(trans.m_pos + dtar.m_offset, trans.m_pos + dtar.m_offset + BODY_OFFSET, {188, 74, 155, 255}, cam_);
     }

@@ -13,27 +13,27 @@ struct RenderSystem : public InputReactor
 
     void update();
     void updateDepth();
-    void draw();
+    void draw() const;
 
-    void drawInstance(const ComponentTransform &trans_, const ComponentAnimationRenderable &ren_);
-    void drawParticle(const ComponentTransform &trans_, const ComponentParticlePrimitive &partcl_, const ComponentAnimationRenderable &ren_);
-    void drawTilemapLayer(const ComponentTransform &trans_, TilemapLayer &tilemap_);
+    void drawInstance(const ComponentTransform &trans_, const ComponentAnimationRenderable &ren_) const;
+    void drawParticle(const ComponentTransform &trans_, const ComponentParticlePrimitive &partcl_, const ComponentAnimationRenderable &ren_) const;
+    void drawTilemapLayer(const ComponentTransform &trans_, const TilemapLayer &tilemap_) const;
 
-    void handleDepthInstance(const entt::entity &idx_);
+    void handleDepthInstance(const entt::entity &idx_) const;
 
 
-    void drawBattleActorColliders(const ComponentTransform &trans_, const BattleActor &btlact_);
-    void drawCollider(const ComponentTransform &trans_, const ComponentPhysical &phys_);
-    void drawCollider(const ComponentStaticCollider &cld_);
-    void drawObstacle(const ComponentStaticCollider &cld_);
-    void drawTrigger(const ComponentTrigger &cld_);
-    void drawFocusArea(CameraFocusArea &cfa_);
-    void drawTransform(const ComponentTransform &trans_);
-    void drawHealth(const ComponentTransform &trans_, HealthRendererCommonWRT &howner_);
+    void drawBattleActorColliders(const ComponentTransform &trans_, const BattleActor &btlact_) const;
+    void drawCollider(const ComponentTransform &trans_, const ComponentPhysical &phys_) const;
+    void drawCollider(const ComponentStaticCollider &cld_) const;
+    void drawObstacle(const ComponentStaticCollider &cld_) const;
+    void drawTrigger(const ComponentTrigger &cld_) const;
+    void drawFocusArea(const CameraFocusArea &cfa_) const;
+    void drawTransform(const ComponentTransform &trans_) const;
+    void drawHealth(const ComponentTransform &trans_, const HealthRendererCommonWRT &howner_) const;
 
-    void drawColliderRoute(const ColliderPointRouting &route_);
+    void drawColliderRoute(const ColliderPointRouting &route_) const;
 
-    void receiveEvents(GAMEPLAY_EVENTS event_, const float scale_) override;
+    void receiveEvents(GAMEPLAY_EVENTS event_, float scale_) override;
 
     entt::registry &m_reg;
     Renderer &m_renderer;

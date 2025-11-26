@@ -2,7 +2,6 @@
 #define HUD_SYSTEM_H_
 #include "Core/FixedQueue.hpp"
 #include "Core/Texture.h"
-#include "Core/ImmediateScreenLog.h"
 #include "CommonAI.h"
 #include <entt/entt.hpp>
 
@@ -38,6 +37,8 @@ public:
         return m_lastAvg;
     }
 
+    virtual ~AveragingQueue() = default;
+
 protected:
     uint8_t m_iter = 0;
     T m_lastAvg = 0;
@@ -47,14 +48,14 @@ protected:
 struct HudSystem
 {
 public:
-    HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, uint64_t &frameTime_);
+    HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> &lvlSize_, const uint64_t &frameTime_);
 
-    void draw();
-    void drawCommonDebug();
-    void drawPlayerDebug();
-    void drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_, const StateMachine &sm_, const ComponentAI &ai_);
+    void draw() const;
+    void drawCommonDebug() const;
+    void drawPlayerDebug() const;
+    void drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_, const StateMachine &sm_, const ComponentAI &ai_) const;
 
-    entt::entity m_playerId;
+    entt::entity playerId = entt::null;
 
 private:
     Renderer &m_renderer;
@@ -64,11 +65,8 @@ private:
     Camera &m_cam;
     int m_lvlId;
     Vector2<float> m_lvlSize;
-    uint64_t &m_frameTime;
-    AveragingQueue<float, 20, 5> m_avgFrames;
-
-    ImmediateScreenLog m_commonLog;
-    ImmediateScreenLog m_playerLog;
+    const  uint64_t &m_frameTime;
+    mutable AveragingQueue<float, 20, 5> m_avgFrames;
 
     std::shared_ptr<Texture> m_arrowIn;
     std::shared_ptr<Texture> m_arrowOut;

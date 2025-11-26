@@ -154,9 +154,9 @@ void clearStack(std::stack<T> &stack_)
     stack_ = std::stack<T>();
 }
 
-void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<int> &tl_)
+void ChatboxSystem::renderText(const ChatMessageSequence &seq_, const Vector2<int> &tl_) const
 {
-    std::apply([](auto&... ptrs) { ((clearStack(ptrs)), ...); }, seq_.m_renderEffects);
+    ChatMessageSequence::RenderEffects effects;
 
     auto pos = tl_;
     bool newLine = true;
@@ -182,7 +182,7 @@ void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<int> &tl
 
             Vector2<int> offset;
             {
-                auto &stack = std::get<std::stack<SymbolRenderShake*>>(seq_.m_renderEffects);
+                auto &stack = std::get<std::stack<SymbolRenderShake*>>(effects);
                 if (!stack.empty())
                     offset = stack.top()->getOffset();
             }
@@ -193,7 +193,7 @@ void ChatboxSystem::renderText(ChatMessageSequence &seq_, const Vector2<int> &tl
         }
         else if (auto *renSym = const_cast<IRenderSymbol*>(dynamic_cast<const IRenderSymbol*>(sym)))
         {
-            renSym->onRenderReached(seq_);
+            renSym->onRenderReached(effects);
         }
     }
 }
@@ -255,6 +255,9 @@ void ChatboxSystem::update()
                 }
             }
         }
+
+        const float progress = seq.m_windowTimer.getProgressNormalized();
+        seq.m_currentSize = utils::lerp(seq.m_oldSize, seq.m_targetSize, progress);
     }
 
     if (removeSequence)
@@ -277,13 +280,13 @@ void ChatboxSystem::update()
     }
 }
 
-void ChatboxSystem::draw()
+void ChatboxSystem::draw() const
 {
     if (!m_sequences.empty())
         std::cout << "Draw call" << std::endl;
     else
         return;
-    auto &seq = m_sequences[0];
+    const auto &seq = m_sequences[0];
     std::cout << "Drawing sequence" << std::endl;
     const auto &srcpoint = m_reg.get<HUDPoint>(seq.m_source);
     auto worldPos = srcpoint.m_pos;
@@ -347,10 +350,6 @@ void ChatboxSystem::draw()
     m_renderer.fillRectangle(screenPos - Vector2{1, 1}, {2, 2}, {0, 255, 0, 150});
 
     const Vector2<int> iScreenPos = screenPos;
-
-    float progress = seq.m_windowTimer.getProgressNormalized();
-
-    seq.m_currentSize = utils::lerp(seq.m_oldSize, seq.m_targetSize, progress);
 
     std::cout << seq.m_currentMessage->m_charDelayTimer.getCurrentFrame() << std::endl;
     for (auto &el : seq.m_currentMessage->m_symbolAppearTimers)
@@ -612,7 +611,7 @@ bool IRenderSymbol::onReached(ChatMessage&)
     return true;
 }
 
-void TechSymbol::onRenderReached(ChatMessageSequence&)
+void TechSymbol::onRenderReached(ChatMessageSequence::RenderEffects&)
 {
 }
 

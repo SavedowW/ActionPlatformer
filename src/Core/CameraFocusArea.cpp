@@ -31,7 +31,7 @@ float CameraFocusArea::getScale() const
     return m_scale;
 }
 
-void CameraFocusArea::draw(const Camera &cam_)
+void CameraFocusArea::draw(const Camera &cam_) const
 {
     m_renderer.drawCollider(*this, {0, 255, 0, 0}, {0, 255, 0, 255}, cam_);
     m_renderer.drawCollider(m_useFocusArea, {0, 255, 0, 0}, {0, 255, 0, 50}, cam_);

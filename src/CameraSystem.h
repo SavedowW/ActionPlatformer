@@ -4,7 +4,6 @@
 #include "Core/FrameTimer.h"
 #include "Core/Renderer.h"
 #include "Core/InputSystem.h"
-#include "Core/Camera.h"
 #include <entt/entt.hpp>
 #include <optional>
 
@@ -14,12 +13,12 @@ struct CameraSystem : public InputReactor
 
     void update();
     bool updateFocus(const Collider &playerPb_);
-    void debugDraw(Renderer &ren_, Camera &cam_);
+    void debugDraw(Renderer &ren_, const Camera &cam_) const;
 
-    void receiveEvents(GAMEPLAY_EVENTS event, const float scale_) override;
+    void receiveEvents(GAMEPLAY_EVENTS event, float scale_) override;
 
     entt::registry &m_reg;
-    entt::entity m_playerId;
+    entt::entity playerId;
     Camera &m_cam;
     std::optional<entt::entity> m_currentFocusArea;
 

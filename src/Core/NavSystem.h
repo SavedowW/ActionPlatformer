@@ -105,7 +105,7 @@ struct NavSystem
     NavSystem(entt::registry &reg_, NavGraph &graph_);
 
     void update();
-    void draw(Camera &cam_);
+    void draw(const Camera &cam_) const;
 
     // Get existing path instance or create new
     NavPath::Follower makePath(Traverse::TraitT traverseTraits_, entt::entity goal_, float maxTarRange_);

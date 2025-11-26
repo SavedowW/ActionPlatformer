@@ -147,7 +147,7 @@ uint8_t HealthOwner::takeDamage(uint8_t damage_)
     return m_realHealth;
 }
 
-HealthRendererCommonWRT::HealthRendererCommonWRT(uint8_t realHealth_, const Vector2<float> &offset_) :
+HealthRendererCommonWRT::HealthRendererCommonWRT(uint8_t realHealth_, const Vector2<int> &offset_) :
     m_realHealth(realHealth_),
     m_offset(offset_)
 {

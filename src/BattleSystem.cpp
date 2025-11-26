@@ -68,7 +68,7 @@ void BattleSystem::handleAttacks()
     }
 }
 
-void BattleSystem::debugDraw()
+void BattleSystem::debugDraw() const
 {
     auto &rnd = Application::instance().m_renderer;
     for (size_t i = 0; i < m_appliedHits.getFilled(); ++i)

@@ -56,7 +56,7 @@ void RenderSystem::updateDepth()
     RenderLayer::m_dirtyOrder = false;
 }
 
-void RenderSystem::draw()
+void RenderSystem::draw() const
 {
     const auto &conf = ConfigurationManager::instance();
     auto viewFocuses = m_reg.view<CameraFocusArea>();
@@ -99,8 +99,8 @@ void RenderSystem::draw()
 
         for (auto [idx, trans, grass] : viewGrassTop.each())
         {
-            auto pbl = grass.m_colliderLeft + trans.m_pos;
-            auto pbr = grass.m_colliderRight + trans.m_pos;
+            auto pbl = grass.colliderLeft + trans.m_pos;
+            auto pbr = grass.colliderRight + trans.m_pos;
             m_renderer.drawCollider(pbl, {238, 195, 154, 50}, m_camera);
             m_renderer.drawCollider(pbr, {238, 195, 154, 50}, m_camera);
         }
@@ -125,7 +125,7 @@ void RenderSystem::draw()
     }
 }
 
-void RenderSystem::drawInstance(const ComponentTransform &trans_, const ComponentAnimationRenderable &ren_)
+void RenderSystem::drawInstance(const ComponentTransform &trans_, const ComponentAnimationRenderable &ren_) const
 {
     if (ren_.m_currentAnimation != nullptr)
     {
@@ -166,7 +166,7 @@ void RenderSystem::drawInstance(const ComponentTransform &trans_, const Componen
     }
 }
 
-void RenderSystem::drawParticle(const ComponentTransform &trans_, const ComponentParticlePrimitive &partcl_, const ComponentAnimationRenderable &ren_)
+void RenderSystem::drawParticle(const ComponentTransform &trans_, const ComponentParticlePrimitive &partcl_, const ComponentAnimationRenderable &ren_) const
 {
     if (ren_.m_currentAnimation != nullptr)
     {
@@ -198,7 +198,7 @@ void RenderSystem::drawParticle(const ComponentTransform &trans_, const Componen
     }
 }
 
-void RenderSystem::drawTilemapLayer(const ComponentTransform &trans_, TilemapLayer &tilemap_)
+void RenderSystem::drawTilemapLayer(const ComponentTransform &trans_, const TilemapLayer &tilemap_) const
 {
     Vector2<int> camTL = Vector2<int>(m_camera.getPos().mulComponents(tilemap_.m_parallaxFactor)) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
 
@@ -206,10 +206,10 @@ void RenderSystem::drawTilemapLayer(const ComponentTransform &trans_, TilemapLay
     dstPos.x = trans_.m_pos.x + tilemap_.m_posOffset.x - camTL.x;
     dstPos.y = trans_.m_pos.y + tilemap_.m_posOffset.y - camTL.y;
 
-    for (auto &row : tilemap_.m_tiles)
+    for (const auto &row : tilemap_.m_tiles)
     {
         dstPos.x = trans_.m_pos.x + tilemap_.m_posOffset.x - camTL.x;
-        for (auto &tile : row)
+        for (const auto &tile : row)
         {
             if (tile.m_tile)
             {
@@ -221,7 +221,7 @@ void RenderSystem::drawTilemapLayer(const ComponentTransform &trans_, TilemapLay
     }
 }
 
-void RenderSystem::handleDepthInstance(const entt::entity &idx_)
+void RenderSystem::handleDepthInstance(const entt::entity &idx_) const
 {
     if (auto *ren = m_reg.try_get<ComponentAnimationRenderable>(idx_))
     {
@@ -242,7 +242,7 @@ void RenderSystem::handleDepthInstance(const entt::entity &idx_)
     }
 }
 
-void RenderSystem::drawBattleActorColliders(const ComponentTransform &trans_, const BattleActor &btlact_)
+void RenderSystem::drawBattleActorColliders(const ComponentTransform &trans_, const BattleActor &btlact_) const
 {
     if (btlact_.m_hurtboxes)
     {
@@ -268,7 +268,7 @@ void RenderSystem::drawBattleActorColliders(const ComponentTransform &trans_, co
     }
 }
 
-void RenderSystem::drawCollider(const ComponentTransform &trans_, const ComponentPhysical &phys_)
+void RenderSystem::drawCollider(const ComponentTransform &trans_, const ComponentPhysical &phys_) const
 {
     auto pb = phys_.m_pushbox + trans_.m_pos;
     m_renderer.drawCollider(pb, {238, 195, 154, 50}, m_camera);
@@ -281,61 +281,60 @@ void RenderSystem::drawCollider(const ComponentTransform &trans_, const Componen
     //m_renderer.drawLine(TR, BR, {0, 255, 0, 100}, m_camera);
 }
 
-void RenderSystem::drawCollider(const ComponentStaticCollider &cld_)
+void RenderSystem::drawCollider(const ComponentStaticCollider &cld_) const
 {
     if (cld_.m_isEnabled)
         m_renderer.drawCollider(cld_.m_resolved, {255, 0, 0, 100}, m_camera);
 }
 
-void RenderSystem::drawObstacle(const ComponentStaticCollider &cld_)
+void RenderSystem::drawObstacle(const ComponentStaticCollider &cld_) const
 {
     if (cld_.m_isEnabled)
         m_renderer.drawCollider(cld_.m_resolved, {50, 50, 255, 100}, m_camera);
 }
 
-void RenderSystem::drawTrigger(const ComponentTrigger &cld_)
+void RenderSystem::drawTrigger(const ComponentTrigger &cld_) const
 {
     m_renderer.drawCollider(cld_.m_trigger, {255, 50, 255, 50}, m_camera);
 }
 
-void RenderSystem::drawFocusArea(CameraFocusArea &cfa_)
+void RenderSystem::drawFocusArea(const CameraFocusArea &cfa_) const
 {
     cfa_.draw(m_camera);
 }
 
-void RenderSystem::drawTransform(const ComponentTransform &cfa_)
+void RenderSystem::drawTransform(const ComponentTransform &trans_) const
 {
-    m_renderer.drawCross(cfa_.m_pos, {1, 10}, {10, 1}, {0, 0, 0, 255}, m_camera);
+    m_renderer.drawCross(trans_.m_pos, {1, 10}, {10, 1}, {0, 0, 0, 255}, m_camera);
 }
 
-void RenderSystem::drawHealth(const ComponentTransform &trans_, HealthRendererCommonWRT &howner_)
+void RenderSystem::drawHealth(const ComponentTransform &trans_, const  HealthRendererCommonWRT &howner_) const
 {
     if (howner_.m_state == HealthRendererCommonWRT::DelayFadeStates::INACTIVE)
         return;
 
-    Vector2<float> worldPos = trans_.m_pos + howner_.m_offset;
+    const auto worldPos = trans_.m_pos + howner_.m_offset;
 
     if (ConfigurationManager::instance().m_debug.m_drawHealthPos)
         m_renderer.drawCross(worldPos, {1, 5}, {5, 1}, {255, 0, 0, 255}, m_camera);
 
     assert(!howner_.m_heartAnims.empty());
 
-    auto texSize = howner_.m_heartAnims[0].getSize();
-    auto animorigin = howner_.m_heartAnims[0].getOrigin();
+    const auto texSize = howner_.m_heartAnims[0].getSize();
+    const auto animorigin = howner_.m_heartAnims[0].getOrigin();
 
-    auto texCenter = worldPos - animorigin;
-    texCenter.y -= (texSize.y - 20);
+    const auto texCenter = (worldPos - animorigin).sub(0, texSize.y - 20);
 
-    float mid = (float)(howner_.m_heartAnims.size() - 1) / 2.0f;
-    int cnt = 0;
+    const float mid = (float)(howner_.m_heartAnims.size() - 1) / 2.0f;
+    float cnt = 0;
 
-    for (auto &el : howner_.m_heartAnims)
+    for (const auto &el : howner_.m_heartAnims)
     {
         // TODO: make proper "over" check
         if (!el.getDirection())
             continue;
 
-        auto offsetMul = cnt - mid;
+        const auto offsetMul = cnt - mid;
         auto spr = el.getSprite();
         auto texPos = texCenter;
         texPos.x += (texSize.x - 19) * offsetMul;
@@ -355,7 +354,7 @@ void RenderSystem::drawHealth(const ComponentTransform &trans_, HealthRendererCo
     }
 }
 
-void RenderSystem::drawColliderRoute(const ColliderPointRouting &route_)
+void RenderSystem::drawColliderRoute(const ColliderPointRouting &route_) const
 {
     const Vector2<float> nodeSize{5.0f, 5.0f};
 

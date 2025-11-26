@@ -27,7 +27,7 @@ struct BattleSystem
 
     void update();
     void handleAttacks();
-    void debugDraw();
+    void debugDraw() const;
     void applyHit(ActorDescr attacker_, ActorDescr victim_, const HitboxGroup &hit_);
 
 private:

@@ -72,7 +72,7 @@ void NavSystem::update()
     }
 }
 
-void NavSystem::draw(Camera &cam_)
+void NavSystem::draw(const Camera &cam_) const
 {
     if (ConfigurationManager::instance().m_debug.m_drawCurrentConnection)
     {
@@ -102,7 +102,7 @@ void NavSystem::draw(Camera &cam_)
         const auto ipath = m_paths.find(ConfigurationManager::instance().m_debug.m_debugPathDisplay);
         if (ipath != m_paths.end() && !ipath->second.expired())
         {
-            const auto &path = *ipath->second.lock().get();
+            const auto &path = *ipath->second.lock();
             for (const auto &con : path.m_graphView)
             {
                 if (path.isTargetConnection(con.second.m_originalCon.m_ownId))

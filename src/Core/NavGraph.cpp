@@ -45,14 +45,14 @@ std::pair<const Connection *, float> NavGraph::findClosestConnection(const Vecto
 
 }
 
-void NavGraph::draw(Camera &cam_)
+void NavGraph::draw(const Camera &cam_) const
 {
     if (ConfigurationManager::instance().m_debug.m_drawNavGraph)
     {
         const Vector2<float> nodeSize{5.0f, 5.0f};
         for (size_t i = 0; i < m_nodes.size(); ++i)
         {
-            auto &node = m_nodes[i];
+            const auto &node = m_nodes[i];
             m_ren.drawRectangle(node.m_position - nodeSize / 2.0f, nodeSize, {255, 127, 39, 255}, cam_);
             m_textman.renderText(std::to_string(i), 2, node.m_position - Vector2{0.0f, 12.0f}, fonts::HOR_ALIGN::CENTER, &cam_);
         }

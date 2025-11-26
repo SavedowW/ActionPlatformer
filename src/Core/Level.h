@@ -28,7 +28,7 @@ public:
 protected:
 
     virtual void update() = 0;
-	virtual void draw() = 0;
+	virtual void draw() const = 0;
 
     const Vector2<int> m_size;
     int m_levelId;

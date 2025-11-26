@@ -1,5 +1,6 @@
 #include "HUDSystem.h"
 #include "StateMachine.h"
+#include "Core/ImmediateScreenLog.h"
 #include "Core/Application.h"
 #include "Core/CoreComponents.h"
 #include "Core/InputResolver.h"
@@ -7,16 +8,14 @@
 #include "Core/Localization/LocalizationGen.h"
 #include "Core/Configuration.h"
 
-HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> lvlSize_, uint64_t &frameTime_) :
+HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> &lvlSize_, const uint64_t &frameTime_) :
     m_renderer(Application::instance().m_renderer),
     m_textManager(Application::instance().m_textManager),
     m_reg(reg_),
     m_cam(cam_),
     m_lvlId(lvlId_),
     m_lvlSize(lvlSize_),
-    m_frameTime(frameTime_),
-    m_commonLog(0, fonts::HOR_ALIGN::LEFT, 12),
-    m_playerLog(0, fonts::HOR_ALIGN::RIGHT, 12)
+    m_frameTime(frameTime_)
 {
     auto &texman = Application::instance().m_textureManager;
 
@@ -24,7 +23,7 @@ HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vecto
     m_arrowOut = texman.getTexture(texman.getTexID("UI/Arrow1"));
 }
 
-void HudSystem::draw()
+void HudSystem::draw() const
 {
     const auto npcs = m_reg.view<ComponentTransform, ComponentPhysical, StateMachine, ComponentAI>();
 
@@ -41,7 +40,7 @@ void HudSystem::draw()
     }
 }
 
-void HudSystem::drawCommonDebug()
+void HudSystem::drawCommonDebug() const 
 {
     static bool firstRun = true;
 
@@ -50,29 +49,31 @@ void HudSystem::drawCommonDebug()
     else
         m_avgFrames.push(static_cast<float>(m_frameTime));
 
-    m_commonLog.addRecord("[" + std::to_string(m_lvlId) + "] " + utils::toString(m_lvlSize));
-    m_commonLog.addRecord("Camera pos: " + utils::toString(m_cam.getPos()));
-    m_commonLog.addRecord("Camera size: " + utils::toString(m_cam.getSize()));
-    m_commonLog.addRecord("Camera scale: " + std::to_string(m_cam.getScale()));
-    m_commonLog.addRecord("Real frame time (ns): " + std::to_string(m_frameTime));
-    m_commonLog.addRecord("Avg frame time (ms): " + std::to_string( m_avgFrames.avg() / 1'000'000.0f));
-    m_commonLog.addRecord("FPS: " + std::to_string( 1'000'000'000.0f / m_frameTime));
-    m_commonLog.addRecord("Avg FPS: " + std::to_string( 1'000'000'000.0f / m_avgFrames.avg()));
-    m_commonLog.addRecord("UTF-8: Кириллица работает");
-    m_commonLog.addRecord(ll::dbg_localization());
+    ImmediateScreenLog commonLog{0, fonts::HOR_ALIGN::LEFT, 12};
 
-    m_commonLog.dump({1.0f, 1.0f});
+    commonLog.addRecord("[" + std::to_string(m_lvlId) + "] " + utils::toString(m_lvlSize));
+    commonLog.addRecord("Camera pos: " + utils::toString(m_cam.getPos()));
+    commonLog.addRecord("Camera size: " + utils::toString(m_cam.getSize()));
+    commonLog.addRecord("Camera scale: " + std::to_string(m_cam.getScale()));
+    commonLog.addRecord("Real frame time (ns): " + std::to_string(m_frameTime));
+    commonLog.addRecord("Avg frame time (ms): " + std::to_string( m_avgFrames.avg() / 1'000'000.0f));
+    commonLog.addRecord("FPS: " + std::to_string( 1'000'000'000.0f / m_frameTime));
+    commonLog.addRecord("Avg FPS: " + std::to_string( 1'000'000'000.0f / m_avgFrames.avg()));
+    commonLog.addRecord("UTF-8: Кириллица работает");
+    commonLog.addRecord(ll::dbg_localization());
+
+    commonLog.dump({1.0f, 1.0f});
 }
 
-void HudSystem::drawPlayerDebug()
+void HudSystem::drawPlayerDebug() const
 {
-    const auto &obsfall = m_reg.get<ComponentObstacleFallthrough>(m_playerId);
-    const auto &ptransform = m_reg.get<ComponentTransform>(m_playerId);
-    const auto &pphysical = m_reg.get<ComponentPhysical>(m_playerId);
-    const auto &psm = m_reg.get<StateMachine>(m_playerId);
-    const auto &pinp = m_reg.get<InputResolver>(m_playerId);
+    const auto &obsfall = m_reg.get<ComponentObstacleFallthrough>(playerId);
+    const auto &ptransform = m_reg.get<ComponentTransform>(playerId);
+    const auto &pphysical = m_reg.get<ComponentPhysical>(playerId);
+    const auto &psm = m_reg.get<StateMachine>(playerId);
+    const auto &pinp = m_reg.get<InputResolver>(playerId);
 
-    std::string ignoredObstacles = "";
+    std::string ignoredObstacles;
     for (const auto &el : obsfall.m_ignoredObstacles)
         ignoredObstacles += std::to_string(el) + " ";
 
@@ -80,34 +81,36 @@ void HudSystem::drawPlayerDebug()
     //for (const auto &el : m_pc->m_cooldowns)
     //    cooldowns += std::to_string(!el.isActive());
 
-    m_playerLog.addRecord("Player pos: " + utils::toString(ptransform.m_pos));
-    m_playerLog.addRecord("Player vel: " + utils::toString(pphysical.m_velocity));
-    m_playerLog.addRecord("Player inr: " + utils::toString(pphysical.m_inertia));
-    m_playerLog.addRecord(std::string("Player action: ") + psm.getName());
-    m_playerLog.addRecord(std::string("Ignored obstacles: ") + ignoredObstacles);
-    m_playerLog.addRecord(std::string("On slope: ") + std::to_string(pphysical.m_onSlopeWithAngle));
-    m_playerLog.addRecord(std::string("Grounded: ") + std::to_string(pphysical.m_onGround != entt::null));
-    m_playerLog.addRecord(std::string("Attac\nhed: ") + std::to_string(pphysical.m_onWall != entt::null));
+    ImmediateScreenLog playerLog{0, fonts::HOR_ALIGN::RIGHT, 12};
 
-    m_playerLog.dump({gamedata::global::hudLayerResolution.x - 1.0f, 1.0f});
+    playerLog.addRecord("Player pos: " + utils::toString(ptransform.m_pos));
+    playerLog.addRecord("Player vel: " + utils::toString(pphysical.m_velocity));
+    playerLog.addRecord("Player inr: " + utils::toString(pphysical.m_inertia));
+    playerLog.addRecord(std::string("Player action: ") + psm.getName());
+    playerLog.addRecord(std::string("Ignored obstacles: ") + ignoredObstacles);
+    playerLog.addRecord(std::string("On slope: ") + std::to_string(pphysical.m_onSlopeWithAngle));
+    playerLog.addRecord(std::string("Grounded: ") + std::to_string(pphysical.m_onGround != entt::null));
+    playerLog.addRecord(std::string("Attac\nhed: ") + std::to_string(pphysical.m_onWall != entt::null));
+
+    playerLog.dump({gamedata::global::hudLayerResolution.x - 1.0f, 1.0f});
 
     auto inputs = pinp.getCurrentInputDir();
 
-    Vector2<float> arrowPos[] = {
+    const std::array<Vector2<float>, 4> arrowPos {
         Vector2{320.0f, 25.0f},
         Vector2{355.0f, 60.0f},
         Vector2{320.0f, 95.0f},
         Vector2{285.0f, 60.0f},
     };
 
-    bool isValid[] = {
+    const std::array<bool, 4> isValid {
         inputs.y < 0,
         inputs.x > 0,
         inputs.y > 0,
         inputs.x < 0
     };
 
-    float angles[] = {
+    const std::array<float, 4> angles {
         270,
         0,
         90,
@@ -116,14 +119,14 @@ void HudSystem::drawPlayerDebug()
 
     for (int i = 0; i < 4; ++i)
     {
-        auto &spr = (isValid[i] ? m_arrowIn : m_arrowOut);
+        const auto &spr = (isValid.at(i) ? *m_arrowIn : *m_arrowOut);
 
-        m_renderer.renderTexture(spr->m_id,
-        arrowPos[i] - spr->m_size / 2, spr->m_size,SDL_FLIP_NONE, angles[i], spr->m_size / 2);
+        m_renderer.renderTexture(spr.m_id,
+        arrowPos.at(i) - spr.m_size / 2, spr.m_size,SDL_FLIP_NONE, angles.at(i), spr.m_size / 2);
     }
 }
 
-void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_, const StateMachine &sm_, const ComponentAI &ai_)
+void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_, const StateMachine &sm_, const ComponentAI &ai_) const
 {
     auto txt1 = sm_.getName();
     auto txt2 = ai_.m_sm.getName();
@@ -131,7 +134,7 @@ void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPh
 
     Vector2<int> camSize = m_cam.getSize();
     Vector2<int> camTL = m_cam.getTopLeft();
-    auto screenRelPos = (worldOrigin - camTL).mulComponents(1.0f / camSize.x, 1.0f / camSize.y);
+    const auto screenRelPos = (worldOrigin - camTL).mulComponents(1.0f / camSize.x, 1.0f / camSize.y);
     
 	Vector2<int> screenOrigin = screenRelPos.mulComponents(gamedata::global::hudLayerResolution);
 

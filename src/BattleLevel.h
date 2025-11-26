@@ -31,7 +31,7 @@ public:
 
 protected:
     void update() override;
-    void draw() override;
+    void draw() const override;
 
     void handleReset();
 

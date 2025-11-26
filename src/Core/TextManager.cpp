@@ -406,7 +406,7 @@ void TextManager::generateSimpleShadedSymbols(Renderer &renderer_, std::vector<s
     std::cout << generated << " characters generated out of " << charsTotal << ", " << notProvided << " characters not provided" << std::endl;
 }
 
-void TextManager::renderText(const std::string &text_, int fontid_, Vector2<int> pos_, fonts::HOR_ALIGN horAlign_, Camera *cam_)
+void TextManager::renderText(const std::string &text_, int fontid_, Vector2<int> pos_, fonts::HOR_ALIGN horAlign_, const Camera *cam_)
 {
     U8Wrapper wrp(text_);
     auto begin = wrp.begin();

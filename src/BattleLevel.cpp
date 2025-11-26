@@ -59,8 +59,8 @@ BattleLevel::BattleLevel(const Vector2<int>& size_, int lvlId_) :
     
 
     m_playerId = playerId;
-    m_camsys.m_playerId = playerId;
-    m_hudsys.m_playerId = playerId;
+    m_camsys.playerId = playerId;
+    m_hudsys.playerId = playerId;
     m_enemysys.m_playerId = playerId;
 
     //m_envSystem.makeGrassTop(Vector2{230, 351});
@@ -241,7 +241,7 @@ void BattleLevel::update()
     m_rendersys.updateDepth();
 }
 
-void BattleLevel::draw()
+void BattleLevel::draw() const
 {
     PROFILE_FUNCTION;
 
