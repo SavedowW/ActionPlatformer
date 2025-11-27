@@ -54,7 +54,7 @@ inline float InlinedValueHandler::getParam<float>(size_t index_, const float &de
     if (index_ >= m_tokens.size() || m_tokens[index_] == "default")
         return default_;
 
-    return std::stof(m_tokens[index_].c_str());
+    return std::stof(m_tokens[index_]);
 }
 
 std::unique_ptr<fonts::Symbol> processCommand(const std::string &cmd_)
@@ -117,7 +117,7 @@ void ChatboxSystem::setPlayerEntity(entt::entity playerId_)
 
 void ChatboxSystem::addSequence(ChatMessageSequence &&seq_)
 {
-    if (seq_.m_messages.empty())
+    if (seq_.empty())
         throw std::runtime_error("ChatboxSystem received an empty sequence");
 
     m_sequences.emplace_back(std::move(seq_));
@@ -154,31 +154,31 @@ void clearStack(std::stack<T> &stack_)
     stack_ = std::stack<T>();
 }
 
-void ChatboxSystem::renderText(const ChatMessageSequence &seq_, const Vector2<int> &tl_) const
+void ChatboxSystem::renderMessage(const ChatMessage &msg_, const Vector2<int> &tl_) const
 {
     ChatMessageSequence::RenderEffects effects;
 
     auto pos = tl_;
     bool newLine = true;
     int currentLine = 0;
-    for (size_t i = 0; i <= seq_.m_currentMessage->m_currentProceedingCharacter && i < seq_.m_currentMessage->m_symbols.size(); ++i)
+    for (size_t i = 0; i <= msg_.m_currentProceedingCharacter && i < msg_.m_symbols.size(); ++i)
     {
-        auto &sym = seq_.m_currentMessage->m_symbols[i];
+        const auto &sym = msg_.m_symbols[i];
         if (newLine)
         {
-            pos.x = tl_.x - seq_.m_currentMessage->m_symbols[0]->m_minx;
+            pos.x = tl_.x - msg_.m_symbols[0]->m_minx;
             currentLine++;
             newLine = false;
         }
         if (!sym)
         {
-            pos.y += seq_.m_currentMessage->m_lineHeights[currentLine];
+            pos.y += msg_.m_lineHeights[currentLine];
             newLine = true;
         }
         else if (sym->m_tex.m_id)
         {
-            const bool applyAppearOffset = i >= seq_.m_currentMessage->m_firstCharacterForFadingIn;
-            const float progress = applyAppearOffset ? Easing::circ(seq_.m_currentMessage->m_symbolAppearTimers[i].getProgressNormalized()) : 1.0f;
+            const bool applyAppearOffset = i >= msg_.m_firstCharacterForFadingIn;
+            const float progress = applyAppearOffset ? Easing::circ(msg_.m_symbolAppearTimers[i].getProgressNormalized()) : 1.0f;
 
             Vector2<int> offset;
             {
@@ -200,67 +200,12 @@ void ChatboxSystem::renderText(const ChatMessageSequence &seq_, const Vector2<in
 
 void ChatboxSystem::update()
 {
-    bool removeSequence = false;
-    if (!m_sequences.empty())
-    {
-        auto &seq = m_sequences[0];
-        if (seq.m_currentState == ChatMessageSequence::BoxState::APPEAR)
-        {
-            if (seq.m_windowTimer.update())
-            {
-                seq.m_currentState = ChatMessageSequence::BoxState::IDLE;
-                if (!seq.m_currentMessage->m_symbolAppearTimers.empty())
-                {
-                    seq.m_currentMessage->m_charDelayTimer.begin(seq.m_currentMessage->m_characterDelay);
-                    seq.m_currentMessage->m_symbolAppearTimers[0].begin(seq.m_currentMessage->m_appearDuration);
-                }
-            }
-        }
-        else if (seq.m_currentState == ChatMessageSequence::BoxState::DISAPPEAR)
-        {
-            if (seq.m_windowTimer.update())
-                removeSequence = true;
-        }
-        else // Proceeding message
-        {
-            seq.m_windowTimer.update();
-            // Updating current message
-            if (seq.m_currentMessage)
-            {
-                // Full amount of characters in the current message (or specifically number of character-specific timers)
-                size_t vsize = seq.m_currentMessage->m_symbolAppearTimers.size();
+    if (m_sequences.empty())
+        return;
+    
+    m_sequences[0].update();
 
-                if (seq.m_currentMessage->m_currentState == ChatMessage::MessageState::APPEAR)
-                {
-                    // Iterate over all updating characters, update their timers and boundaries
-                    for (size_t i = seq.m_currentMessage->m_firstCharacterForFadingIn; i <= seq.m_currentMessage->m_currentProceedingCharacter && i < vsize; ++i)
-                    {
-                        if (seq.m_currentMessage->m_symbolAppearTimers[i].update())
-                            seq.m_currentMessage->m_firstCharacterForFadingIn++;
-                    }
-
-                    // Handle delay between characters
-                    if (seq.m_currentMessage->m_charDelayTimer.update() && seq.m_currentMessage->m_currentProceedingCharacter < vsize)
-                    {
-                        seq.m_currentMessage->proceedUntilNonTechCharacter();
-
-                        seq.m_currentMessage->m_charDelayTimer.begin(seq.m_currentMessage->m_characterDelay);
-                        
-                        if (seq.m_currentMessage->m_currentProceedingCharacter < vsize)
-                            seq.m_currentMessage->m_symbolAppearTimers[seq.m_currentMessage->m_currentProceedingCharacter].begin(seq.m_currentMessage->m_appearDuration);
-                    }
-
-                    if (seq.m_currentMessage->m_firstCharacterForFadingIn >= seq.m_currentMessage->m_symbolAppearTimers.size())
-                        seq.m_currentMessage->m_currentState = ChatMessage::MessageState::IDLE;
-                }
-            }
-        }
-
-        const float progress = seq.m_windowTimer.getProgressNormalized();
-        seq.m_currentSize = utils::lerp(seq.m_oldSize, seq.m_targetSize, progress);
-    }
-
-    if (removeSequence)
+    if (m_sequences[0].isMarkedForDeletion())
     {
         if (m_sequences[0].m_returnInputs)
         {
@@ -351,10 +296,10 @@ void ChatboxSystem::draw() const
 
     const Vector2<int> iScreenPos = screenPos;
 
-    std::cout << seq.m_currentMessage->m_charDelayTimer.getCurrentFrame() << std::endl;
+    /*std::cout << seq.m_currentMessage->m_charDelayTimer.getCurrentFrame() << std::endl;
     for (auto &el : seq.m_currentMessage->m_symbolAppearTimers)
         std::cout << el.getCurrentFrame() << " ";
-    std::cout << std::endl;
+    std::cout << std::endl;*/
 
     if (seq.m_currentSize.x >= m_chatboxPointer->m_size.x)
     {
@@ -403,8 +348,8 @@ void ChatboxSystem::draw() const
             m_chatboxEdge->m_size, SDL_FlipMode(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL), 1.0f);
 
     std::cout << (int)seq.m_currentState << std::endl;
-    if (seq.m_currentMessage && seq.m_currentState == ChatMessageSequence::BoxState::IDLE)
-        renderText(seq, outerBoundTL + Vector2{m_chatboxEdge->m_size.x + ChatConsts::ChatEdgeGap, m_chatboxEdge->m_size.y + ChatConsts::ChatEdgeGap});
+    if (!seq.empty() && seq.m_currentState == ChatMessageSequence::BoxState::IDLE)
+        renderMessage(seq.currentMessage(), outerBoundTL + Vector2{m_chatboxEdge->m_size.x + ChatConsts::ChatEdgeGap, m_chatboxEdge->m_size.y + ChatConsts::ChatEdgeGap});
 }
 
 ChatMessageSequence::ChatMessageSequence(entt::entity src_, const ChatBoxSide &side_, bool fitScreen_, bool proceedByInput_, bool claimInputs_, bool returnInputs_) :
@@ -427,7 +372,7 @@ void ChatMessageSequence::compileAndSetSize()
     m_targetSize.y += ChatConsts::ChatEdgeGap * 2;
 
     if (!m_messages.empty())
-        m_currentMessage = &m_messages[0];
+        m_currentMessage = m_messages.data();;
 
     m_windowTimer.begin(ChatConsts::fadeInDuration);
 }
@@ -455,7 +400,7 @@ void ChatMessageSequence::takeInput()
                 }
                 else
                 {
-                    m_currentMessage = &m_messages[0];
+                    m_currentMessage = m_messages.data();
                     m_currentMessage->m_charDelayTimer.begin(m_currentMessage->m_characterDelay + 1);
                     m_oldSize = m_currentSize;
 
@@ -474,8 +419,86 @@ const fonts::Symbol *ChatMessageSequence::currentSymbol() const
     return m_currentMessage->m_symbols[m_currentMessage->m_currentProceedingCharacter];
 }
 
-ChatMessage::ChatMessage(const std::string &textRaw_, int font_) :
-    m_textRaw(textRaw_),
+void ChatMessageSequence::update()
+{
+    if (m_currentState == ChatMessageSequence::BoxState::APPEAR)
+    {
+        if (m_windowTimer.update())
+        {
+            m_currentState = ChatMessageSequence::BoxState::IDLE;
+            if (!m_currentMessage->m_symbolAppearTimers.empty())
+            {
+                m_currentMessage->m_charDelayTimer.begin(m_currentMessage->m_characterDelay);
+                m_currentMessage->m_symbolAppearTimers[0].begin(m_currentMessage->m_appearDuration);
+            }
+        }
+    }
+    else if (m_currentState == ChatMessageSequence::BoxState::DISAPPEAR)
+    {
+        if (m_windowTimer.update())
+            m_toBeDeleted = true;
+    }
+    else // Proceeding message
+    {
+        m_windowTimer.update();
+        // Updating current message
+        if (m_currentMessage)
+        {
+            // Full amount of characters in the current message (or specifically number of character-specific timers)
+            const size_t vsize = m_currentMessage->m_symbolAppearTimers.size();
+
+            if (m_currentMessage->m_currentState == ChatMessage::MessageState::APPEAR)
+            {
+                // Iterate over all updating characters, update their timers and boundaries
+                for (size_t i = m_currentMessage->m_firstCharacterForFadingIn; i <= m_currentMessage->m_currentProceedingCharacter && i < vsize; ++i)
+                {
+                    if (m_currentMessage->m_symbolAppearTimers[i].update())
+                        m_currentMessage->m_firstCharacterForFadingIn++;
+                }
+
+                // Handle delay between characters
+                if (m_currentMessage->m_charDelayTimer.update() && m_currentMessage->m_currentProceedingCharacter < vsize)
+                {
+                    m_currentMessage->proceedUntilNonTechCharacter();
+
+                    m_currentMessage->m_charDelayTimer.begin(m_currentMessage->m_characterDelay);
+                    
+                    if (m_currentMessage->m_currentProceedingCharacter < vsize)
+                        m_currentMessage->m_symbolAppearTimers[m_currentMessage->m_currentProceedingCharacter].begin(m_currentMessage->m_appearDuration);
+                }
+
+                if (m_currentMessage->m_firstCharacterForFadingIn >= m_currentMessage->m_symbolAppearTimers.size())
+                    m_currentMessage->m_currentState = ChatMessage::MessageState::IDLE;
+            }
+        }
+    }
+
+    const float progress = m_windowTimer.getProgressNormalized();
+    m_currentSize = utils::lerp(m_oldSize, m_targetSize, progress);
+}
+
+bool ChatMessageSequence::isMarkedForDeletion() const noexcept
+{
+    return m_toBeDeleted;
+}
+
+bool ChatMessageSequence::empty() const
+{
+    return m_messages.empty();
+}
+
+const ChatMessage &ChatMessageSequence::currentMessage() const
+{
+    return *m_currentMessage;
+}
+
+void ChatMessageSequence::addMessage(ChatMessage &&message_)
+{
+    m_messages.emplace_back(std::move(message_));
+}
+
+ChatMessage::ChatMessage(std::string &&textRaw_, int font_) :
+    m_textRaw(std::move(textRaw_)),
     m_baseFont(font_)
 {
 }
@@ -521,7 +544,7 @@ void ChatMessage::compileAndSetSize()
                 continue;
             }
 
-            auto sym = textMan.getSymbol(m_baseFont, ch.getu8());
+            const auto *sym = textMan.getSymbol(m_baseFont, ch.getu8());
 
             if (newLine)
             {

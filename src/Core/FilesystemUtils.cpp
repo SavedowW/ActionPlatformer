@@ -9,7 +9,7 @@ namespace
     // TODO: find a way to avoid iteration on real release build
     std::string generateRootDirectory()
     {
-        auto pathptr = SDL_GetBasePath();
+        const auto *pathptr = SDL_GetBasePath();
         if (!pathptr)
             throw std::runtime_error("Failed to identify base path: " + std::string(SDL_GetError()));
 

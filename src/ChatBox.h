@@ -37,7 +37,7 @@ private:
 
 struct ChatMessage
 {
-    ChatMessage(const std::string &textRaw_, int font_);
+    ChatMessage(std::string &&textRaw_, int font_);
     ChatMessage(ChatMessage &&rhs_) = default;
     ChatMessage &operator=(ChatMessage &&rhs_) = default;
     std::string m_textRaw;
@@ -74,12 +74,21 @@ struct ChatMessage
 
 struct ChatMessageSequence
 {
+public:
     ChatMessageSequence(entt::entity src_, const ChatBoxSide &side_, bool fitScreen_, bool proceedByInput_, bool claimInputs_, bool returnInputs_);
     ChatMessageSequence(ChatMessageSequence &&) noexcept = default;
     ChatMessageSequence &operator=(ChatMessageSequence &&) noexcept = default;
     void compileAndSetSize();
     void takeInput();
     const fonts::Symbol* currentSymbol() const;
+
+    void update();
+
+    bool isMarkedForDeletion() const noexcept;
+
+    bool empty() const;
+    const ChatMessage &currentMessage() const;
+    void addMessage(ChatMessage &&message_);
 
     entt::entity m_source;
     Vector2<int> m_oldSize;
@@ -102,14 +111,16 @@ struct ChatMessageSequence
 
     enum class BoxState : uint8_t { APPEAR, IDLE, DISAPPEAR } m_currentState = BoxState::APPEAR;
 
-    std::vector<ChatMessage> m_messages;
-    ChatMessage *m_currentMessage = nullptr;
-
     /*
         Effects applied while rendering
         Multiple effects can be applied at once, but only the last version of each effect is applied
     */
     using RenderEffects = std::tuple<std::stack<SymbolRenderShake*>>;
+
+private:
+    std::vector<ChatMessage> m_messages;
+    ChatMessage *m_currentMessage = nullptr;
+    bool m_toBeDeleted = false;
 };
 
 class ChatboxSystem : public InputReactor
@@ -122,7 +133,7 @@ public:
     void addSequence(ChatMessageSequence &&seq_);
     void receiveEvents(HUD_EVENTS event, float scale_) override;
 
-    void renderText(const ChatMessageSequence &seq_, const Vector2<int> &tl_) const;
+    void renderMessage(const ChatMessage &msg_, const Vector2<int> &tl_) const;
 
     void update();
     void draw() const;
