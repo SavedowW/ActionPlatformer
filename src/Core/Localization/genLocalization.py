@@ -28,7 +28,7 @@ public:
 
 """)
         idx = 0
-        for key in keys:
+        for key in sorted(keys):
             f.write("    GENERATE_LOCALIZED_KEY(" + key + ", " + str(idx) + ")\n")
             idx += 1
         
@@ -37,7 +37,7 @@ public:
 private:
 """)
         f.write("    using LocalMap = std::array<std::string, " + str(len(keys)) + ">;\n")
-        for lang in langs:
+        for lang in sorted(langs):
             f.write("    static LocalMap m_strings" + lang + ";\n")
 
         f.write(
@@ -57,7 +57,7 @@ def generateCpp(pathCpp_):
 #include <fstream>
 
 """)
-        for lang in langs:
+        for lang in sorted(langs):
             f.write("ll::LocalMap ll::m_strings" + lang + ";\n")
         f.write(
 """ll::LocalMap *ll::m_currentStrings = &ll::m_stringsen;
@@ -66,7 +66,7 @@ void ll::setLang(const std::string &lang_)
 {
 """)
         firstLang = True
-        for lang in langs:
+        for lang in sorted(langs):
             if lang != "en":
                 f.write("    ")
                 if (not firstLang):
@@ -82,14 +82,14 @@ void ll::setLang(const std::string &lang_)
 void ll::load()
 {
 """)
-        for lang in langs:
+        for lang in sorted(langs):
             f.write(
 """    {
         std::ifstream jsonIn(Filesystem::getRootDirectory() + "Localization/""" + lang + """/strings.json");
         auto jsonData = nlohmann::json::parse(jsonIn);
 """)
             idx = 0
-            for key in keys:
+            for key in sorted(keys):
                 f.write('        m_strings' + lang + "[" + str(idx) + '] = jsonData["' + key + '\"];\n')
                 idx += 1
             f.write("    }\n")
