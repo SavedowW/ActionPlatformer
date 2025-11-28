@@ -60,11 +60,11 @@ public:
         m_walkDuration(walkDurationRange_)
     {}
 
-    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+    bool update(EntityAnywhere owner_, const Time::NS &timeInState_) override;
 
 protected:
     bool m_isWalking = false;
-    FrameTimer<true> m_timer;
+    ManualTimer<true> m_timer;
 
     CharState m_idle;
     std::pair<uint32_t, uint32_t> m_idleDuration;
@@ -86,7 +86,7 @@ public:
     {}
 
     void enter(EntityAnywhere owner_, CharState from_) override;
-    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+    bool update(EntityAnywhere owner_, const Time::NS &timeInState_) override;
 
 protected:
     CharState m_idle;
@@ -111,7 +111,7 @@ public:
         }
     }
 
-    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+    virtual bool update(EntityAnywhere owner_, const Time::NS &timeInState_) override;
 
 protected:
     std::vector<CharState> m_states;
@@ -131,7 +131,7 @@ public:
     {}
 
     void enter(EntityAnywhere owner_, CharState from_) override;
-    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+    bool update(EntityAnywhere owner_, const Time::NS &timeInState_) override;
 
 private:
     CharState m_walk;
@@ -147,7 +147,7 @@ public:
         m_prejump(static_cast<CharState>(prejump_))
     {}
 
-    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+    bool update(EntityAnywhere owner_, const Time::NS &timeInState_) override;
 
 private:
     CharState m_prejump;
@@ -167,7 +167,7 @@ public:
     {}
     
     void enter(EntityAnywhere owner_, CharState from_) override;
-    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+    bool update(EntityAnywhere owner_, const Time::NS &timeInState_) override;
 
 private:
     CharState m_noConnection;

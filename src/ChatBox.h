@@ -1,6 +1,6 @@
 #ifndef CHATBOX_H_
 #define CHATBOX_H_
-#include "Core/FrameTimer.h"
+#include "Core/ManualTimer.h"
 #include "Core/InputSystem.h"
 #include "Core/Texture.h"
 #include "Core/TextManager.h"
@@ -43,20 +43,20 @@ struct ChatMessage
     std::string m_textRaw;
     int m_baseFont;
     std::vector<const fonts::Symbol*> m_symbols;
-    std::vector<FrameTimer<false>> m_symbolAppearTimers;
+    std::vector<ManualTimer<false>> m_symbolAppearTimers;
     std::vector<int> m_lineHeights;
     std::vector<std::unique_ptr<fonts::Symbol>> m_techSymbols;
 
     Vector2<int> m_size;
 
     // Timer for delay between characters
-    FrameTimer<true> m_charDelayTimer;
+    ManualTimer<true> m_charDelayTimer;
 
-    static uint32_t m_defaultCharacterDelay;
-    static uint32_t m_defaultAppearDuration;
+    static Time::NS m_defaultCharacterDelay;
+    static Time::NS m_defaultAppearDuration;
 
-    uint32_t m_characterDelay = m_defaultCharacterDelay;
-    uint32_t m_appearDuration = m_defaultAppearDuration;
+    Time::NS m_characterDelay = m_defaultCharacterDelay;
+    Time::NS m_appearDuration = m_defaultAppearDuration;
     size_t m_currentProceedingCharacter = 0;
     size_t m_firstCharacterForFadingIn = 0;
 
@@ -98,7 +98,7 @@ public:
     bool m_fitScreen;
 
     // Timer for box appear / disappear animation
-    FrameTimer<true> m_windowTimer;
+    ManualTimer<true> m_windowTimer;
 
     // Progress with inputs
     bool m_proceedByInput = false;
@@ -229,12 +229,12 @@ private:
 class SymbolDelay : public TechSymbol
 {
 public:
-    SymbolDelay(int delay_);
+    SymbolDelay(const Time::NS &delay_);
 
     bool onReached(ChatMessage &message_) override;
 
 private:
-    int m_delay = 0;
+    Time::NS m_delay {0};
 };
 
 /*
@@ -246,13 +246,13 @@ private:
 class SymbolSetCharacterSpeed : public TechSymbol
 {
 public:
-    SymbolSetCharacterSpeed(uint32_t characterDelay_, uint32_t appearDuration_);
+    SymbolSetCharacterSpeed(const Time::NS &characterDelay_, const Time::NS &appearDuration_);
 
     bool onReached(ChatMessage &message_) override;
 
 private:
-    uint32_t m_characterDelay = 0;
-    uint32_t m_appearDuration = 0;
+    Time::NS m_characterDelay;
+    Time::NS m_appearDuration;
 };
 
 

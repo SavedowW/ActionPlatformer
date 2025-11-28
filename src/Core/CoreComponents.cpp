@@ -1,5 +1,7 @@
 #include "CoreComponents.h"
 #include "StaticMapping.hpp"
+#include "Application.h"
+#include "Timer.h"
 
 ComponentTransform::ComponentTransform(const Vector2<int> &pos_, ORIENTATION orient_) :
     m_pos(pos_), m_orientation(orient_)
@@ -21,11 +23,14 @@ void ComponentPhysical::convertToInertia(bool convertVelocity_, bool includeEnfo
     }
 }
 
-Vector2<int> ComponentPhysical::claimOffset()
+Vector2<int> ComponentPhysical::claimOffset(const double &partOfSecond_)
 {
-    auto offset = m_velocity + m_inertia.mulComponents(m_inertiaMultiplier) + m_extraoffset + m_velocityLeftover;
-    Vector2<int> iOffset = offset;
+    //if (m_velocity.x >= 2.5f)
+    //    std::cout << m_velocity << std::endl;
+    const auto offset = (m_velocity + m_inertia.mulComponents(m_inertiaMultiplier) + m_extraoffset) * partOfSecond_ + m_velocityLeftover;
+    const Vector2<int> iOffset = offset;
     m_velocityLeftover = offset - iOffset;
+    std::cout << "{" << offset << "} - {" << iOffset << "} = " << m_velocityLeftover << std::endl;
     return iOffset;
 }
 
@@ -41,7 +46,7 @@ Vector2<float> ComponentPhysical::peekRawOffset() const
 
 void ComponentObstacleFallthrough::setIgnoringObstacles()
 {
-    m_isIgnoringObstacles.begin(5);
+    m_isIgnoringObstacles.begin(Time::fromFrames(5));
 }
 
 bool ComponentObstacleFallthrough::isIgnoringAllObstacles() const
@@ -104,7 +109,7 @@ ComponentStaticCollider::ComponentStaticCollider(const Vector2<float> &pos_, con
 
 bool SwitchCollider::updateTimer()
 {
-    if (m_timer.update())
+    if (m_timer.update(Application::instance().timestep.getFrameDuration()))
     {
         if (m_isEnabled)
             m_timer.begin(m_durationDisabled);
@@ -117,36 +122,31 @@ bool SwitchCollider::updateTimer()
     return m_isEnabled;
 }
 
-void ComponentParticlePhysics::applyDrag()
+void ComponentParticlePhysics::applyDrag(const double &partOfSecond_)
 {
     if (m_inertia.x != 0)
     {
         auto absInertia = abs(m_inertia.x);
-        auto m_inertiaSign = utils::signof(m_inertia.x / abs(m_inertia.x));
-        absInertia = std::max(absInertia - m_drag.x, 0.0f);
-        m_inertia.x = m_inertiaSign * absInertia;
+        auto inertiaSign = utils::signof(m_inertia.x / abs(m_inertia.x));
+        absInertia = std::max(absInertia - m_drag.x * partOfSecond_, 0.0);
+        m_inertia.x = inertiaSign * absInertia;
     }
 
     if (m_inertia.y != 0)
     {
         auto absInertia = abs(m_inertia.y);
-        auto m_inertiaSign = utils::signof(m_inertia.y / abs(m_inertia.y));
-        absInertia = std::max(absInertia - m_drag.y, 0.0f);
-        m_inertia.y = m_inertiaSign * absInertia;
+        auto inertiaSign = utils::signof(m_inertia.y / abs(m_inertia.y));
+        absInertia = std::max(absInertia - m_drag.y * partOfSecond_, 0.0);
+        m_inertia.y = inertiaSign * absInertia;
     }
 }
 
-Vector2<int> ComponentParticlePhysics::claimOffset()
+Vector2<int> ComponentParticlePhysics::claimOffset(const double &partOfSecond_)
 {
-    auto offset = m_velocity + m_inertia.mulComponents(m_inertiaMultiplier);
+    const auto offset = (m_velocity + m_inertia.mulComponents(m_inertiaMultiplier) * partOfSecond_) * partOfSecond_;
     Vector2<int> iOffset = offset;
     m_velocityLeftover = offset - iOffset;
     return iOffset;
-}
-
-Vector2<float> ComponentParticlePhysics::peekRawOffset() const
-{
-    return m_velocity + m_inertia.mulComponents(m_inertiaMultiplier);
 }
 
 Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_)

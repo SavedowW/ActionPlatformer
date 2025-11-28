@@ -1,9 +1,9 @@
 #include "AnimationManager.h"
-#include "TimelineProperty.hpp"
 #include "Renderer.h"
 #include "JsonUtils.hpp"
 #include "FilesystemUtils.h"
 #include <nlohmann/json.hpp>
+#include "Timer.h"
 #include "glad/glad.h"
 #include <SDL3_image/SDL_image.h>
 #include <cassert>
@@ -59,9 +59,9 @@ std::shared_ptr<TextureArr> AnimationManager::getTextureArr(ResID id_)
         utils::tryClaim(animdata, "origin_x", 0),
         utils::tryClaim(animdata, "origin_y", 0));
 
-    const auto duration = utils::tryClaim<uint32_t>(animdata, "duration", 1);
+    const auto duration = utils::tryClaim<Time::NS>(animdata, "duration", Time::NS{1});
 
-    TimelineProperty<int> timelineFileIds;
+    TimelineProperty<Time::NS, size_t> timelineFileIds;
     std::vector<SDL_Surface*> surfaces;
     std::map<int, size_t> fileIdsToInternal;
 
@@ -71,7 +71,7 @@ std::shared_ptr<TextureArr> AnimationManager::getTextureArr(ResID id_)
 
     for (auto it = animdata["frames"].cbegin(); it != animdata["frames"].cend(); it++)
     {
-        uint32_t key = std::stoi(it.key());
+        Time::NS key = Time::deserialize(it.key());
         int fileid = it.value();
         
         if (!fileIdsToInternal.contains(fileid))
@@ -81,17 +81,12 @@ std::shared_ptr<TextureArr> AnimationManager::getTextureArr(ResID id_)
             fileIdsToInternal[fileid] = surfaces.size() - 1;
         }
 
-        timelineFileIds.addPair(key, fileid);
+        timelineFileIds.addPair(key, fileIdsToInternal.at(fileid));
     }
 
     auto texIds = Renderer::surfacesToTexture(surfaces);
 
-    std::vector<size_t> framesData(duration);
-    
-    for (uint32_t i = 0; i < duration; ++i)
-        framesData[i] = fileIdsToInternal[timelineFileIds[i]];
-
-    auto reqElem = std::make_shared<TextureArr>(std::move(texIds), surfaces.size(), duration, std::move(framesData), surfaces[0]->w, surfaces[0]->h, origin);
+    auto reqElem = std::make_shared<TextureArr>(std::move(texIds), surfaces.size(), duration, std::move(timelineFileIds), surfaces[0]->w, surfaces[0]->h, origin);
     m_textureArrs[id_].m_texArr = reqElem;
     return reqElem;
 }
@@ -128,92 +123,88 @@ TextureArr::~TextureArr()
     glDeleteTextures(static_cast<int>(m_amount), m_tex.data());
 }
 
-Animation::Animation(AnimationManager &animationManager_, ResID id_, LOOPMETHOD isLoop_, int beginFrame_, int beginDirection_) :
-    m_currentFrame(beginFrame_),
-    m_direction(beginDirection_),
+Animation::Animation(AnimationManager &animationManager_, ResID id_, LOOPMETHOD isLoop_, const Time::NS &initialTime_) :
+    m_timePassed{initialTime_},
     m_isLoop(isLoop_)
 {
     m_textures = animationManager_.getTextureArr(id_);
 }
 
-void Animation::update()
+void Animation::update(Time::NS frameDuration_)
 {
-    if (isFinished())
-        animFinished();
-    else
-        m_currentFrame += m_direction;
+    switch (m_direction)
+    {
+        case Direction::FORWARD:
+        {
+            const auto newTime = m_timePassed + frameDuration_;
+            if (newTime > m_textures->m_totalDuration)
+            {
+                if (m_isLoop == LOOPMETHOD::JUMP_LOOP)
+                    m_timePassed = newTime - m_textures->m_totalDuration;
+                else if (m_isLoop == LOOPMETHOD::SWITCH_DIR_LOOP)
+                {
+                    m_direction = Direction::BACKWARD;
+                    m_timePassed = m_textures->m_totalDuration - (newTime - m_textures->m_totalDuration);
+                }
+                else
+                    m_timePassed = m_textures->m_totalDuration;
+            }
+            else
+                m_timePassed = newTime;
+
+            break;
+        }
+
+        case Direction::BACKWARD:
+        {
+            if (frameDuration_ > m_timePassed)
+            {
+                if (m_isLoop == LOOPMETHOD::JUMP_LOOP)
+                    m_timePassed = m_textures->m_totalDuration - (frameDuration_ - m_timePassed);
+                else if (m_isLoop == LOOPMETHOD::SWITCH_DIR_LOOP)
+                {
+                    m_direction = Direction::FORWARD;
+                    m_timePassed = frameDuration_ - m_timePassed;
+                }
+                else
+                    m_timePassed = Time::NS{0};
+            }
+            else
+                m_timePassed -= frameDuration_;
+        }
+    }
+
 }
 
 unsigned int Animation::getSprite() const
-{
-    if (m_currentFrame == -1)
-        m_currentFrame = 0;
-        
-    return (*m_textures)[m_currentFrame];
+{       
+    return (*m_textures)[m_timePassed];
 }
 
-bool Animation::isFinished()
+bool Animation::isFinished() const noexcept
 {
-    if (m_direction > 0)
-        return m_currentFrame == static_cast<int>(m_textures->m_totalDuration - 1);
-    
-    return !m_currentFrame;
+    if (m_isLoop != LOOPMETHOD::NOLOOP)
+        return false;
+
+    return (m_direction == Direction::FORWARD && m_timePassed >= m_textures->m_totalDuration || m_direction == Direction::BACKWARD && m_timePassed <= Time::NS{0});
 }
 
-void Animation::switchDir()
-{
-    m_direction *= -1;
-}
-
-void Animation::setDir(int dir_)
-{
-    assert(dir_ == 1 || dir_ == -1);
-
-    m_direction = dir_;
-}
-
-void Animation::reset(int beginFrame_, int beginDirection_)
-{
-    m_currentFrame = beginFrame_;
-    m_direction = beginDirection_;
-}
-
-void Animation::animFinished()
-{
-    switch (m_isLoop)
-    {
-    case (LOOPMETHOD::NOLOOP):
-            m_direction = 0;
-        break;
-
-    case (LOOPMETHOD::JUMP_LOOP):
-        if (m_currentFrame >= static_cast<int>(m_textures->m_totalDuration - 1))
-            m_currentFrame = 0;
-        else if (m_currentFrame <= 0)
-            m_currentFrame = m_textures->m_totalDuration - 1;
-        break;
-
-    case (LOOPMETHOD::SWITCH_DIR_LOOP):
-        m_direction *= -1;
-        if (m_direction == -1)
-            m_currentFrame = m_textures->m_totalDuration - 1;
-        else
-            m_currentFrame = 0;
-        break;
-    }
-}
-
-Vector2<int> Animation::getSize() const
+Vector2<int> Animation::getSize() const noexcept
 {
     return {m_textures->m_w, m_textures->m_h};
 }
 
-Vector2<int> Animation::getOrigin() const
+Vector2<int> Animation::getOrigin() const noexcept
 {
     return m_textures->m_origin;
 }
 
-int Animation::getDirection() const
+void Animation::reset() noexcept
+{
+    m_timePassed = Time::NS{0};
+}
+
+Animation::Direction Animation::getDirection() const noexcept
 {
     return m_direction;
 }

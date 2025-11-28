@@ -20,32 +20,28 @@
         5 - "five"
         6 - "five"
     For a move-only structs, use addPair
-    Mostly designed to map properties to frames, has internal optimization
+    Mostly designed to map properties to frames or time, has internal optimization
         for sequential access in both directions
         like 1 - 2 - 3 - ...
     Isn't exception-safe or thread-safe
 */
-template<typename T>
+template<typename Tk, typename Tv>
 class TimelineProperty {
 public:
     // Requires copying due to std::map - inevitable because for nice syntax you need to build std::initializer_list
-    TimelineProperty(const std::map<uint32_t, T> &values_) :
+    TimelineProperty(const std::map<Tk, Tv> &values_) :
         m_isEmpty(false)
     {
         if (values_.empty())
-        {
             throw std::runtime_error("Trying to create a timeline property from an empty map");
-        }
-        else
-        {
-            m_keys.reserve(values_.size());
-            m_values.reserve(values_.size());
+        
+        m_keys.reserve(values_.size());
+        m_values.reserve(values_.size());
 
-            for (const auto &el : values_)
-            {
-                m_keys.emplace_back(el.first);
-                m_values.emplace_back(el.second);
-            }
+        for (const auto &el : values_)
+        {
+            m_keys.emplace_back(el.first);
+            m_values.emplace_back(el.second);
         }
 
         m_last = 0;
@@ -60,7 +56,7 @@ public:
     }
 
     // Creates at 0, requires only move-constructor
-    TimelineProperty(T &&rhs_) :
+    TimelineProperty(Tv &&rhs_) :
         m_isEmpty(false)
     {
         m_keys.emplace_back(0);
@@ -68,17 +64,16 @@ public:
     }
 
     // Requires copy-constructor
-    TimelineProperty(const TimelineProperty<T> &rhs_)
+    TimelineProperty(const TimelineProperty<Tk, Tv> &rhs_) : 
+        m_keys(rhs_.m_keys), 
+        m_values(rhs_.m_values), 
+        m_isEmpty(rhs_.m_isEmpty)
     {
-        m_keys = rhs_.m_keys;
-        m_values = rhs_.m_values;
-        m_last = 0;
         m_lastRequest = m_keys[m_last];
-        m_isEmpty = rhs_.m_isEmpty;
     }
 
     // Requires copy-constructor
-    TimelineProperty& operator=(const TimelineProperty<T> &rhs_)
+    TimelineProperty& operator=(const TimelineProperty<Tk, Tv> &rhs_)
     {
         m_keys = rhs_.m_keys;
         m_values = rhs_.m_values;
@@ -90,21 +85,20 @@ public:
     }
 
     // Requires only move constructor
-    TimelineProperty(TimelineProperty<T> &&rhs_) noexcept
+    TimelineProperty(TimelineProperty<Tk, Tv> &&rhs_) noexcept : 
+        m_keys(std::move(rhs_.m_keys)), 
+        m_values(std::move(rhs_.m_values)),
+         m_isEmpty(rhs_.m_isEmpty)
     {
-        m_keys = std::move(rhs_.m_keys);
-        m_values = std::move(rhs_.m_values);
-        m_last = 0;
         m_lastRequest = m_keys[m_last];
-        m_isEmpty = rhs_.m_isEmpty;
 
         rhs_.m_last = 0;
-        rhs_.m_lastRequest = 0;
+        rhs_.m_lastRequest = Tk{0};
         rhs_.m_isEmpty = true;
     }
 
     // Requires only move constructor
-    TimelineProperty& operator=(TimelineProperty<T> &&rhs_) noexcept
+    TimelineProperty& operator=(TimelineProperty<Tk, Tv> &&rhs_) noexcept
     {
         m_keys = std::move(rhs_.m_keys);
         m_values = std::move(rhs_.m_values);
@@ -113,7 +107,7 @@ public:
         m_isEmpty = rhs_.m_isEmpty;
 
         rhs_.m_last = 0;
-        rhs_.m_lastRequest = 0;
+        rhs_.m_lastRequest = Tk{0};
         rhs_.m_isEmpty = true;
 
         return *this;
@@ -125,7 +119,7 @@ public:
     }
 
     // Requires move constructor and assignment
-    TimelineProperty &addPair(uint32_t timeMark_, T &&rhs_)
+    TimelineProperty &addPair(const Tk &timeMark_, Tv &&rhs_)
     {
         // TODO: what if timeMark_ < min?
         if (m_isEmpty)
@@ -162,7 +156,7 @@ public:
     }
 
     // Requires copy constructor and assignment
-    TimelineProperty &addPair(uint32_t timeMark_, const T &rhs_)
+    TimelineProperty &addPair(Tk timeMark_, const Tv &rhs_)
     {
         // TODO: what if timeMark_ < min?
         if (m_isEmpty)
@@ -198,31 +192,27 @@ public:
         return *this;
     }
 
-    const T &operator[](uint32_t timeMark_) const requires (!std::same_as<T, bool>)
+    const Tv &operator[](Tk timeMark_) const requires (!std::same_as<Tv, bool>)
     {
         iterateLastTo(timeMark_);
         return m_values.at(m_last);
     }
 
-    T operator[](uint32_t timeMark_) const requires (std::same_as<T, bool>)
+    Tv operator[](Tk timeMark_) const requires (std::same_as<Tv, bool>)
     {
         iterateLastTo(timeMark_);
         return m_values.at(m_last);
     }
 
 protected:
-    void iterateLastTo(uint32_t timeMark_) const
+    void iterateLastTo(Tk timeMark_) const
     {
         if (m_keys.empty() || m_values.empty())
             throw std::runtime_error("Trying to index a moved-from timeline");
 
-        int64_t diff = static_cast<int64_t>(timeMark_) - m_lastRequest;
-        m_lastRequest = timeMark_;
-
-        // Dirty, but only 2 conditions at most in probably the most important function in the project
-        if (diff > 0)
+        if (timeMark_ > m_lastRequest)
         {
-            if (diff <= 5)
+            if (timeMark_ - m_lastRequest <= m_stepThreshold)
             {
                 while (m_last != m_keys.size() - 1 && m_keys[m_last + 1] <= timeMark_)
                     m_last++;
@@ -230,9 +220,9 @@ protected:
             else
                 m_last = binarySearch(timeMark_);
         }
-        else if (diff < 0)
+        else
         {
-            if (diff >= -5)
+            if (m_lastRequest - timeMark_ <= m_stepThreshold)
             {
                 while (m_last != 0 && m_keys[m_last] > timeMark_)
                     m_last--;
@@ -240,9 +230,11 @@ protected:
             else
                 m_last = binarySearch(timeMark_);
         }
+
+        m_lastRequest = timeMark_;
     }
 
-    size_t binarySearch(uint32_t timeMark_) const
+    size_t binarySearch(Tk timeMark_) const
     {
         const auto size = m_keys.size();
         if (timeMark_ >= m_keys[size - 1])
@@ -268,17 +260,17 @@ protected:
 
         if (m_keys[rBound] <= timeMark_)
             return rBound;
-        else
-            return lBound;
+
+        return lBound;
     }
 
-    std::vector<uint32_t> m_keys;
-    std::vector<T> m_values;
-    mutable uint32_t m_lastRequest = 0;
+    std::vector<Tk> m_keys;
+    std::vector<Tv> m_values;
+    mutable Tk m_lastRequest{0};
     mutable size_t m_last = 0;
     bool m_isEmpty = true;
 
-    static constexpr int m_stepThreshold = 5;
+    static constexpr Tk m_stepThreshold{5};
 };
 
 #endif

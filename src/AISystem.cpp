@@ -14,7 +14,7 @@ void AISystem::update()
 
     for (auto [idx, ai] : view.each())
     {
-        ai.m_sm.update({&m_reg, idx}, 0);
+        ai.m_sm.update({.reg=&m_reg, .idx=idx}, Time::fromFrames(0));
     }
 
     /* TODO: notably faster in release build, but harder to debug even with seq, might add debug flags to enable parallel execution

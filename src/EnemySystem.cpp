@@ -1,6 +1,7 @@
 #include "EnemySystem.h"
 #include "Core/Application.h"
 #include "Core/CoreComponents.h"
+#include "Core/Timer.h"
 #include "StateMachine.hpp"
 #include "Enemy1.h"
 #include "Core/NavGraph.h"
@@ -117,19 +118,19 @@ entt::entity EnemySystem::makeEnemy()
             Enemy1State::RUN, StateMarker{Enemy1State::IDLE, Enemy1State::RUN}, m_animManager.getAnimID("Enemy1/run"))
         .setGravity(Vector2{0.0f, 0.0f})
         .setUpdateMovementData(
-            TimelineProperty(Vector2{1.0f, 1.0f}), // Vel mul
-            TimelineProperty<Vector2<float>>( 
+            TimelineProperty<Time::NS, Vector2<float>>(Vector2{1.0f, 1.0f}), // Vel mul
+            TimelineProperty<Time::NS, Vector2<float>>( 
                 {
-                    {0, {0.2f, 0.0f}},
-                    {5, {0.4f, 0.0f}},
+                    {Time::fromFrames(0), {0.2f * 60.0f, 0.0f}},
+                    {Time::fromFrames(5), {0.4f * 60.0f, 0.0f}},
                 }),  // Dir vel mul
-            TimelineProperty(Vector2{0.0f, 0.0f}), // Raw vel
-            TimelineProperty(Vector2{1.0f, 1.0f}), // Inr mul
-            TimelineProperty(Vector2{0.0f, 0.0f}), // Dir inr mul
-            TimelineProperty(Vector2{0.0f, 0.0f})) // Raw inr
+            TimelineProperty<Time::NS, Vector2<float>>(Vector2{0.0f, 0.0f}), // Raw vel
+            TimelineProperty<Time::NS, Vector2<float>>(Vector2{1.0f, 1.0f}), // Inr mul
+            TimelineProperty<Time::NS, Vector2<float>>(Vector2{0.0f, 0.0f}), // Dir inr mul
+            TimelineProperty<Time::NS, Vector2<float>>(Vector2{0.0f, 0.0f})) // Raw inr
         .setUpdateSpeedLimitData(
-            TimelineProperty(Vector2{3.5f, 0.0f}),
-            TimelineProperty(Vector2{9999.9f, 0.0f}))
+            TimelineProperty<Time::NS, Vector2<float>>(Vector2{3.5f * 60.0f, 0.0f}),
+            TimelineProperty<Time::NS, Vector2<float>>(Vector2{9999.9f, 0.0f}))
         .setTransitionOnLostGround(Enemy1State::FLOAT)
         .setMagnetLimit(10)
         .setHurtboxes({
@@ -137,13 +138,13 @@ entt::entity EnemySystem::makeEnemy()
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<Time::NS, bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
             }
         })
-        .setCanFallThrough(TimelineProperty<bool>(true));
+        .setCanFallThrough(TimelineProperty<Time::NS, bool>(true));
 
     sm.addState<AimedPrejump>(
             Enemy1State::PREJUMP, StateMarker{Enemy1State::IDLE, Enemy1State::RUN}, m_animManager.getAnimID("Enemy1/prejump"),
@@ -155,46 +156,42 @@ entt::entity EnemySystem::makeEnemy()
         .setDrag(Vector2{0.0f, 0.0f})
         .setAppliedInertiaMultiplier(Vector2{0.0f, 0.0f})
         .setHurtboxes({
-            {
-                HurtboxGroup(
-                    {
-                        {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
-                        }
-                    }, HurtTrait::NORMAL
-                )
-            }
+                HurtboxGroup{
+                    .m_colliders = {
+                            {.m_collider={.m_topLeft={-6, -28}, .m_size={12, 28}}, .m_timeline=TimelineProperty<Time::NS, bool>(true)}
+                    }, .m_trait = HurtTrait::NORMAL
+                }
         })
-        .setOutdatedTransition(Enemy1State::FLOAT, 1)
-        .setParticlesSingle(TimelineProperty<ParticleTemplate>({
-            {0, {}},
-            {1, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_jump"), 22,
+        .setOutdatedTransition(Enemy1State::FLOAT, Time::fromFrames(1))
+        .setParticlesSingle(TimelineProperty<Time::NS, ParticleTemplate>({
+            {Time::fromFrames(0), {}},
+            {Time::fromFrames(1), ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_jump"), 22,
                 7}},
-            {2, {}},
+            {Time::fromFrames(2), {}},
             }));
 
     sm.addState<NPCState<false, false>>(
             Enemy1State::IDLE, StateMarker{Enemy1State::IDLE, Enemy1State::RUN}, m_animManager.getAnimID("Enemy1/idle"))
         .setGravity(Vector2{0.0f, 0.0f})
-        .setDrag(TimelineProperty<Vector2<float>>({{0, Vector2{0.1f, 0.1f}}, {3, Vector2{0.5f, 0.5f}}}))
+        .setDrag(TimelineProperty<Time::NS, Vector2<float>>({{Time::fromFrames(0), Vector2{0.1f * 3600.0f, 0.1f * 3600.0f}}, {Time::fromFrames(3), Vector2{0.5f * 3600.0f, 0.5f * 3600.0f}}}))
         .setConvertVelocityOnSwitch(true, false)
         .setTransitionOnLostGround(Enemy1State::FLOAT)
-        .setMagnetLimit(TimelineProperty<unsigned int>(8))
+        .setMagnetLimit(TimelineProperty<Time::NS, unsigned int>(8))
         .setHurtboxes({
             {
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<Time::NS, bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
             }
         })
-        .setCanFallThrough(TimelineProperty<bool>(true))
+        .setCanFallThrough(TimelineProperty<Time::NS, bool>(true))
         .setUpdateSpeedLimitData(
-            TimelineProperty(Vector2<float>{9999.9f, 0.0f}),
-            TimelineProperty(Vector2<float>{9999.9f, 0.0f}))
+            TimelineProperty<Time::NS, Vector2<float>>(Vector2<float>{9999.9f, 0.0f}),
+            TimelineProperty<Time::NS, Vector2<float>>(Vector2<float>{9999.9f, 0.0f}))
         .setHitStateMapping(std::move(HitStateMapping()
             .addHitstunTransition(0, std::numeric_limits<CharState>::max())
             .addHitstunTransition(2, static_cast<CharState>(Enemy1State::PREJUMP))
@@ -202,21 +199,21 @@ entt::entity EnemySystem::makeEnemy()
 
     sm.addState<AimedFloat>(
             Enemy1State::FLOAT, StateMarker{}, m_animManager.getAnimID("Enemy1/float"))
-        .setGravity(Vector2<float>{0.0f, 0.3f})
+        .setGravity(Vector2<float>{0.0f, 0.3f * 3600.0f})
         .setDrag(Vector2<float>{0.0f, 0.0f})
         .setHurtboxes({
             {
                 HurtboxGroup(
                     {
                         {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
+                            {.m_collider={.m_topLeft={-6, -28}, .m_size={12, 28}}, .m_timeline=TimelineProperty<Time::NS, bool>(true)}
                         }
                     }, HurtTrait::NORMAL
                 )
             }
         })
-        .addTransitionOnTouchedGround(0, Enemy1State::IDLE)
-        .setNoLanding(TimelineProperty<bool>({{0, true}, {4, false}}));
+        .addTransitionOnTouchedGround(Time::fromFrames(0), Enemy1State::IDLE)
+        .setNoLanding(TimelineProperty<Time::NS, bool>({{Time::fromFrames(0), true}, {Time::fromFrames(4), false}}));
 
     sm.setInitialState(Enemy1State::FLOAT);
     m_reg.emplace<ComponentReset<StateMachine>>(enemyId).m_defaultStates = {static_cast<CharState>(Enemy1State::FLOAT)};

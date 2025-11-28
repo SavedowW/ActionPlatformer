@@ -20,10 +20,12 @@ void RenderSystem::update()
     PROFILE_FUNCTION;
     auto rens = m_reg.view<ComponentAnimationRenderable>();
 
+    const auto duration = Application::instance().timestep.getFrameDuration();
+
     for (auto [idx, ren] : rens.each())
     {
         if (ren.m_currentAnimation && !checkCurrentHitstop(m_reg, idx))
-            ren.m_currentAnimation->update();
+            ren.m_currentAnimation->update(duration);
 
         if (ren.m_flash)
         {
@@ -35,7 +37,7 @@ void RenderSystem::update()
     auto hprens = m_reg.view<HealthRendererCommonWRT>();
     for (auto [idx, hpren] : hprens.each())
     {
-        hpren.update();
+        hpren.update(duration);
     }
 }
 
@@ -250,7 +252,7 @@ void RenderSystem::drawBattleActorColliders(const ComponentTransform &trans_, co
         {
             for (const auto &tcld : group.m_colliders)
             {
-                if (tcld.m_timeline[btlact_.m_currentFrame])
+                if (tcld.m_timeline[btlact_.m_timeInState])
                 {
                     m_renderer.drawCollider(getColliderAt(tcld.m_collider, trans_), gamedata::characters::hurtboxColor, m_camera);
                 }
@@ -262,7 +264,7 @@ void RenderSystem::drawBattleActorColliders(const ComponentTransform &trans_, co
     {
         for (const auto &tmpcld : hit->m_colliders)
         {
-            if (tmpcld.m_timeline[btlact_.m_currentFrame])
+            if (tmpcld.m_timeline[btlact_.m_timeInState])
                 m_renderer.drawCollider(getColliderAt(tmpcld.m_collider, trans_), gamedata::characters::hitboxColor, m_camera);
         }
     }
@@ -330,8 +332,7 @@ void RenderSystem::drawHealth(const ComponentTransform &trans_, const  HealthRen
 
     for (const auto &el : howner_.m_heartAnims)
     {
-        // TODO: make proper "over" check
-        if (!el.getDirection())
+        if (!el.isFinished())
             continue;
 
         const auto offsetMul = cnt - mid;

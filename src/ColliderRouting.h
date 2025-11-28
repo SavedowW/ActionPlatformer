@@ -1,6 +1,7 @@
 #ifndef COLLIDER_ROUTING_H_
 #define COLLIDER_ROUTING_H_
 #include "Core/Vector2.hpp"
+#include "Core/Timer.h"
 #include <vector>
 
 struct RoutingPoint
@@ -14,7 +15,7 @@ struct RoutingLink
     RoutingPoint m_target;
 
     // TODO: calculate from map (speed, raw frames, etc)
-    uint32_t m_duration = 60;
+    Time::NS m_duration{60};
 };
 
 struct ColliderPointRouting

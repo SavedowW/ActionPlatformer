@@ -87,8 +87,8 @@ ProfileTimer::ProfileTimer(const size_t &id_) noexcept :
 
 void ProfileTimer::stop() noexcept
 {
-    auto passed = getPassed();
-    Profiler::instance().addRecord(m_id, passed);
+    const auto passedNS = getPassedNS();
+    Profiler::instance().addRecord(m_id, passedNS.value());
     m_stopped = true;
 }
 

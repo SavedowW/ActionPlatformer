@@ -15,7 +15,7 @@ BattleLevel::BattleLevel(const Vector2<int>& size_, int lvlId_) :
     m_inputsys(m_registry),
     m_physsys(m_registry, size_),
     m_camsys(m_registry, m_camera),
-    m_hudsys(m_registry, m_camera, lvlId_, size_, m_lastFullFrameTime),
+    m_hudsys(m_registry, m_camera, lvlId_, size_),
     m_enemysys(m_registry, m_navsys, m_camera, m_partsys),
     m_aisys(m_registry),
     m_navsys(m_registry, m_graph),
@@ -73,7 +73,7 @@ BattleLevel::BattleLevel(const Vector2<int>& size_, int lvlId_) :
     subscribe(GAMEPLAY_EVENTS::RESET_DBG);
 
 //for (int i = 0; i < 1000; ++i)
-    m_enemyId = m_enemysys.makeEnemy();
+    //m_enemyId = m_enemysys.makeEnemy();
 
     /*auto newcld = m_registry.create();
     m_registry.emplace<ComponentTransform>(newcld, getTilePos(Vector2{20.0f, 21.0f}), ORIENTATION::RIGHT);
@@ -142,6 +142,9 @@ void BattleLevel::update()
 {
     PROFILE_FUNCTION;
 
+    const auto frameDuration = Application::instance().timestep.getFrameDuration();
+    const double partOfSecond = static_cast<double>(frameDuration.value()) / 1'000'000'000.0;
+
     /*
         ComponentPhysical - read / write
     */
@@ -201,13 +204,13 @@ void BattleLevel::update()
         ComponentStaticCollider - read
         Transform, physics, fallthrough, PhysicalEvents, ComponentParticlePhysics - read / write
     */
-    m_physsys.updatePhysics();
+    m_physsys.updatePhysics(partOfSecond);
     
     /*
         ComponentStaticCollider, transform, physics - read
         fallthrough - read / write
     */
-    m_physsys.updateOverlappedObstacles();
+    m_physsys.updateOverlappedObstacles(frameDuration);
 
     /*
         StateMachine, PhysicalEvents - read / write

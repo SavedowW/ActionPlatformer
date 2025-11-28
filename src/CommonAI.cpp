@@ -1,5 +1,6 @@
 #include "CommonAI.h"
 #include "StateMachine.hpp"
+#include "Core/Application.h"
 #include "Core/NavSystem.h"
 
 void AIState::enter(EntityAnywhere owner_, CharState from_)
@@ -35,16 +36,16 @@ AIState &AIState::setEnterRequestedOrientation(std::optional<ORIENTATION> enterR
     return *this;
 }
 
-bool RandomRoamState::update(EntityAnywhere owner_, uint32_t currentFrame_)
+bool RandomRoamState::update(EntityAnywhere owner_, const Time::NS &timeInState_)
 {
-    NodeState::update(owner_, currentFrame_); 
+    NodeState::update(owner_, timeInState_); 
     
-    if (m_timer.update())
+    if (m_timer.update(Application::instance().timestep.getFrameDuration()))
     {
         if (m_isWalking)
         {
             //std::cout << "Switching to idle\n";
-            m_timer.begin((rand() % (m_idleDuration.second - m_idleDuration.first)) + m_idleDuration.first);
+            m_timer.begin(Time::NS{(rand() % (m_idleDuration.second - m_idleDuration.first)) + m_idleDuration.first});
             switchCurrentState(owner_, m_idle);
             m_isWalking = false;
         }
@@ -52,7 +53,7 @@ bool RandomRoamState::update(EntityAnywhere owner_, uint32_t currentFrame_)
         {
             //std::cout << "Switching to walking\n";
 
-            m_timer.begin((rand() % (m_walkDuration.second - m_walkDuration.first)) + m_walkDuration.first);
+            m_timer.begin(Time::NS{(rand() % (m_walkDuration.second - m_walkDuration.first)) + m_walkDuration.first});
             static_cast<AIState*>(m_states[m_stateIds[static_cast<CharState>(m_walk)]].get())->setEnterRequestedOrientation((
                 rand() % 2 == 0 ? ORIENTATION::LEFT : ORIENTATION::RIGHT
                 ));
@@ -65,9 +66,9 @@ bool RandomRoamState::update(EntityAnywhere owner_, uint32_t currentFrame_)
     return true;
 }
 
-bool BlindChaseState::update(EntityAnywhere owner_, uint32_t currentFrame_)
+bool BlindChaseState::update(EntityAnywhere owner_, const Time::NS &timeInState_)
 {
-    AIState::update(owner_, currentFrame_); 
+    AIState::update(owner_, timeInState_); 
 
     auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
     const auto &nav = owner_.reg->get<Navigatable>(owner_.idx);
@@ -121,9 +122,9 @@ void BlindChaseState::enter(EntityAnywhere owner_, CharState from_)
 }
 
 #if 0
-bool ProxySelectionState::update(EntityAnywhere owner_, uint32_t currentFrame_)
+bool ProxySelectionState::update(EntityAnywhere owner_, const Time::NS &timeInState_)
 {
-    NodeState::update(owner_, currentFrame_);
+    NodeState::update(owner_, timeInState_);
     const auto &ownTrans = owner_.reg->get<ComponentTransform>(owner_.idx);
     const auto &tarTrans = m_target.reg->get<ComponentTransform>(m_target.idx);
     auto range = (tarTrans.m_pos - ownTrans.m_pos).length();
@@ -159,9 +160,9 @@ void MoveTowards::enter(EntityAnywhere owner_, CharState from_)
     ai.m_requestedState = m_walk;
 }
 
-bool MoveTowards::update(EntityAnywhere owner_, uint32_t currentFrame_)
+bool MoveTowards::update(EntityAnywhere owner_, const Time::NS &timeInState_)
 {
-    AIState::update(owner_, currentFrame_); 
+    AIState::update(owner_, timeInState_); 
 
     auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
     const auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
@@ -195,9 +196,9 @@ void NavigateGraphChase::enter(EntityAnywhere owner_, CharState)
         nav.m_pathFollower.m_currentOwnConnection = nav.m_pathFollower.m_path->findClosestConnection(owner_.reg->get<ComponentTransform>(owner_.idx).m_pos, nav.m_traverseTraits, nav.m_maxRange);
 }
 
-bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
+bool NavigateGraphChase::update(EntityAnywhere owner_, const Time::NS &timeInState_)
 {
-    NodeState::update(owner_, currentFrame_); 
+    NodeState::update(owner_, timeInState_); 
 
     auto &nav = owner_.reg->get<Navigatable>(owner_.idx);
     const auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
@@ -256,9 +257,9 @@ bool NavigateGraphChase::update(EntityAnywhere owner_, uint32_t currentFrame_)
     return true;
 }
 
-bool JumpTowards::update(EntityAnywhere owner_, uint32_t currentFrame_)
+bool JumpTowards::update(EntityAnywhere owner_, const Time::NS &timeInState_)
 {
-    AIState::update(owner_, currentFrame_); 
+    AIState::update(owner_, timeInState_); 
 
     auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
     const auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);

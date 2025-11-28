@@ -40,7 +40,7 @@ public:
     void setMatrix4(const char *name_, const glm::mat4 &matrix_);
     void setInteger(const char *name_, int value_);
     
-    private:
+private:
     void compile(const char *vertexSourcePath_, const char *fragmentSourcePath_);
 
     void validateShader(unsigned int object_); 

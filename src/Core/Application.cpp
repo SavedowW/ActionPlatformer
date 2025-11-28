@@ -1,4 +1,6 @@
 #include "Application.h"
+
+#include <algorithm>
 #include "FilesystemUtils.h"
 #include "Localization/LocalizationGen.h"
 #include "SDL3/SDL_error.h"
@@ -58,12 +60,47 @@ void Application::run()
 {
     while (m_levelResult.nextLvl != -1)
     {
-        m_levels[m_levelResult.nextLvl]->enter();
-        m_levelResult = m_levels[m_levelResult.nextLvl]->proceed();
+        m_levels.at(m_levelResult.nextLvl)->enter();
+        m_levelResult = m_levels.at(m_levelResult.nextLvl)->proceed();
     }
 }
 
 void Application::setLevel(int levelId_, std::unique_ptr<Level> &&level_)
 {
-    m_levels[levelId_] = std::move(level_);
+    m_levels.at(levelId_) = std::move(level_);
+}
+
+Application::TimeStep::TimeStep() noexcept
+{
+    m_timer.begin();
+}
+
+void Application::TimeStep::processFrame() noexcept
+{
+    if (m_forceDefault)
+        m_lastFrameTime = defaultFrameDuration * m_speedMultiplier;
+
+    m_lastFrameTime = Time::NS{static_cast<uint64_t>(
+        static_cast<double>(std::min(m_timer.iterateNS(), defaultFrameDuration).value()) * m_speedMultiplier
+        )};
+}
+
+Time::NS Application::TimeStep::getFrameDuration() const noexcept
+{
+    return m_lastFrameTime;
+}
+
+void Application::TimeStep::applySlowdown() noexcept
+{
+    m_speedMultiplier = 1.0 / 3.0;
+}
+
+void Application::TimeStep::disableSlowdown() noexcept
+{
+    m_speedMultiplier = 1.0;
+}
+
+void Application::TimeStep::setForceDefault(bool forceDefault_) noexcept
+{
+    m_forceDefault = forceDefault_;
 }

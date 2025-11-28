@@ -50,7 +50,7 @@ private:
     static const unsigned ROTATED_HEXAGONAL_120_FLAG;   
 
     std::vector<Tileset> m_tilesets;
-    TimelineProperty<size_t> m_tilesetMapping;
+    TimelineProperty<uint32_t, size_t> m_tilesetMapping;
 };
 
 #endif

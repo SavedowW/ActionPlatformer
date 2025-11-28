@@ -48,7 +48,7 @@ protected:
 struct HudSystem
 {
 public:
-    HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> &lvlSize_, const uint64_t &frameTime_);
+    HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> &lvlSize_);
 
     void draw() const;
     void drawCommonDebug() const;
@@ -65,7 +65,6 @@ private:
     Camera &m_cam;
     int m_lvlId;
     Vector2<float> m_lvlSize;
-    const  uint64_t &m_frameTime;
     mutable AveragingQueue<float, 20, 5> m_avgFrames;
 
     std::shared_ptr<Texture> m_arrowIn;

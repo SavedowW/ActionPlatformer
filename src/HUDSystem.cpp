@@ -8,14 +8,13 @@
 #include "Core/Localization/LocalizationGen.h"
 #include "Core/Configuration.h"
 
-HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> &lvlSize_, const uint64_t &frameTime_) :
+HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> &lvlSize_) :
     m_renderer(Application::instance().m_renderer),
     m_textManager(Application::instance().m_textManager),
     m_reg(reg_),
     m_cam(cam_),
     m_lvlId(lvlId_),
-    m_lvlSize(lvlSize_),
-    m_frameTime(frameTime_)
+    m_lvlSize(lvlSize_)
 {
     auto &texman = Application::instance().m_textureManager;
 
@@ -42,12 +41,13 @@ void HudSystem::draw() const
 
 void HudSystem::drawCommonDebug() const 
 {
+    const auto frameTime = Application::instance().timestep.getFrameDuration().value();
     static bool firstRun = true;
 
     if (firstRun)
         firstRun = false;
     else
-        m_avgFrames.push(static_cast<float>(m_frameTime));
+        m_avgFrames.push(static_cast<float>(frameTime));
 
     ImmediateScreenLog commonLog{0, fonts::HOR_ALIGN::LEFT, 12};
 
@@ -55,9 +55,9 @@ void HudSystem::drawCommonDebug() const
     commonLog.addRecord("Camera pos: " + utils::toString(m_cam.getPos()));
     commonLog.addRecord("Camera size: " + utils::toString(m_cam.getSize()));
     commonLog.addRecord("Camera scale: " + std::to_string(m_cam.getScale()));
-    commonLog.addRecord("Real frame time (ns): " + std::to_string(m_frameTime));
+    commonLog.addRecord("Real frame time (ns): " + std::to_string(frameTime));
     commonLog.addRecord("Avg frame time (ms): " + std::to_string( m_avgFrames.avg() / 1'000'000.0f));
-    commonLog.addRecord("FPS: " + std::to_string( 1'000'000'000.0f / m_frameTime));
+    commonLog.addRecord("FPS: " + std::to_string( 1'000'000'000.0f / static_cast<float>(frameTime)));
     commonLog.addRecord("Avg FPS: " + std::to_string( 1'000'000'000.0f / m_avgFrames.avg()));
     commonLog.addRecord("UTF-8: Кириллица работает");
     commonLog.addRecord(ll::dbg_localization());

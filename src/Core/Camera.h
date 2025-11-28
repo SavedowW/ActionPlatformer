@@ -2,7 +2,7 @@
 #define CAMERA_H_
 
 #include "Vector2.hpp"
-#include "FrameTimer.h"
+#include "ManualTimer.h"
 
 class Camera
 {
@@ -30,7 +30,7 @@ public:
     Vector2<float> getPositionNormalizedValues();
 
     void update();
-    void startShake(int xAmp, int yAmp, uint32_t period);
+    void startShake(int xAmp_, int yAmp_, const Time::NS &period_);
 
 private:
     Vector2<float> m_pos;
@@ -38,7 +38,7 @@ private:
     Vector2<float> m_areaSize;
     float m_scale = 1.0f;
 
-    FrameTimer<false> m_shakeTimer;
+    ManualTimer<false> m_shakeTimer;
     int m_xShakeAmp = 0;
     int m_yShakeAmp = 0;
     Vector2<float> m_thisFrameAmp;

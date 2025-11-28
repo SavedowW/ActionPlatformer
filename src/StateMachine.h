@@ -23,9 +23,9 @@ class StateMachine
 public:
     StateMachine() = default;
     StateMachine(const StateMachine &) = delete;
-    StateMachine(StateMachine &&) = default;
+    StateMachine(StateMachine &&) noexcept = default;
     StateMachine &operator=(const StateMachine &) = delete;
-    StateMachine &operator=(StateMachine &&) = default;
+    StateMachine &operator=(StateMachine &&) noexcept = default;
 
     virtual GenericState *getRealCurrentState();
 
@@ -34,7 +34,7 @@ public:
     void switchCurrentState(EntityAnywhere owner_, GenericState *state_);
     bool attemptTransition(EntityAnywhere owner_, GenericState* until_);
 
-    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_);
+    virtual bool update(EntityAnywhere owner_, const Time::NS&);
     virtual std::string getName() const;
 
     template<typename PLAYER_STATE_T>
@@ -52,7 +52,7 @@ public:
     std::unordered_map<CharState, size_t> m_stateIds;
 
     GenericState *m_currentState = nullptr;
-    uint32_t m_framesInState = 0;
+    Time::NS m_timeInState{0};
 };
 
 std::ostream &operator<<(std::ostream &os_, const StateMachine &rhs_);
@@ -75,21 +75,21 @@ public:
     virtual GenericState *getRealCurrentState();
 
     template<typename PLAYER_STATE_T>
-    GenericState &setOutdatedTransition(PLAYER_STATE_T state_, uint32_t duration_);
+    GenericState &setOutdatedTransition(PLAYER_STATE_T state_, const Time::NS &duration_);
 
-    GenericState &setParticlesSingle(TimelineProperty<ParticleTemplate> &&particlesSingle_);
-    GenericState &setParticlesLoopable(TimelineProperty<ParticleTemplate> &&particlesLoopable_, uint32_t loopDuration_);
+    GenericState &setParticlesSingle(TimelineProperty<Time::NS, ParticleTemplate> &&particlesSingle_);
+    GenericState &setParticlesLoopable(TimelineProperty<Time::NS, ParticleTemplate> &&particlesLoopable_, const Time::NS &duration_);
 
     virtual void enter(EntityAnywhere owner_, CharState from_);
     virtual void leave(EntityAnywhere owner_, CharState to_);
 
     // Return true if it allows to enter lower priority states
-    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_);
+    virtual bool update(EntityAnywhere owner_, const Time::NS &timeInState_);
     
     virtual ORIENTATION isPossible(EntityAnywhere owner_) const;
-    virtual std::string getName(uint32_t framesInState_) const;
+    virtual std::string getName(const Time::NS &timeInState) const;
     bool transitionableFrom(CharState targetStateId_) const;
-    virtual bool transitionableInto(CharState targetStateId_, uint32_t currentFrame_) const;
+    virtual bool transitionableInto(CharState targetStateId_, const Time::NS &timeInState_) const;
 
     virtual void onOutdated(EntityAnywhere owner_);
 
@@ -105,11 +105,12 @@ protected:
     StateMachine *m_parent = nullptr;
 
     std::optional<CharState> m_transitionOnOutdated;
-    std::optional<uint32_t> m_duration;
+    std::optional<Time::NS> m_duration;
 
-    TimelineProperty<ParticleTemplate> m_particlesSingle;
-    TimelineProperty<ParticleTemplate> m_particlesLoopable;
-    uint32_t m_loopDuration = 1;
+    // TODO: trigger only once
+    TimelineProperty<Time::NS, ParticleTemplate> m_particlesSingle;
+    TimelineProperty<Time::NS, ParticleTemplate> m_particlesLoopable;
+    Time::NS m_loopDuration{1};
 
     std::vector<entt::entity> m_lifetimeTiedParticles;
 };
@@ -123,14 +124,14 @@ public:
     void leave(EntityAnywhere owner_, CharState to_) override;
 
     template<typename PLAYER_STATE_T>
-    PhysicalState &addTransitionOnTouchedGround(uint32_t sinceFrame_, PLAYER_STATE_T transition_)
+    PhysicalState &addTransitionOnTouchedGround(const Time::NS &sinceTime_, PLAYER_STATE_T transition_)
     {
-        m_transitionsOnLand.addPair(sinceFrame_, std::optional<CharState>(static_cast<CharState>(transition_)));
+        m_transitionsOnLand.addPair(sinceTime_, std::optional<CharState>(static_cast<CharState>(transition_)));
         return *this;
     }
 
     void enter(EntityAnywhere owner_, CharState from_) override;
-    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+    bool update(EntityAnywhere owner_, const Time::NS &timeInState_) override;
 
     template<typename PLAYER_STATE_T>
     inline PhysicalState &setTransitionOnLostGround(PLAYER_STATE_T state_);
@@ -140,25 +141,24 @@ public:
 
     void updateActor(BattleActor &battleActor_) const;
 
-    PhysicalState &setGravity(TimelineProperty<Vector2<float>> &&gravity_);
-    PhysicalState &setDrag(TimelineProperty<Vector2<float>> &&drag_);
-    PhysicalState &setMulInsidePushbox(TimelineProperty<std::optional<Vector2<float>>> &&mulInsidePushbox_);
-    PhysicalState &setCanFallThrough(TimelineProperty<bool> &&fallThrough_);
-    PhysicalState &setNoLanding(TimelineProperty<bool> &&noLanding_);
-    PhysicalState &setAppliedInertiaMultiplier(TimelineProperty<Vector2<float>> &&inerMul_);
-    PhysicalState &setTransitionVelocityMultiplier(TimelineProperty<Vector2<float>> &&convRate_);
+    PhysicalState &setGravity(TimelineProperty<Time::NS, Vector2<float>> &&gravity_);
+    PhysicalState &setDrag(TimelineProperty<Time::NS, Vector2<float>> &&drag_);
+    PhysicalState &setMulInsidePushbox(TimelineProperty<Time::NS, std::optional<Vector2<float>>> &&mulInsidePushbox_);
+    PhysicalState &setCanFallThrough(TimelineProperty<Time::NS, bool> &&fallThrough_);
+    PhysicalState &setNoLanding(TimelineProperty<Time::NS, bool> &&noLanding_);
+    PhysicalState &setAppliedInertiaMultiplier(TimelineProperty<Time::NS, Vector2<float>> &&inerMul_);
+    PhysicalState &setTransitionVelocityMultiplier(TimelineProperty<Time::NS, Vector2<float>> &&convRate_);
     PhysicalState &setConvertVelocityOnSwitch(bool convertVelocity_, bool convertEnforced_);
     PhysicalState &setUpdateMovementData(
-        TimelineProperty<Vector2<float>> &&mulOwnVelUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirVelUpd_, TimelineProperty<Vector2<float>> &&rawAddVelUpd_,
-        TimelineProperty<Vector2<float>> &&mulOwnInrUpd_, TimelineProperty<Vector2<float>> &&mulOwnDirInrUpd_, TimelineProperty<Vector2<float>> &&rawAddInrUpd_);
-    PhysicalState &setMagnetLimit(TimelineProperty<unsigned int> &&magnetLimit_);
-    PhysicalState &setUpdateSpeedLimitData(TimelineProperty<Vector2<float>> &&ownVelLimitUpd_, TimelineProperty<Vector2<float>> &&ownInrLimitUpd_);
-    PhysicalState &setCooldown(FrameTimer<true> *cooldown_, int cooldownTime_);
-    PhysicalState &setRecoveryFrames(TimelineProperty<StateMarker> &&recoveryFrames_);
+        TimelineProperty<Time::NS, Vector2<float>> &&mulOwnVelUpd_, TimelineProperty<Time::NS, Vector2<float>> &&mulOwnDirVelUpd_, TimelineProperty<Time::NS, Vector2<float>> &&rawAddVelUpd_,
+        TimelineProperty<Time::NS, Vector2<float>> &&mulOwnInrUpd_, TimelineProperty<Time::NS, Vector2<float>> &&mulOwnDirInrUpd_, TimelineProperty<Time::NS, Vector2<float>> &&rawAddInrUpd_);
+    PhysicalState &setMagnetLimit(TimelineProperty<Time::NS, unsigned int> &&magnetLimit_);
+    PhysicalState &setUpdateSpeedLimitData(TimelineProperty<Time::NS, Vector2<float>> &&ownVelLimitUpd_, TimelineProperty<Time::NS, Vector2<float>> &&ownInrLimitUpd_);
+    PhysicalState &setRecoveryFrames(TimelineProperty<Time::NS, StateMarker> &&recoveryFrames_);
     PhysicalState &setHurtboxes(Hurtbox &&hurtboxes_);
     PhysicalState &addHit(HitboxGroup &&hit_);
     PhysicalState &setHitStateMapping(HitStateMapping &&hitStateMapping_);
-    bool transitionableInto(CharState targetStateId_, uint32_t currentFrame_) const override;
+    bool transitionableInto(CharState targetStateId_, const Time::NS &timeInState_) const override;
 
 
     virtual void onTouchedGround(EntityAnywhere owner_);
@@ -166,40 +166,37 @@ public:
 
 protected:
     ResID m_anim;
-    TimelineProperty<std::optional<CharState>> m_transitionsOnLand;
+    TimelineProperty<Time::NS, std::optional<CharState>> m_transitionsOnLand;
     std::optional<CharState> m_transitionOnLostGround;
-    TimelineProperty<Vector2<float>> m_gravity;
+    TimelineProperty<Time::NS, Vector2<float>> m_gravity;
 
     bool m_usingUpdateMovement = false;
-    TimelineProperty<Vector2<float>> m_mulOwnVelUpd;
-    TimelineProperty<Vector2<float>> m_mulOwnDirVelUpd;
-    TimelineProperty<Vector2<float>> m_rawAddVelUpd;
-    TimelineProperty<Vector2<float>> m_mulOwnInrUpd;
-    TimelineProperty<Vector2<float>> m_mulOwnDirInrUpd;
-    TimelineProperty<Vector2<float>> m_rawAddInrUpd;
-    TimelineProperty<Vector2<float>> m_appliedInertiaMultiplier;
-    TimelineProperty<Vector2<float>> m_drag;
+    TimelineProperty<Time::NS, Vector2<float>> m_mulOwnVelUpd;
+    TimelineProperty<Time::NS, Vector2<float>> m_mulOwnDirVelUpd;
+    TimelineProperty<Time::NS, Vector2<float>> m_rawAddVelUpd;
+    TimelineProperty<Time::NS, Vector2<float>> m_mulOwnInrUpd;
+    TimelineProperty<Time::NS, Vector2<float>> m_mulOwnDirInrUpd;
+    TimelineProperty<Time::NS, Vector2<float>> m_rawAddInrUpd;
+    TimelineProperty<Time::NS, Vector2<float>> m_appliedInertiaMultiplier;
+    TimelineProperty<Time::NS, Vector2<float>> m_drag;
 
-    TimelineProperty<std::optional<Vector2<float>>> m_mulInsidePushbox;
-    TimelineProperty<Vector2<float>> m_transitionVelocityMultiplier;
+    TimelineProperty<Time::NS, std::optional<Vector2<float>>> m_mulInsidePushbox;
+    TimelineProperty<Time::NS, Vector2<float>> m_transitionVelocityMultiplier;
 
     bool m_convertVelocityOnSwitch = false;
 
-    TimelineProperty<Vector2<float>> m_ownVelLimitUpd;
-    TimelineProperty<Vector2<float>> m_ownInrLimitUpd;
+    TimelineProperty<Time::NS, Vector2<float>> m_ownVelLimitUpd;
+    TimelineProperty<Time::NS, Vector2<float>> m_ownInrLimitUpd;
 
-    TimelineProperty<unsigned int> m_magnetLimit;
+    TimelineProperty<Time::NS, unsigned int> m_magnetLimit;
 
-    TimelineProperty<bool> m_canFallThrough;
+    TimelineProperty<Time::NS, bool> m_canFallThrough;
 
-    FrameTimer<true> *m_cooldown = nullptr;
-    uint32_t m_cooldownTime = 0;
-
-    TimelineProperty<StateMarker> m_recoveryFrames;
+    TimelineProperty<Time::NS, StateMarker> m_recoveryFrames;
 
     std::map<CharState, ResID> m_uniqueTransitionAnims;
 
-    TimelineProperty<bool> m_noLanding;
+    TimelineProperty<Time::NS, bool> m_noLanding;
     bool m_convertEnforcedVelocity = false;
 
     bool m_hasHurtboxes = false;
@@ -219,8 +216,8 @@ public:
     template<typename PLAYER_STATE_T>
     NodeState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_);
 
-    std::string getName(uint32_t framesInState_) const override;
-    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+    std::string getName(const Time::NS &timeInState_) const override;
+    bool update(EntityAnywhere owner_, const Time::NS &timeInState_) override;
     GenericState *getRealCurrentState() override;
 
 private:

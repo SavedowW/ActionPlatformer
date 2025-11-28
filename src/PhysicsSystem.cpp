@@ -43,7 +43,7 @@ void PhysicsSystem::updateSMs()
         if (checkCurrentHitstop(m_reg, idx))
             continue;
 
-        sm.update({.reg=&m_reg, .idx=idx}, 0);
+        sm.update({.reg=&m_reg, .idx=idx}, Time::fromFrames(0));
     }
 
     /* TODO: notably faster in release build, but harder to debug even with seq, might add debug flags to enable parallel execution
@@ -56,7 +56,7 @@ void PhysicsSystem::updateSMs()
    */
 }
 
-void PhysicsSystem::updatePhysics()
+void PhysicsSystem::updatePhysics(const double &partOfSecond_)
 {
     PROFILE_FUNCTION;
 
@@ -69,11 +69,11 @@ void PhysicsSystem::updatePhysics()
         if (phys.m_hitstopLeft)
             continue;
 
-        proceedEntity(viewscld, idx, trans, phys, obsfall, ev);
+        proceedEntity(viewscld, idx, trans, phys, obsfall, ev, partOfSecond_);
     }
 
     for (auto [idx, trans, phys] : viewPhysSimplified.each())
-        proceedEntity(trans, phys);
+        proceedEntity(trans, phys, partOfSecond_);
 
     /* TODO: notably faster in release build, but harder to debug even with seq, might add debug flags to enable parallel execution
     auto iteratable = viewPhys.each();
@@ -90,28 +90,28 @@ void PhysicsSystem::updatePhysicalEvents()
     PROFILE_FUNCTION;
     
     auto viewPhysEvent = m_reg.view<PhysicalEvents, StateMachine>();
-
+    
     for (auto [idx, physev, sm] : viewPhysEvent.each())
     {
         if (checkCurrentHitstop(m_reg, idx))
             continue;
 
-        auto *currentState = static_cast<PhysicalState*>(sm.getRealCurrentState());
+        auto *currentState = dynamic_cast<PhysicalState*>(sm.getRealCurrentState());
         if (physev.m_lostGround)
         {
-            currentState->onLostGround({&m_reg, idx});
+            currentState->onLostGround({.reg=&m_reg, .idx=idx});
             physev.m_lostGround = false;
         }
 
         if (physev.m_touchedGround)
         {
-            currentState->onTouchedGround({&m_reg, idx});
+            currentState->onTouchedGround({.reg=&m_reg, .idx=idx});
             physev.m_touchedGround = false;
         }
     }
 }
 
-void PhysicsSystem::updateOverlappedObstacles()
+void PhysicsSystem::updateOverlappedObstacles(const Time::NS &frameTime_)
 {
     PROFILE_FUNCTION;
 
@@ -123,7 +123,7 @@ void PhysicsSystem::updateOverlappedObstacles()
             continue;
             
         resetEntityObstacles(trans, phys, obsfallthrough, viewColliders);
-        obsfallthrough.m_isIgnoringObstacles.update();
+        obsfallthrough.m_isIgnoringObstacles.update(frameTime_);
     }
 }
 
@@ -296,34 +296,34 @@ bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, ComponentTransfor
     return true;
 }
 
-void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_)
+void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_, const double &partOfSecond_)
 {
     const auto oldPos = trans_.m_pos;
 
     // Common stuff
-    phys_.m_velocity += phys_.m_gravity;
+    phys_.m_velocity += phys_.m_gravity * partOfSecond_;
 
     if (phys_.m_inertia.x != 0)
     {
         auto absInertia = abs(phys_.m_inertia.x);
-        const auto m_inertiaSign = utils::signof(phys_.m_inertia.x / abs(phys_.m_inertia.x));
-        absInertia = std::max(absInertia - phys_.m_drag.x, 0.0f);
-        phys_.m_inertia.x = m_inertiaSign * absInertia;
+        const auto inertiaSign = utils::signof(phys_.m_inertia.x / abs(phys_.m_inertia.x));
+        absInertia = std::max(absInertia - phys_.m_drag.x * partOfSecond_, 0.0);
+        phys_.m_inertia.x = inertiaSign * absInertia;
     }
 
     if (phys_.m_inertia.y != 0)
     {
         auto absInertia = abs(phys_.m_inertia.y);
-        const auto m_inertiaSign = utils::signof(phys_.m_inertia.y / abs(phys_.m_inertia.y));
-        absInertia = std::max(absInertia - phys_.m_drag.y, 0.0f);
-        phys_.m_inertia.y = m_inertiaSign * absInertia;
+        const auto inertiaSign = utils::signof(phys_.m_inertia.y / abs(phys_.m_inertia.y));
+        absInertia = std::max(absInertia - phys_.m_drag.y * partOfSecond_, 0.0);
+        phys_.m_inertia.y = inertiaSign * absInertia;
     }
 
     //std::cout << m_staticColliderQuery.size() << std::endl;
 
     // Prepare vars for collision detection
     auto pb = phys_.m_pushbox + trans_.m_pos;
-    auto offset = phys_.claimOffset();
+    auto offset = phys_.claimOffset(partOfSecond_);
 
     if (phys_.m_mulInsidePushbox && isInsidePushbox(pb, idx_))
     {
@@ -407,15 +407,15 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
     phys_.m_pushedOffset = {0, 0};
 }
 
-void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentParticlePhysics &phys_)
+void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentParticlePhysics &phys_, const double &partOfSecond_)
 {
     // Common stuff
-    phys_.m_velocity += phys_.m_gravity;
+    phys_.m_velocity += phys_.m_gravity * partOfSecond_;
 
-    phys_.applyDrag();
+    phys_.applyDrag(partOfSecond_);
 
     // Prepare vars for collision detection
-    const auto offset = phys_.claimOffset();
+    const auto offset = phys_.claimOffset(partOfSecond_);
     trans_.m_pos += offset;
 }
 

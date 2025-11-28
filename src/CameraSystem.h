@@ -1,9 +1,10 @@
 #ifndef CAMERA_SYSTEM_H_
 #define CAMERA_SYSTEM_H_
 #include "Core/Camera.h"
-#include "Core/FrameTimer.h"
+#include "Core/ManualTimer.h"
 #include "Core/Renderer.h"
 #include "Core/InputSystem.h"
+#include "Core/Timer.h"
 #include <entt/entt.hpp>
 #include <optional>
 
@@ -24,11 +25,11 @@ struct CameraSystem : public InputReactor
 
     bool m_cameraStopped = false;
 
-    FrameTimer<false> m_hResetDelay;
-    FrameTimer<false> m_vResetDelay;
+    ManualTimer<false> m_hResetDelay;
+    ManualTimer<false> m_vResetDelay;
 
-    const uint32_t H_DELAY = 60;
-    const uint32_t V_DELAY = 60;
+    const Time::NS H_DELAY = Time::fromFrames(60);
+    const Time::NS V_DELAY = Time::fromFrames(60);
 
     const int H_RESET_OFFSET = 2;
     const int V_RESET_OFFSET = 2;

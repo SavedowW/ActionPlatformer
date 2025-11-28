@@ -54,12 +54,12 @@ void BattleSystem::handleAttacks()
 
                 for (const auto &hurtGroup : *btlVic.m_hurtboxes)
                 {
-                    auto hitidef = detectHit(atk->m_colliders, btl.m_currentFrame, trans, hurtGroup.m_colliders, btlVic.m_currentFrame, transVic);
+                    auto hitidef = detectHit(atk->m_colliders, btl.m_timeInState, trans, hurtGroup.m_colliders, btlVic.m_timeInState, transVic);
                     if (hitidef.m_hitOccured)
                     {
                         btlVic.m_appliedHits.insert(atk->m_hitData.m_id);
                         m_appliedHits.push(hitidef.m_hitPos);
-                        applyHit({idx, btl, sm, trans}, {idxVic, btlVic, smVic, transVic}, *atk);
+                        applyHit({.m_id=idx, .m_actor=btl, .m_sm=sm, .m_trans=trans}, {.m_id=idxVic, .m_actor=btlVic, .m_sm=smVic, .m_trans=transVic}, *atk);
                         break;
                     }
                 }
@@ -115,7 +115,7 @@ void BattleSystem::applyHit(ActorDescr attacker_, ActorDescr victim_, const Hitb
         vicRen->m_flash = hit_.m_hitData.m_victimFlash->clone();
     }
 
-    if (hit_.m_hitData.m_onHitShake.m_period > 0)
+    if (hit_.m_hitData.m_onHitShake.m_period > Time::NS{0})
         m_cam.startShake(hit_.m_hitData.m_onHitShake.m_xAmp, hit_.m_hitData.m_onHitShake.m_yAmp, hit_.m_hitData.m_onHitShake.m_period);
 
     if (victim_.m_actor.m_hitStateTransitions && !victim_.m_actor.m_hitStateTransitions->m_hitstunTransitions.isEmpty())
