@@ -45,13 +45,11 @@ struct ContainedAnimationData
     std::shared_ptr<TextureArr> m_preloaded;
 };
 
-/**************************
-*
-*	Animation manager holds all texture arrays
-*	and makes sure there is only one version of each
-*	texture array exist and only if required
-*
-**************************/
+/*
+    Animation manager holds all texture arrays
+    and makes sure there is only one version of each
+    texture array exist and only if required
+*/
 class AnimationManager
 {
 public:
@@ -74,14 +72,12 @@ enum class LOOPMETHOD : uint8_t
     SWITCH_DIR_LOOP
 };
 
-/**************************
-*
-*	Animation class
-*	Call update each frame
-*	Direction = 1 - direct order
-*	Direction = -1 - reverse order
-*
-**************************/
+/*
+    Animation class
+    Call update each frame
+    Direction = 1 - direct order
+    Direction = -1 - reverse order
+*/
 class Animation
 {
 public:

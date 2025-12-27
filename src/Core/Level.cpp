@@ -69,7 +69,7 @@ LevelResult Level::proceed()
 void Level::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
 {
     switch (event)
-    {		
+    {
         case (GAMEPLAY_EVENTS::QUIT):
             m_returnVal = { -1 };
             m_state = STATE::LEAVE;

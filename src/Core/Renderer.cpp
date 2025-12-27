@@ -59,7 +59,7 @@ Renderer::Renderer(SDL_Window *window_) :
          1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
 
         -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-         1.0f,  1.0f, 0.0f, 1.0f, 1.0f,					
+         1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
         -1.0f,  1.0f, 0.0f, 0.0f, 1.0f
     };
 
@@ -161,7 +161,7 @@ Renderer::Renderer(SDL_Window *window_) :
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_renderTargetTexture, 0); 
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	    std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
@@ -185,7 +185,7 @@ Renderer::Renderer(SDL_Window *window_) :
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_renderHudTarget, 0); 
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	    std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
@@ -296,7 +296,7 @@ void Renderer::attachTex()
     glBindFramebuffer(GL_FRAMEBUFFER, m_renderTarget);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_renderTargetTexture, 0);
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	    std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
 
 
     glm::mat4 projection = glm::ortho(0.0f, 640.0f, 
@@ -410,7 +410,7 @@ void Renderer::drawLine(const Vector2<int> &p1_, const Vector2<int> &p2_, const 
 void Renderer::drawCross(const Vector2<int> &center_, const Vector2<int> &vSize_, const Vector2<int> &hSize_, const SDL_Color &col_, const Camera &cam_)
 {
     Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
-	drawCross(center_ - camTL, vSize_, hSize_, col_);
+    drawCross(center_ - camTL, vSize_, hSize_, col_);
 }
 
 void Renderer::drawCircleOutline(const Vector2<int> &center_, float radius_, const SDL_Color &col_)

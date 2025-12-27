@@ -136,7 +136,7 @@ void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPh
     Vector2<int> camTL = m_cam.getTopLeft();
     const auto screenRelPos = (worldOrigin - camTL).mulComponents(1.0f / camSize.x, 1.0f / camSize.y);
     
-	Vector2<int> screenOrigin = screenRelPos.mulComponents(gamedata::global::hudLayerResolution);
+    Vector2<int> screenOrigin = screenRelPos.mulComponents(gamedata::global::hudLayerResolution);
 
     m_textManager.renderText(txt1, 1, screenOrigin);
     m_textManager.renderText(txt2, 1, screenOrigin + Vector2{0.0f, 10.0f});
