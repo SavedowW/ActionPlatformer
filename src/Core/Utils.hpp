@@ -68,36 +68,36 @@ namespace utils
     template <Numeric T>
     inline T clamp(const T& val, const T &min, const T &max) noexcept
     {
-    	if (val < min)
-    		return min;
+        if (val < min)
+            return min;
     
-    	if (val > max)
-    		return max;
+        if (val > max)
+            return max;
     
-    	return val;
+        return val;
     }
     
     template <Numeric T>
     inline T clampMaxPriority(const T& val, const T &min, const T &max) noexcept
     {
         if (val > max)
-    		return max;
+            return max;
 
-    	if (val < min)
+        if (val < min)
         {
             if (max <= min)
                 return max;
             else
-    		    return min;
+                return min;
         }
     
-    	return val;
+        return val;
     }
 
     template <bool ON_NULLS = true, Numeric T1, Numeric T2>
     inline bool sameSign(const T1 &v1, const T2 &v2) noexcept
     {
-    	return (v1 > 0 && v2 > 0 || v1 < 0 && v2 < 0 || v1 == v2 && ON_NULLS);
+        return (v1 > 0 && v2 > 0 || v1 < 0 && v2 < 0 || v1 == v2 && ON_NULLS);
     }
 
     template <Numeric T>
@@ -118,7 +118,7 @@ namespace utils
     template <Numeric T>
     inline T reverseLerp(const T& val, const T &min, const T &max)
     {
-    	T alpha = (val - min) / (max - min);
+        T alpha = (val - min) / (max - min);
         return clamp<T>(alpha, 0, 1);
     }
 
