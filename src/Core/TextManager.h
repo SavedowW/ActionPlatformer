@@ -9,6 +9,7 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include "Vector2.hpp"
 #include "TimelineProperty.hpp"
+#include "utf8.h"
 #include <set>
 
 namespace fonts
@@ -58,13 +59,63 @@ namespace fonts
     };
 }
 
+namespace TextAligners 
+{
+    class CommonAligner
+    {
+    public:
+        virtual Vector2<int> adjustPos(Vector2<int> pos_) const noexcept = 0;
+        virtual ~CommonAligner() = default;
+
+    protected:
+        CommonAligner(const U8Wrapper &wrp_, const fonts::Font &font_) noexcept;
+        int collectLength() const noexcept;
+
+    private:
+        const U8Wrapper &m_wrp;
+        const fonts::Font &m_font;
+    };
+
+    class AlignerLeft : public CommonAligner
+    {
+    public:
+        AlignerLeft(const U8Wrapper &wrp_, const fonts::Font &font_) noexcept;
+        Vector2<int> adjustPos(Vector2<int> pos_) const noexcept override;
+    };
+
+    class AlignerCenter : public CommonAligner
+    {
+    public:
+        AlignerCenter(const U8Wrapper &wrp_, const fonts::Font &font_) noexcept;
+        Vector2<int> adjustPos(Vector2<int> pos_) const noexcept override;
+    };
+
+    class AlignerRight : public CommonAligner
+    {
+    public:
+        AlignerRight(const U8Wrapper &wrp_, const fonts::Font &font_) noexcept;
+        Vector2<int> adjustPos(Vector2<int> pos_) const noexcept override;
+    };
+} // TextAligners
+
+
 class TextManager
 {
+private:
+    using Fonts = std::array<fonts::Font, 4>;
+
 public:
     TextManager(Renderer &renderer_);
 
     //void renderText(const std::string &text_, int fontid_, Vector2<int> pos_, fonts::HOR_ALIGN horAlign_ = fonts::HOR_ALIGN::LEFT, Camera *cam_ = nullptr);
-    void renderText(const std::string &text_, int fontid_, Vector2<int> pos_, fonts::HOR_ALIGN horAlign_ = fonts::HOR_ALIGN::LEFT, const Camera *cam_ = nullptr);
+
+    // Ignores '\n', '\t'
+    template<typename AlignerT>
+    void renderText(const std::string &text_, int fontid_, Vector2<int> pos_, const Camera &cam_);
+
+    // Ignores '\n', '\t'
+    template<typename AlignerT>
+    void renderText(const std::string &text_, int fontid_, Vector2<int> pos_);
 
     const fonts::Symbol *getSymbol(int fontid_, uint32_t ch_) const;
     int getFontHeight(int fontid_) const;
@@ -77,7 +128,7 @@ private:
 
     fonts::CharChunkDistribution m_charChunks;
     Renderer &m_renderer;
-    std::array<fonts::Font, 4> m_fonts;
+    Fonts m_fonts;
 
 };
 

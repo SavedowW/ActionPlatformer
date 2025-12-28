@@ -61,19 +61,19 @@ namespace utf8
      Take pointer to bytes with UTF-8 character sequence, read size of current byte
      Does not check whether or not it points at size, returns 1 if its not size at all
     */
-    uint8_t readCharSize(const char *ch_);
-    uint8_t readCharSize(uint32_t ch_);
+    uint8_t readCharSize(const char *ch_) noexcept;
+    uint8_t readCharSize(uint32_t ch_) noexcept;
 
     /*
      Read up to 4 UTF-8 encoded character from string
     */
-    uint32_t readChar(const char *ch_);
-    uint32_t readChar(const char *ch_, uint8_t sz_);
+    uint32_t readChar(const char *ch_) noexcept;
+    uint32_t readChar(const char *ch_, uint8_t sz_) noexcept;
 
     /*
      Read size of a pointed character
     */
-    const char *iterateForward(const char *u8char_);
+    const char *iterateForward(const char *u8char_) noexcept;
 
     /*
      Append characters from sequence of characters to a UTF-8 string
@@ -93,27 +93,27 @@ namespace utf8
     /*
         Get UTF-8 encoded character represented in string
     */
-    std::string getChar(uint32_t ch_);
+    std::string getChar(uint32_t ch_) noexcept;
 
     /*
         Convert UTF-8 encoded character in 4 byte representation to UTF-32 character
     */
-    uint32_t u8tou32_1(uint32_t ch_);
-    uint32_t u8tou32_2(uint32_t ch_);
-    uint32_t u8tou32_3(uint32_t ch_);
-    uint32_t u8tou32_4(uint32_t ch_);
-    uint32_t u8tou32(uint32_t ch_, size_t sz_);
+    uint32_t u8tou32_1(uint32_t ch_) noexcept;
+    uint32_t u8tou32_2(uint32_t ch_) noexcept;
+    uint32_t u8tou32_3(uint32_t ch_) noexcept;
+    uint32_t u8tou32_4(uint32_t ch_) noexcept;
+    uint32_t u8tou32(uint32_t ch_, size_t sz_) noexcept;
     
     /*
         Convert UTF-8 encoded character represented by a sequence of characters to a UTF-32 character
         Doesn't require string to be null terminated, but it should start with a size byte
     */
-    uint32_t tou32_1(const char *ch_);
-    uint32_t tou32_2(const char *ch_);
-    uint32_t tou32_3(const char *ch_);
-    uint32_t tou32_4(const char *ch_);
-    uint32_t tou32(const char *ch_);
-    uint32_t tou32(const char *ch_, uint8_t sz_);
+    uint32_t tou32_1(const char *ch_) noexcept;
+    uint32_t tou32_2(const char *ch_) noexcept;
+    uint32_t tou32_3(const char *ch_) noexcept;
+    uint32_t tou32_4(const char *ch_) noexcept;
+    uint32_t tou32(const char *ch_) noexcept;
+    uint32_t tou32(const char *ch_, uint8_t sz_) noexcept;
 }
 
 /*
@@ -128,26 +128,26 @@ public:
         const char *m_ch;
         uint8_t m_byteSize;
 
-        iterator(const char *ch_);
-        bool operator!=(const iterator &rhs_) const;
-        iterator &operator++();
-        iterator &operator*();
+        iterator(const char *ch_) noexcept;
+        bool operator!=(const iterator &rhs_) const noexcept;
+        iterator &operator++() noexcept;
+        iterator &operator*() noexcept;
 
         // Get 4-byte representation of a pointed character in UTF-8
-        uint32_t getu8() const;
+        uint32_t getu8() const noexcept;
 
         // Get 4-byte representation of a pointed character in UTF-32
-        uint32_t getu32() const;
+        uint32_t getu32() const noexcept;
 
         // Same as getchar
-        std::string getCharAsString() const;
+        std::string getCharAsString() const noexcept;
         std::wstring getCharAsWString() const;
     };
 
-    U8Wrapper(const std::string &s_);
+    U8Wrapper(const std::string &s_) noexcept;
 
-    iterator begin();
-    iterator end();
+    iterator begin() const noexcept;
+    iterator end() const noexcept;
 
     std::wstring toWString() const;
 

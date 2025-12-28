@@ -3,6 +3,7 @@
 #include "CoreComponents.h"
 #include "Profile.h"
 #include "Configuration.h"
+#include "TextManager.hpp"
 #include <limits>
 #include <memory>
 #include <memory>
@@ -90,7 +91,7 @@ void NavSystem::draw(const Camera &cam_) const
                 m_ren.drawLine(p1, p2, {255, 150, 100, 255}, cam_);
     
                 const auto range = m_graph.getDistToConnection(*nav.m_pathFollower.m_currentOwnConnection, trans.m_pos);
-                m_textman.renderText(std::to_string(range), 2, (p1 + p2) / 2.0f - Vector2{0.0f, 12.0f}, fonts::HOR_ALIGN::CENTER, &cam_);
+                m_textman.renderText<TextAligners::AlignerCenter>(std::to_string(range), 2, (p1 + p2) / 2.0f - Vector2{0, 12}, cam_);
             }
             else
                 m_ren.drawCircleOutline(trans.m_pos, nav.m_maxRange, {255, 150, 100, 200}, cam_);
@@ -149,7 +150,7 @@ void NavSystem::draw(const Camera &cam_) const
                 m_ren.drawCircleOutline(tarPos, path.m_targetMaxConnectionRange, {0, 255, 50, 200}, cam_);
                 
                 m_ren.drawLine(tarPos, p2, {255, 150, 100, 255}, cam_);
-                m_textman.renderText(std::to_string(range), 2, (tarPos + p2) / 2.0f - Vector2{0.0f, 12.0f}, fonts::HOR_ALIGN::CENTER, &cam_);
+                m_textman.renderText<TextAligners::AlignerCenter>(std::to_string(range), 2, (tarPos + p2) / 2.0f - Vector2{0, 12}, cam_);
             }
             else
                 m_ren.drawCircleOutline(tarPos, path.m_targetMaxConnectionRange, {255, 150, 100, 200}, cam_);

@@ -30,7 +30,7 @@ Vector2<int> ComponentPhysical::claimOffset(const double &partOfSecond_)
     const auto offset = (m_velocity + m_inertia.mulComponents(m_inertiaMultiplier) + m_extraoffset) * partOfSecond_ + m_velocityLeftover;
     const Vector2<int> iOffset = offset;
     m_velocityLeftover = offset - iOffset;
-    std::cout << "{" << offset << "} - {" << iOffset << "} = " << m_velocityLeftover << std::endl;
+    //std::cout << "{" << offset << "} - {" << iOffset << "} = " << m_velocityLeftover << std::endl;
     return iOffset;
 }
 

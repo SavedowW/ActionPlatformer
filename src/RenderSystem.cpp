@@ -1,4 +1,5 @@
 #include "RenderSystem.h"
+#include "Core/CoreComponents.h"
 #include "EnvComponents.h"
 #include "Core/Profile.h"
 #include "Core/GameData.h"
@@ -65,11 +66,11 @@ void RenderSystem::draw() const
     const auto viewTransforms = m_reg.view<ComponentTransform>();
     const auto viewHealthOwners = m_reg.view<ComponentTransform, HealthRendererCommonWRT>();
 
-    const auto renderable = m_reg.view<RenderLayer>();
+    const auto renderable = m_reg.view<RenderLayer, ComponentTransform>();
 
-    for (auto [idx, renlayer] : renderable.each())
+    for (auto [idx, renlayer, trans] : renderable.each())
         if (renlayer.isVisible())
-            handleDepthInstance(idx);
+            handleDepthInstance(idx, trans);
 
     for (auto [idx, trans, hren] : viewHealthOwners.each())
         drawHealth(trans, hren);
@@ -223,24 +224,24 @@ void RenderSystem::drawTilemapLayer(const ComponentTransform &trans_, const Tile
     }
 }
 
-void RenderSystem::handleDepthInstance(const entt::entity &idx_) const
+void RenderSystem::handleDepthInstance(const entt::entity &idx_, const ComponentTransform &trans_) const
 {
     if (auto *ren = m_reg.try_get<ComponentAnimationRenderable>(idx_))
     {
         if (auto *partcl = m_reg.try_get<ComponentParticlePrimitive>(idx_))
         {
             // Definitely particle
-            drawParticle(m_reg.get<ComponentTransform>(idx_), *partcl, *ren);
+            drawParticle(trans_, *partcl, *ren);
         }
         else
         {
             // Definitely instance
-            drawInstance(m_reg.get<ComponentTransform>(idx_), *ren);
+            drawInstance(trans_, *ren);
         }
     }
     else if (auto *tilemap = m_reg.try_get<TilemapLayer>(idx_))
     {
-        drawTilemapLayer(m_reg.get<ComponentTransform>(idx_), *tilemap);
+        drawTilemapLayer(trans_, *tilemap);
     }
 }
 

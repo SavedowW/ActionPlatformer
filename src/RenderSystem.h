@@ -19,7 +19,7 @@ struct RenderSystem : public InputReactor
     void drawParticle(const ComponentTransform &trans_, const ComponentParticlePrimitive &partcl_, const ComponentAnimationRenderable &ren_) const;
     void drawTilemapLayer(const ComponentTransform &trans_, const TilemapLayer &tilemap_) const;
 
-    void handleDepthInstance(const entt::entity &idx_) const;
+    void handleDepthInstance(const entt::entity &idx_, const ComponentTransform &trans_) const;
 
 
     void drawBattleActorColliders(const ComponentTransform &trans_, const BattleActor &btlact_) const;

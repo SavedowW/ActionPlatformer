@@ -3,20 +3,18 @@
 
 #include "TextManager.h"
 
+template<typename AlignerT>
 class ImmediateScreenLog
 {
 public:
-    ImmediateScreenLog(int font_, fonts::HOR_ALIGN alignment_, int offsetPerLine_);
-    void addRecord(const std::string &record_);
-    void dump(Vector2<float> origin_);
-    ~ImmediateScreenLog() = default;
+    ImmediateScreenLog(int font_, int offsetPerLine_, const Vector2<int> &origin_);
+    void dumpLine(const std::string &record_);
 
 private:
     TextManager &m_textManager;
-    std::vector<std::string> m_records;
-    int m_font;
-    fonts::HOR_ALIGN m_alignment;
-    int m_offsetPerLine;
+    Vector2<int> m_pos;
+    const int m_font;
+    const int m_offsetPerLine;
 };
 
 #endif

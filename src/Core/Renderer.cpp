@@ -531,7 +531,7 @@ void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, 
     glBindVertexArray(m_spriteVAO);
     m_spriteShader.use();
 
-    int top, bot, lft, rgt;
+    int top = 0, bot = 0, lft = 0, rgt = 0;
     if (flip_ & SDL_FLIP_VERTICAL)
     {
         top = pos_.y + size_.y;

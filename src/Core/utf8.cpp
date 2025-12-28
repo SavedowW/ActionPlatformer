@@ -3,7 +3,7 @@
 #include <iostream>
 #include <span>
 
-uint8_t utf8::readCharSize(const char *ch_)
+uint8_t utf8::readCharSize(const char *ch_) noexcept
 {
     if ((*ch_ & oct4) == oct4)
         return 4;
@@ -14,7 +14,7 @@ uint8_t utf8::readCharSize(const char *ch_)
     return 1;
 }
 
-uint8_t utf8::readCharSize(uint32_t ch_)
+uint8_t utf8::readCharSize(uint32_t ch_) noexcept
 {
     const int leadingZeroBits = std::countl_zero(ch_);
     const int significantBytes = 4 - leadingZeroBits / 8;
@@ -22,12 +22,12 @@ uint8_t utf8::readCharSize(uint32_t ch_)
     return static_cast<uint8_t>(significantBytes);
 }
 
-uint32_t utf8::readChar(const char *ch_)
+uint32_t utf8::readChar(const char *ch_) noexcept
 {
     return readChar(ch_, readCharSize(ch_));
 }
 
-uint32_t utf8::readChar(const char *ch_, uint8_t sz_)
+uint32_t utf8::readChar(const char *ch_, uint8_t sz_) noexcept
 {
     switch (sz_)
     {
@@ -39,12 +39,12 @@ uint32_t utf8::readChar(const char *ch_, uint8_t sz_)
         return ((ch_[0] & 0xff) << 16) | ((ch_[1] & 0xff) << 8) | (ch_[2] & 0xff);
     case 4:
         return ((ch_[0] & 0xff) << 24) | ((ch_[1] & 0xff) << 16) | ((ch_[2] & 0xff) << 8) | (ch_[3] & 0xff);
+    default:
+        return 0;
     }
-
-    return 0;
 }
 
-const char *utf8::iterateForward(const char *u8char_)
+const char *utf8::iterateForward(const char *u8char_) noexcept
 {
     return u8char_ + utf8::readCharSize(u8char_);
 }
@@ -100,45 +100,45 @@ std::wstring &utf8::appendChars(std::wstring &s_, const char *u8char_, size_t cn
     return s_;
 }
 
-U8Wrapper::iterator::iterator(const char *ch_) :
+U8Wrapper::iterator::iterator(const char *ch_) noexcept :
     m_ch(ch_),
     m_byteSize(utf8::readCharSize(ch_))
 {
 }
 
-bool U8Wrapper::iterator::operator!=(const iterator &rhs_) const
+bool U8Wrapper::iterator::operator!=(const iterator &rhs_) const noexcept
 {
     return m_ch != rhs_.m_ch;
 }
 
-U8Wrapper::iterator &U8Wrapper::iterator::operator++()
+U8Wrapper::iterator &U8Wrapper::iterator::operator++() noexcept
 {
     m_ch += m_byteSize;
     m_byteSize = utf8::readCharSize(m_ch);
     return *this;
 }
 
-U8Wrapper::iterator &U8Wrapper::iterator::operator*()
+U8Wrapper::iterator &U8Wrapper::iterator::operator*() noexcept
 {
     return *this;
 }
 
-uint32_t U8Wrapper::iterator::getu8() const
+uint32_t U8Wrapper::iterator::getu8() const noexcept
 {
     return utf8::readChar(m_ch, m_byteSize);
 }
 
-uint32_t U8Wrapper::iterator::getu32() const
+uint32_t U8Wrapper::iterator::getu32() const noexcept
 {
     return utf8::tou32(m_ch, m_byteSize);
 }
 
-std::string U8Wrapper::iterator::getCharAsString() const
+std::string U8Wrapper::iterator::getCharAsString() const noexcept
 {
-    char arr[5] = {m_ch[0], m_ch[1], m_ch[2], m_ch[3], 0};
+    std::array<char, 5> arr{m_ch[0], m_ch[1], m_ch[2], m_ch[3], 0};
     arr[m_byteSize] = 0;
 
-    return std::string(arr);
+    return {arr.data()};
 }
 
 std::wstring U8Wrapper::iterator::getCharAsWString() const
@@ -147,17 +147,17 @@ std::wstring U8Wrapper::iterator::getCharAsWString() const
     return utf8::appendChar(s, m_ch, m_byteSize);
 }
 
-U8Wrapper::U8Wrapper(const std::string &s_) :
+U8Wrapper::U8Wrapper(const std::string &s_) noexcept :
     m_s(s_)
 {
 }
 
-U8Wrapper::iterator U8Wrapper::begin()
+U8Wrapper::iterator U8Wrapper::begin() const noexcept
 {
     return {m_s.c_str()};
 }
 
-U8Wrapper::iterator U8Wrapper::end()
+U8Wrapper::iterator U8Wrapper::end() const noexcept
 {
     return {m_s.c_str() + m_s.size()};
 }
@@ -202,36 +202,36 @@ std::ostream &operator<<(std::ostream &os_, const U8Wrapper &it_)
     return os_;
 }
 
-std::string utf8::getChar(uint32_t ch_)
+std::string utf8::getChar(uint32_t ch_) noexcept
 {
     const auto *tmp = reinterpret_cast<const char *>(&ch_);
-    char arr[5] = {tmp[3], tmp[2], tmp[1], tmp[0], 0};
+    std::array<char, 5> arr{tmp[3], tmp[2], tmp[1], tmp[0], 0};
     uint8_t i = 0;
     while (!arr[i])
         ++i;
 
-    return std::string(arr + i);
+    return {&arr[i]};
 }
 
-uint32_t utf8::u8tou32_1(uint32_t ch_)
+uint32_t utf8::u8tou32_1(uint32_t ch_) noexcept
 {
     return ch_;
 }
 
-uint32_t utf8::u8tou32_2(uint32_t ch_)
+uint32_t utf8::u8tou32_2(uint32_t ch_) noexcept
 {
     return (ch_ & 0xFF & 0b00111111)
     | ((ch_ & 0xFF00 & 0b00011111'00000000) >> 2);
 }
 
-uint32_t utf8::u8tou32_3(uint32_t ch_)
+uint32_t utf8::u8tou32_3(uint32_t ch_) noexcept
 {
     return (ch_ & 0xFF & 0b00111111)
     | ((ch_ & 0xFF00 & 0b00111111'00000000) >> 2)
     | ((ch_ & 0xFF0000 & 0b00001111'00000000'00000000) >> 4);
 }
 
-uint32_t utf8::u8tou32_4(uint32_t ch_)
+uint32_t utf8::u8tou32_4(uint32_t ch_) noexcept
 {
     return (ch_ & 0xFF & 0b00111111)
     | ((ch_ & 0xFF00 & 0b00111111'00000000) >> 2)
@@ -239,7 +239,7 @@ uint32_t utf8::u8tou32_4(uint32_t ch_)
     | ((ch_ & 0xFF000000 & 0b00000111'00000000'00000000'00000000) >> 6);
 }
 
-uint32_t utf8::u8tou32(uint32_t ch_, size_t sz_)
+uint32_t utf8::u8tou32(uint32_t ch_, size_t sz_) noexcept
 {
     switch (sz_)
     {
@@ -254,30 +254,31 @@ uint32_t utf8::u8tou32(uint32_t ch_, size_t sz_)
 
     case 4:
         return u8tou32_4(ch_);
-    }
 
-    return 0;
+    default:
+        return 0;
+    }
 }
 
-uint32_t utf8::tou32_1(const char *ch_)
+uint32_t utf8::tou32_1(const char *ch_) noexcept
 {
     return (*ch_);
 }
 
-uint32_t utf8::tou32_2(const char *ch_)
+uint32_t utf8::tou32_2(const char *ch_) noexcept
 {
     return (ch_[1] & 0b00111111)
     | ((ch_[0] & 0b00011111) << 6);
 }
 
-uint32_t utf8::tou32_3(const char *ch_)
+uint32_t utf8::tou32_3(const char *ch_) noexcept
 {
     return (ch_[2] & 0b00111111)
     | ((ch_[1] & 0b00111111) << 6)
     | ((ch_[0] & 0b00001111) << 12);
 }
 
-uint32_t utf8::tou32_4(const char *ch_)
+uint32_t utf8::tou32_4(const char *ch_) noexcept
 {
     return (ch_[3] & 0b00111111)
     | ((ch_[2] & 0b00111111) << 6)
@@ -285,12 +286,12 @@ uint32_t utf8::tou32_4(const char *ch_)
     | ((ch_[0] & 0b00000111) << 18);
 }
 
-uint32_t utf8::tou32(const char *ch_)
+uint32_t utf8::tou32(const char *ch_) noexcept
 {
     return tou32(ch_, readCharSize(ch_));
 }
 
-uint32_t utf8::tou32(const char *ch_, uint8_t sz_)
+uint32_t utf8::tou32(const char *ch_, uint8_t sz_) noexcept
 {
     switch (sz_)
     {

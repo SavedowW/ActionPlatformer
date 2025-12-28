@@ -1,6 +1,7 @@
 #include "HUDSystem.h"
+#include "Core/TextManager.hpp"
 #include "StateMachine.h"
-#include "Core/ImmediateScreenLog.h"
+#include "Core/ImmediateScreenLog.hpp"
 #include "Core/Application.h"
 #include "Core/CoreComponents.h"
 #include "Core/InputResolver.h"
@@ -49,20 +50,18 @@ void HudSystem::drawCommonDebug() const
     else
         m_avgFrames.push(static_cast<float>(frameTime));
 
-    ImmediateScreenLog commonLog{0, fonts::HOR_ALIGN::LEFT, 12};
+    ImmediateScreenLog<TextAligners::AlignerLeft> commonLog{0, 12, {1, 1}};
 
-    commonLog.addRecord("[" + std::to_string(m_lvlId) + "] " + utils::toString(m_lvlSize));
-    commonLog.addRecord("Camera pos: " + utils::toString(m_cam.getPos()));
-    commonLog.addRecord("Camera size: " + utils::toString(m_cam.getSize()));
-    commonLog.addRecord("Camera scale: " + std::to_string(m_cam.getScale()));
-    commonLog.addRecord("Real frame time (ns): " + std::to_string(frameTime));
-    commonLog.addRecord("Avg frame time (ms): " + std::to_string( m_avgFrames.avg() / 1'000'000.0f));
-    commonLog.addRecord("FPS: " + std::to_string( 1'000'000'000.0f / static_cast<float>(frameTime)));
-    commonLog.addRecord("Avg FPS: " + std::to_string( 1'000'000'000.0f / m_avgFrames.avg()));
-    commonLog.addRecord("UTF-8: Кириллица работает");
-    commonLog.addRecord(ll::dbg_localization());
-
-    commonLog.dump({1.0f, 1.0f});
+    commonLog.dumpLine("[" + std::to_string(m_lvlId) + "] " + utils::toString(m_lvlSize));
+    commonLog.dumpLine("Camera pos: " + utils::toString(m_cam.getPos()));
+    commonLog.dumpLine("Camera size: " + utils::toString(m_cam.getSize()));
+    commonLog.dumpLine("Camera scale: " + std::to_string(m_cam.getScale()));
+    commonLog.dumpLine("Real frame time (ns): " + std::to_string(frameTime));
+    commonLog.dumpLine("Avg frame time (ms): " + std::to_string( m_avgFrames.avg() / 1'000'000.0f));
+    commonLog.dumpLine("FPS: " + std::to_string( 1'000'000'000.0f / static_cast<float>(frameTime)));
+    commonLog.dumpLine("Avg FPS: " + std::to_string( 1'000'000'000.0f / m_avgFrames.avg()));
+    commonLog.dumpLine("UTF-8: Кириллица работает");
+    commonLog.dumpLine(ll::dbg_localization());
 }
 
 void HudSystem::drawPlayerDebug() const
@@ -81,18 +80,16 @@ void HudSystem::drawPlayerDebug() const
     //for (const auto &el : m_pc->m_cooldowns)
     //    cooldowns += std::to_string(!el.isActive());
 
-    ImmediateScreenLog playerLog{0, fonts::HOR_ALIGN::RIGHT, 12};
+    ImmediateScreenLog<TextAligners::AlignerRight> playerLog{0, 12, {gamedata::global::hudLayerResolution.x - 1, 1}};
 
-    playerLog.addRecord("Player pos: " + utils::toString(ptransform.m_pos));
-    playerLog.addRecord("Player vel: " + utils::toString(pphysical.m_velocity));
-    playerLog.addRecord("Player inr: " + utils::toString(pphysical.m_inertia));
-    playerLog.addRecord(std::string("Player action: ") + psm.getName());
-    playerLog.addRecord(std::string("Ignored obstacles: ") + ignoredObstacles);
-    playerLog.addRecord(std::string("On slope: ") + std::to_string(pphysical.m_onSlopeWithAngle));
-    playerLog.addRecord(std::string("Grounded: ") + std::to_string(pphysical.m_onGround != entt::null));
-    playerLog.addRecord(std::string("Attac\nhed: ") + std::to_string(pphysical.m_onWall != entt::null));
-
-    playerLog.dump({gamedata::global::hudLayerResolution.x - 1.0f, 1.0f});
+    playerLog.dumpLine("Player pos: " + utils::toString(ptransform.m_pos));
+    playerLog.dumpLine("Player vel: " + utils::toString(pphysical.m_velocity));
+    playerLog.dumpLine("Player inr: " + utils::toString(pphysical.m_inertia));
+    playerLog.dumpLine(std::string("Player action: ") + psm.getName());
+    playerLog.dumpLine(std::string("Ignored obstacles: ") + ignoredObstacles);
+    playerLog.dumpLine(std::string("On slope: ") + std::to_string(pphysical.m_onSlopeWithAngle));
+    playerLog.dumpLine(std::string("Grounded: ") + std::to_string(pphysical.m_onGround != entt::null));
+    playerLog.dumpLine(std::string("Attac\nhed: ") + std::to_string(pphysical.m_onWall != entt::null));
 
     auto inputs = pinp.getCurrentInputDir();
 
@@ -128,16 +125,16 @@ void HudSystem::drawPlayerDebug() const
 
 void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_, const StateMachine &sm_, const ComponentAI &ai_) const
 {
-    auto txt1 = sm_.getName();
-    auto txt2 = ai_.m_sm.getName();
-    auto worldOrigin = trans_.m_pos + phys_.m_pushbox.m_topLeft + Vector2{phys_.m_pushbox.m_size.x, 0};
+    const auto txt1 = sm_.getName();
+    const auto txt2 = ai_.m_sm.getName();
+    const auto worldOrigin = trans_.m_pos + phys_.m_pushbox.m_topLeft + Vector2{phys_.m_pushbox.m_size.x, 0};
 
-    Vector2<int> camSize = m_cam.getSize();
-    Vector2<int> camTL = m_cam.getTopLeft();
+    const Vector2<int> camSize = m_cam.getSize();
+    const Vector2<int> camTL = m_cam.getTopLeft();
     const auto screenRelPos = (worldOrigin - camTL).mulComponents(1.0f / camSize.x, 1.0f / camSize.y);
     
-    Vector2<int> screenOrigin = screenRelPos.mulComponents(gamedata::global::hudLayerResolution);
+	const Vector2<int> screenOrigin = screenRelPos.mulComponents(gamedata::global::hudLayerResolution);
 
-    m_textManager.renderText(txt1, 1, screenOrigin);
-    m_textManager.renderText(txt2, 1, screenOrigin + Vector2{0.0f, 10.0f});
+    m_textManager.renderText<TextAligners::AlignerLeft>(txt1, 1, screenOrigin);
+    m_textManager.renderText<TextAligners::AlignerLeft>(txt2, 1, screenOrigin + Vector2{0.0f, 10.0f});
 }

@@ -1,7 +1,6 @@
 #include "GameData.h"
 #include "TextManager.h"
 #include "FilesystemUtils.h"
-#include "utf8.h"
 #include "glad/glad.h"
 #include <fstream>
 
@@ -50,6 +49,65 @@ const fonts::Symbol &fonts::Font::operator[](uint32_t ch_) const
 {
     return m_symbols[m_distrib.m_chunkSearch[ch_]][ch_ % CHUNK_SIZE];
 }
+
+
+namespace TextAligners 
+{
+    CommonAligner::CommonAligner(const U8Wrapper &wrp_, const fonts::Font &font_) noexcept :
+        m_wrp{wrp_},
+        m_font{font_}
+    {}
+
+    int CommonAligner::collectLength() const noexcept
+    {
+        const uint32_t ch1 = m_wrp.begin().getu8();
+
+        auto len = m_font[ch1].m_minx;
+        for (auto &ch : m_wrp)
+        {
+            const auto &sym = m_font[ch.getu8()];
+            len += sym.m_advance;
+        }
+
+        return len;
+    }
+
+    AlignerLeft::AlignerLeft(const U8Wrapper &wrp_, const fonts::Font &font_) noexcept :
+        CommonAligner{wrp_, font_}
+    {}
+
+    Vector2<int> AlignerLeft::adjustPos(Vector2<int> pos_) const noexcept
+    {
+        return pos_;
+    }
+
+    AlignerCenter::AlignerCenter(const U8Wrapper &wrp_, const fonts::Font &font_) noexcept :
+        CommonAligner{wrp_, font_}
+    {}
+
+    Vector2<int> AlignerCenter::adjustPos(Vector2<int> pos_) const noexcept
+    {
+        const auto len = collectLength();
+
+        pos_.x -= len / 2;
+
+        return pos_;
+    }
+
+    AlignerRight::AlignerRight(const U8Wrapper &wrp_, const fonts::Font &font_) noexcept :
+        CommonAligner{wrp_, font_}
+    {}
+
+    Vector2<int> AlignerRight::adjustPos(Vector2<int> pos_) const noexcept
+    {
+        const auto len = collectLength();
+
+        pos_.x -= len;
+
+        return pos_;
+    }
+}
+
 
 // TODO: remove font size duplication
 TextManager::TextManager(Renderer &renderer_) :
@@ -404,42 +462,6 @@ void TextManager::generateSimpleShadedSymbols(Renderer &renderer_, std::vector<s
 
     TTF_CloseFont(font);
     std::cout << generated << " characters generated out of " << charsTotal << ", " << notProvided << " characters not provided" << std::endl;
-}
-
-void TextManager::renderText(const std::string &text_, int fontid_, Vector2<int> pos_, fonts::HOR_ALIGN horAlign_, const Camera *cam_)
-{
-    U8Wrapper wrp(text_);
-    auto begin = wrp.begin();
-    uint32_t ch1 = begin.getu8();
-    if (horAlign_ != fonts::HOR_ALIGN::LEFT)
-    {
-        auto len = m_fonts[fontid_][ch1].m_minx;
-        for (auto &ch : wrp)
-        {
-            auto &sym = m_fonts[fontid_][ch.getu8()];
-            len += sym.m_advance;
-        }
-
-        if (horAlign_ == fonts::HOR_ALIGN::CENTER)
-        {
-            pos_.x -= len / 2;
-        }
-        else if (horAlign_ == fonts::HOR_ALIGN::RIGHT)
-        {
-            pos_.x -= len;
-        }
-    }
-
-    pos_.x += m_fonts[fontid_][ch1].m_minx;
-    for (auto &ch : wrp)
-    {
-        auto &sym = m_fonts[fontid_][ch.getu8()];
-        if (cam_)
-            m_renderer.renderTexture(sym.m_tex.m_id, Vector2(pos_.x, pos_.y), sym.m_tex.m_size, SDL_FLIP_NONE, 1.0f, *cam_);
-        else
-            m_renderer.renderTexture(sym.m_tex.m_id, Vector2(pos_.x, pos_.y), sym.m_tex.m_size, SDL_FLIP_NONE, 1.0f);
-        pos_.x += sym.m_advance;
-    }
 }
 
 const fonts::Symbol *TextManager::getSymbol(int fontid_, uint32_t ch_) const
