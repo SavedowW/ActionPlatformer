@@ -1,3 +1,4 @@
+#include "tests/NewStateMachine.hpp"
 #include "tests/ComponentExtraction.hpp"
 #include "Core/CoreComponents.h"
 #include "Stage1.h"
@@ -14,7 +15,8 @@ int main(int, char**)
 
     try
     {
-        testCompExtraction();
+        //testCompExtraction();
+        testNewStateMachine();
     }
     catch (std::exception &ex_)
     {

@@ -4,7 +4,7 @@ template<typename T>
 void ComponentExtractor<T>::select(entt::registry &reg_, entt::entity ent_)
 {
     m_comp = reg_.try_get<T>(ent_);
-    assert(m_comp != 0);
+    assert(m_comp != nullptr);
 }
 
 template<typename T>
@@ -25,13 +25,15 @@ void ComponentViewer::select(entt::registry &reg_, entt::entity ent_)
 }
 
 template<typename T>
-T &ComponentViewer::get()
+T &ComponentViewer::get() const
 {
-    return dynamic_cast<ComponentExtractor<T>&>(*m_extractors.at(entt::type_hash<T>())).extract();
+    static const auto hash = entt::type_hash<T>();
+    return dynamic_cast<ComponentExtractor<T>&>(*m_extractors.at(hash)).extract();
 }
 
 template<typename T>
-const T &ComponentViewer::get() const
+const T &ComponentViewer::cget() const
 {
-    return dynamic_cast<ComponentExtractor<T>&>(*m_extractors.at(entt::type_hash<T>())).extract();
+    static const auto hash = entt::type_hash<T>();
+    return dynamic_cast<ComponentExtractor<T>&>(*m_extractors.at(hash)).extract();
 }

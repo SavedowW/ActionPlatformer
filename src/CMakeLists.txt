@@ -12,6 +12,7 @@ LevelBuilder.cpp
 PlayableCharacter.cpp
 StateMachine.cpp
 StateMachineEx.cpp
+StateMachineFactory.cpp
 PhysicsSystem.cpp
 PlayerSystem.cpp
 RenderSystem.cpp

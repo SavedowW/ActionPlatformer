@@ -43,6 +43,8 @@ void testCompExtraction()
     compReg.initExtractorFactory<ComponentPhysical>();
     compReg.initExtractorFactory<ComponentAnimationRenderable>();
 
+    std::cout << compReg << std::endl;
+
     ComponentViewer viewer3;
     ComponentViewer viewer2;
 
@@ -71,6 +73,7 @@ void testCompExtraction()
     viewer2.select(reg, ent1);
     dump2(viewer2);
 
+    std::cout << "Assertion failure is expected here" << std::endl;
     viewer3.select(reg, ent2);
     dump3(viewer3);
 }

@@ -56,9 +56,9 @@ void HudSystem::drawCommonDebug() const
     commonLog.dumpLine("Camera pos: " + utils::toString(m_cam.getPos()));
     commonLog.dumpLine("Camera size: " + utils::toString(m_cam.getSize()));
     commonLog.dumpLine("Camera scale: " + std::to_string(m_cam.getScale()));
-    commonLog.dumpLine("Real frame time (ns): " + std::to_string(frameTime));
+    commonLog.dumpLine("Real frame time (ns): " + std::to_string(m_frameTime));
     commonLog.dumpLine("Avg frame time (ms): " + std::to_string( m_avgFrames.avg() / 1'000'000.0f));
-    commonLog.dumpLine("FPS: " + std::to_string( 1'000'000'000.0f / static_cast<float>(frameTime)));
+    commonLog.dumpLine("FPS: " + std::to_string( 1'000'000'000.0f / static_cast<float>(m_frameTime)));
     commonLog.dumpLine("Avg FPS: " + std::to_string( 1'000'000'000.0f / m_avgFrames.avg()));
     commonLog.dumpLine("UTF-8: Кириллица работает");
     commonLog.dumpLine(ll::dbg_localization());

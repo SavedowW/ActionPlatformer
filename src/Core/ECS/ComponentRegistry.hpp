@@ -8,7 +8,7 @@ template<typename T>
 void ComponentRegistry::initExtractorFactory()
 {
     const auto id = entt::type_hash<T>();
-    std::string name{entt::type_name<T>{}.value()};
+    const std::string name{entt::type_name<T>{}.value()};
     if (m_extractors.contains(name))
         std::cout << "Warning: component registry already has factory for \"" << entt::type_name<T>{}.value() << '\"' << std::endl;
     else

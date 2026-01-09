@@ -28,10 +28,10 @@ public:
     void select(entt::registry &reg_, entt::entity ent_);
 
     template<typename T>
-    T &get();
+    T &get() const;
 
     template<typename T>
-    const T &get() const;
+    const T &cget() const;
 
 private:
     std::unordered_map<entt::id_type, std::unique_ptr<IComponentExtractor>> m_extractors;
