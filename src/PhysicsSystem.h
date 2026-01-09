@@ -10,9 +10,9 @@ struct PhysicsSystem
     void prepHitstop();
     void prepEntities();
     void updateSMs();
-    void updatePhysics(const double &partOfSecond_);
+    void updatePhysics();
     void updatePhysicalEvents();
-    void updateOverlappedObstacles(const Time::NS &frameTime_);
+    void updateOverlappedObstacles();
 
     /*
         Attempt to move entity in a direction with offset if it doesn't collide with anything, unchanged otherwise
@@ -24,8 +24,8 @@ struct PhysicsSystem
     bool attemptOffsetHorizontal(const auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, int offset_,
         int originalY_, unsigned int maxYOffset_, int naturalYOffset_, float &touchedSlope_, entt::entity &onGround_);
 
-    void proceedEntity(const auto &clds_, const entt::entity &idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_, const double &partOfSecond_);
-    void proceedEntity(ComponentTransform &trans_, ComponentParticlePhysics &phys_, const double &partOfSecond_);
+    void proceedEntity(const auto &clds_, const entt::entity &idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_);
+    void proceedEntity(ComponentTransform &trans_, ComponentParticlePhysics &phys_);
     
     bool magnetEntity(const auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, const ComponentObstacleFallthrough &obsFallthrough_);
     std::pair<entt::entity, const SlopeCollider*> getHighestVerticalMagnetCoord(const auto &clds_, const Collider &cld_, int &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_);

@@ -2,7 +2,6 @@
 #define JSON_UTILS_H_
 #include "StaticMapping.hpp"
 #include "Vector2.hpp"
-#include "Timer.h"
 #include <set>
 #include <nlohmann/json.hpp>
 
@@ -26,24 +25,23 @@ namespace utils
     {
         try
         {
-            return src_.at(field_);
+            if (src_.contains(field_))
+                return src_[field_];
         }
-        catch(const std::exception &)
+        catch(std::exception &)
         {
             // Property is invalid
-            return default_;
         }
-    }
 
-    template<>
-    Time::NS tryClaim(const nlohmann::json &src_, const std::string &field_, const Time::NS &default_);
+        return default_;
+    }
 
     template<typename T>
     Vector2<T> tryClaimVector(const nlohmann::json &src_, const std::initializer_list<std::string> &path_, const Vector2<T> &default_)
     {
         try
         {
-            const nlohmann::json *current = &src_;
+            const nlohmann::json *current = &src_;;
             for (const auto &el : path_)
             {
                 if (!current->contains(el))

@@ -1,6 +1,7 @@
 #ifndef BEHAVIOR_H_
 #define BEHAVIOR_H_
 #include "StateCommon.h"
+#include "FrameTimer.h"
 #include "StaticMapping.hpp"
 #include <memory>
 #include <iostream>

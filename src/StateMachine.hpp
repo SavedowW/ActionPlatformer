@@ -23,12 +23,12 @@ template<typename PLAYER_STATE_T>
 void StateMachine::setInitialState(PLAYER_STATE_T state_)
 {
     auto initstate = static_cast<CharState>(state_);
-    m_timeInState = Time::NS{0};
+    m_framesInState = 0;
     m_currentState = m_states[m_stateIds[initstate]].get();
 }
 
 template<typename PLAYER_STATE_T>
-GenericState &GenericState::setOutdatedTransition(PLAYER_STATE_T state_, const Time::NS &duration_)
+GenericState &GenericState::setOutdatedTransition(PLAYER_STATE_T state_, uint32_t duration_)
 {
     m_transitionOnOutdated = static_cast<CharState>(state_);
     m_duration = duration_;
@@ -40,7 +40,7 @@ PhysicalState::PhysicalState(PLAYER_STATE_T stateId_, StateMarker &&transitionab
     GenericState(stateId_, std::move(transitionableFrom_)),
     m_anim(anim_),
     m_appliedInertiaMultiplier(Vector2{1.0f, 1.0f}),
-    m_drag(Vector2{60.0f, 0.0f}),
+    m_drag(Vector2{1.0f, 0.0f}),
     m_transitionVelocityMultiplier(Vector2{1.0f, 1.0f}),
     m_canFallThrough(true)
 {}

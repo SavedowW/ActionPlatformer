@@ -1,6 +1,5 @@
 #include "Hit.h"
 #include "Core/Application.h"
-#include "Core/Timer.h"
 
 uint32_t Hit::m_lastId = 0;
 
@@ -19,19 +18,19 @@ HitboxGroup HitGeneration::hitPlayerLight()
     hit.m_hitData.m_friendTeams.insert(BattleTeams::PLAYER);
     hit.m_hitData.m_hitstop = 8;
     hit.m_hitData.m_victimFlash = std::make_unique<FlashDelayedLinear>(8, 10, 0);
-    hit.m_hitData.m_onHitShake = {.m_xAmp=5, .m_yAmp=5, .m_period=Time::NS{8}};
+    hit.m_hitData.m_onHitShake = {5, 5, 8};
 
     hit.m_colliders.push_back({
-        .m_collider={.m_topLeft={-3, -19}, .m_size={16, 8}},
-        .m_timeline=TimelineProperty<Time::NS, bool>({{Time::NS{5}, true}, {Time::NS{10}, false}})
+        {{-3, -19}, {16, 8}},
+        TimelineProperty<bool>({{5, true}, {10, false}})
     });
 
     hit.m_colliders.push_back({
-        .m_collider={.m_topLeft={7, -30}, .m_size={30, 18}},
-        .m_timeline=TimelineProperty<Time::NS, bool>({{Time::NS{5}, true}, {Time::NS{10}, false}})
+        {{7, -30}, {30, 18}},
+        TimelineProperty<bool>({{5, true}, {10, false}})
     });
 
-    hit.m_activeWindow = {Time::NS{5}, Time::NS{11}};
+    hit.m_activeWindow = {5, 11};
 
 
     return hit;
@@ -49,16 +48,16 @@ HitboxGroup HitGeneration::hitPlayerChain()
     hit.m_hitData.m_victimFlash = std::make_unique<FlashDelayedLinear>(16, 10, 0);
 
     hit.m_colliders.push_back({
-        .m_collider={.m_topLeft={-24, -32}, .m_size={48, 24}},
-        .m_timeline=TimelineProperty<Time::NS, bool>({{Time::NS{12}, true}, {Time::NS{13}, false}})
+        {{-24, -32}, {48, 24}},
+        TimelineProperty<bool>({{12, true}, {13, false}})
     });
 
     hit.m_colliders.push_back({
-        .m_collider={.m_topLeft={2, -32}, .m_size={48, 32}},
-        .m_timeline=TimelineProperty<Time::NS, bool>({{Time::NS{12}, true}, {Time::NS{15}, false}})
+        {{2, -32}, {48, 32}},
+        TimelineProperty<bool>({{12, true}, {15, false}})
     });
 
-    hit.m_activeWindow = {Time::NS{12}, Time::NS{15}};
+    hit.m_activeWindow = {12, 15};
 
 
     return hit;
@@ -74,19 +73,19 @@ HitboxGroup HitGeneration::hitPlayerAirAttack()
     hit.m_hitData.m_friendTeams.insert(BattleTeams::PLAYER);
     hit.m_hitData.m_hitstop = 8;
     hit.m_hitData.m_victimFlash = std::make_unique<FlashDelayedLinear>(8, 10, 0);
-    hit.m_hitData.m_onHitShake = {.m_xAmp=5, .m_yAmp=5, .m_period=Time::NS{8}};
+    hit.m_hitData.m_onHitShake = {5, 5, 8};
 
     hit.m_colliders.push_back({
-        .m_collider={.m_topLeft={-16, -64}, .m_size={56, 98}},
-        .m_timeline=TimelineProperty<Time::NS, bool>({{Time::NS{8}, true}, {Time::NS{15}, false}})
+        {{-16, -64}, {56, 98}},
+        TimelineProperty<bool>({{8, true}, {15, false}})
     });
 
     hit.m_colliders.push_back({
-        .m_collider={.m_topLeft={26, -49}, .m_size={25, 60}},
-        .m_timeline=TimelineProperty<Time::NS, bool>({{Time::NS{8}, true}, {Time::NS{15}, false}})
+        {{26, -49}, {25, 60}},
+        TimelineProperty<bool>({{8, true}, {15, false}})
     });
 
-    hit.m_activeWindow = {Time::NS{8}, Time::NS{15}};
+    hit.m_activeWindow = {8, 15};
 
 
     return hit;
@@ -97,20 +96,20 @@ void Hit::updateId()
     m_id = ++m_lastId;
 }
 
-HitPosResult detectHit(const std::vector<TemporaryCollider> &hit_, const Time::NS &hitActiveTime_, const ComponentTransform &attacker_, const std::vector<TemporaryCollider> &hurtbox_, const Time::NS &hurtboxActiveTime_, const ComponentTransform &victim_)
+HitPosResult detectHit(const std::vector<TemporaryCollider> &hit_, uint32_t hitActiveFrame_, const ComponentTransform &attacker_, const std::vector<TemporaryCollider> &hurtbox_, uint32_t hurtboxActiveFrame_, const ComponentTransform &victim_)
 {
     utils::Average<Vector2<float>> avgpos;
 
     for (const auto &hitbox : hit_)
     {
-        if (!hitbox.m_timeline[hitActiveTime_])
+        if (!hitbox.m_timeline[hitActiveFrame_])
             continue;
         
         auto hitboxCld = getColliderAt(hitbox.m_collider, attacker_);
 
         for (const auto &hurtbox : hurtbox_)
         {
-            if (!hurtbox.m_timeline[hurtboxActiveTime_])
+            if (!hurtbox.m_timeline[hurtboxActiveFrame_])
                 continue;
 
             auto hurtboxCld = getColliderAt(hurtbox.m_collider, victim_);
@@ -122,14 +121,14 @@ HitPosResult detectHit(const std::vector<TemporaryCollider> &hit_, const Time::N
     }
 
     if (avgpos.isSet())
-        return {.m_hitOccured=true, .m_hitPos=avgpos};
-    
-    return {.m_hitOccured=false};
+        return {true, avgpos};
+    else
+        return {false};
 }
 
 HitStateMapping &HitStateMapping::addHitstunTransition(uint32_t level_, CharState transition_)
 {
-    m_hitstunTransitions.addPair(level_, transition_);
+    m_hitstunTransitions.addPair(level_, CharState{transition_});
     return *this;
 }
 
@@ -159,7 +158,7 @@ HealthRendererCommonWRT::HealthRendererCommonWRT(uint8_t realHealth_, const Vect
     }
 }
 
-void HealthRendererCommonWRT::update(const Time::NS &frameTime_)
+void HealthRendererCommonWRT::update()
 {
     switch (m_state)
     {
@@ -167,7 +166,7 @@ void HealthRendererCommonWRT::update(const Time::NS &frameTime_)
             break;
 
         case DelayFadeStates::FADE_IN:
-            if (m_delayFadeTimer.update(Application::instance().timestep.getFrameDuration()))
+            if (m_delayFadeTimer.update())
             {
                 m_state = DelayFadeStates::ANIMATION;
             }
@@ -175,6 +174,7 @@ void HealthRendererCommonWRT::update(const Time::NS &frameTime_)
 
         case DelayFadeStates::ANIMATION:
         {
+
             bool hasActiveAnimations = false;
 
             for (size_t i = m_realHealth; i < static_cast<uint8_t>(m_heartAnims.size()); ++i)
@@ -182,28 +182,28 @@ void HealthRendererCommonWRT::update(const Time::NS &frameTime_)
                 if (!m_heartAnims[i].isFinished())
                     hasActiveAnimations = true;
                     
-                m_heartAnims[i].update(frameTime_);
+                m_heartAnims[i].update();
             }
 
             if (!hasActiveAnimations)
             {
                 m_state = DelayFadeStates::IDLE;
-                m_delayFadeTimer.begin(Time::fromFrames(180));
+                m_delayFadeTimer.begin(180u);
             }
 
             break;
         }
 
         case DelayFadeStates::IDLE:
-            if (m_delayFadeTimer.update(Application::instance().timestep.getFrameDuration()))
+            if (m_delayFadeTimer.update())
             {
                 m_state = DelayFadeStates::FADE_OUT;
-                m_delayFadeTimer.begin(Time::fromFrames(60));
+                m_delayFadeTimer.begin(60);
             }
             break;
 
         case DelayFadeStates::FADE_OUT:
-            if (m_delayFadeTimer.update(Application::instance().timestep.getFrameDuration()))
+            if (m_delayFadeTimer.update())
             {
                 m_state = DelayFadeStates::INACTIVE;
                 m_heartAnims.erase(m_heartAnims.begin() + m_realHealth, m_heartAnims.end());
@@ -224,7 +224,7 @@ void HealthRendererCommonWRT::touch()
     {
         case DelayFadeStates::INACTIVE:
             // Begin fade in timer
-            m_delayFadeTimer.begin(Time::fromFrames(10));
+            m_delayFadeTimer.begin(10);
             m_state = DelayFadeStates::FADE_IN;
             break;
 
@@ -235,7 +235,7 @@ void HealthRendererCommonWRT::touch()
 
         case DelayFadeStates::FADE_OUT:
             // Go from fade out into fade in timer with same progress (alpha)
-            m_delayFadeTimer.beginAt(Time::fromFrames(10), 1.0f - m_delayFadeTimer.getProgressNormalized());
+            m_delayFadeTimer.beginAt(10, 1.0f - m_delayFadeTimer.getProgressNormalized());
             m_state = DelayFadeStates::FADE_IN;
             break;
 

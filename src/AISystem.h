@@ -2,7 +2,6 @@
 #define AI_SYSTEM_H_
 #include "CommonAI.h"
 #include "Core/Application.h"
-#include "entt/entity/entity.hpp"
 #include <entt/entt.hpp>
 
 struct AISystem
@@ -12,7 +11,7 @@ public:
 
     void update();
 
-    entt::entity m_playerId = entt::null;
+    entt::entity m_playerId;
 
 private:
     entt::registry &m_reg;

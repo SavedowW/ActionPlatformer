@@ -1,5 +1,4 @@
 #include "Camera.h"
-#include "Application.h"
 #include "GameData.h"
 #include "Profile.h"
 
@@ -169,7 +168,7 @@ void Camera::update()
 {
     PROFILE_FUNCTION;
 
-    if (m_shakeTimer.update(Application::instance().timestep.getFrameDuration()))
+    if (m_shakeTimer.update())
     {
         m_thisFrameAmp = {0.0f, 0.0f};
         m_xShakeAmp = 0;
@@ -199,9 +198,9 @@ void Camera::update()
     }
 }
 
-void Camera::startShake(int xAmp_, int yAmp_, const Time::NS &period_)
+void Camera::startShake(int xAmp, int yAmp, uint32_t period)
 {
-    m_xShakeAmp = xAmp_;
-    m_yShakeAmp = yAmp_;
-    m_shakeTimer.begin(period_);
+    m_xShakeAmp = xAmp;
+    m_yShakeAmp = yAmp;
+    m_shakeTimer.begin(period);
 }

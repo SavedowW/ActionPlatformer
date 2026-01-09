@@ -1,5 +1,4 @@
 #include "DynamicColliderSystem.h"
-#include "Core/Application.h"
 #include "Core/CoreComponents.h"
 #include "Core/Profile.h"
 
@@ -48,7 +47,7 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentTransform &trans_, Co
     if (twop_.m_timer.isOver())
         return;
 
-    twop_.m_timer.update(Application::instance().timestep.getFrameDuration());
+    twop_.m_timer.update();
 
     const Vector2<float> newtl = twop_.m_point2 + (twop_.m_point1 - twop_.m_point2) * twop_.m_timer.getProgressNormalized();
 

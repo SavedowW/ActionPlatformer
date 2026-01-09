@@ -1,12 +1,10 @@
 #ifndef PLAYABLE_CHARACTER_H_
 #define PLAYABLE_CHARACTER_H_
-#include "Core/Timer.h"
 #include "StateMachine.hpp"
 #include "Core/CoreComponents.h"
 #include "Core/InputResolver.h"
 #include "Core/InputComparators.h"
 #include "Core/StaticMapping.hpp"
-#include <algorithm>
 
 enum class CharacterState : CharState {
     IDLE,
@@ -66,8 +64,7 @@ inline ORIENTATION attemptInput(ORIENTATION currentOrientation_, const InputQueu
 
         if (rValid)
             return ORIENTATION::RIGHT;
-
-        if (lValid)
+        else if (lValid)
             return ORIENTATION::LEFT;
     }
 
@@ -85,15 +82,15 @@ public:
     {
     }
 
-    bool update(EntityAnywhere owner_, const Time::NS &timeInState_) override
+    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
     {
-        auto res = PhysicalState::update(owner_, timeInState_);
+        auto res = PhysicalState::update(owner_, currentFrame_);
         if (!m_lookaheadSpeedSensitivity.isEmpty())
-            owner_.reg->get<ComponentDynamicCameraTarget>(owner_.idx).m_lookaheadSpeedSensitivity = m_lookaheadSpeedSensitivity[timeInState_];
+            owner_.reg->get<ComponentDynamicCameraTarget>(owner_.idx).m_lookaheadSpeedSensitivity = m_lookaheadSpeedSensitivity[currentFrame_];
 
         const auto &compInput = owner_.reg->get<InputResolver>(owner_.idx);
         auto &compFallthrough = owner_.reg->get<ComponentObstacleFallthrough>(owner_.idx);
-        if (m_canFallThrough[timeInState_] && compInput.getInputQueue()[0].isInputActive(INPUT_BUTTON::DOWN))
+        if (m_canFallThrough[currentFrame_] && compInput.getInputQueue()[0].isInputActive(INPUT_BUTTON::DOWN))
             compFallthrough.setIgnoringObstacles();
 
         auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
@@ -115,9 +112,8 @@ public:
 
             if (phys.m_velocity.y < 0 && InputComparatorHoldUp::check(inq, 0))
             {
-                // TODO: remove magic number
-                if (m_parent->m_timeInState < Time::fromFrames(10))
-                    phys.m_velocity.y -= 0.4f * 60;
+                if (m_parent->m_framesInState < 10)
+                    phys.m_velocity.y -= 0.4f;
             }
         }
 
@@ -150,7 +146,7 @@ public:
         PhysicalState::enter(owner_, from_);
 
         if (!m_lookaheadSpeedSensitivity.isEmpty())
-            owner_.reg->get<ComponentDynamicCameraTarget>(owner_.idx).m_lookaheadSpeedSensitivity = m_lookaheadSpeedSensitivity[Time::fromFrames(0)];
+            owner_.reg->get<ComponentDynamicCameraTarget>(owner_.idx).m_lookaheadSpeedSensitivity = m_lookaheadSpeedSensitivity[0];
         else
             owner_.reg->get<ComponentDynamicCameraTarget>(owner_.idx).m_lookaheadSpeedSensitivity = {1.0f, 1.0f};
     }
@@ -161,7 +157,7 @@ public:
         &setAlignedSlopeMax(float alignedSlopeMax_);
 
     PlayerState<REQUIRE_ALIGNMENT, FORCE_REALIGN, FORCE_TOWARDS_INPUT, CMP_LEFT, CMP_RIGHT, ATTEMPT_PROCEED, CMP_PROCEED_LEFT, CMP_PROCEED_RIGHT> 
-        &setLookaheadSpeedSensitivity(TimelineProperty<Time::NS, Vector2<float>>&& lookaheadSpeedSensitivity_)
+        &setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>&& lookaheadSpeedSensitivity_)
     {
         m_lookaheadSpeedSensitivity = std::move(lookaheadSpeedSensitivity_);
         return *this;
@@ -193,9 +189,8 @@ protected:
 
     std::optional<float> m_alignedSlopeMax;
     bool m_realignOnSwitchForInput = false;
-    TimelineProperty<Time::NS, Vector2<float>> m_lookaheadSpeedSensitivity;
+    TimelineProperty<Vector2<float>> m_lookaheadSpeedSensitivity;
 
-    // TODO: to NS
     uint32_t m_extendedBuffer = 0;
 
     bool m_allowAirDrift = false;
@@ -210,7 +205,7 @@ public:
     {
     }
 
-    void enter(EntityAnywhere owner_, CharState from_) override
+    virtual void enter(EntityAnywhere owner_, CharState from_) override
     {
         ParentAction::enter(owner_, from_);
 
@@ -221,9 +216,9 @@ public:
             phys.m_velocity.y += 2.0f;
     }
 
-    bool update(EntityAnywhere owner_, const Time::NS &timeInState_) override
+    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
     {
-        auto res = ParentAction::update(owner_, timeInState_);
+        auto res = ParentAction::update(owner_, currentFrame_);
 
         auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
         auto &trans = owner_.reg->get<ComponentTransform>(owner_.idx);
@@ -240,7 +235,7 @@ public:
         return res;
     }
 
-    void onTouchedGround(EntityAnywhere owner_) override
+    virtual void onTouchedGround(EntityAnywhere owner_) override
     {
         auto &phys = owner_.reg->get<ComponentPhysical>(owner_.idx);
         auto &wrld = owner_.reg->get<World>(owner_.idx);
@@ -248,10 +243,10 @@ public:
         phys.m_velocity.y = 0;
         phys.m_inertia.y = 0;
 
-        if (phys.m_calculatedOffset.y > 20)
+        if (phys.m_calculatedOffset.y > 20.0f)
         {
             m_parent->switchCurrentState(owner_, CharacterState::HARD_LANDING_RECOVERY);
-            wrld.getCamera().startShake(0, 20, Time::fromFrames(10));
+            wrld.getCamera().startShake(0, 20, 10);
         }
         else
             m_parent->switchCurrentState(owner_, CharacterState::LANDING_RECOVERY);
@@ -269,30 +264,32 @@ public:
         m_transitionOnLeave(CharacterState::FLOAT),
         m_slideParticle(slideParticle_)
     {
-        setGravity(Vector2{0.0f, 0.020f * 3600.0f});
+        setGravity(Vector2{0.0f, 0.020f});
         setConvertVelocityOnSwitch(true, false);
     }
 
-    void enter(EntityAnywhere owner_, CharState from_) override
+    virtual void enter(EntityAnywhere owner_, CharState from_) override
     {
         ParentAction::enter(owner_, from_);
 
         auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
 
-        physical.m_inertia.y = std::min<float>(physical.m_inertia.y, 0);
-        physical.m_velocity.y = std::min<float>(physical.m_velocity.y, 0);
+        if (physical.m_inertia.y > 0)
+            physical.m_inertia.y = 0;
+        if (physical.m_velocity.y > 0)
+            physical.m_velocity.y = 0;
 
         physical.m_velocity.x = 0;
         physical.m_inertia.x = 0;
 
-        m_particleTimer.begin(Time::NS{0});
+        m_particleTimer.begin(0);
     }
 
     void leave(EntityAnywhere owner_, CharState to_) override;
 
-    bool update(EntityAnywhere owner_, const Time::NS &timeInState_) override
+    bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
     {
-        ParentAction::update(owner_, timeInState_);
+        ParentAction::update(owner_, currentFrame_);
 
         const auto &transform = owner_.reg->get<ComponentTransform>(owner_.idx);
         auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
@@ -315,9 +312,9 @@ public:
         else
             physical.m_onWall = touchedWall;
 
-        if (m_particleTimer.update(timeInState_))
+        if (m_particleTimer.update())
         {
-            m_particleTimer.begin(Time::fromFrames(8));
+            m_particleTimer.begin(8);
             auto yspd = physical.m_appliedOffset.y;
             if (yspd > 0.5f)
                 spawnParticle(owner_, m_slideParticle, transform, physical, cworld, SDL_FLIP_VERTICAL);
@@ -381,7 +378,7 @@ protected:
     CharacterState m_transitionOnLeave;
 
     ParticleTemplate m_slideParticle;
-    ManualTimer<true> m_particleTimer;
+    FrameTimer<true> m_particleTimer;
 };
 
 class PlayerActionWallPrejump: public PlayerState<true, false, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>
@@ -391,7 +388,7 @@ public:
         PlayerState<true, false, false, InputComparatorTapAnyLeft, InputComparatorTapAnyRight, false, InputComparatorFail, InputComparatorFail>(CharacterState::WALL_CLING_PREJUMP, std::move(transitionableFrom_), anim_),
         m_jumpParticle(jumpParticle_)
     {
-        setGravity(Vector2{0.0f, 0.020f * 3600.0f});
+        setGravity(Vector2{0.0f, 0.020f});
         setConvertVelocityOnSwitch(true, true);
         setAppliedInertiaMultiplier(Vector2{0.0f, 0.0f});
     }
@@ -402,8 +399,10 @@ public:
 
         auto &physical = owner_.reg->get<ComponentPhysical>(owner_.idx);
 
-        physical.m_inertia.y = std::min<float>(physical.m_inertia.y, 0);
-        physical.m_velocity.y = std::min<float>(physical.m_velocity.y, 0);
+        if (physical.m_inertia.y > 0)
+            physical.m_inertia.y = 0;
+        if (physical.m_velocity.y > 0)
+            physical.m_velocity.y = 0;
     }
 
     void leave(EntityAnywhere owner_, CharState to_) override;
@@ -429,20 +428,20 @@ public:
         if (upIn)
         {
             if (sideIn)
-                targetSpeed = Vector2{orient * 1.5f, -4.5f} * 60;
+                targetSpeed = {orient * 1.5f, -4.5f};
             else
-                targetSpeed = Vector2{orient * 0.7f, -5.0f} * 60;
+                targetSpeed = {orient * 0.7f, -5.0f};
         }
         else if (sideIn)
         {
             if (downIn)
-                targetSpeed = Vector2{orient * 3.5f, 0.0f} * 60;
+                targetSpeed = {orient * 3.5f, 0.0f};
             else
-                targetSpeed = Vector2{orient * 3.0f, -2.2f} * 60;
+                targetSpeed = {orient * 3.0f, -2.2f};
         }
         else
         {
-            targetSpeed = Vector2{orient * 0.7f, 0.1f} * 60;
+            targetSpeed = {orient * 0.7f, 0.1f};
             fall = true;
         }
 
@@ -479,87 +478,90 @@ public:
     PlayerActionAttack1Chain(ResID anim_, ResID animTrace_) :
         PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>(CharacterState::ATTACK_1_CHAIN, {}, anim_)
     {
-        setLookaheadSpeedSensitivity(TimelineProperty<Time::NS, Vector2<float>>({
-                    {Time::fromFrames(0), {0.0f, 0.0f}},
-                    {Time::fromFrames(15), {1.0f, 1.0f}},
-                    {Time::fromFrames(40), {0.0f, 0.0f}},
-                    {Time::fromFrames(45), {1.0f, 1.0f}}
+        setLookaheadSpeedSensitivity(TimelineProperty<Vector2<float>>({
+                    {0, {0.0f, 0.0f}},
+                    {15, {1.0f, 1.0f}},
+                    {40, {0.0f, 0.0f}},
+                    {45, {1.0f, 1.0f}}
                 }));
-        setCanFallThrough(TimelineProperty<Time::NS, bool>(false));
+        setCanFallThrough(TimelineProperty<bool>(false));
         setExtendedBuffer(10);
         setGravity(Vector2{0.0f, 0.0f});
         setConvertVelocityOnSwitch(true, false);
         setTransitionOnLostGround(CharacterState::FLOAT);
-        setMagnetLimit(TimelineProperty<Time::NS, unsigned int>({
-                    {Time::fromFrames(0), 16},
-                    {Time::fromFrames(15), 4}
+        setMagnetLimit(TimelineProperty<unsigned int>({
+                    {0, 16},
+                    {15, 4}
                 }));
         setUpdateMovementData(
-            TimelineProperty<Time::NS, Vector2<float>>( 
+            TimelineProperty<Vector2<float>>( 
                 {
-                    {Time::fromFrames(0), {60.0f, 60.0f}},
-                    {Time::fromFrames(12), {6.0f, 60.0f}},
-                    {Time::fromFrames(30), {60.0f, 60.0f}},
-                    {Time::fromFrames(44), {0.0f, 60.0f}},
+                    {0, {1.0f, 1.0f}},
+                    {12, {0.1f, 1.0f}},
+                    {30, {1.0f, 1.0f}},
+                    {44, {0.0f, 1.0f}},
                 }), // Vel mul
-            TimelineProperty<Time::NS, Vector2<float>>( 
+            TimelineProperty<Vector2<float>>( 
                 {
-                    {Time::fromFrames(0), {0.0f, 0.0f}},
-                    {Time::fromFrames(9), {300.0f, 0.0f}},
-                    {Time::fromFrames(12), {0.0f, 0.0f}},
-                    {Time::fromFrames(40), {-90.0f, 0.0f}},
-                    {Time::fromFrames(41), {0.0f, 0.0f}}
+                    {0, {0.0f, 0.0f}},
+                    {9, {5.0f, 0.0f}},
+                    {12, {0.0f, 0.0f}},
+                    {40, {-1.5f, 0.0f}},
+                    {41, {0.0f, 0.0f}}
                 }),  // Dir vel mul
-            TimelineProperty<Time::NS, Vector2<float>>(Vector2<float>{0.0f, 0.0f}), // Raw vel
-            TimelineProperty<Time::NS, Vector2<float>>(Vector2<float>{60.0f, 60.0f}), // Inr mul
-            TimelineProperty<Time::NS, Vector2<float>>(Vector2<float>{0.0f, 0.0f}), // Dir inr mul
-            TimelineProperty<Time::NS, Vector2<float>>(Vector2<float>{0.0f, 0.0f})); // Raw inr
-        setMulInsidePushbox(TimelineProperty<Time::NS, std::optional<Vector2<float>>>({
-            {Time::fromFrames(9), Vector2{0.2f, 1.0f}},
-            {Time::fromFrames(12), std::nullopt}
+            TimelineProperty(Vector2<float>{0.0f, 0.0f}), // Raw vel
+            TimelineProperty(Vector2<float>{1.0f, 1.0f}), // Inr mul
+            TimelineProperty(Vector2<float>{0.0f, 0.0f}), // Dir inr mul
+            TimelineProperty(Vector2<float>{0.0f, 0.0f})); // Raw inr
+        setMulInsidePushbox(TimelineProperty<std::optional<Vector2<float>>>({
+            {9, Vector2{0.2f, 1.0f}},
+            {12, std::nullopt}
         }));
-        setTransitionVelocityMultiplier(TimelineProperty<Time::NS, Vector2<float>>({
-                    {Time::fromFrames(0), {1.0f, 1.0f}},
-                    {Time::fromFrames(9), {0.2f, 1.0f}},
-                    {Time::fromFrames(17), {1.0f, 1.0f}}
+        setTransitionVelocityMultiplier(TimelineProperty<Vector2<float>>({
+                    {0, {1.0f, 1.0f}},
+                    {9, {0.2f, 1.0f}},
+                    {17, {1.0f, 1.0f}}
                 }));
         setHurtboxes({
-            HurtboxGroup{
-                .m_colliders = {
-                    {.m_collider={.m_topLeft={-6, -28}, .m_size={12, 28}}, .m_timeline=TimelineProperty<Time::NS, bool>({{Time::fromFrames(0), true}, {Time::fromFrames(12), false}, {Time::fromFrames(28), true}})},
-                    {.m_collider={.m_topLeft={-30, -16}, .m_size={32, 16}}, .m_timeline=TimelineProperty<Time::NS, bool>({{Time::fromFrames(12), true}, {Time::fromFrames(28), false}})}
-                }, .m_trait = HurtTrait::NORMAL
+            {
+                HurtboxGroup(
+                    {
+                        {
+                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>({{0, true}, {12, false}, {28, true}})},
+                            {{{-30, -16}, {32, 16}}, TimelineProperty<bool>({{12, true}, {28, false}})}
+                        }
+                    }, HurtTrait::NORMAL
+                )
             }
         });
         addHit(HitGeneration::hitPlayerChain());
-        setDrag(TimelineProperty<Time::NS, Vector2<float>>({
-            {Time::fromFrames(0), {0.05f * 3600.0f, 0.05f * 3600.0f}},
-            {Time::fromFrames(8), {0.3f * 3600.0f, 0.3f * 3600.0f}},
+        setDrag(TimelineProperty<Vector2<float>>({
+            {0, {0.05f, 0.05f}},
+            {8, {0.3f, 0.3f}},
             }));
-        setRecoveryFrames(TimelineProperty<Time::NS, StateMarker>({
-            {Time::fromFrames(0), StateMarker{}}
+        setRecoveryFrames(TimelineProperty<StateMarker>({
+            {0, StateMarker{}}
             }));
-        setParticlesSingle(TimelineProperty<Time::NS, ParticleTemplate>({
-            {Time::fromFrames(0), {}},
-            {Time::fromFrames(11), ParticleTemplate{1, Vector2<float>{5.0f, 2.0f}, animTrace_, 10,
+        setParticlesSingle(TimelineProperty<ParticleTemplate>({
+            {0, {}},
+            {11, ParticleTemplate{1, Vector2<float>{5.0f, 2.0f}, animTrace_, 10,
                 -1}
                 .setTiePosRules(TiePosRule::TIE_TO_SOURCE)
                 .setTieLifetimeRules(TieLifetimeRule::DESTROY_ON_STATE_LEAVE)
                 .setNotDependOnGroundAngle()},
-            {Time::fromFrames(12), {}},
+            {12, {}},
         }));
-        setOutdatedTransition(CharacterState::IDLE, Time::fromFrames(46));
+        setOutdatedTransition(CharacterState::IDLE, 46);
     }
 
-    bool update(EntityAnywhere owner_, const Time::NS &timeInState_) override
+    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
     {
-        auto updateres = PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>::update(owner_, timeInState_);
+        auto updateres = PlayerState<false, false, true, InputComparatorTapAttack, InputComparatorTapAttack, false, InputComparatorFail, InputComparatorFail>::update(owner_, currentFrame_);
 
-        // TODO: remove hardcoded shake
-        if (timeInState_ == Time::fromFrames(11))
+        if (currentFrame_ == 11)
         {
             auto &wrld = owner_.reg->get<World>(owner_.idx);
-            wrld.getCamera().startShake(15, 15, Time::fromFrames(14));
+            wrld.getCamera().startShake(15, 15, 14);
         }
 
         return updateres;

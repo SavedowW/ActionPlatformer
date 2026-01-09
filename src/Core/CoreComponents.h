@@ -2,12 +2,13 @@
 #define CORE_COMPONENTS_H_
 #include "Tileset.h"
 #include "Vector2.hpp"
-#include "ManualTimer.h"
+#include "FrameTimer.h"
 #include "Collider.h"
 #include "AnimationManager.h"
 #include "NavGraph.h"
 #include "NavSystem.h"
 #include "Trigger.h"
+#include "FrameTimer.h"
 #include <entt/entt.hpp>
 #include <set>
 #include <map>
@@ -32,7 +33,7 @@ struct ComponentTransform
 struct ComponentParticlePrimitive
 {
     SDL_FlipMode m_flip = SDL_FLIP_NONE;
-    ManualTimer<false> m_lifetime{};
+    FrameTimer<false> m_lifetime{};
     float angle = 0.0f;
     entt::entity m_tieTransform = entt::null;
 };
@@ -50,8 +51,10 @@ struct ComponentParticlePhysics
     Vector2<float> m_gravity;
     Vector2<float> m_inertiaMultiplier;
 
-    void applyDrag(const double &partOfSecond_);
-    Vector2<int> claimOffset(const double &partOfSecond_);
+    void applyDrag();
+    Vector2<int> claimOffset();
+    Vector2<int> peekOffset() const;
+    Vector2<float> peekRawOffset() const;
 
 private:
     Vector2<float> m_velocityLeftover;
@@ -101,7 +104,7 @@ struct ComponentPhysical
     Vector2<float> m_stateLeaveVelocityMultiplier;
     
     void convertToInertia(bool convertVelocity_, bool includeEnforced_);
-    Vector2<int> claimOffset(const double &partOfSecond_);
+    Vector2<int> claimOffset();
     Vector2<int> peekOffset() const;
     Vector2<float> peekRawOffset() const;
 
@@ -133,9 +136,9 @@ struct ComponentStaticCollider
 
 struct SwitchCollider
 {
-    Time::NS m_durationEnabled{0};
-    Time::NS m_durationDisabled{0};
-    ManualTimer<true> m_timer;
+    uint32_t m_durationEnabled = 0;
+    uint32_t m_durationDisabled = 0;
+    FrameTimer<true> m_timer;
     bool m_isEnabled = true;
 
     bool updateTimer();
@@ -164,7 +167,7 @@ struct ComponentObstacleFallthrough
     bool setIgnoreObstacle(int obstacleId_);
     bool checkIgnoringObstacle(int obstacleId_) const;
 
-    ManualTimer<false> m_isIgnoringObstacles;
+    FrameTimer<false> m_isIgnoringObstacles;
     std::set<int> m_ignoredObstacles;
     std::set<int> m_overlappedObstacles;
 };
@@ -283,7 +286,7 @@ struct MoveCollider2Points
     Vector2<float> m_point1;
     Vector2<float> m_point2;
     const Vector2<float> m_offset;
-    ManualTimer<false> m_timer;
+    FrameTimer<false> m_timer;
 };
 
 struct TilemapLayer

@@ -5,7 +5,7 @@
 #include "Core/RectCollider.h"
 #include "Core/CoreComponents.h"
 #include "Core/StateCommon.h"
-#include "Core/ManualTimer.h"
+#include "Core/FrameTimer.h"
 #include <set>
 
 enum class HurtTrait : uint8_t {
@@ -22,13 +22,13 @@ enum class BattleTeams : uint8_t {
 struct TemporaryCollider
 {
     Collider m_collider;
-    TimelineProperty<Time::NS, bool> m_timeline;
+    TimelineProperty<bool> m_timeline;
 };
 
 struct HurtboxGroup
 {
     std::vector<TemporaryCollider> m_colliders;
-    HurtTrait m_trait;
+    HurtTrait m_trait;    
 };
 
 using Hurtbox = std::vector<HurtboxGroup>;
@@ -37,7 +37,7 @@ struct CamShakeDescr
 {
     int m_xAmp = 0;
     int m_yAmp = 0;
-    Time::NS m_period{0};
+    uint32_t m_period = 0;
 };
 
 /*
@@ -72,7 +72,7 @@ struct HitboxGroup
 {
     std::vector<TemporaryCollider> m_colliders;
     Hit m_hitData;
-    std::pair<Time::NS, Time::NS> m_activeWindow;
+    std::pair<uint32_t, uint32_t> m_activeWindow;
 };
 
 struct HitPosResult
@@ -81,11 +81,11 @@ struct HitPosResult
     Vector2<float> m_hitPos{};
 };
 
-HitPosResult detectHit(const std::vector<TemporaryCollider> &hit_, const Time::NS &hitActiveTime_, const ComponentTransform &attacker_, const std::vector<TemporaryCollider> &hurtbox_, const Time::NS &hurtboxActiveTime_, const ComponentTransform &victim_);
+HitPosResult detectHit(const std::vector<TemporaryCollider> &hit_, uint32_t hitActiveFrame_, const ComponentTransform &attacker_, const std::vector<TemporaryCollider> &hurtbox_, uint32_t hurtboxActiveFrame_, const ComponentTransform &victim_);
 
 struct HitStateMapping
 {
-    TimelineProperty<uint32_t, CharState> m_hitstunTransitions;
+    TimelineProperty<CharState> m_hitstunTransitions;
 
     HitStateMapping &addHitstunTransition(uint32_t level_, CharState transition_);
 };
@@ -94,7 +94,7 @@ struct BattleActor
 {
     BattleActor(BattleTeams team_);
     const Hurtbox *m_hurtboxes = nullptr;
-    Time::NS m_timeInState{0};
+    uint32_t m_currentFrame = 0;
     BattleTeams m_team = BattleTeams::NONE;
     std::vector<const HitboxGroup *> m_activeHits;
     std::set<uint32_t> m_appliedHits;
@@ -123,7 +123,7 @@ struct HealthRendererCommonWRT
     HealthRendererCommonWRT &operator=(const HealthRendererCommonWRT &rhs_) = delete;
     HealthRendererCommonWRT &operator=(HealthRendererCommonWRT &&rhs_) = default;
 
-    void update(const Time::NS &frameTime_);
+    void update();
     void takeDamage(uint8_t newHealth_);
     void touch();
 
@@ -139,7 +139,7 @@ struct HealthRendererCommonWRT
         IDLE,
         FADE_OUT
     } m_state = DelayFadeStates::INACTIVE;
-    ManualTimer<false> m_delayFadeTimer;
+    FrameTimer<false> m_delayFadeTimer;
 };
 
 namespace HitGeneration

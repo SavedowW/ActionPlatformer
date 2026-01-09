@@ -51,7 +51,7 @@ struct ParticleRecipe
     Vector2<float> pos;
     ResID anim;
     SDL_FlipMode flip = SDL_FLIP_NONE;
-    Time::NS lifetime;
+    uint32_t lifetime;
     float angle = 0;
     int layer;
     entt::entity m_tiePosTo = entt::null;

@@ -26,7 +26,7 @@ public:
     {
         m2p_.m_point1 = Vector2<float>{};
         m2p_.m_point2 = Vector2<float>{};
-        m2p_.m_timer.begin(Time::NS{0});
+        m2p_.m_timer.begin(0);
     }
 };
 

@@ -29,7 +29,7 @@ void ParticleSystem::makeParticle(const ParticleRecipe &particle_, std::vector<e
         animrnd.loadAnimation(m_animmgmt, particle_.anim);
         animrnd.m_currentAnimation = &animrnd.m_animations.at(particle_.anim);
 
-        if (particle_.lifetime.value())
+        if (particle_.lifetime)
             pprim.m_lifetime.begin(particle_.lifetime);
         
         pprim.angle = particle_.angle;
@@ -45,11 +45,9 @@ void ParticleSystem::update()
 
     auto viewParticles = m_registry.view<ComponentParticlePrimitive>();
 
-    const auto frameTime = Application::instance().timestep.getFrameDuration();
-
     for (auto [idx, pprim] : viewParticles.each())
     {
-        if (pprim.m_lifetime.update(frameTime))
+        if (pprim.m_lifetime.update())
             m_registry.destroy(idx);
     }
 }

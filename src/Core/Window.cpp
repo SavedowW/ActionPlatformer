@@ -1,10 +1,11 @@
 #include "Window.h"
+#include "GameData.h"
 #include "Configuration.h"
-#include "Vector2.hpp"
+#include "JsonUtils.hpp"
 #include <stdexcept>
 
-Window::Window(std::string &&winName_) :
-    m_winName(std::move(winName_))
+Window::Window(const std::string &winName_) :
+    m_winName(winName_)
 {
     auto resolution = ConfigurationManager::instance().m_settings["video"]["window_resolution"].readOrSet<Vector2<int>>({1920, 1080});
 
@@ -21,20 +22,21 @@ Window::~Window()
     SDL_DestroyWindow(m_window);
 }
 
-Window& Window::operator=(Window &&rhs) noexcept
+Window& Window::operator=(Window &&rhs)
 {
     m_window = rhs.m_window;
-    m_winName = std::move(rhs.m_winName);
+    m_winName = rhs.m_winName;
 
     rhs.m_window = nullptr;
 
     return *this;
 }
 
-Window::Window(Window &&rhs) noexcept : 
-    m_window(rhs.m_window), 
-    m_winName(std::move(rhs.m_winName))
+Window::Window(Window &&rhs)
 {
+    m_window = rhs.m_window;
+    m_winName = rhs.m_winName;
+
     rhs.m_window = nullptr;
 }
 

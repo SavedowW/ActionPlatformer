@@ -40,9 +40,9 @@ public:
     {
     }
 
-    bool update(EntityAnywhere owner_, const Time::NS &timeInState_) override
+    inline virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override
     {
-        auto res = PhysicalState::update(owner_, timeInState_);
+        auto res = PhysicalState::update(owner_, currentFrame_);
 
         if constexpr (HOLD_WHILE_REQUESTED)
         {
@@ -52,14 +52,14 @@ public:
             if (ai.m_requestedState.has_value() && m_stateId == ai.m_requestedState && 
                 (ai.m_requestedOrientation == ORIENTATION::UNSPECIFIED || ai.m_requestedOrientation == trans.m_orientation))
                 return false;
-
-            return res;
+            else
+                return res;
         }
         else
             return res;
     }
 
-    ORIENTATION isPossible(EntityAnywhere owner_) const override
+    inline virtual ORIENTATION isPossible(EntityAnywhere owner_) const override
     {
         if (PhysicalState::isPossible(owner_) == ORIENTATION::UNSPECIFIED)
             return ORIENTATION::UNSPECIFIED;
@@ -77,14 +77,14 @@ public:
         {
             if (ai.m_requestedOrientation != owner_.reg->get<ComponentTransform>(owner_.idx).m_orientation)
                 return ai.m_requestedOrientation;
-            
-            return ORIENTATION::UNSPECIFIED;
+            else
+                return ORIENTATION::UNSPECIFIED;
         }
 
         if (ai.m_requestedOrientation != ORIENTATION::UNSPECIFIED)
             return ai.m_requestedOrientation;
-
-        return owner_.reg->get<ComponentTransform>(owner_.idx).m_orientation;
+        else
+            return owner_.reg->get<ComponentTransform>(owner_.idx).m_orientation;
     }
 
 protected:
@@ -102,7 +102,7 @@ public:
         m_maxInitialHorSpd(maxInitialHorSpd_)
     {}
 
-    void onOutdated(EntityAnywhere owner_) override;
+    virtual void onOutdated(EntityAnywhere owner_) override;
 
 private:
     float m_gravity = 0.0f;
@@ -118,8 +118,8 @@ public:
         NPCState<false, false>(stateId_, std::move(transitionableFrom_), anim_)
     {}
 
-    bool update(EntityAnywhere owner_, const Time::NS &timeInState_) override;
-    void leave(EntityAnywhere owner_, CharState to_) override;
+    virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
+    virtual void leave(EntityAnywhere owner_, CharState to_) override;
 };
 
 #endif

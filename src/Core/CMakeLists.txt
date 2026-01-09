@@ -30,7 +30,7 @@ Renderer.cpp
 Application.cpp
 Level.cpp
 AnimationManager.cpp
-ManualTimer.cpp
+FrameTimer.cpp
 TextManager.cpp
 utf8.cpp
 InputState.cpp
@@ -45,7 +45,6 @@ NavGraph.cpp
 NavSystem.cpp
 Logger.cpp
 Profile.cpp
-JsonUtils.cpp
 RectCollider.cpp
 FilesystemUtils.cpp
 Shader.cpp

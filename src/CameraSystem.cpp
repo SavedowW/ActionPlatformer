@@ -1,5 +1,4 @@
 #include "CameraSystem.h"
-#include "Core/Application.h"
 #include "Core/CameraFocusArea.h"
 #include "Core/CoreComponents.h"
 #include "Core/GameData.h"
@@ -20,8 +19,6 @@ void CameraSystem::update()
 
     if (m_cameraStopped)
         return;
-
-    const auto frameTime = Application::instance().timestep.getFrameDuration();
 
     Vector2<int> target;
     auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(playerId);
@@ -45,7 +42,7 @@ void CameraSystem::update()
     }
     else
     {
-        if (m_hResetDelay.update(frameTime))
+        if (m_hResetDelay.update())
         {
             dtar.m_offset.x -= utils::signof(dtar.m_offset.x) * utils::clamp(H_RESET_OFFSET, 0, abs(dtar.m_offset.x));
         }
@@ -75,7 +72,7 @@ void CameraSystem::update()
     }
     else
     {
-        if (m_vResetDelay.update(frameTime))
+        if (m_vResetDelay.update())
         {
             dtar.m_offset.y -= utils::signof(dtar.m_offset.y) * utils::clamp(V_RESET_OFFSET, 0, abs(dtar.m_offset.y));
         }

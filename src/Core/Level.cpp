@@ -1,6 +1,6 @@
 #include "Level.h"
 #include "Profile.h"
-#include "Application.h"
+#include "GameData.h"
 
 #if 0
 static std::string nicetime(const uint64_t &ns_)
@@ -11,7 +11,9 @@ static std::string nicetime(const uint64_t &ns_)
 
 Level::Level(const Vector2<int> &size_, int lvlId_) :
     m_size(size_),
-    m_levelId(lvlId_)
+    m_levelId(lvlId_),
+    m_timeForFrame(1'000'000'000 / gamedata::global::framerate),
+    m_lastFrameTimeNS{0}
 {
     subscribe(GAMEPLAY_EVENTS::QUIT);
     subscribe(GAMEPLAY_EVENTS::FN3);
@@ -26,6 +28,7 @@ void Level::enter()
 {
     m_state = STATE::RUNNING;
     m_returnVal = { -1 };
+    m_frameTimer.begin();
     setInputEnabled();
 }
 
@@ -36,10 +39,14 @@ void Level::leave()
 
 LevelResult Level::proceed()
 {
-    auto &timestep = Application::instance().timestep;
+    m_frameTimer.begin();
+    uint64_t compensate = 0;
 
+    Timer fullFrameTime;
     auto &profiler = Profiler::instance();
 
+    fullFrameTime.begin();
+    m_frameTimer.begin();
     while (m_state == STATE::RUNNING)
     {
         profiler.cleanFrame();
@@ -48,7 +55,6 @@ LevelResult Level::proceed()
 
         if (!m_globalPause || m_globalPause && m_allowIter || m_forcerun)
         {
-            timestep.processFrame();
             update();
             m_allowIter = false;
         }
@@ -59,6 +65,18 @@ LevelResult Level::proceed()
             std::cout << std::endl;
         #endif
 
+        m_lastFrameTimeNS = m_frameTimer.getPassed();
+        if (m_lastFrameTimeNS < m_timeForFrame + compensate)
+        {
+            SDL_DelayNS(m_timeForFrame - m_lastFrameTimeNS + compensate);
+            compensate = m_timeForFrame - m_frameTimer.getPassed();
+        }
+        else
+            compensate += m_timeForFrame - m_lastFrameTimeNS;
+        m_frameTimer.begin();
+
+        m_lastFullFrameTime = fullFrameTime.getPassed();
+        fullFrameTime.begin();
     }
 
     leave();
@@ -77,10 +95,7 @@ void Level::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
 
         case (GAMEPLAY_EVENTS::FN3):
             if (scale_ > 0)
-            {
                 m_globalPause = !m_globalPause;
-                Application::instance().timestep.setForceDefault(m_globalPause);
-            }
             break;
 
         case (GAMEPLAY_EVENTS::FN2):
@@ -91,12 +106,12 @@ void Level::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
         case (GAMEPLAY_EVENTS::FN1):
             if (scale_ > 0)
             {
-                Application::instance().timestep.applySlowdown();
+                m_timeForFrame = 1'000'000'000 / gamedata::global::dbgslowdownfps;
                 m_forcerun = true;
             }
             else
             {
-                Application::instance().timestep.disableSlowdown();
+                m_timeForFrame = 1'000'000'000 / gamedata::global::framerate;
                 m_forcerun = false;
             }
             break;

@@ -21,7 +21,7 @@ namespace fonts
         CharChunkDistribution(const std::string &charlist_);
 
         std::set<uint32_t> m_chunks;
-        TimelineProperty<uint32_t, uint32_t> m_chunkSearch;
+        TimelineProperty<uint32_t> m_chunkSearch;
     };
 
     enum class HOR_ALIGN : uint8_t

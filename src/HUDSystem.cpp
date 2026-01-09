@@ -9,13 +9,14 @@
 #include "Core/Localization/LocalizationGen.h"
 #include "Core/Configuration.h"
 
-HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> &lvlSize_) :
+HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> &lvlSize_, const uint64_t &frameTime_) :
     m_renderer(Application::instance().m_renderer),
     m_textManager(Application::instance().m_textManager),
     m_reg(reg_),
     m_cam(cam_),
     m_lvlId(lvlId_),
-    m_lvlSize(lvlSize_)
+    m_lvlSize(lvlSize_),
+    m_frameTime(frameTime_)
 {
     auto &texman = Application::instance().m_textureManager;
 
@@ -42,13 +43,12 @@ void HudSystem::draw() const
 
 void HudSystem::drawCommonDebug() const 
 {
-    const auto frameTime = Application::instance().timestep.getFrameDuration().value();
     static bool firstRun = true;
 
     if (firstRun)
         firstRun = false;
     else
-        m_avgFrames.push(static_cast<float>(frameTime));
+        m_avgFrames.push(static_cast<float>(m_frameTime));
 
     ImmediateScreenLog<TextAligners::AlignerLeft> commonLog{0, 12, {1, 1}};
 

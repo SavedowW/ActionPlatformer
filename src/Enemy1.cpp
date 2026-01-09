@@ -47,7 +47,7 @@ void AimedPrejump::onOutdated(EntityAnywhere owner_)
     NPCState::onOutdated(owner_);
 }
 
-bool AimedFloat::update(EntityAnywhere owner_, const Time::NS &timeInState_)
+bool AimedFloat::update(EntityAnywhere owner_, uint32_t currentFrame_)
 {
     const auto &ai = owner_.reg->get<ComponentAI>(owner_.idx);
 
@@ -65,7 +65,7 @@ bool AimedFloat::update(EntityAnywhere owner_, const Time::NS &timeInState_)
         //std::cout << "d(" << delta << ") vel:{" << phys.m_velocity << "} inr:{" << phys.m_inertia << "} pos:{" << trans.m_pos << "}" << std::endl;
     }
 
-    return NPCState::update(owner_, timeInState_);
+    return NPCState::update(owner_, currentFrame_);
 }
 
 void AimedFloat::leave(EntityAnywhere owner_, CharState to_)

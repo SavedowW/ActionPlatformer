@@ -2,13 +2,12 @@
 #include "Core/CoreComponents.h"
 #include "Core/GameData.h"
 #include "Core/InputResolver.h"
-#include "Core/Timer.h"
 #include "Core/utf8.h"
 #include <memory>
 #include "ChatBox.h"
 
-Time::NS ChatMessage::m_defaultCharacterDelay = Time::fromFrames(2);
-Time::NS ChatMessage::m_defaultAppearDuration = Time::fromFrames(12);
+uint32_t ChatMessage::m_defaultCharacterDelay = 2;
+uint32_t ChatMessage::m_defaultAppearDuration = 12;
 
 template <>
 inline std::string InlinedValueHandler::getParam<std::string>(size_t index_)
@@ -20,12 +19,6 @@ template <>
 inline int InlinedValueHandler::getParam<int>(size_t index_)
 {
     return std::atoi(m_tokens[index_].c_str());
-}
-
-template <>
-inline Time::NS InlinedValueHandler::getParam<Time::NS>(size_t index_)
-{
-    return Time::deserialize(m_tokens[index_]);
 }
 
 template <>
@@ -64,15 +57,6 @@ inline float InlinedValueHandler::getParam<float>(size_t index_, const float &de
     return std::stof(m_tokens[index_]);
 }
 
-template <>
-inline Time::NS InlinedValueHandler::getParam<Time::NS>(size_t index_, const Time::NS &default_)
-{
-    if (index_ >= m_tokens.size() || m_tokens[index_] == "default")
-        return default_;
-
-    return Time::deserialize((m_tokens[index_]));
-}
-
 std::unique_ptr<fonts::Symbol> processCommand(const std::string &cmd_)
 {
     auto eqpos = cmd_.find_first_of('=');
@@ -80,7 +64,7 @@ std::unique_ptr<fonts::Symbol> processCommand(const std::string &cmd_)
     InlinedValueHandler val(eqpos != std::string::npos ? cmd_.substr(eqpos + 1) : "");
 
     if (cmd == "delay")
-        return std::make_unique<SymbolDelay>(val.getParam<Time::NS>(0));
+        return std::make_unique<SymbolDelay>(val.getParam<int>(0));
 
     if (cmd == "charspd") {
         return std::make_unique<SymbolSetCharacterSpeed>(
@@ -107,9 +91,9 @@ std::unique_ptr<fonts::Symbol> processCommand(const std::string &cmd_)
 namespace ChatConsts
 {
     const int ChatEdgeGap = 4;
-    const Time::NS fadeInDuration = Time::fromFrames(5);
-    const Time::NS fadeBetweenDuration = Time::fromFrames(5);
-    const Time::NS fadeOutDuration = Time::fromFrames(7);
+    const uint32_t fadeInDuration = 5;
+    const uint32_t fadeBetweenDuration = 5;
+    const uint32_t fadeOutDuration = 7;
 }
 
 ChatboxSystem::ChatboxSystem(entt::registry &reg_, Camera &camera_) :
@@ -402,7 +386,7 @@ void ChatMessageSequence::takeInput()
             if (m_messages[0].m_currentState == ChatMessage::MessageState::APPEAR)
             {
                 m_messages[0].skip();
-                m_windowTimer.beginAt(Time::fromFrames(1), 1);
+                m_windowTimer.beginAt(1, 1);
             }
             else if (m_messages[0].m_currentState == ChatMessage::MessageState::IDLE)
             {
@@ -417,7 +401,7 @@ void ChatMessageSequence::takeInput()
                 else
                 {
                     m_currentMessage = m_messages.data();
-                    m_currentMessage->m_charDelayTimer.begin(m_currentMessage->m_characterDelay);
+                    m_currentMessage->m_charDelayTimer.begin(m_currentMessage->m_characterDelay + 1);
                     m_oldSize = m_currentSize;
 
                     m_targetSize = m_currentMessage->m_size;
@@ -437,10 +421,9 @@ const fonts::Symbol *ChatMessageSequence::currentSymbol() const
 
 void ChatMessageSequence::update()
 {
-    const auto frametime = Application::instance().timestep.getFrameDuration();
     if (m_currentState == ChatMessageSequence::BoxState::APPEAR)
     {
-        if (m_windowTimer.update(frametime))
+        if (m_windowTimer.update())
         {
             m_currentState = ChatMessageSequence::BoxState::IDLE;
             if (!m_currentMessage->m_symbolAppearTimers.empty())
@@ -452,12 +435,12 @@ void ChatMessageSequence::update()
     }
     else if (m_currentState == ChatMessageSequence::BoxState::DISAPPEAR)
     {
-        if (m_windowTimer.update(frametime))
+        if (m_windowTimer.update())
             m_toBeDeleted = true;
     }
     else // Proceeding message
     {
-        m_windowTimer.update(frametime);
+        m_windowTimer.update();
         // Updating current message
         if (m_currentMessage)
         {
@@ -469,12 +452,12 @@ void ChatMessageSequence::update()
                 // Iterate over all updating characters, update their timers and boundaries
                 for (size_t i = m_currentMessage->m_firstCharacterForFadingIn; i <= m_currentMessage->m_currentProceedingCharacter && i < vsize; ++i)
                 {
-                    if (m_currentMessage->m_symbolAppearTimers[i].update(frametime))
+                    if (m_currentMessage->m_symbolAppearTimers[i].update())
                         m_currentMessage->m_firstCharacterForFadingIn++;
                 }
 
                 // Handle delay between characters
-                if (m_currentMessage->m_charDelayTimer.update(frametime) && m_currentMessage->m_currentProceedingCharacter < vsize)
+                if (m_currentMessage->m_charDelayTimer.update() && m_currentMessage->m_currentProceedingCharacter < vsize)
                 {
                     m_currentMessage->proceedUntilNonTechCharacter();
 
@@ -617,7 +600,7 @@ void ChatMessage::proceedUntilNonTechCharacter()
     {
         if (const auto* techsym = dynamic_cast<const TechSymbol*>(m_symbols[m_currentProceedingCharacter]))
         {
-            m_symbolAppearTimers[m_currentProceedingCharacter].beginAt(Time::fromFrames(1), 1);
+            m_symbolAppearTimers[m_currentProceedingCharacter].beginAt(1, 1);
             auto *p = const_cast<TechSymbol*>(techsym);
             auto res = p->onReached(*this);
             if (!res)
@@ -629,12 +612,12 @@ void ChatMessage::proceedUntilNonTechCharacter()
     }
 }
 
-SymbolDelay::SymbolDelay(const Time::NS &delay_) :
+SymbolDelay::SymbolDelay(int delay_) :
     m_delay(delay_)
 {
 }
 
-SymbolSetCharacterSpeed::SymbolSetCharacterSpeed(const Time::NS &characterDelay_, const Time::NS &appearDuration_) :
+SymbolSetCharacterSpeed::SymbolSetCharacterSpeed(uint32_t characterDelay_, uint32_t appearDuration_) :
     m_characterDelay(characterDelay_),
     m_appearDuration(appearDuration_)
 {

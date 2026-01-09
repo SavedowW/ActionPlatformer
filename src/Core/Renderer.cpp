@@ -12,8 +12,6 @@ Renderer::Renderer(SDL_Window *window_) :
     if (!m_context)
         throw std::runtime_error(std::string("Failed to compile shader:\n") + SDL_GetError());
 
-    SDL_GL_SetSwapInterval(0);
-
     if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;

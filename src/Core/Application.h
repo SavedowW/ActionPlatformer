@@ -47,30 +47,6 @@ public:
     AnimationManager m_animationManager;
     TextManager m_textManager;
 
-    class TimeStep
-    {
-    public:
-        TimeStep() noexcept;
-        void processFrame() noexcept;
-        Time::NS getFrameDuration() const noexcept;
-        void applySlowdown() noexcept;
-        void disableSlowdown() noexcept;
-        void setForceDefault(bool forceDefault_) noexcept;
-
-
-        /*
-            Frame duration will not exceed this value - if fps drops too low, the game will slow down
-            Also it's used for time calculations
-        */
-        constexpr static Time::NS defaultFrameDuration{1'000'000'000ull / 60};
-
-    private:
-        Timer m_timer;
-        Time::NS m_lastFrameTime = defaultFrameDuration;
-        double m_speedMultiplier = 1.0;
-        bool m_forceDefault = false;
-    } timestep;
-
 private:
     Application();
 
