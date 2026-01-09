@@ -18,6 +18,7 @@ add_custom_command(
 )
 
 set(CORE_SRC_FILES
+FPSUtility.cpp
 Timer.cpp
 glad.c
 InputSystem.cpp

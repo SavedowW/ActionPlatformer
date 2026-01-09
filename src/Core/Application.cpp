@@ -45,10 +45,16 @@ SDLCore::~SDLCore()
     std::cout << "Application shut down successfully" << std::endl;
 }
 
+const FPSUtility &Application::getFPSUtility() const
+{
+    return m_fpsUtility;
+}
+
 Application::Application() :
     m_window("GameName"),
     m_renderer(m_window.getWindow()),
-    m_textManager(m_renderer)
+    m_textManager(m_renderer),
+    m_fpsUtility{60}
 {
     Filesystem::ensureDirectoryRelative("Tilemaps");
     Filesystem::ensureDirectoryRelative("Configs");
@@ -56,14 +62,10 @@ Application::Application() :
 
 void Application::run()
 {
+    m_fpsUtility.start();
     while (m_levelResult.nextLvl != -1)
     {
         m_levels[m_levelResult.nextLvl]->enter();
         m_levelResult = m_levels[m_levelResult.nextLvl]->proceed();
     }
-}
-
-void Application::setLevel(int levelId_, std::unique_ptr<Level> &&level_)
-{
-    m_levels[levelId_] = std::move(level_);
 }

@@ -24,7 +24,7 @@
 class BattleLevel : public Level
 {
 public:
-    BattleLevel(const Vector2<int>& size_, int lvlId_);
+    BattleLevel(int lvlId_, FPSUtility &fpsUtility_, const Vector2<int>& size_);
     void enter() override;
 
     void receiveEvents(GAMEPLAY_EVENTS event, float scale_) override;

@@ -9,11 +9,10 @@ static std::string nicetime(const uint64_t &ns_)
 }
 #endif
 
-Level::Level(const Vector2<int> &size_, int lvlId_) :
-    m_size(size_),
-    m_levelId(lvlId_),
-    m_timeForFrame(1'000'000'000 / gamedata::global::framerate),
-    m_lastFrameTimeNS{0}
+Level::Level(int lvlId_, FPSUtility &fpsUtility_, const Vector2<int> &size_) :
+    m_size{size_},
+    m_levelId{lvlId_},
+    m_fpsUtility{fpsUtility_}
 {
     subscribe(GAMEPLAY_EVENTS::QUIT);
     subscribe(GAMEPLAY_EVENTS::FN3);
@@ -28,7 +27,6 @@ void Level::enter()
 {
     m_state = STATE::RUNNING;
     m_returnVal = { -1 };
-    m_frameTimer.begin();
     setInputEnabled();
 }
 
@@ -39,14 +37,10 @@ void Level::leave()
 
 LevelResult Level::proceed()
 {
-    m_frameTimer.begin();
-    uint64_t compensate = 0;
-
     Timer fullFrameTime;
     auto &profiler = Profiler::instance();
 
     fullFrameTime.begin();
-    m_frameTimer.begin();
     while (m_state == STATE::RUNNING)
     {
         profiler.cleanFrame();
@@ -65,18 +59,7 @@ LevelResult Level::proceed()
             std::cout << std::endl;
         #endif
 
-        m_lastFrameTimeNS = m_frameTimer.getPassed();
-        if (m_lastFrameTimeNS < m_timeForFrame + compensate)
-        {
-            SDL_DelayNS(m_timeForFrame - m_lastFrameTimeNS + compensate);
-            compensate = m_timeForFrame - m_frameTimer.getPassed();
-        }
-        else
-            compensate += m_timeForFrame - m_lastFrameTimeNS;
-        m_frameTimer.begin();
-
-        m_lastFullFrameTime = fullFrameTime.getPassed();
-        fullFrameTime.begin();
+        m_fpsUtility.cycle();
     }
 
     leave();
@@ -106,12 +89,12 @@ void Level::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
         case (GAMEPLAY_EVENTS::FN1):
             if (scale_ > 0)
             {
-                m_timeForFrame = 1'000'000'000 / gamedata::global::dbgslowdownfps;
+                m_fpsUtility.setFPS(20);
                 m_forcerun = true;
             }
             else
             {
-                m_timeForFrame = 1'000'000'000 / gamedata::global::framerate;
+                m_fpsUtility.setDefaultFPS();
                 m_forcerun = false;
             }
             break;

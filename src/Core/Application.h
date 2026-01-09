@@ -1,6 +1,4 @@
-#ifndef APPLICATION_H_
-#define APPLICATION_H_
-
+#pragma once
 #include "Window.h"
 #include "Renderer.h"
 #include "Level.h"
@@ -8,6 +6,7 @@
 #include "TextureManager.h"
 #include "AnimationManager.h"
 #include "TextManager.h"
+#include "FPSUtility.h"
 #include <memory>
 #include <SDL3_mixer/SDL_mixer.h>
 
@@ -34,7 +33,13 @@ public:
     static Application &instance();
     void run();
 
-    void setLevel(int levelId_, std::unique_ptr<Level>&&);
+    template<typename T, typename... Args>
+    void makeLevel(int levelId_, Args&&... args_) 
+        requires std::constructible_from<T, int, FPSUtility&, Args...>;
+
+    const FPSUtility &getFPSUtility() const;
+
+    void cycle();
 
     Application(const Application&) = delete;
     Application(Application&&) = delete;
@@ -50,8 +55,7 @@ public:
 private:
     Application();
 
-    std::array<std::unique_ptr<Level>, gamedata::levels::numberOfLevels> m_levels;
+    std::unordered_map<int, std::unique_ptr<Level>> m_levels;
     LevelResult m_levelResult = {gamedata::levels::initialLevelId};
+    FPSUtility m_fpsUtility;
 };
-
-#endif

@@ -7,15 +7,15 @@
 #include "Core/Localization/LocalizationGen.h"
 #include "Core/Profile.h"
 
-BattleLevel::BattleLevel(const Vector2<int>& size_, int lvlId_) :
-    Level(size_, lvlId_),
+BattleLevel::BattleLevel(int lvlId_, FPSUtility &fpsUtility_, const Vector2<int>& size_) :
+    Level(lvlId_, fpsUtility_, size_),
     m_camera({0.0f, 0.0f}, gamedata::global::maxCameraSize, m_size),
     m_playerSystem(m_registry),
     m_rendersys(m_registry, m_camera, m_cldRoutesCollection),
     m_inputsys(m_registry),
     m_physsys(m_registry, size_),
     m_camsys(m_registry, m_camera),
-    m_hudsys(m_registry, m_camera, lvlId_, size_, m_lastFullFrameTime),
+    m_hudsys(m_registry, m_camera, lvlId_, size_),
     m_enemysys(m_registry, m_navsys, m_camera, m_partsys),
     m_aisys(m_registry),
     m_navsys(m_registry, m_graph),

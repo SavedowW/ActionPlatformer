@@ -7,7 +7,6 @@ project(${PROJECT_NAME})
 set(SRC_FILES 
 main.cpp
 BattleLevel.cpp
-Stage1.cpp
 LevelBuilder.cpp
 PlayableCharacter.cpp
 StateMachine.cpp

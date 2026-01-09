@@ -1,8 +1,8 @@
 #include "tests/NewStateMachine.hpp"
 #include "tests/ComponentExtraction.hpp"
 #include "Core/CoreComponents.h"
-#include "Stage1.h"
-#include "Core/Application.h"
+#include "BattleLevel.h"
+#include "Core/Application.hpp"
 #include "Core/FilesystemUtils.h"
 #include <iostream>
 #include <memory>
@@ -33,7 +33,7 @@ int main(int, char**)
         std::cout << Filesystem::getRootDirectory() << std::endl;
         auto &app = Application::instance();
         
-        app.setLevel(1, std::make_unique<Stage1>(Vector2{2048, 2048}, 1));
+        app.makeLevel<BattleLevel>(1, Vector2{2048, 2048});
         app.run();
     }
     catch (std::exception &ex_)

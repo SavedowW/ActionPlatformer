@@ -9,14 +9,13 @@
 #include "Core/Localization/LocalizationGen.h"
 #include "Core/Configuration.h"
 
-HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> &lvlSize_, const uint64_t &frameTime_) :
+HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> &lvlSize_) :
     m_renderer(Application::instance().m_renderer),
     m_textManager(Application::instance().m_textManager),
     m_reg(reg_),
     m_cam(cam_),
     m_lvlId(lvlId_),
-    m_lvlSize(lvlSize_),
-    m_frameTime(frameTime_)
+    m_lvlSize(lvlSize_)
 {
     auto &texman = Application::instance().m_textureManager;
 
@@ -45,10 +44,13 @@ void HudSystem::drawCommonDebug() const
 {
     static bool firstRun = true;
 
+    const auto &lastCycleCalls = Application::instance().getFPSUtility().lastCycleCalls;
+    const auto lastFrameTime = lastCycleCalls[0] - lastCycleCalls[1];
+
     if (firstRun)
         firstRun = false;
     else
-        m_avgFrames.push(static_cast<float>(m_frameTime));
+        m_avgFrames.push(static_cast<float>(lastFrameTime));
 
     ImmediateScreenLog<TextAligners::AlignerLeft> commonLog{0, 12, {1, 1}};
 
@@ -56,9 +58,9 @@ void HudSystem::drawCommonDebug() const
     commonLog.dumpLine("Camera pos: " + utils::toString(m_cam.getPos()));
     commonLog.dumpLine("Camera size: " + utils::toString(m_cam.getSize()));
     commonLog.dumpLine("Camera scale: " + std::to_string(m_cam.getScale()));
-    commonLog.dumpLine("Real frame time (ns): " + std::to_string(m_frameTime));
+    commonLog.dumpLine("Real frame time (ns): " + std::to_string(lastFrameTime));
     commonLog.dumpLine("Avg frame time (ms): " + std::to_string( m_avgFrames.avg() / 1'000'000.0f));
-    commonLog.dumpLine("FPS: " + std::to_string( 1'000'000'000.0f / static_cast<float>(m_frameTime)));
+    commonLog.dumpLine("FPS: " + std::to_string(1'000'000'000.0f / static_cast<float>(lastFrameTime)));
     commonLog.dumpLine("Avg FPS: " + std::to_string( 1'000'000'000.0f / m_avgFrames.avg()));
     commonLog.dumpLine("UTF-8: Кириллица работает");
     commonLog.dumpLine(ll::dbg_localization());
