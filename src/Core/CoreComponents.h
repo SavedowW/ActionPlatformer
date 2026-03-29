@@ -8,7 +8,7 @@
 #include "NavGraph.h"
 #include "NavSystem.h"
 #include "Trigger.h"
-#include "FrameTimer.h"
+#include <bitset>
 #include <entt/entt.hpp>
 #include <set>
 #include <map>
@@ -33,7 +33,7 @@ struct ComponentTransform
 struct ComponentParticlePrimitive
 {
     SDL_FlipMode m_flip = SDL_FLIP_NONE;
-    FrameTimer<false> m_lifetime{};
+    FrameTimer<false> m_lifetime;
     float angle = 0.0f;
     entt::entity m_tieTransform = entt::null;
 };
@@ -111,10 +111,22 @@ struct ComponentPhysical
     Vector2<float> m_velocityLeftover;
 };
 
-struct PhysicalEvents
+class PhysicalEvents
 {
-    bool m_touchedGround = false;
-    bool m_lostGround = false;
+public:
+    enum class Events : uint8_t
+    {
+        TOUCHED_GROUND,
+        LOST_GROUND,
+        NONE
+    };
+
+    void setEvent(const Events &event_);
+    void reset() noexcept;
+    bool checkEvent(const Events &event_) const;
+
+private:
+    std::bitset<static_cast<size_t>(Events::NONE)> m_events;
 };
 
 struct ComponentStaticCollider
@@ -154,7 +166,7 @@ struct ComponentObstacleFallthrough
     ComponentObstacleFallthrough() = default;
 
     ComponentObstacleFallthrough (const ComponentObstacleFallthrough &rhs_) = delete;
-    ComponentObstacleFallthrough (ComponentObstacleFallthrough &&rhs_) = default;
+    ComponentObstacleFallthrough (ComponentObstacleFallthrough &&rhs_) noexcept = default;
     ComponentObstacleFallthrough &operator=(const ComponentObstacleFallthrough &rhs_) = delete;
     ComponentObstacleFallthrough &operator=(ComponentObstacleFallthrough &&rhs_) = default;
 
@@ -204,7 +216,7 @@ struct ComponentAnimationRenderable
     ComponentAnimationRenderable() = default;
 
     ComponentAnimationRenderable (const ComponentAnimationRenderable &rhs_) = delete;
-    ComponentAnimationRenderable (ComponentAnimationRenderable &&rhs_) = default;
+    ComponentAnimationRenderable (ComponentAnimationRenderable &&rhs_) noexcept = default;
     ComponentAnimationRenderable &operator=(const ComponentAnimationRenderable &rhs_) = delete;
     ComponentAnimationRenderable &operator=(ComponentAnimationRenderable &&rhs_) = default;
 
@@ -215,7 +227,7 @@ struct ComponentAnimationRenderable
     }
 
     std::map<ResID, Animation> m_animations;
-    Animation *m_currentAnimation;
+    Animation *m_currentAnimation = nullptr;
     std::unique_ptr<Flash> m_flash;
     bool m_drawOutline = false;
 };
@@ -241,7 +253,7 @@ struct Navigatable
     // Overcomplication, but might be useful later
     // Traverse::TraitT m_validTraitsOwnLocation;
 
-    Traverse::TraitT m_traverseTraits;
+    Traverse::TraitT m_traverseTraits = 0;
     float m_maxRange = 0.0f;
     float m_nodeTransitionRange = 0.0f;
 

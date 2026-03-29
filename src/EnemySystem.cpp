@@ -1,7 +1,9 @@
 #include "EnemySystem.h"
+#include "Hit.h"
+#include "World.h"
 #include "Core/Application.h"
 #include "Core/CoreComponents.h"
-#include "StateMachine.hpp"
+#include "SM/StateMachine.hpp"
 #include "Enemy1.h"
 #include "Core/NavGraph.h"
 #include "ResetHandlers.h"
@@ -42,59 +44,14 @@ entt::entity EnemySystem::makeEnemy()
     m_reg.emplace<ComponentObstacleFallthrough>(enemyId);
 
 
-    auto &ai = m_reg.emplace<ComponentAI>(enemyId); // TODO: reset
+    /*auto &ai = m_reg.emplace<ComponentAI>(enemyId); // TODO: reset
     ai.m_requestedState = static_cast<CharState>(Enemy1State::IDLE);
     ai.m_requestedOrientation = ORIENTATION::RIGHT;
     ai.m_navigationTarget = {430, 410};
-    ai.m_chaseTarget = m_playerId;
+    ai.m_chaseTarget = m_playerId;*/
 
     m_reg.emplace<HealthOwner>(enemyId, 3); // TODO: reset
     m_reg.emplace<HealthRendererCommonWRT>(enemyId, 3, Vector2{0.0f, -28.0f}); // TODO: reset
-
-    /*auto *proxySwitchState = new ProxySelectionState(
-        Enemy1State::META_PROXY_SWITCH, {Enemy1State::NONE, {}}, 
-        {Enemy1State::META_BLIND_CHASE, Enemy1State::META_MOVE_TOWARDS}, {100.0f}, {&m_reg, m_playerId});
-
-    auto *moveTowardsState = new MoveTowards(
-        Enemy1State::META_MOVE_TOWARDS, {Enemy1State::NONE, {}}, 
-        Enemy1State::RUN);
-
-    proxySwitchState->addState(std::unique_ptr<GenericState>(std::move(moveTowardsState)));
-
-    proxySwitchState->addState(std::unique_ptr<GenericState>(
-        new BlindChaseState(
-            Enemy1State::META_BLIND_CHASE, {Enemy1State::NONE, {}},
-            Enemy1State::IDLE, Enemy1State::RUN, {&m_reg, m_playerId}, 20.0f)
-    ));
-
-    proxySwitchState->setInitialState(Enemy1State::META_ROAM);
-
-    ai.m_sm.addState(std::unique_ptr<GenericState>(std::move(proxySwitchState)));*/
-
-    auto &navigateChase = ai.m_sm.addState<NavigateGraphChase>(
-        Enemy1State::META_NAVIGATE_GRAPH_CHASE, StateMarker{},
-        Enemy1State::META_MOVE_TOWARDS, Enemy1State::PREJUMP, Enemy1State::IDLE, Enemy1State::META_BLIND_CHASE);
-
-    navigateChase.addState<MoveTowards>(
-        Enemy1State::META_MOVE_TOWARDS, StateMarker{}, 
-        Enemy1State::RUN);
-
-    navigateChase.addState<JumpTowards>(
-        Enemy1State::PREJUMP, StateMarker{},
-        Enemy1State::PREJUMP);
-
-    navigateChase.addState<AIStateNull>(
-        Enemy1State::IDLE, StateMarker{});
-
-    navigateChase.addState<BlindChaseState>(
-            Enemy1State::META_BLIND_CHASE, StateMarker{},
-            Enemy1State::IDLE, Enemy1State::RUN, 30);
-
-    navigateChase.setInitialState(Enemy1State::IDLE);
-    navigateChase.switchCurrentState({.reg=&m_reg, .idx=enemyId}, Enemy1State::IDLE);
-
-    ai.m_sm.setInitialState(Enemy1State::META_MOVE_TOWARDS);
-    ai.m_sm.switchCurrentState({.reg=&m_reg, .idx=enemyId}, Enemy1State::META_MOVE_TOWARDS);
 
     auto &animrnd = m_reg.emplace<ComponentAnimationRenderable>(enemyId);
     m_reg.emplace<ComponentResetStatic<ComponentAnimationRenderable>>(enemyId);
@@ -109,117 +66,8 @@ entt::entity EnemySystem::makeEnemy()
     animrnd.m_currentAnimation = &animrnd.m_animations.at(m_animManager.getAnimID("Enemy1/idle"));
     animrnd.m_currentAnimation->reset();
 
-    
-
-    auto &sm = m_reg.emplace<StateMachine>(enemyId);
-
-    sm.addState<NPCState<true, true>>(
-            Enemy1State::RUN, StateMarker{Enemy1State::IDLE, Enemy1State::RUN}, m_animManager.getAnimID("Enemy1/run"))
-        .setGravity(Vector2{0.0f, 0.0f})
-        .setUpdateMovementData(
-            TimelineProperty(Vector2{1.0f, 1.0f}), // Vel mul
-            TimelineProperty<Vector2<float>>( 
-                {
-                    {0, {0.2f, 0.0f}},
-                    {5, {0.4f, 0.0f}},
-                }),  // Dir vel mul
-            TimelineProperty(Vector2{0.0f, 0.0f}), // Raw vel
-            TimelineProperty(Vector2{1.0f, 1.0f}), // Inr mul
-            TimelineProperty(Vector2{0.0f, 0.0f}), // Dir inr mul
-            TimelineProperty(Vector2{0.0f, 0.0f})) // Raw inr
-        .setUpdateSpeedLimitData(
-            TimelineProperty(Vector2{3.5f, 0.0f}),
-            TimelineProperty(Vector2{9999.9f, 0.0f}))
-        .setTransitionOnLostGround(Enemy1State::FLOAT)
-        .setMagnetLimit(10)
-        .setHurtboxes({
-            {
-                HurtboxGroup(
-                    {
-                        {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
-                        }
-                    }, HurtTrait::NORMAL
-                )
-            }
-        })
-        .setCanFallThrough(TimelineProperty<bool>(true));
-
-    sm.addState<AimedPrejump>(
-            Enemy1State::PREJUMP, StateMarker{Enemy1State::IDLE, Enemy1State::RUN}, m_animManager.getAnimID("Enemy1/prejump"),
-            0.3f, 1.5f)
-        .setGravity(Vector2{0.0f, 0.0f})
-        .setConvertVelocityOnSwitch(true, false)
-        .setTransitionOnLostGround(Enemy1State::FLOAT)
-        .setMagnetLimit(4)
-        .setDrag(Vector2{0.0f, 0.0f})
-        .setAppliedInertiaMultiplier(Vector2{0.0f, 0.0f})
-        .setHurtboxes({
-            {
-                HurtboxGroup(
-                    {
-                        {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
-                        }
-                    }, HurtTrait::NORMAL
-                )
-            }
-        })
-        .setOutdatedTransition(Enemy1State::FLOAT, 1)
-        .setParticlesSingle(TimelineProperty<ParticleTemplate>({
-            {0, {}},
-            {1, ParticleTemplate{1, Vector2<float>{0.0f, 0.0f}, m_animManager.getAnimID("Char1/particles/particle_jump"), 22,
-                7}},
-            {2, {}},
-            }));
-
-    sm.addState<NPCState<false, false>>(
-            Enemy1State::IDLE, StateMarker{Enemy1State::IDLE, Enemy1State::RUN}, m_animManager.getAnimID("Enemy1/idle"))
-        .setGravity(Vector2{0.0f, 0.0f})
-        .setDrag(TimelineProperty<Vector2<float>>({{0, Vector2{0.1f, 0.1f}}, {3, Vector2{0.5f, 0.5f}}}))
-        .setConvertVelocityOnSwitch(true, false)
-        .setTransitionOnLostGround(Enemy1State::FLOAT)
-        .setMagnetLimit(TimelineProperty<unsigned int>(8))
-        .setHurtboxes({
-            {
-                HurtboxGroup(
-                    {
-                        {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
-                        }
-                    }, HurtTrait::NORMAL
-                )
-            }
-        })
-        .setCanFallThrough(TimelineProperty<bool>(true))
-        .setUpdateSpeedLimitData(
-            TimelineProperty(Vector2<float>{9999.9f, 0.0f}),
-            TimelineProperty(Vector2<float>{9999.9f, 0.0f}))
-        .setHitStateMapping(std::move(HitStateMapping()
-            .addHitstunTransition(0, std::numeric_limits<CharState>::max())
-            .addHitstunTransition(2, static_cast<CharState>(Enemy1State::PREJUMP))
-            ));
-
-    sm.addState<AimedFloat>(
-            Enemy1State::FLOAT, StateMarker{}, m_animManager.getAnimID("Enemy1/float"))
-        .setGravity(Vector2<float>{0.0f, 0.3f})
-        .setDrag(Vector2<float>{0.0f, 0.0f})
-        .setHurtboxes({
-            {
-                HurtboxGroup(
-                    {
-                        {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
-                        }
-                    }, HurtTrait::NORMAL
-                )
-            }
-        })
-        .addTransitionOnTouchedGround(0, Enemy1State::IDLE)
-        .setNoLanding(TimelineProperty<bool>({{0, true}, {4, false}}));
-
-    sm.setInitialState(Enemy1State::FLOAT);
-    m_reg.emplace<ComponentReset<StateMachine>>(enemyId).m_defaultStates = {static_cast<CharState>(Enemy1State::FLOAT)};
+    //auto &sm = m_reg.emplace<StateMachine>(enemyId);
+    //m_reg.emplace<ComponentReset<StateMachine>>(enemyId).m_defaultStates = {static_cast<CharState>(Enemy1State::FLOAT)};
 
     return enemyId;
 }

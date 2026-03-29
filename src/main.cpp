@@ -1,5 +1,4 @@
 #include "tests/NewStateMachine.hpp"
-#include "tests/ComponentExtraction.hpp"
 #include "Core/CoreComponents.h"
 #include "BattleLevel.h"
 #include "Core/Application.hpp"

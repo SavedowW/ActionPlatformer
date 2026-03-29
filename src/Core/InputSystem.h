@@ -451,7 +451,7 @@ public:
 
     void setInputEnabled();
     void setInputDisabled();
-    bool isInputEnabled();
+    bool isInputEnabled() const;
 
     //InputReactor automatically removes itself from subscribers
     virtual ~InputReactor();

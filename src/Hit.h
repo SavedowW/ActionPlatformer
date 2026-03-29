@@ -6,6 +6,7 @@
 #include "Core/CoreComponents.h"
 #include "Core/StateCommon.h"
 #include "Core/FrameTimer.h"
+#include "SM/StateMachine.h"
 #include <set>
 
 enum class HurtTrait : uint8_t {
@@ -85,9 +86,9 @@ HitPosResult detectHit(const std::vector<TemporaryCollider> &hit_, uint32_t hitA
 
 struct HitStateMapping
 {
-    TimelineProperty<CharState> m_hitstunTransitions;
+    TimelineProperty<SM::StateID> m_hitstunTransitions;
 
-    HitStateMapping &addHitstunTransition(uint32_t level_, CharState transition_);
+    HitStateMapping &addHitstunTransition(uint32_t level_, SM::StateID transition_);
 };
 
 struct BattleActor

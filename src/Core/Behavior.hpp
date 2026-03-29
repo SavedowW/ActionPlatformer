@@ -10,6 +10,7 @@
 namespace Behavior
 {
     class NodeBase;
+    using NodeID = uint8_t;
 }
 
 /*struct ComponentAI
@@ -49,6 +50,8 @@ namespace Behavior
 
         virtual std::string stringify(size_t intend_) const;
 
+        virtual ~NodeBase() = default;
+
     protected:
         virtual std::string describeSelf() const;
 
@@ -74,19 +77,19 @@ namespace Behavior
             } (), ...);
         }
 
-        virtual void enter() override
+        void enter() override
         {
             std::cout << "\"" << describeSelf() << "\" - enter" << std::endl;
             m_it = m_nodes.begin();
             (*m_it)->enter();
         }
 
-        virtual void leave() override
+        void leave() override
         {
             std::cout << "\"" << describeSelf() << "\" - leaving" << std::endl;
         }
 
-        virtual Status update() override
+        Status update() override
         {
             std::cout << "\"" << describeSelf() << "\" - update" << std::endl;
             while (m_it != m_nodes.end())
@@ -120,7 +123,7 @@ namespace Behavior
             throw std::runtime_error("Loop condition contradicts internal check");
         }
 
-        virtual std::string stringify(size_t intend_) const override
+        std::string stringify(size_t intend_) const override
         {
             std::string res(intend_, ' ');
             res += describeSelf() + "\n";
@@ -147,24 +150,24 @@ namespace Behavior
         template<typename T>
         RequestState(const T &state_) :
             NodeBase("Request " + serialize(state_)),
-            m_state(static_cast<CharState>(state_))
+            m_state(static_cast<NodeID>(state_))
         {
             std::cout << "Creating \"" << describeSelf() << "\"" << std::endl;
         }
 
         // TODO: pass context
-        virtual void enter() override
+        void enter() override
         {
             std::cout << "\"" << describeSelf() << "\" - enter" << std::endl;
             // TODO:
         }
 
-        virtual void leave() override
+        void leave() override
         {
             std::cout << "\"" << describeSelf() << "\" - leaving" << std::endl;
         }
 
-        virtual Status update() override
+        Status update() override
         {
             std::cout << "\"" << describeSelf() << "\" - update" << std::endl;
             // TODO:
@@ -172,7 +175,7 @@ namespace Behavior
             return Status::FAILURE;
         }
 
-        virtual std::string stringify(size_t intend_) const override
+        std::string stringify(size_t intend_) const override
         {
             std::string res(intend_, ' ');
             res += describeSelf() + "\n";
@@ -181,13 +184,13 @@ namespace Behavior
         }
 
     protected:
-        virtual std::string describeSelf() const override
-            {
-                //return m_name + " (size=" + std::to_string(m_nodes.size()) + ")"; TODO:
-                return "";
-            }
+        std::string describeSelf() const override
+        {
+            //return m_name + " (size=" + std::to_string(m_nodes.size()) + ")"; TODO:
+            return "";
+        }
 
-        const CharState m_state;
+        const NodeID m_state;
     };
 
 }

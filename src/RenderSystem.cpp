@@ -18,7 +18,6 @@ RenderSystem::RenderSystem(entt::registry &reg_, Camera &camera_, ColliderRoutes
 
 void RenderSystem::update()
 {
-    PROFILE_FUNCTION;
     auto rens = m_reg.view<ComponentAnimationRenderable>();
 
     for (auto [idx, ren] : rens.each())
@@ -42,8 +41,6 @@ void RenderSystem::update()
 
 void RenderSystem::updateDepth()
 {
-    PROFILE_FUNCTION;
-
     if (RenderLayer::m_dirtyOrder)
     {
         // FIXME: sometimes with a lot of enemies player can change layer

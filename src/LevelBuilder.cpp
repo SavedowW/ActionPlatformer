@@ -1,6 +1,6 @@
 #include "LevelBuilder.h"
 #include "EnvComponents.h"
-#include "StateMachine.h"
+#include "SM/StateMachine.h"
 #include "ResetHandlers.h"
 #include "Core/Application.h"
 #include "Core/JsonUtils.hpp"

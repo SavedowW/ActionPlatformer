@@ -166,8 +166,6 @@ Vector2<float> Camera::getCamPositionInBoundaries(const Vector2<float> &pos_)
 
 void Camera::update()
 {
-    PROFILE_FUNCTION;
-
     if (m_shakeTimer.update())
     {
         m_thisFrameAmp = {0.0f, 0.0f};

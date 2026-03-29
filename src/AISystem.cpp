@@ -8,14 +8,13 @@ AISystem::AISystem(entt::registry &reg_) :
 
 void AISystem::update()
 {
-    PROFILE_FUNCTION;
-
-    auto view = m_reg.view<ComponentAI>();
+    // TODO: move elsewhere
+    /*auto view = m_reg.view<ComponentAI>();
 
     for (auto [idx, ai] : view.each())
     {
         ai.m_sm.update({&m_reg, idx}, 0);
-    }
+    }*/
 
     /* TODO: notably faster in release build, but harder to debug even with seq, might add debug flags to enable parallel execution
     auto iteratable = view.each();

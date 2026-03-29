@@ -121,14 +121,14 @@ HitPosResult detectHit(const std::vector<TemporaryCollider> &hit_, uint32_t hitA
     }
 
     if (avgpos.isSet())
-        return {true, avgpos};
-    else
-        return {false};
+        return {.m_hitOccured=true, .m_hitPos=avgpos};
+
+    return {.m_hitOccured=false};
 }
 
-HitStateMapping &HitStateMapping::addHitstunTransition(uint32_t level_, CharState transition_)
+HitStateMapping &HitStateMapping::addHitstunTransition(uint32_t level_, SM::StateID transition_)
 {
-    m_hitstunTransitions.addPair(level_, CharState{transition_});
+    m_hitstunTransitions.addPair(level_, transition_);
     return *this;
 }
 

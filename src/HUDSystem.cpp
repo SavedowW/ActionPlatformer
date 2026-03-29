@@ -1,6 +1,6 @@
 #include "HUDSystem.h"
 #include "Core/TextManager.hpp"
-#include "StateMachine.h"
+#include "SM/StateMachine.h"
 #include "Core/ImmediateScreenLog.hpp"
 #include "Core/Application.h"
 #include "Core/CoreComponents.h"
@@ -25,7 +25,7 @@ HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vecto
 
 void HudSystem::draw() const
 {
-    const auto npcs = m_reg.view<ComponentTransform, ComponentPhysical, StateMachine, ComponentAI>();
+    const auto npcs = m_reg.view<ComponentTransform, ComponentPhysical/*, StateMachine*/, ComponentAI>();
 
     m_renderer.switchToHUD({0, 0, 0, 0});
     drawCommonDebug();
@@ -33,9 +33,9 @@ void HudSystem::draw() const
 
     if (ConfigurationManager::instance().m_debug.m_drawNpcDebug)
     {
-        for (const auto [idx, trans, phys, sm, ai] : npcs.each())
+        for (const auto [idx, trans, phys/*, sm*/, ai] : npcs.each())
         {
-            drawNPCDebug(trans, phys, sm, ai);
+            drawNPCDebug(trans, phys/*, sm*/, ai);
         }
     }
 }
@@ -71,8 +71,8 @@ void HudSystem::drawPlayerDebug() const
     const auto &obsfall = m_reg.get<ComponentObstacleFallthrough>(playerId);
     const auto &ptransform = m_reg.get<ComponentTransform>(playerId);
     const auto &pphysical = m_reg.get<ComponentPhysical>(playerId);
-    const auto &psm = m_reg.get<StateMachine>(playerId);
-    const auto &pinp = m_reg.get<InputResolver>(playerId);
+    //const auto &psm = m_reg.get<StateMachine>(playerId);
+    const auto &pinp = m_reg.get<components::InputResolver>(playerId);
 
     std::string ignoredObstacles;
     for (const auto &el : obsfall.m_ignoredObstacles)
@@ -87,7 +87,7 @@ void HudSystem::drawPlayerDebug() const
     playerLog.dumpLine("Player pos: " + utils::toString(ptransform.m_pos));
     playerLog.dumpLine("Player vel: " + utils::toString(pphysical.m_velocity));
     playerLog.dumpLine("Player inr: " + utils::toString(pphysical.m_inertia));
-    playerLog.dumpLine(std::string("Player action: ") + psm.getName());
+    playerLog.dumpLine(std::string("Player action: TODO")/* + psm.getName()*/);
     playerLog.dumpLine(std::string("Ignored obstacles: ") + ignoredObstacles);
     playerLog.dumpLine(std::string("On slope: ") + std::to_string(pphysical.m_onSlopeWithAngle));
     playerLog.dumpLine(std::string("Grounded: ") + std::to_string(pphysical.m_onGround != entt::null));
@@ -125,10 +125,10 @@ void HudSystem::drawPlayerDebug() const
     }
 }
 
-void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_, const StateMachine &sm_, const ComponentAI &ai_) const
+void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_, /*const StateMachine &sm_, */const ComponentAI &ai_) const
 {
-    const auto txt1 = sm_.getName();
-    const auto txt2 = ai_.m_sm.getName();
+    const auto txt1 = std::string("SM name used to be here, TODO"); //sm_.getName();
+    const auto txt2 = std::string("AI SM name used to be here, TODO");
     const auto worldOrigin = trans_.m_pos + phys_.m_pushbox.m_topLeft + Vector2{phys_.m_pushbox.m_size.x, 0};
 
     const Vector2<int> camSize = m_cam.getSize();

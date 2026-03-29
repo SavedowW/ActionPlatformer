@@ -1,14 +1,23 @@
-#ifndef INPUT_HANDLING_SYSTEM_H_
-#define INPUT_HANDLING_SYSTEM_H_
+#pragma once
+#include "Core/InputState.h"
+#include "Core/InputSystem.h"
 #include <entt/entt.hpp>
 
-struct InputHandlingSystem
+class InputHandlingSystem : public InputReactor
 {
+public:
     InputHandlingSystem(entt::registry &reg_);
 
-    void update();
+    void receiveEvents(GAMEPLAY_EVENTS event_, float scale_) override;
 
+    void update();
+    void activate();
+    void deactivate();
+
+    void nullifyCurrentInput();
+
+private:
     entt::registry &m_reg;
+    InputState m_currentInput;
 };
 
-#endif

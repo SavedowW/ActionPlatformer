@@ -35,7 +35,6 @@ FrameTimer.cpp
 TextManager.cpp
 utf8.cpp
 InputState.cpp
-InputComparators.cpp
 InputResolver.cpp
 Collider.cpp
 CameraFocusArea.cpp
@@ -52,8 +51,6 @@ Shader.cpp
 Configuration.cpp
 Behavior.cpp
 StaticMapping.cpp
-ECS/ComponentExtractor.cpp
-ECS/ComponentRegistry.cpp
 Localization/LocalizationGen.cpp
 )
 

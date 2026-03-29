@@ -77,6 +77,8 @@ size_t registerProfilePlace(const char *file_, const std::string &functionName_,
 
 #ifdef __clang__
 #define FUNCNAME __PRETTY_FUNCTION__
+#elifdef __GNUC__
+#define FUNCNAME __PRETTY_FUNCTION__
 #else
 #define FUNCNAME __FUNCSIG__
 #endif

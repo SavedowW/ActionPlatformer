@@ -8,10 +8,6 @@ set(SRC_FILES
 main.cpp
 BattleLevel.cpp
 LevelBuilder.cpp
-PlayableCharacter.cpp
-StateMachine.cpp
-StateMachineEx.cpp
-StateMachineFactory.cpp
 PhysicsSystem.cpp
 PlayerSystem.cpp
 RenderSystem.cpp
@@ -20,7 +16,6 @@ HUDSystem.cpp
 InputHandlingSystem.cpp
 World.cpp
 EnemySystem.cpp
-Enemy1.cpp
 CommonAI.cpp
 AISystem.cpp
 DynamicColliderSystem.cpp

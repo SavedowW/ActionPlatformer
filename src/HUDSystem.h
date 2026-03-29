@@ -3,6 +3,8 @@
 #include "Core/FixedQueue.hpp"
 #include "Core/Texture.h"
 #include "CommonAI.h"
+#include "Core/CoreComponents.h"
+#include "Core/Camera.h"
 #include <entt/entt.hpp>
 
 template<Numeric T, size_t len, uint8_t updatePeriod>
@@ -53,7 +55,7 @@ public:
     void draw() const;
     void drawCommonDebug() const;
     void drawPlayerDebug() const;
-    void drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_, const StateMachine &sm_, const ComponentAI &ai_) const;
+    void drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_, /*const StateMachine &sm_,*/ const ComponentAI &ai_) const;
 
     entt::entity playerId = entt::null;
 

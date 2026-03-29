@@ -1,7 +1,7 @@
 #ifndef CHATBOX_H_
 #define CHATBOX_H_
 #include "Core/FrameTimer.h"
-#include "Core/InputSystem.h"
+#include "InputHandlingSystem.h"
 #include "Core/Texture.h"
 #include "Core/TextManager.h"
 #include <entt/entt.hpp>
@@ -126,7 +126,7 @@ private:
 class ChatboxSystem : public InputReactor
 {
 public:
-    ChatboxSystem(entt::registry &reg_, Camera &camera_);
+    ChatboxSystem(entt::registry &reg_, Camera &camera_, InputHandlingSystem &inputSystem_);
     
     void setPlayerEntity(entt::entity playerId_);
 
@@ -142,6 +142,7 @@ private:
     entt::registry &m_reg;
     Camera &m_camera;
     Renderer &m_renderer;
+    InputHandlingSystem &m_inputSystem;
     std::vector<ChatMessageSequence> m_sequences;
 
     entt::entity m_playerId = entt::null;

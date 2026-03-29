@@ -15,8 +15,6 @@ CameraSystem::CameraSystem(entt::registry &reg_, Camera &cam_) :
 
 void CameraSystem::update()
 {
-    PROFILE_FUNCTION;
-
     if (m_cameraStopped)
         return;
 

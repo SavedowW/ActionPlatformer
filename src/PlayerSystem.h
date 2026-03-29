@@ -1,5 +1,6 @@
-#ifndef PLAYER_SYSTEM_H_
-#define PLAYER_SYSTEM_H_
+#pragma once
+#include "SM/StateMachine.h"
+#include "PlayableCharacter.h"
 #include "Core/AnimationManager.h"
 #include <entt/entt.hpp>
 
@@ -12,6 +13,5 @@ struct PlayerSystem
 
     entt::registry &m_reg;
     AnimationManager &m_animManager;
+    SM::StateMachine<PlayerState, PlayerView> m_statemachine;
 };
-
-#endif

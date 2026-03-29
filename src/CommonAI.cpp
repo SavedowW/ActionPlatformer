@@ -1,7 +1,8 @@
 #include "CommonAI.h"
-#include "StateMachine.hpp"
+#include "SM/StateMachine.hpp"
 #include "Core/NavSystem.h"
 
+#if 0
 void AIState::enter(EntityAnywhere owner_, CharState from_)
 {
     GenericState::enter(owner_, from_);
@@ -268,3 +269,4 @@ bool JumpTowards::update(EntityAnywhere owner_, uint32_t currentFrame_)
 
     return true;
 }
+#endif

@@ -1,5 +1,6 @@
 #include "Profile.h"
 #include "Utils.hpp"
+#include <iomanip>
 #include <iostream>
 
 TimeStatistic &TimeStatistic::operator+=(const uint64_t &rhs_) noexcept
@@ -63,18 +64,18 @@ void Profiler::cleanFrame() noexcept
 void Profiler::dump() const noexcept
 {
 #ifdef DUMP_PROFILE_CONSOLE
-    std::string accum = utils::padToRight(m_longestFuncName, "function") 
-                + ' ' + utils::padToRight(10, "avg, ms")
-                + ' ' + utils::padToRight(10, "sum, ms")
-                + ' ' + utils::padToRight(5, "count") + '\n';
+    std::cout << std::setw(m_longestFuncName) << "function" 
+            << std::setw(11) << "avg, ms"
+            << std::setw(11) << "sum, ms"
+            << std::setw(6) << "calls";
     for (const auto &el : m_calls)
     {
-        accum +=        utils::padToRight(m_longestFuncName, el.m_funcName);
-        accum += " "s + utils::padToRight(10, std::to_string(static_cast<float>(el.m_timeStat.avg()) / 1'000'000.0f));
-        accum += " "s + utils::padToRight(10, std::to_string(static_cast<float>(el.m_timeStat.sum()) / 1'000'000.0f));
-        accum += " "s + utils::padToRight(5, std::to_string(el.m_timeStat.count())) + '\n';
+        std::cout << '\n' << std::setw(m_longestFuncName) << el.m_funcName
+            << std::setw(11) << static_cast<float>(el.m_timeStat.avg()) / 1'000'000.0f
+            << std::setw(11) << static_cast<float>(el.m_timeStat.sum()) / 1'000'000.0f
+            << std::setw(6) << el.m_timeStat.count();
     }
-    std::cout << accum << std::endl;
+    std::cout << std::endl;
 #endif
 }
 

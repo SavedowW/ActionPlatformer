@@ -1,7 +1,7 @@
 #include "PhysicsSystem.h"
 #include "Core/CoreComponents.h"
 #include "Core/Profile.h"
-#include "StateMachine.h"
+#include "SM/StateMachine.h"
 
 PhysicsSystem::PhysicsSystem(entt::registry &reg_, Vector2<int> levelSize_) :
     m_reg(reg_),
@@ -11,8 +11,6 @@ PhysicsSystem::PhysicsSystem(entt::registry &reg_, Vector2<int> levelSize_) :
 
 void PhysicsSystem::prepHitstop()
 {
-    PROFILE_FUNCTION;
-
     auto viewPhys = m_reg.view<ComponentPhysical>();
     for (auto [idx, phys] : viewPhys.each())
     {
@@ -23,8 +21,6 @@ void PhysicsSystem::prepHitstop()
 
 void PhysicsSystem::prepEntities()
 {
-    PROFILE_FUNCTION;
-
     auto viewPhys = m_reg.view<ComponentPhysical>();
     for (auto [idx, phys] : viewPhys.each())
     {
@@ -32,34 +28,8 @@ void PhysicsSystem::prepEntities()
     }
 }
 
-void PhysicsSystem::updateSMs()
-{
-    PROFILE_FUNCTION;
-
-    auto viewSM = m_reg.view<StateMachine>();
-
-    for (auto [idx, sm] : viewSM.each())
-    {
-        if (checkCurrentHitstop(m_reg, idx))
-            continue;
-
-        sm.update({.reg=&m_reg, .idx=idx}, 0);
-    }
-
-    /* TODO: notably faster in release build, but harder to debug even with seq, might add debug flags to enable parallel execution
-    auto iteratable = viewSM.each();
-    std::for_each(std::execution::par, iteratable.begin(), iteratable.end(), [&](auto inp)
-    {
-        auto [idx, sm] = inp;
-        sm.update({&m_reg, idx}, 0);
-    });
-   */
-}
-
 void PhysicsSystem::updatePhysics()
 {
-    PROFILE_FUNCTION;
-
     auto viewPhys = m_reg.view<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, PhysicalEvents>();
     auto viewPhysSimplified = m_reg.view<ComponentTransform, ComponentParticlePhysics>();
     const auto viewscld = m_reg.view<ComponentStaticCollider>();
@@ -85,36 +55,8 @@ void PhysicsSystem::updatePhysics()
     */
 }
 
-void PhysicsSystem::updatePhysicalEvents()
-{
-    PROFILE_FUNCTION;
-    
-    auto viewPhysEvent = m_reg.view<PhysicalEvents, StateMachine>();
-
-    for (auto [idx, physev, sm] : viewPhysEvent.each())
-    {
-        if (checkCurrentHitstop(m_reg, idx))
-            continue;
-
-        auto *currentState = static_cast<PhysicalState*>(sm.getRealCurrentState());
-        if (physev.m_lostGround)
-        {
-            currentState->onLostGround({&m_reg, idx});
-            physev.m_lostGround = false;
-        }
-
-        if (physev.m_touchedGround)
-        {
-            currentState->onTouchedGround({&m_reg, idx});
-            physev.m_touchedGround = false;
-        }
-    }
-}
-
 void PhysicsSystem::updateOverlappedObstacles()
 {
-    PROFILE_FUNCTION;
-
     auto viewTransPhysObs = m_reg.view<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough>();
     auto viewColliders = m_reg.view<ComponentStaticCollider>();
     for (auto [idx, trans, phys, obsfallthrough] : viewTransPhysObs.each())
@@ -298,6 +240,8 @@ bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, ComponentTransfor
 
 void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_)
 {
+    ev_.reset();
+
     const auto oldPos = trans_.m_pos;
 
     // Common stuff
@@ -391,14 +335,14 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
     if (onGround != entt::null)
     {
         phys_.m_onGround = onGround;
-        ev_.m_touchedGround = true;
+        ev_.setEvent(PhysicalEvents::Events::TOUCHED_GROUND);
     }
     else
     {
         if (offset.y < 0 || !magnetEntity(clds_, trans_, phys_, obsFallthrough_))
         {
             phys_.m_onGround = entt::null;
-            ev_.m_lostGround = true;
+            ev_.setEvent(PhysicalEvents::Events::LOST_GROUND);
         }
     }
 

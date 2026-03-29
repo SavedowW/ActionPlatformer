@@ -18,8 +18,6 @@ NavSystem::NavSystem(entt::registry &reg_, NavGraph &graph_) :
 
 void NavSystem::update()
 {
-    PROFILE_FUNCTION;
-
     const auto view = m_reg.view<ComponentTransform, Navigatable>();
     for (const auto [idx, trans, nav] : view.each())
     {

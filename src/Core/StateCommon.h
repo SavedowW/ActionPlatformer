@@ -3,8 +3,6 @@
 #include <cstdint>
 #include <type_traits>
 
-using CharState = uint8_t;
-
 template <typename T>
 concept TEnum = std::is_enum_v<T>;
 

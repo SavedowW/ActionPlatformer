@@ -96,10 +96,11 @@ namespace ChatConsts
     const uint32_t fadeOutDuration = 7;
 }
 
-ChatboxSystem::ChatboxSystem(entt::registry &reg_, Camera &camera_) :
+ChatboxSystem::ChatboxSystem(entt::registry &reg_, Camera &camera_, InputHandlingSystem &inputSystem_) :
     m_reg(reg_),
     m_camera(camera_),
-    m_renderer(Application::instance().m_renderer)
+    m_renderer(Application::instance().m_renderer),
+    m_inputSystem(inputSystem_)
 {
     subscribe(HUD_EVENTS::PROCEED);
     setInputEnabled();
@@ -125,9 +126,7 @@ void ChatboxSystem::addSequence(ChatMessageSequence &&seq_)
 
     if (m_sequences.size() == 1 && m_sequences[0].m_claimInputs)
     {
-        auto &resolver = m_reg.get<InputResolver>(m_playerId);
-        resolver.setInputDisabled();
-        resolver.nullifyCurrentInput();
+        m_inputSystem.deactivate();
     }
 }
 
@@ -209,18 +208,14 @@ void ChatboxSystem::update()
     {
         if (m_sequences[0].m_returnInputs)
         {
-            auto &resolver = m_reg.get<InputResolver>(m_playerId);
-            resolver.setInputEnabled();
-            resolver.nullifyCurrentInput();
+            m_inputSystem.activate();
         }
 
         m_sequences.erase(m_sequences.begin());
 
         if (m_sequences.size() > 0 && m_sequences[0].m_claimInputs)
         {
-            auto &resolver = m_reg.get<InputResolver>(m_playerId);
-            resolver.setInputDisabled();
-            resolver.nullifyCurrentInput();
+            m_inputSystem.setInputDisabled();
         }
     }
 }

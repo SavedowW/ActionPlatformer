@@ -1,11 +1,11 @@
-#ifndef COMMON_AI_H_
-#define COMMON_AI_H_
-#include "StateMachine.h"
+#pragma once
+#include "SM/StateMachine.h"
+#include <optional>
 
 struct ComponentAI
 {
-    StateMachine m_sm;
-    std::optional<CharState> m_requestedState;
+    //StateMachine m_sm;
+    std::optional<SM::StateID> m_requestedState;
     ORIENTATION m_requestedOrientation = ORIENTATION::UNSPECIFIED;
     Vector2<float> m_navigationTarget;
     bool m_isNavigating = false;
@@ -13,6 +13,8 @@ struct ComponentAI
     entt::entity m_chaseTarget;
     bool m_allowLeaveState = true;
 };
+
+#if 0
 
 class AIState: public GenericState
 {
@@ -22,13 +24,13 @@ public:
         GenericState(stateId_, std::move(transitionableFrom_))
     {}
 
-    void enter(EntityAnywhere owner_, CharState from_) override;
+    void enter(EntityAnywhere owner_, SM::StateID from_) override;
 
-    AIState &setEnterRequestedState(std::optional<CharState> m_enterRequestedState_);
+    AIState &setEnterRequestedState(std::optional<SM::StateID> m_enterRequestedState_);
     AIState &setEnterRequestedOrientation(std::optional<ORIENTATION> enterRequestedOrientation_);
 
 protected:
-    std::optional<CharState> m_enterRequestedState;
+    std::optional<SM::StateID> m_enterRequestedState;
     std::optional<ORIENTATION> m_enterRequestedOrientation;
 };
 
@@ -40,10 +42,10 @@ public:
         GenericState(stateId_, std::move(transitionableFrom_))
     {}
 
-    void enter(EntityAnywhere owner_, CharState from_) override;
+    void enter(EntityAnywhere owner_, SM::StateID from_) override;
 
 protected:
-    std::optional<CharState> m_enterRequestedState;
+    std::optional<SM::StateID> m_enterRequestedState;
     std::optional<ORIENTATION> m_enterRequestedOrientation;
 };
 
@@ -54,9 +56,9 @@ public:
     RandomRoamState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_,
     PLAYER_STATE_T idle_, PLAYER_STATE_T walk_, std::pair<uint32_t, uint32_t> idleDurationRange_, std::pair<uint32_t, uint32_t> walkDurationRange_) :
         NodeState(stateId_, std::move(transitionableFrom_)),
-        m_idle(static_cast<CharState>(idle_)),
+        m_idle(static_cast<SM::StateID>(idle_)),
         m_idleDuration(idleDurationRange_),
-        m_walk(static_cast<CharState>(walk_)),
+        m_walk(static_cast<SM::StateID>(walk_)),
         m_walkDuration(walkDurationRange_)
     {}
 
@@ -66,10 +68,10 @@ protected:
     bool m_isWalking = false;
     FrameTimer<true> m_timer;
 
-    CharState m_idle;
+    SM::StateID m_idle;
     std::pair<uint32_t, uint32_t> m_idleDuration;
 
-    CharState m_walk;
+    SM::StateID m_walk;
     std::pair<uint32_t, uint32_t> m_walkDuration;
 };
 
@@ -80,17 +82,17 @@ public:
     BlindChaseState(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_,
     PLAYER_STATE_T idle_, PLAYER_STATE_T walk_, const unsigned int idleRange_) :
         AIState(stateId_, std::move(transitionableFrom_)),
-        m_idle(static_cast<CharState>(idle_)),
-        m_walk(static_cast<CharState>(walk_)),
+        m_idle(static_cast<SM::StateID>(idle_)),
+        m_walk(static_cast<SM::StateID>(walk_)),
         m_idleRange(idleRange_)
     {}
 
-    void enter(EntityAnywhere owner_, CharState from_) override;
+    void enter(EntityAnywhere owner_, SM::StateID from_) override;
     bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
 
 protected:
-    CharState m_idle;
-    CharState m_walk;
+    SM::StateID m_idle;
+    SM::StateID m_walk;
     const unsigned int m_idleRange;
 };
 
@@ -107,14 +109,14 @@ public:
     {
         for (const auto &el : states_)
         {
-            m_states.push_back(static_cast<CharState>(el));
+            m_states.push_back(static_cast<SM::StateID>(el));
         }
     }
 
     virtual bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
 
 protected:
-    std::vector<CharState> m_states;
+    std::vector<SM::StateID> m_states;
     std::vector<float> m_rangeLimits;
     EntityAnywhere m_target;
 };
@@ -127,14 +129,14 @@ public:
     MoveTowards(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_,
         PLAYER_STATE_T walk_) :
         AIState(stateId_, std::move(transitionableFrom_)),
-        m_walk(static_cast<CharState>(walk_))
+        m_walk(static_cast<SM::StateID>(walk_))
     {}
 
-    void enter(EntityAnywhere owner_, CharState from_) override;
+    void enter(EntityAnywhere owner_, SM::StateID from_) override;
     bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
 
 private:
-    CharState m_walk;
+    SM::StateID m_walk;
 };
 
 class JumpTowards : public AIState
@@ -144,13 +146,13 @@ public:
     JumpTowards(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_,
         PLAYER_STATE_T prejump_) :
         AIState(stateId_, std::move(transitionableFrom_)),
-        m_prejump(static_cast<CharState>(prejump_))
+        m_prejump(static_cast<SM::StateID>(prejump_))
     {}
 
     bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
 
 private:
-    CharState m_prejump;
+    SM::StateID m_prejump;
 };
 
 class NavigateGraphChase : public NodeState
@@ -160,20 +162,20 @@ public:
     NavigateGraphChase(PLAYER_STATE_T stateId_, StateMarker &&transitionableFrom_,
         PLAYER_STATE_T moveTowards_, PLAYER_STATE_T jumpTowards, PLAYER_STATE_T noConnection_, PLAYER_STATE_T onSuccess_) :
         NodeState(stateId_, std::move(transitionableFrom_)),
-        m_noConnection(static_cast<CharState>(noConnection_)),
-        m_moveTowards(static_cast<CharState>(moveTowards_)),
-        m_jumpTowards(static_cast<CharState>(jumpTowards)),
-        m_onSuccess(static_cast<CharState>(onSuccess_))
+        m_noConnection(static_cast<SM::StateID>(noConnection_)),
+        m_moveTowards(static_cast<SM::StateID>(moveTowards_)),
+        m_jumpTowards(static_cast<SM::StateID>(jumpTowards)),
+        m_onSuccess(static_cast<SM::StateID>(onSuccess_))
     {}
     
-    void enter(EntityAnywhere owner_, CharState from_) override;
+    void enter(EntityAnywhere owner_, SM::StateID from_) override;
     bool update(EntityAnywhere owner_, uint32_t currentFrame_) override;
 
 private:
-    CharState m_noConnection;
-    CharState m_moveTowards;
-    CharState m_jumpTowards;
-    CharState m_onSuccess;
+    SM::StateID m_noConnection;
+    SM::StateID m_moveTowards;
+    SM::StateID m_jumpTowards;
+    SM::StateID m_onSuccess;
 };
 
 #endif

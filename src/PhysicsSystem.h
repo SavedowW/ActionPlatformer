@@ -9,9 +9,7 @@ struct PhysicsSystem
 
     void prepHitstop();
     void prepEntities();
-    void updateSMs();
     void updatePhysics();
-    void updatePhysicalEvents();
     void updateOverlappedObstacles();
 
     /*

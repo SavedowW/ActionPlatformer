@@ -1,7 +1,7 @@
 #ifndef RESET_HANDLERS_H_
 #define RESET_HANDLERS_H_
 #include "ColliderRouting.h"
-#include "StateMachine.h"
+#include "SM/StateMachine.h"
 #include "Core/CoreComponents.h"
 
 template <typename... T>
@@ -54,16 +54,16 @@ public:
     ORIENTATION m_defaultOrientation;
 };
 
-template <>
-class ComponentReset<StateMachine>
+template<typename StateIDT>
+class ComponentReset<SM::StatePossessor<StateIDT>>
 {
 public:
-    void resetComponent(EntityAnywhere owner_, StateMachine &sm_)
+    void resetComponent(SM::StatePossessor<StateIDT> &sm_)
     {
-        sm_.switchCurrentState(owner_, m_defaultStates.begin(), m_defaultStates.end());
+        sm_.setState(m_defaultState);
     }
 
-    std::vector<CharState> m_defaultStates;
+    StateIDT m_defaultState;
 };
 
 template <>

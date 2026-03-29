@@ -1,4 +1,6 @@
 #include "BattleLevel.h"
+#include "SM/StateMachine.hpp"
+#include "PlayableCharacter.h"
 #include "World.h"
 #include "ResetHandlers.h"
 #include "Core/GameData.h"
@@ -22,7 +24,7 @@ BattleLevel::BattleLevel(int lvlId_, FPSUtility &fpsUtility_, const Vector2<int>
     m_colsys(m_registry),
     m_partsys(m_registry),
     m_battlesys(m_registry, m_camera),
-    m_chatBoxSys(m_registry, m_camera),
+    m_chatBoxSys(m_registry, m_camera, m_inputsys),
     m_envSystem(m_registry),
     m_lvlBuilder(m_registry)
 {
@@ -40,15 +42,16 @@ BattleLevel::BattleLevel(int lvlId_, FPSUtility &fpsUtility_, const Vector2<int>
     m_registry.emplace<ComponentResetStatic<ComponentAnimationRenderable>>(playerId);
 
     m_registry.emplace<RenderLayer>(playerId, 6);
-    m_registry.emplace<InputResolver>(playerId);
+    m_registry.emplace<components::InputResolver>(playerId);
 
     m_registry.emplace<ComponentDynamicCameraTarget>(playerId);
     m_registry.emplace<ComponentResetStatic<ComponentDynamicCameraTarget>>(playerId);
 
     m_registry.emplace<World>(playerId, m_registry, m_camera, m_partsys, m_navsys);
 
-    m_registry.emplace<StateMachine>(playerId);
-    m_registry.emplace<ComponentReset<StateMachine>>(playerId);
+    m_registry.emplace<SM::StatePossessor<PlayerState>>(playerId, PlayerState::FLOAT);
+    // m_registry.emplace<StateMachine>(playerId); TODO:
+    // m_registry.emplace<ComponentReset<StateMachine>>(playerId);
 
     m_registry.emplace<PhysicalEvents>(playerId);
     m_registry.emplace<BattleActor>(playerId, BattleTeams::PLAYER);
@@ -73,22 +76,7 @@ BattleLevel::BattleLevel(int lvlId_, FPSUtility &fpsUtility_, const Vector2<int>
     subscribe(GAMEPLAY_EVENTS::RESET_DBG);
 
 //for (int i = 0; i < 1000; ++i)
-    m_enemyId = m_enemysys.makeEnemy();
-
-    /*auto newcld = m_registry.create();
-    m_registry.emplace<ComponentTransform>(newcld, getTilePos(Vector2{20.0f, 21.0f}), ORIENTATION::RIGHT);
-    m_registry.emplace<ComponentStaticCollider>(newcld, getTilePos(Vector2{20.0f, 21.0f}), SlopeCollider({0.0f, 0.0f}, Vector2{16.0f, 16.0f}, 1), 0);
-    m_registry.emplace<MoveCollider2Points>(newcld, getTilePos(Vector2{20.0f, 17.0f}), getTilePos(Vector2{15.0f, 21.0f}), 180);
-
-    newcld = m_registry.create();
-    m_registry.emplace<ComponentTransform>(newcld, getTilePos(Vector2{17.0f, 21.0f}), ORIENTATION::RIGHT);
-    m_registry.emplace<ComponentStaticCollider>(newcld, getTilePos(Vector2{17.0f, 21.0f}), SlopeCollider({0.0f, 0.0f}, Vector2{16.0f, 0.0f}, -1), 0);
-    m_registry.emplace<MoveCollider2Points>(newcld, getTilePos(Vector2{17.0f, 17.5f}), getTilePos(Vector2{12.0f, 21.5f}), 180);
-
-    newcld = m_registry.create();
-    m_registry.emplace<ComponentTransform>(newcld, getTilePos(Vector2{19.0f, 21.0f}), ORIENTATION::RIGHT);
-    m_registry.emplace<ComponentStaticCollider>(newcld, getTilePos(Vector2{19.0f, 21.0f}), SlopeCollider({0.0f, 0.0f}, Vector2{16.0f * 2, 16.0f}, 0), 0);
-    m_registry.emplace<MoveCollider2Points>(newcld, getTilePos(Vector2{18.5f, 17.0f}), getTilePos(Vector2{13.5f, 21.0f}), 180);*/
+    //m_enemyId = m_enemysys.makeEnemy();
 }
 
 void BattleLevel::enter()
@@ -142,92 +130,35 @@ void BattleLevel::update()
 {
     PROFILE_FUNCTION;
 
-    /*
-        ComponentPhysical - read / write
-    */
     m_physsys.prepHitstop();
 
-    /*
-        InputResolver - read and write
-    */
     m_inputsys.update();
 
-    /*
-        ComponentAnimationRenderable - read and write
-    */
     m_rendersys.update();
 
-    /*
-        ComponentTransform - read
-        Navigatable - read / write
-    */
     m_navsys.update();
 
-    /*
-        ComponentAI, ComponentTransform (own) - read and write
-        Player's transform, physics, possibly state machine - read
-    */
     m_aisys.update();
 
-    /*
-        StateMachine - read / write
-        StateMachine represents physical state of a character and can potentially access almost everyting related to all entites
-    */
-    m_physsys.updateSMs();
+    m_playerSystem.update();
 
-    /*
-        Physics - write
-    */
     m_physsys.prepEntities();
 
-    /*
-        ComponentStaticCollider - read and write
-        SwitchCollider - read and write
-    */
     m_colsys.updateSwitchingColliders();
 
-    /*
-        ComponentStaticCollider - read and write
-        MoveCollider2Points - read and write
-    */
     m_colsys.updateMovingColliders();
 
-    /*
-        ComponentParticlePrimitive - read / write
-    */
     m_partsys.update();
 
-    /*
-        ComponentStaticCollider - read
-        Transform, physics, fallthrough, PhysicalEvents, ComponentParticlePhysics - read / write
-    */
     m_physsys.updatePhysics();
     
-    /*
-        ComponentStaticCollider, transform, physics - read
-        fallthrough - read / write
-    */
     m_physsys.updateOverlappedObstacles();
 
-    /*
-        StateMachine, PhysicalEvents - read / write
-    */
-    m_physsys.updatePhysicalEvents();
+    m_battlesys.update();
+    m_battlesys.handleAttacks();
 
-    /*
-        ComponentTransform, StateMachine - read
-        BattleActor - read / write
-    */
-   m_battlesys.update();
-   m_battlesys.handleAttacks();
+    m_envSystem.update(m_playerId);
 
-   m_envSystem.update(m_playerId);
-
-    /*
-        ComponentDynamicCameraTarget (player) - read / write
-        ComponentTransform, ComponentPhysical (player) - read
-        CameraFocusArea - read
-    */
     m_camsys.update();
 
     // Not actually an ECS system
@@ -283,7 +214,7 @@ inline void BattleLevel::handleResetHandler()
     }
 }
 
-template <>
+/* template <> TODO:
 inline void BattleLevel::handleResetHandler<StateMachine>()
 {
     auto view = m_registry.view<StateMachine, ComponentReset<StateMachine>>();
@@ -292,7 +223,7 @@ inline void BattleLevel::handleResetHandler<StateMachine>()
     {
         handler.resetComponent({.reg=&m_registry, .idx=idx}, comp);
     }
-}
+}*/
 
 void BattleLevel::handleReset()
 {
@@ -305,5 +236,5 @@ void BattleLevel::handleReset()
     handleResetStaticHandler<ComponentAnimationRenderable>();
 
     handleResetHandler<ComponentTransform>();
-    handleResetHandler<StateMachine>();
+    // handleResetHandler<StateMachine>(); TODO:
 }

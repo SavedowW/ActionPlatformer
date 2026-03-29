@@ -40,6 +40,22 @@ Vector2<float> ComponentPhysical::peekRawOffset() const
     return m_velocity + m_inertia.mulComponents(m_inertiaMultiplier) + m_extraoffset + m_velocityLeftover;
 }
 
+void PhysicalEvents::setEvent(const Events &event_)
+{
+    m_events.set(static_cast<size_t>(event_));
+}
+
+void PhysicalEvents::reset() noexcept
+{
+    m_events.reset();
+}
+
+bool PhysicalEvents::checkEvent(const Events &event_) const
+{
+    return m_events.test(static_cast<size_t>(event_));
+}
+
+
 void ComponentObstacleFallthrough::setIgnoringObstacles()
 {
     m_isIgnoringObstacles.begin(5);

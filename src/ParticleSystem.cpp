@@ -41,8 +41,6 @@ void ParticleSystem::makeParticle(const ParticleRecipe &particle_, std::vector<e
 
 void ParticleSystem::update()
 {
-    PROFILE_FUNCTION;
-
     auto viewParticles = m_registry.view<ComponentParticlePrimitive>();
 
     for (auto [idx, pprim] : viewParticles.each())

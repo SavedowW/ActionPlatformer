@@ -399,7 +399,7 @@ void InputReactor::setInputDisabled()
     m_inputEnabled = false;
 }
 
-bool InputReactor::isInputEnabled()
+bool InputReactor::isInputEnabled() const
 {
     return m_inputEnabled;
 }

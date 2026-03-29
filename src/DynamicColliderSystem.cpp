@@ -9,8 +9,6 @@ DynamicColliderSystem::DynamicColliderSystem(entt::registry &reg_) :
 
 void DynamicColliderSystem::updateSwitchingColliders()
 {
-    PROFILE_FUNCTION;
-
     auto clds = m_reg.view<ComponentStaticCollider, SwitchCollider>();
 
     for (auto [idx, cld, swc] : clds.each())
@@ -27,8 +25,6 @@ void DynamicColliderSystem::updateSwitchingColliders()
 
 void DynamicColliderSystem::updateMovingColliders()
 {
-    PROFILE_FUNCTION;
-    
     auto routes = m_reg.view<MoveCollider2Points, ColliderRoutingIterator>();
     for (auto [idx, m2p, routing] : routes.each())
     {
