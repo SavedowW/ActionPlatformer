@@ -1,5 +1,4 @@
-#ifndef VECTOR2_H_
-#define VECTOR2_H_
+#pragma once
 #include "Utils.hpp"
 #include "StaticMapping.hpp"
 #include <cmath>
@@ -315,5 +314,3 @@ inline std::pair<float, float> overlaps(const std::pair<Vector2<float>, Vector2<
 
     return {t, u};
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef HUD_SYSTEM_H_
-#define HUD_SYSTEM_H_
+#pragma once
 #include "Core/FixedQueue.hpp"
 #include "Core/Texture.h"
 #include "CommonAI.h"
@@ -72,5 +71,3 @@ private:
     std::shared_ptr<Texture> m_arrowIn;
     std::shared_ptr<Texture> m_arrowOut;
 };
-
-#endif

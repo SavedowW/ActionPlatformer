@@ -1,5 +1,4 @@
-#ifndef FILESYSTEM_UTILS_H_
-#define FILESYSTEM_UTILS_H_
+#pragma once
 #include <filesystem>
 #include <string>
 
@@ -19,5 +18,3 @@ namespace Filesystem
     std::string getRelativePath(const std::filesystem::path &basePath_, const std::filesystem::path &fullPath_);
     std::string removeExtention(const std::string &filePath_);
 }
-
-#endif

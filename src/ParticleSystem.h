@@ -1,5 +1,4 @@
-#ifndef PARTICLE_SYSTEM_H_
-#define PARTICLE_SYSTEM_H_
+#pragma once
 #include "Core/AnimationManager.h"
 #include "Core/Vector2.hpp"
 #include <entt/entt.hpp>
@@ -23,11 +22,10 @@ struct ParticleTemplate
 {
     ParticleTemplate(int count_, const Vector2<float> &offset_, ResID anim_, uint32_t lifetime_, int layer_);
 
-    ParticleTemplate &setTiePosRules(TiePosRule tieRule_);
+    ParticleTemplate &setTiePosRules(TiePosRule tiePosRule_);
     ParticleTemplate &setTieLifetimeRules(TieLifetimeRule tieRule_);
     ParticleTemplate &setNotDependOnGroundAngle();
 
-    ParticleTemplate() = default;
     ParticleTemplate(const ParticleTemplate &rhs_) = default;
     ParticleTemplate(ParticleTemplate &&rhs_) = default;
     ParticleTemplate& operator=(const ParticleTemplate &rhs_) = default;
@@ -73,5 +71,3 @@ private:
     AnimationManager &m_animmgmt;
 
 };
-
-#endif

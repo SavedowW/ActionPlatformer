@@ -1,6 +1,4 @@
-#ifndef ENUM_MAPPING_H_
-#define ENUM_MAPPING_H_
-
+#pragma once
 #include <string>
 #include <map>
 #include <type_traits>
@@ -99,5 +97,3 @@ template<> \
 const std::string ttypedata<Type>::name = #Type \
 
 // TODO: recursive name
-
-#endif

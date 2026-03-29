@@ -1,5 +1,4 @@
-#ifndef COLLIDER_ROUTING_H_
-#define COLLIDER_ROUTING_H_
+#pragma once
 #include "Core/Vector2.hpp"
 #include <vector>
 
@@ -39,5 +38,3 @@ struct ColliderRoutingIterator
     const ColliderPointRouting &m_route;
     size_t m_iter = 0;
 };
-
-#endif

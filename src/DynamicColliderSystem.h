@@ -1,5 +1,4 @@
-#ifndef DYNAMIC_COLLIDER_SYSTEM_H_
-#define DYNAMIC_COLLIDER_SYSTEM_H_
+#pragma once
 #include "World.h"
 #include "ColliderRouting.h"
 #include "Core/CoreComponents.h"
@@ -24,5 +23,3 @@ private:
 
     entt::registry &m_reg;
 };
-
-#endif

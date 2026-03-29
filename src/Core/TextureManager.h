@@ -1,6 +1,4 @@
-#ifndef TEXTURE_MANAGER_H_
-#define TEXTURE_MANAGER_H_
-
+#pragma once
 #include "Renderer.h"
 #include "Texture.h"
 #include <memory>
@@ -28,5 +26,3 @@ private:
 	std::map<std::string, ResID> m_ids;
 	std::vector<ContainedTextureData> m_textures_;
 };
-
-#endif

@@ -1,6 +1,4 @@
-#ifndef SHADER_HPP_
-#define SHADER_HPP_
-
+#pragma once
 #include "Shader.h"
 #include "glad/glad.h"
 
@@ -28,5 +26,3 @@ inline void Shader::setVector4f(const char *name_, T x_, T y_, T z_, T w_)
 {
     glUniform4f(claimUniformLoc(name_), static_cast<float>(x_), static_cast<float>(y_), static_cast<float>(z_), static_cast<float>(w_));
 }
-
-#endif

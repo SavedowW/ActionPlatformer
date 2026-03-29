@@ -1,6 +1,4 @@
-#ifndef SHADER_H_
-#define SHADER_H_
-
+#pragma once
 #include "Utils.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -49,5 +47,3 @@ public:
 
     unsigned int m_id = 0; 
 };
-
-#endif

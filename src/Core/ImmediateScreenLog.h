@@ -1,6 +1,4 @@
-#ifndef COMMON_SCREEN_LOG_H_
-#define COMMON_SCREEN_LOG_H_
-
+#pragma once
 #include "TextManager.h"
 
 template<typename AlignerT>
@@ -16,5 +14,3 @@ private:
     const int m_font;
     const int m_offsetPerLine;
 };
-
-#endif

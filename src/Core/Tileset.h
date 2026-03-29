@@ -1,6 +1,4 @@
-#ifndef TILESET_H_
-#define TILESET_H_
-
+#pragma once
 #include "TextureManager.h"
 #include "TimelineProperty.hpp"
 
@@ -52,5 +50,3 @@ private:
     std::vector<Tileset> m_tilesets;
     TimelineProperty<size_t> m_tilesetMapping;
 };
-
-#endif

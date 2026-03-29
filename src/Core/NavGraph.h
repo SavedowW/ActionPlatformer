@@ -1,5 +1,4 @@
-#ifndef NAV_GRAPH_H_
-#define NAV_GRAPH_H_
+#pragma once
 #include "Renderer.h"
 #include "TextManager.h"
 #include "Vector2.hpp"
@@ -99,5 +98,3 @@ private:
     friend class NavPath;
 
 };
-
-#endif

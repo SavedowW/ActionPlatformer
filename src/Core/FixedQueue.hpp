@@ -1,5 +1,4 @@
-#ifndef FIXED_QUEUE_H_
-#define FIXED_QUEUE_H_
+#pragma once
 #include <stdexcept>
 #include <iostream>
 #include <array>
@@ -57,5 +56,3 @@ namespace utils
         std::cout << "\n";
     }
 }
-
-#endif

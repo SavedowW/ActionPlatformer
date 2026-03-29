@@ -1,6 +1,4 @@
-#ifndef CAMERA_H_
-#define CAMERA_H_
-
+#pragma once
 #include "Vector2.hpp"
 #include "FrameTimer.h"
 
@@ -46,5 +44,3 @@ private:
     void normalizePosition();
     Vector2<float> getCamPositionInBoundaries(const Vector2<float> &pos_);
 };
-
-#endif

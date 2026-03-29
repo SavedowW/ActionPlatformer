@@ -1,5 +1,4 @@
-#ifndef ENV_COMPONENTS_H_
-#define ENV_COMPONENTS_H_
+#pragma once
 #include "World.h"
 #include "Core/Collider.h"
 
@@ -24,5 +23,3 @@ public:
         FLICK_RIGHT
     } m_state = State::IDLE;
 };
-
-#endif

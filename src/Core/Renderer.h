@@ -1,6 +1,4 @@
-#ifndef RENDERER_H_
-#define RENDERER_H_
-
+#pragma once
 #include "Collider.h"
 #include "Camera.h"
 #include "Shader.h"
@@ -83,5 +81,3 @@ private:
 
     unsigned int m_intermTexture = 0;
 };
-
-#endif

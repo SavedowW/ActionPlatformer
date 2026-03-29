@@ -1,5 +1,4 @@
-#ifndef PROFILE_H_
-#define PROFILE_H_
+#pragma once
 #include "Timer.h"
 #include "Logger.h" // IWYU pragma: keep
 #include <vector>
@@ -92,7 +91,5 @@ size_t registerProfilePlace(const char *file_, const std::string &functionName_,
 #else
 
 #define PROFILE_FUNCTION
-
-#endif
 
 #endif

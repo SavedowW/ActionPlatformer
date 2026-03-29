@@ -1,5 +1,4 @@
-#ifndef INPUT_H_
-#define INPUT_H_
+#pragma once
 #include <SDL3/SDL.h>
 #include "StaticMapping.hpp"
 #include <map>
@@ -470,5 +469,3 @@ protected:
     std::set<GAMEPLAY_EVENTS> m_gameplaySubscriptions;
     std::set<HUD_EVENTS> m_hudSubscriptions;
 };
-
-#endif

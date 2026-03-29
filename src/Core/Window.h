@@ -1,6 +1,4 @@
-#ifndef WINDOW_H_
-#define WINDOW_H_
-
+#pragma once
 #include <SDL3/SDL.h>
 #include <string>
 #include "Vector2.hpp"
@@ -23,5 +21,3 @@ private:
     SDL_Window* m_window = nullptr;
     std::string m_winName;
 };
-
-#endif

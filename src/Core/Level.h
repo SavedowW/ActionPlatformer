@@ -1,6 +1,4 @@
-#ifndef LEVEL_H_
-#define LEVEL_H_
-
+#pragma once
 #include "InputSystem.h"
 #include "FPSUtility.h"
 #include "Timer.h"
@@ -47,5 +45,3 @@ protected:
     bool m_allowIter = false;
     bool m_forcerun = false;
 };
-
-#endif

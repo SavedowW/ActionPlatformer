@@ -1,6 +1,4 @@
-#ifndef INPUT_STATE_H_
-#define INPUT_STATE_H_
-
+#pragma once
 #include "FixedQueue.hpp"
 #include "Vector2.hpp"
 #include <map>
@@ -43,5 +41,3 @@ inline std::ostream& operator<< (std::ostream& out_, const InputState& inState_)
 }
 
 using InputQueue = FixedQueue<InputState, 30>;
-
-#endif

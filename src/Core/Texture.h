@@ -1,6 +1,4 @@
-#ifndef TEXTURE_H_
-#define TEXTURE_H_
-
+#pragma once
 #include "Vector2.hpp"
 
 class TextureManager;
@@ -32,5 +30,3 @@ public:
 private:
     std::string m_name;
 };
-
-#endif

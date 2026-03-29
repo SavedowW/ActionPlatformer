@@ -1,5 +1,4 @@
-#ifndef STATE_COMMON_H_
-#define STATE_COMMON_H_
+#pragma once
 #include <cstdint>
 #include <type_traits>
 
@@ -62,5 +61,3 @@ public:
 private:
     T m_flag;
 };
-
-#endif

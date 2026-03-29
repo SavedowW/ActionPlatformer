@@ -1,5 +1,4 @@
-#ifndef JSON_UTILS_H_
-#define JSON_UTILS_H_
+#pragma once
 #include "StaticMapping.hpp"
 #include "Vector2.hpp"
 #include <set>
@@ -94,5 +93,3 @@ namespace utils
         return hadDuplicated_;
     }
 }
-
-#endif

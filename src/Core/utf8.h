@@ -1,6 +1,4 @@
-#ifndef UTF8_H_
-#define UTF8_H_
-
+#pragma once
 #include <cstdint>
 #include <string>
 #include <bitset>
@@ -177,5 +175,3 @@ inline T &operator+=(T &lhs_, const U8Wrapper::iterator &rhs_)
 
 std::ostream &operator<<(std::ostream &os_, const U8Wrapper::iterator &it_);
 std::ostream &operator<<(std::ostream &os_, const U8Wrapper &it_);
-
-#endif

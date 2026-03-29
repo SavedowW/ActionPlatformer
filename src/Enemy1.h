@@ -1,5 +1,4 @@
-#ifndef ENEMY_1_H_
-#define ENEMY_1_H_
+#pragma once
 #include "Core/CoreComponents.h"
 #include "SM/StateMachine.h"
 #include "CommonAI.h"
@@ -29,5 +28,3 @@ SERIALIZE_ENUM(Enemy1State, {
     ENUM_AUTO(Enemy1State, PREJUMP),
     ENUM_AUTO(Enemy1State, RUN)
 })
-
-#endif

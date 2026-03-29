@@ -1,5 +1,4 @@
-#ifndef CHATBOX_H_
-#define CHATBOX_H_
+#pragma once
 #include "Core/FrameTimer.h"
 #include "InputHandlingSystem.h"
 #include "Core/Texture.h"
@@ -268,5 +267,3 @@ void RenderDropSymbol<OwnT>::onRenderReached(ChatMessageSequence::RenderEffects 
 {
     std::get<std::stack<OwnT*>>(effects).pop();
 }
-
-#endif

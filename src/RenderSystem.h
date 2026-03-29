@@ -1,5 +1,4 @@
-#ifndef RENDER_SYSTEM_H_
-#define RENDER_SYSTEM_H_
+#pragma once
 #include "Hit.h"
 #include "Core/InputSystem.h"
 #include "Core/CoreComponents.h"
@@ -40,5 +39,3 @@ struct RenderSystem : public InputReactor
     Camera &m_camera;
     ColliderRoutesCollection &m_routesCollection;
 };
-
-#endif

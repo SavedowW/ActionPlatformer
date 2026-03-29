@@ -1,5 +1,4 @@
-#ifndef TRIGGER_H_
-#define TRIGGER_H_
+#pragma once
 #include "RectCollider.h"
 
 struct Trigger : public Collider
@@ -28,5 +27,3 @@ struct Trigger : public Collider
 Trigger::Tag operator|(const Trigger::Tag &lhs_, const Trigger::Tag &rhs_);
 Trigger::Tag &operator|=(Trigger::Tag &lhs_, const Trigger::Tag &rhs_);
 Trigger::Tag operator&(const Trigger::Tag &lhs_, const Trigger::Tag &rhs_);
-
-#endif

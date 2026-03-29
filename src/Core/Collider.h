@@ -1,5 +1,4 @@
-#ifndef COLLIDER_H_
-#define COLLIDER_H_
+#pragma once
 #include "StateCommon.h"
 #include "Vector2.hpp"
 #include "RectCollider.h"
@@ -57,6 +56,3 @@ private:
     int m_highestSlopePoint = 0;
     float m_topAngleCoef = 0.0f;
 };
-
-
-#endif

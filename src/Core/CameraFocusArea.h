@@ -1,6 +1,4 @@
-#ifndef CAMERA_FOCUS_AREA_H_
-#define CAMERA_FOCUS_AREA_H_
-
+#pragma once
 #include "RectCollider.h"
 #include "Renderer.h"
 #include "Vector2.hpp"
@@ -27,5 +25,3 @@ private:
     Collider m_useFocusArea;
 
 };
-
-#endif

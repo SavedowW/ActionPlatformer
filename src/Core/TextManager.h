@@ -1,6 +1,4 @@
-#ifndef TEXT_MANAGER_H_
-#define TEXT_MANAGER_H_
-
+#pragma once
 #include "Texture.h"
 #include "Renderer.h"
 #include <concepts>
@@ -131,5 +129,3 @@ private:
     Fonts m_fonts;
 
 };
-
-#endif

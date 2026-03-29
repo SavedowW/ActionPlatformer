@@ -1,5 +1,4 @@
-#ifndef LOGGER_H_
-#define LOGGER_H_
+#pragma once
 #include <string>
 #include <sstream>
 
@@ -17,7 +16,4 @@ namespace utils
     std::string cutBoundingSpaces(const std::string &functionName_);
 }
 
-
 // TODO:
-
-#endif

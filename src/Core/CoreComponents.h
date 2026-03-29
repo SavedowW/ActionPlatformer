@@ -1,5 +1,4 @@
-#ifndef CORE_COMPONENTS_H_
-#define CORE_COMPONENTS_H_
+#pragma once
 #include "Tileset.h"
 #include "Vector2.hpp"
 #include "FrameTimer.h"
@@ -316,5 +315,3 @@ struct TilemapLayer
 
 Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_);
 bool checkCurrentHitstop(entt::registry &reg_, const entt::entity &idx_);
-
-#endif

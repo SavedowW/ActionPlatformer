@@ -1,5 +1,4 @@
-#ifndef UTILS_H_
-#define UTILS_H_
+#pragma once
 #include <string>
 #include <sstream>
 #include <vector>
@@ -284,5 +283,3 @@ inline std::ostream& operator<< (std::ostream& out, const std::vector<T>& vec)
     out << "]";
     return out;
 }
-
-#endif

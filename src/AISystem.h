@@ -1,5 +1,4 @@
-#ifndef AI_SYSTEM_H_
-#define AI_SYSTEM_H_
+#pragma once
 #include "CommonAI.h"
 #include "Core/Application.h"
 #include <entt/entt.hpp>
@@ -16,5 +15,3 @@ public:
 private:
     entt::registry &m_reg;
 };
-
-#endif

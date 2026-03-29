@@ -1,5 +1,4 @@
-#ifndef ANIMATION_MANAGER_H_
-#define ANIMATION_MANAGER_H_
+#pragma once
 #include "Vector2.hpp"
 #include <filesystem>
 #include <unordered_map>
@@ -109,5 +108,3 @@ private:
     void animFinished();
 
 };
-
-#endif

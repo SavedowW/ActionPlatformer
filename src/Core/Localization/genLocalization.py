@@ -9,8 +9,7 @@ def generateHeader(pathHeader_):
     global keys, langs
     with open(pathHeader_, 'w+', encoding='utf-8') as f:
         f.write(
-"""#ifndef LOCALIZATION_GEN_H_
-#define LOCALIZATION_GEN_H_
+"""#pragma once
 #include <string>
 #include <array>
 
@@ -44,7 +43,6 @@ private:
 """    static LocalMap *m_currentStrings;
 };
 
-#endif
 """)
         
 def generateCpp(pathCpp_):

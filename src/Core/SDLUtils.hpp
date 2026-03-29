@@ -1,5 +1,4 @@
-#ifndef SDL_UTILS_H_
-#define SDL_UTILS_H_
+#pragma once
 #include <SDL3/SDL.h>
 #include <string>
 #include <sstream>
@@ -27,5 +26,3 @@ namespace utils {
     }
 
 }
-
-#endif

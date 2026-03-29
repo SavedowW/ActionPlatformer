@@ -1,5 +1,4 @@
-#ifndef ENEMY_SYSTEM_H_
-#define ENEMY_SYSTEM_H_
+#pragma once
 #include "Core/NavSystem.h"
 #include "Core/Camera.h"
 #include "ParticleSystem.h"
@@ -20,5 +19,3 @@ struct EnemySystem
     ParticleSystem &m_partsys;
     Camera &m_cam;
 };
-
-#endif

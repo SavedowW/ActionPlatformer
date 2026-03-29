@@ -1,5 +1,4 @@
-#ifndef GAMEDATA_H_
-#define GAMEDATA_H_
+#pragma once
 #include <SDL3/SDL.h>
 #include "Vector2.hpp"
 
@@ -55,5 +54,3 @@ namespace gamedata
         inline constexpr SDL_Color hurtboxColor = {0, 255, 0, 100};
     }
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef BEHAVIOR_H_
-#define BEHAVIOR_H_
+#pragma once
 #include "StateCommon.h"
 #include "FrameTimer.h"
 #include "StaticMapping.hpp"
@@ -200,5 +199,3 @@ SERIALIZE_ENUM(Behavior::Status, {
     ENUM_AUTO(Behavior::Status, FAILURE),
     ENUM_AUTO(Behavior::Status, RUNNING)
 });
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef LEVEL_BUILDER_H_
-#define LEVEL_BUILDER_H_
+#pragma once
 #include "ColliderRouting.h"
 #include "EnvironmentSystem.h"
 #include "Core/NavGraph.h"
@@ -66,5 +65,3 @@ private:
 
     int m_autoLayer;
 };
-
-#endif

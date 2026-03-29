@@ -1,5 +1,4 @@
-#ifndef BATTLE_SYSTEM_H_
-#define BATTLE_SYSTEM_H_
+#pragma once
 #include "Core/Camera.h"
 #include "Core/FixedQueue.hpp"
 #include <entt/entt.hpp>
@@ -38,5 +37,3 @@ private:
     FixedQueue<Vector2<float>, battle_debug::lastHitsShown> m_appliedHits;
 
 };
-
-#endif

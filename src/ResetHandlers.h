@@ -1,5 +1,4 @@
-#ifndef RESET_HANDLERS_H_
-#define RESET_HANDLERS_H_
+#pragma once
 #include "ColliderRouting.h"
 #include "SM/StateMachine.h"
 #include "Core/CoreComponents.h"
@@ -99,5 +98,3 @@ public:
         anim_.m_flash = nullptr;
     }
 };
-
-#endif

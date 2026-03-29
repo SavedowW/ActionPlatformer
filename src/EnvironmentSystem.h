@@ -1,5 +1,4 @@
-#ifndef ENVIRONMENT_SYSTEM_H_
-#define ENVIRONMENT_SYSTEM_H_
+#pragma once
 #include "Core/Application.h"
 #include <entt/entt.hpp>
 
@@ -13,5 +12,3 @@ public:
 private:
     entt::registry &m_reg;
 };
-
-#endif

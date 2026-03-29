@@ -1,5 +1,4 @@
-#ifndef LOCALIZATION_GEN_H_
-#define LOCALIZATION_GEN_H_
+#pragma once
 #include <string>
 #include <array>
 
@@ -29,4 +28,3 @@ private:
     static LocalMap *m_currentStrings;
 };
 
-#endif

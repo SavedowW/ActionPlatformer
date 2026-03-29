@@ -1,5 +1,4 @@
-#ifndef CAMERA_SYSTEM_H_
-#define CAMERA_SYSTEM_H_
+#pragma once
 #include "Core/Camera.h"
 #include "Core/FrameTimer.h"
 #include "Core/Renderer.h"
@@ -35,5 +34,3 @@ struct CameraSystem : public InputReactor
 
     const Vector2<int> BODY_OFFSET{0, -30};
 };
-
-#endif

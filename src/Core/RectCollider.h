@@ -1,5 +1,4 @@
-#ifndef RECT_COLLIDER_H_
-#define RECT_COLLIDER_H_
+#pragma once
 #include "StateCommon.h"
 #include "Vector2.hpp"
 
@@ -93,5 +92,3 @@ inline std::ostream& operator<< (std::ostream& out_, const Collider& cld_)
     out_ << "{ " << cld_.getLeftEdge() << ", " << cld_.getTopEdge() << ", " << cld_.getRightEdge() << ", " << cld_.getBottomEdge() << " }";
     return out_;
 }
-
-#endif

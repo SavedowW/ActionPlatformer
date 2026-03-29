@@ -1,5 +1,4 @@
-#ifndef FRAME_TIMER_H_
-#define FRAME_TIMER_H_
+#pragma once
 #include <cstdint>
 
 template<bool RESULT_IF_INACTIVE = false>
@@ -22,5 +21,3 @@ private:
 	uint32_t m_framesToWait;
     uint32_t m_currentFrame;
 };
-
-#endif

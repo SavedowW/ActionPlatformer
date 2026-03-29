@@ -1,5 +1,4 @@
-#ifndef WORLD
-#define WORLD
+#pragma once
 #include "Core/Trigger.h"
 #include "ParticleSystem.h"
 #include "Core/NavSystem.h"
@@ -37,5 +36,3 @@ private:
     NavSystem &m_navsys;
 
 };
-
-#endif

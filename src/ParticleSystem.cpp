@@ -1,6 +1,5 @@
 #include "ParticleSystem.h"
 #include "Core/CoreComponents.h"
-#include "Core/Profile.h"
 #include "Core/Application.h"
 
 ParticleSystem::ParticleSystem(entt::registry &reg_) :

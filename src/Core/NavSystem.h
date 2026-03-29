@@ -1,5 +1,4 @@
-#ifndef NAV_SYSTEM_H_
-#define NAV_SYSTEM_H_
+#pragma once
 #include "NavGraph.h"
 #include "Camera.h"
 #include <entt/entt.hpp>
@@ -117,5 +116,3 @@ struct NavSystem
 
     std::unordered_map<Traverse::TraitT, std::weak_ptr<NavPath>> m_paths;
 };
-
-#endif

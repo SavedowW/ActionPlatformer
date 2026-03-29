@@ -1,6 +1,4 @@
-#ifndef STATE_MARKER_H_
-#define STATE_MARKER_H_
-
+#pragma once
 #include "StateCommon.h"
 #include "StaticMapping.hpp"
 #include <initializer_list>
@@ -66,7 +64,3 @@ public:
 private:
     std::vector<StateHolder_t> m_stateMarks;
 };
-
-
-
-#endif

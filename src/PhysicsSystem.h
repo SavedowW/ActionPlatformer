@@ -1,5 +1,4 @@
-#ifndef PHYSICS_SYSTEM_H_
-#define PHYSICS_SYSTEM_H_
+#pragma once
 #include "Core/CoreComponents.h"
 #include <entt/entt.hpp>
 
@@ -37,6 +36,3 @@ struct PhysicsSystem
     entt::registry &m_reg;
     const Vector2<int> m_levelSize;
 };
-
-
-#endif

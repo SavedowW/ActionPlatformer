@@ -1,6 +1,4 @@
-#ifndef TIMELINE_PROPERTY_H_
-#define TIMELINE_PROPERTY_H_
-
+#pragma once
 #include <stdexcept>
 #include <map>
 #include <vector>
@@ -280,5 +278,3 @@ protected:
 
     static constexpr int m_stepThreshold = 5;
 };
-
-#endif

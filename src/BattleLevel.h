@@ -1,6 +1,4 @@
-#ifndef BATTLE_LEVEL_H_
-#define BATTLE_LEVEL_H_
-
+#pragma once
 #include "LevelBuilder.h"
 #include "PhysicsSystem.h"
 #include "PlayerSystem.h"
@@ -67,5 +65,3 @@ protected:
     ColliderRoutesCollection m_cldRoutesCollection;
     LevelBuilder m_lvlBuilder;
 };
-
-#endif

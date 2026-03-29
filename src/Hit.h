@@ -1,5 +1,4 @@
-#ifndef HIT_H_
-#define HIT_H_
+#pragma once
 #include "Core/AnimationManager.h"
 #include "Core/TimelineProperty.hpp"
 #include "Core/RectCollider.h"
@@ -151,5 +150,3 @@ HitboxGroup hitPlayerChain();
 HitboxGroup hitPlayerAirAttack();
 
 }
-
-#endif
