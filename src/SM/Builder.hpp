@@ -1,5 +1,7 @@
 #pragma once
 #include "Builder.h"
+#include "SM/CompoundState.hpp"
+#include "SM/TransitionCheck.hpp"
 
 namespace SM
 {
@@ -14,14 +16,14 @@ namespace SM
     template<typename StateIDT, typename ViewT>
     SM::RulePipesContainer<StateIDT, ViewT> &&Make<StateIDT, ViewT>::RulePipe::done()
     {
-        return std::move(_container);
+        return std::move(m_container);
     }
 
     template<typename StateIDT, typename ViewT>
     template<typename... CallablesT>
     Make<StateIDT, ViewT>::RulePipe &Make<StateIDT, ViewT>::RulePipe::setPipe(const StateIDT &state_, CallablesT&&... callables_)
     {
-        _container.setPipe(state_, AbstractCallable<const ViewT&, const SM::TransitionData<StateIDT>&>::makeUniqueCompound(std::forward<CallablesT>(callables_)...));
+        m_container.setPipe(state_, AbstractCallable<const ViewT&, const SM::TransitionData<StateIDT>&>::makeUniqueCompound(std::forward<CallablesT>(callables_)...));
         return *this;
     }
 
@@ -29,7 +31,21 @@ namespace SM
     template<typename... CallablesT>
     Make<StateIDT, ViewT>::RulePipe &Make<StateIDT, ViewT>::RulePipe::setDefaultPipe(CallablesT&&... callables_)
     {
-        _container.setDefaultPipe(AbstractCallable<const ViewT&, const SM::TransitionData<StateIDT>&>::makeUniqueCompound(std::forward<CallablesT>(callables_)...));
+        m_container.setDefaultPipe(AbstractCallable<const ViewT&, const SM::TransitionData<StateIDT>&>::makeUniqueCompound(std::forward<CallablesT>(callables_)...));
+        return *this;
+    }
+
+
+    template<typename StateIDT, typename ViewT>
+    Sequential<StateIDT, ViewT> &&Make<StateIDT, ViewT>::SequentialConditions::done()
+    {
+        return std::move(m_conditions);
+    }
+
+    template<typename StateIDT, typename ViewT>
+    Make<StateIDT, ViewT>::SequentialConditions &Make<StateIDT, ViewT>::SequentialConditions::addCondition(std::unique_ptr<AbstractCondition<StateIDT, ViewT>> &&condition_)
+    {
+        m_conditions.addCondition(std::move(condition_));
         return *this;
     }
 

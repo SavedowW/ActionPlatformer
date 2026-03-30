@@ -1,7 +1,5 @@
 #pragma once
-#include "Core/CoreComponents.h"
 #include "SM/StateMachine.h"
-#include "CommonAI.h"
 #include "Core/StaticMapping.hpp"
 
 enum class Enemy1State : SM::StateID

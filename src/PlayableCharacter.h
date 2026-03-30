@@ -43,5 +43,5 @@ SERIALIZE_ENUM(PlayerState, {
     ENUM_AUTO(PlayerState, AIR_ATTACK),
 */
 
-using PlayerView = ComponentsView<SM::StatePossessor<PlayerState>, ComponentTransform, ComponentPhysical, ComponentAnimationRenderable>;
+using PlayerView = ComponentsView<SM::StatePossessor<PlayerState>, ComponentTransform, ComponentPhysical, PhysicalEvents, ComponentAnimationRenderable>;
 using PlayerMake = SM::Make<PlayerState, PlayerView>;

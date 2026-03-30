@@ -1,5 +1,4 @@
 #include "PlayerSystem.h"
-#include "SM/CompoundState.hpp"
 #include "SM/Builder.hpp"
 #include "SM/PhysicalState.h"
 #include "SM/PhysicalState.hpp"
@@ -8,6 +7,7 @@
 #include "SM/StateMachine.hpp"
 #include "ResetHandlers.h"
 #include "Core/Application.h"
+#include "SM/TransitionCheck.h"
 
 PlayerSystem::PlayerSystem(entt::registry &reg_) :
     m_reg(reg_),
@@ -100,6 +100,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 std::cout << "Float asked" << std::endl;
                 return SM::TransitionData<PlayerState>{PlayerState::FLOAT, PlayerState::FLOAT, ORIENTATION::UNSPECIFIED};
             },
+
             [](const PlayerView&, const SM::TransitionData<PlayerState>&) {
                 std::cout << "Float from" << std::endl;
             },
@@ -117,10 +118,10 @@ void PlayerSystem::setup(entt::entity playerId_)
             SM::CallBatch(
                 SM::Updaters::Notify<PlayerState, PlayerView>()),
 
-            [](const PlayerView&) {
-                std::cout << "Float asked" << std::endl;
-                return SM::TransitionData<PlayerState>{PlayerState::FLOAT, PlayerState::FLOAT, ORIENTATION::UNSPECIFIED};
-            },
+            PlayerMake::SequentialConditions{}
+                .addCondition(std::make_unique<SM::Transition::Checks::OnPhysEvent<PlayerState, PlayerView>>(PlayerState::LANDING_RECOVERY, PhysicalEvents::Events::TOUCHED_GROUND))
+                .done(),
+
             [](const PlayerView&, const SM::TransitionData<PlayerState>&) {
                 std::cout << "Float from" << std::endl;
             },

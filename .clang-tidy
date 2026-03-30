@@ -61,6 +61,9 @@ Checks: >
   -readability-isolate-declaration,
   # Taste
 
+  -logical-op-parentheses
+  # Taste
+
   #-performance-no-int-to-ptr,
   #-bugprone-easily-swappable-parameters,
   #-cppcoreguidelines-avoid-c-arrays,

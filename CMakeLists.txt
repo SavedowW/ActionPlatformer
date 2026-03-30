@@ -16,7 +16,8 @@ message("compiler: ${CMAKE_CXX_COMPILER_ID}")
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wunreachable-code-aggressive -Wpedantic \
         -Waddress -Waddress-of-temporary -Wabstract-final-class -Wmissing-braces \
-        -Wdeprecated -Wno-logical-op-parentheses -Wno-deprecated-literal-operator")
+        -Wdeprecated -Wno-logical-op-parentheses -Wno-deprecated-literal-operator \
+        -Wno-logical-op-parentheses")
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
     set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
