@@ -1,5 +1,6 @@
 #include "HUDSystem.h"
 #include "Core/TextManager.hpp"
+#include "PlayableCharacter.h"
 #include "SM/StateMachine.h"
 #include "Core/ImmediateScreenLog.hpp"
 #include "Core/Application.h"
@@ -54,9 +55,9 @@ void HudSystem::drawCommonDebug() const
 
     ImmediateScreenLog<TextAligners::AlignerLeft> commonLog{0, 12, {1, 1}};
 
-    commonLog.dumpLine("[" + std::to_string(m_lvlId) + "] " + utils::toString(m_lvlSize));
-    commonLog.dumpLine("Camera pos: " + utils::toString(m_cam.getPos()));
-    commonLog.dumpLine("Camera size: " + utils::toString(m_cam.getSize()));
+    commonLog.dumpLine("[" + std::to_string(m_lvlId) + "] " + std::string(m_lvlSize));
+    commonLog.dumpLine("Camera pos: " + std::string(m_cam.getPos()));
+    commonLog.dumpLine("Camera size: " + std::string(m_cam.getSize()));
     commonLog.dumpLine("Camera scale: " + std::to_string(m_cam.getScale()));
     commonLog.dumpLine("Real frame time (ns): " + std::to_string(lastFrameTime));
     commonLog.dumpLine("Avg frame time (ms): " + std::to_string( m_avgFrames.avg() / 1'000'000.0f));
@@ -71,8 +72,8 @@ void HudSystem::drawPlayerDebug() const
     const auto &obsfall = m_reg.get<ComponentObstacleFallthrough>(playerId);
     const auto &ptransform = m_reg.get<ComponentTransform>(playerId);
     const auto &pphysical = m_reg.get<ComponentPhysical>(playerId);
-    //const auto &psm = m_reg.get<StateMachine>(playerId);
-    const auto &pinp = m_reg.get<components::InputResolver>(playerId);
+    const auto &psm = m_reg.get<SM::StatePossessor<PlayerState>>(playerId);
+    const auto &pinp = m_reg.get<InputResolver>(playerId);
 
     std::string ignoredObstacles;
     for (const auto &el : obsfall.m_ignoredObstacles)
@@ -84,14 +85,15 @@ void HudSystem::drawPlayerDebug() const
 
     ImmediateScreenLog<TextAligners::AlignerRight> playerLog{0, 12, {gamedata::global::hudLayerResolution.x - 1, 1}};
 
-    playerLog.dumpLine("Player pos: " + utils::toString(ptransform.m_pos));
-    playerLog.dumpLine("Player vel: " + utils::toString(pphysical.m_velocity));
-    playerLog.dumpLine("Player inr: " + utils::toString(pphysical.m_inertia));
-    playerLog.dumpLine(std::string("Player action: TODO")/* + psm.getName()*/);
+    playerLog.dumpLine("Player pos: " + std::string(ptransform.m_pos));
+    playerLog.dumpLine("Player vel: " + std::string(pphysical.m_velocity));
+    playerLog.dumpLine("Player inr: " + std::string(pphysical.m_inertia));
+    playerLog.dumpLine("Gravity: " + std::string(pphysical.m_gravity));
+    playerLog.dumpLine(std::string("Player action: ") + serialize(psm.stateId()) + ':' + std::to_string(psm.framesInState()));
     playerLog.dumpLine(std::string("Ignored obstacles: ") + ignoredObstacles);
     playerLog.dumpLine(std::string("On slope: ") + std::to_string(pphysical.m_onSlopeWithAngle));
     playerLog.dumpLine(std::string("Grounded: ") + std::to_string(pphysical.m_onGround != entt::null));
-    playerLog.dumpLine(std::string("Attac\nhed: ") + std::to_string(pphysical.m_onWall != entt::null));
+    playerLog.dumpLine(std::string("Attached: ") + std::to_string(pphysical.m_onWall != entt::null));
 
     auto inputs = pinp.getCurrentInputDir();
 

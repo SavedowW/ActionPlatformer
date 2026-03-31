@@ -29,34 +29,31 @@ SERIALIZE_ENUM(InputMotions, {
     ENUM_AUTO(InputMotions, TAP_ATTACK)
 })
 
-namespace components
+class InputResolver
 {
-    class InputResolver
-    {
-    public:
-        InputResolver();
+public:
+    InputResolver();
 
-        void addFrame(const InputState &currentInput_);
+    void addFrame(const InputState &currentInput_);
 
-        Vector2<int> getCurrentInputDir() const;
+    Vector2<int> getCurrentInputDir() const;
 
-        bool checkInput(InputMotions motion_, ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkInput(InputMotions motion_, ORIENTATION orientation_, unsigned int extendBuffer_) const;
 
-    private:
-        bool checkAlwaysFail(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-        bool checkAlwaysSuccess(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-        bool checkHoldHorDir(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-        bool checkHoldHorDirBuffered(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-        bool checkHoldUp(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-        bool checkHoldDown(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-        bool checkTapUp(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-        bool checkTapDown(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-        bool checkStrictTapUpHorDir(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-        bool checkTapAttack(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+private:
+    bool checkAlwaysFail(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkAlwaysSuccess(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkHoldHorDir(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkHoldHorDirBuffered(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkHoldUp(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkHoldDown(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkTapUp(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkTapDown(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkStrictTapUpHorDir(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkTapAttack(ORIENTATION orientation_, unsigned int extendBuffer_) const;
 
-        using InputCheck = bool (InputResolver::*)(ORIENTATION, unsigned int) const;
+    using InputCheck = bool (InputResolver::*)(ORIENTATION, unsigned int) const;
 
-        InputQueue m_inputQueue;
-        std::unordered_map<InputMotions, InputCheck> m_inputComparators;
-    };
-}
+    InputQueue m_inputQueue;
+    std::unordered_map<InputMotions, InputCheck> m_inputComparators;
+};

@@ -42,7 +42,7 @@ BattleLevel::BattleLevel(int lvlId_, FPSUtility &fpsUtility_, const Vector2<int>
     m_registry.emplace<ComponentResetStatic<ComponentAnimationRenderable>>(playerId);
 
     m_registry.emplace<RenderLayer>(playerId, 6);
-    m_registry.emplace<components::InputResolver>(playerId);
+    m_registry.emplace<InputResolver>(playerId);
 
     m_registry.emplace<ComponentDynamicCameraTarget>(playerId);
     m_registry.emplace<ComponentResetStatic<ComponentDynamicCameraTarget>>(playerId);

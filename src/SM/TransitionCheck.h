@@ -45,5 +45,17 @@ namespace SM
         private:
             const PhysicalEvents::Events m_event;
         };
+
+        template<typename StateIDT, typename ViewT>
+        class OnTimer : public AbstractCondition<StateIDT, ViewT>
+        {
+        public:
+            OnTimer(const StateIDT &state_, uint32_t framesLimit_);
+
+            ORIENTATION operator()(const ViewT &view_) override;
+
+        private:
+            const uint32_t m_framesLimit;
+        };
     }
 }

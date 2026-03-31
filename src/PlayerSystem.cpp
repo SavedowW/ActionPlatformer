@@ -18,7 +18,7 @@ PlayerSystem::PlayerSystem(entt::registry &reg_) :
 
 void PlayerSystem::setup(entt::entity playerId_)
 {
-    auto [trans, phys, inp, animrnd, state, transreset/*, smreset*/] = m_reg.get<ComponentTransform, ComponentPhysical, components::InputResolver, ComponentAnimationRenderable, SM::StatePossessor<PlayerState>,
+    auto [trans, phys, inp, animrnd, state, transreset/*, smreset*/] = m_reg.get<ComponentTransform, ComponentPhysical, InputResolver, ComponentAnimationRenderable, SM::StatePossessor<PlayerState>,
         ComponentReset<ComponentTransform>/*, ComponentReset<SM::StatePossessor<PlayerState>>*/>(playerId_);
 
     if (m_reg.all_of<ComponentSpawnLocation>(playerId_))
@@ -59,7 +59,7 @@ void PlayerSystem::setup(entt::entity playerId_)
 
 
     phys.m_pushbox = {.m_topLeft=Vector2{-7.0f, -32.0f}, .m_size=Vector2{14.0f, 32.0f}};
-    phys.m_gravity = {0.0f, 0.5f};
+    phys.m_gravity = {0.0f, 0.0f};
 
 
     // TODO: Configure SM
@@ -91,18 +91,39 @@ void PlayerSystem::setup(entt::entity playerId_)
 
     m_statemachine.addState(
         SM::Make<PlayerState, PlayerView>::state(
-            PlayerState::LANDING_RECOVERY,
+            PlayerState::IDLE,
 
             SM::CallBatch(
                 SM::Updaters::Notify<PlayerState, PlayerView>()),
 
             [](const PlayerView&) {
-                std::cout << "Float asked" << std::endl;
-                return SM::TransitionData<PlayerState>{PlayerState::FLOAT, PlayerState::FLOAT, ORIENTATION::UNSPECIFIED};
+                std::cout << "IDLE asked" << std::endl;
+                return SM::TransitionData<PlayerState>{PlayerState::IDLE, PlayerState::IDLE, ORIENTATION::UNSPECIFIED};
             },
 
             [](const PlayerView&, const SM::TransitionData<PlayerState>&) {
-                std::cout << "Float from" << std::endl;
+                std::cout << "IDLE from" << std::endl;
+            },
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(SM::Transitions::Rules::In::Notify<PlayerState, PlayerView>{},
+                                SM::Transitions::Rules::In::SetGravity<PlayerState, PlayerView>{{0.0f, 0.0f}},
+                                SM::Transitions::Rules::In::SetAnimation<PlayerState, PlayerView>{m_animManager.getAnimID("Char1/idle")})
+                .done()
+    ));
+
+    m_statemachine.addState(
+        SM::Make<PlayerState, PlayerView>::state(
+            PlayerState::LANDING_RECOVERY,
+
+            SM::CallBatch(
+                SM::Updaters::Notify<PlayerState, PlayerView>()),
+
+            PlayerMake::SequentialConditions{}
+                .addCondition(std::make_unique<SM::Transition::Checks::OnTimer<PlayerState, PlayerView>>(PlayerState::IDLE, 14))
+                .done(),
+
+            [](const PlayerView&, const SM::TransitionData<PlayerState>&) {
+                std::cout << "LANDING_RECOVERY from" << std::endl;
             },
             PlayerMake::RulePipe{}
                 .setDefaultPipe(SM::Transitions::Rules::In::Notify<PlayerState, PlayerView>{},

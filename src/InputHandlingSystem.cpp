@@ -48,7 +48,7 @@ void InputHandlingSystem::update()
 {
     m_currentInput.setDirFromButtons();
 
-    auto view = m_reg.view<components::InputResolver>();
+    auto view = m_reg.view<InputResolver>();
 
     for (auto [idx, inputs] : view.each())
     {

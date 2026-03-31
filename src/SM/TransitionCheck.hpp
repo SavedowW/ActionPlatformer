@@ -57,5 +57,20 @@ namespace SM
 
             return ORIENTATION::UNSPECIFIED;
         }
+
+        template<typename StateIDT, typename ViewT>
+        OnTimer<StateIDT, ViewT>::OnTimer(const StateIDT &state_, uint32_t framesLimit_) :
+            AbstractCondition<StateIDT, ViewT>(state_),
+            m_framesLimit{framesLimit_}
+        {}
+
+        template<typename StateIDT, typename ViewT>
+        ORIENTATION OnTimer<StateIDT, ViewT>::operator()(const ViewT &view_)
+        {
+            if (view_.template cget<StatePossessor<StateIDT>>().framesInState() >= m_framesLimit)
+                return view_.template cget<ComponentTransform>().m_orientation;
+
+            return ORIENTATION::UNSPECIFIED;
+        }
     }
 }

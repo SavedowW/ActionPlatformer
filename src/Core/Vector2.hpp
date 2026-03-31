@@ -233,12 +233,20 @@ struct Vector2
     {
         return utils::sameSign<ON_ZEROES, T, T2>(y, rhs_.y);
     }
+
+    [[nodiscard]]
+    constexpr operator std::string() const noexcept
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
 };
 
 template <Numeric T>
 std::ostream& operator<< (std::ostream& out, const Vector2<T>& vec)
 {
-    out << vec.x << " " << vec.y;
+    out << "{" << vec.x << ", " << vec.y << "}";
     return out;
 }
 
@@ -269,14 +277,6 @@ namespace utils
     inline Vector2<T> lerp(const Vector2<T> &min, const Vector2<T> &max, const aT &alpha) noexcept
     {
         return {min + (max - min) * alpha};
-    }
-
-    template <Numeric T>
-    inline std::string toString(const Vector2<T> &v_)
-    {
-        std::stringstream s;
-        s << "{" << v_.x << ", " << v_.y << "}";
-        return s.str();
     }
 
     inline float distToLineSegment(const Vector2<float> &lineP1_, const Vector2<float> &lineP2_, const Vector2<float> &point_) noexcept
