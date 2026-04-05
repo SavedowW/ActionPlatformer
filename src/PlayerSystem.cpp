@@ -89,25 +89,121 @@ void PlayerSystem::setup(entt::entity playerId_)
             TimelineProperty(Vector2<float>{9999.9f, 0.0f}));
     */
 
+        m_statemachine.addState(
+        SM::Make<PlayerState, PlayerView>::state(
+            PlayerState::RUN_RECOVERY,
+
+            SM::CallBatch(
+                SM::Updaters::Notify<PlayerState, PlayerView>()),
+
+            PlayerMake::SequentialConditions{}
+                .addCondition(std::make_unique<SM::Transition::Checks::OnPhysEvent<PlayerState, PlayerView>>(PlayerState::FLOAT, PhysicalEvents::Events::GROUNDED, false))
+                .addCondition(std::make_unique<SM::Transition::Checks::InputTest<PlayerState, PlayerView>>(PlayerState::PRERUN, InputMotions::HOLD_HORDIR, OrientationOptions::OPPOSITE))
+                .addCondition(std::make_unique<SM::Transition::Checks::OnTimer<PlayerState, PlayerView>>(PlayerState::IDLE, 9))
+                .done(),
+
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(SM::Transitions::Rules::SetDrag<PlayerState, PlayerView>{{0.0f, 0.0f}},
+                                SM::Transitions::Rules::SetMagnetLimit<PlayerState, PlayerView>{0})
+                .done(),
+
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(SM::Transitions::Rules::SetDrag<PlayerState, PlayerView>{{0.5f, 0.0f}},
+                                SM::Transitions::Rules::SetMagnetLimit<PlayerState, PlayerView>{4},
+                                SM::Transitions::Rules::In::SetGravity<PlayerState, PlayerView>{{0.0f, 0.0f}},
+                                SM::Transitions::Rules::In::SetAnimation<PlayerState, PlayerView>{m_animManager.getAnimID("Char1/run_recovery")},
+                                SM::Transitions::Rules::ConvertToInertia<PlayerState, PlayerView>{true, false})
+                .done()
+    ));
+
+    m_statemachine.addState(
+        SM::Make<PlayerState, PlayerView>::state(
+            PlayerState::RUN,
+
+            SM::CallBatch(
+                SM::Updaters::AddOrientedVelocity<PlayerState, PlayerView>{TimelineProperty<Vector2<float>>( 
+                    {
+                        {0, {0.4f, 0.0f}},
+                        {4, {0.6f, 0.0f}},
+                    })},
+                SM::Updaters::HorizontalVelocityLimit<PlayerState, PlayerView>{TimelineProperty{std::pair<float, float>{-2.5f, 2.5f}}}),
+
+            PlayerMake::SequentialConditions{}
+                .addCondition(std::make_unique<SM::Transition::Checks::OnPhysEvent<PlayerState, PlayerView>>(PlayerState::FLOAT, PhysicalEvents::Events::GROUNDED, false))
+                .addCondition(std::make_unique<SM::Transition::Checks::InputTest<PlayerState, PlayerView>>(PlayerState::PRERUN, InputMotions::HOLD_HORDIR, OrientationOptions::OPPOSITE))
+                .addCondition(std::make_unique<SM::Transition::Checks::InputTest<PlayerState, PlayerView>>(PlayerState::RUN_RECOVERY, InputMotions::CHECK_NO_HORDIR, OrientationOptions::SAME))
+                .done(),
+
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(SM::Transitions::Rules::SetDrag<PlayerState, PlayerView>{{0.0f, 0.0f}},
+                                SM::Transitions::Rules::SetMagnetLimit<PlayerState, PlayerView>{0})
+                .done(),
+
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(SM::Transitions::Rules::SetMagnetLimit<PlayerState, PlayerView>{4},
+                                SM::Transitions::Rules::SetDrag<PlayerState, PlayerView>{{0.5f, 0.0f}},
+                                SM::Transitions::Rules::In::Notify<PlayerState, PlayerView>{},
+                                SM::Transitions::Rules::AddOrientedVelocity<PlayerState, PlayerView>{{0.4f, 0.0f}},
+                                SM::Transitions::Rules::In::SetGravity<PlayerState, PlayerView>{{0.0f, 0.0f}},
+                                SM::Transitions::Rules::In::SetAnimation<PlayerState, PlayerView>{m_animManager.getAnimID("Char1/run")})
+                .done()
+    ));
+
+    m_statemachine.addState(
+        SM::Make<PlayerState, PlayerView>::state(
+            PlayerState::PRERUN,
+
+            SM::CallBatch(
+                SM::Updaters::Notify<PlayerState, PlayerView>()),
+
+            PlayerMake::SequentialConditions{}
+                .addCondition(std::make_unique<SM::Transition::Checks::OnPhysEvent<PlayerState, PlayerView>>(PlayerState::FLOAT, PhysicalEvents::Events::GROUNDED, false))
+                .addCondition(std::make_unique<SM::Transition::Checks::InputTest<PlayerState, PlayerView>>(PlayerState::PRERUN, InputMotions::HOLD_HORDIR, OrientationOptions::OPPOSITE))
+                .addCondition(std::make_unique<SM::Transition::Checks::OnTimer<PlayerState, PlayerView>>(PlayerState::RUN, 5))
+                .done(),
+
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(SM::Transitions::Rules::SetDrag<PlayerState, PlayerView>{{0.0f, 0.0f}},
+                                SM::Transitions::Rules::SetMagnetLimit<PlayerState, PlayerView>{0})
+                .done(),
+
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(SM::Transitions::Rules::SetDrag<PlayerState, PlayerView>{{0.5f, 0.0f}},
+                                SM::Transitions::Rules::SetMagnetLimit<PlayerState, PlayerView>{4},
+                                SM::Transitions::Rules::In::Realign<PlayerState, PlayerView>{},
+                                SM::Transitions::Rules::In::SetGravity<PlayerState, PlayerView>{{0.0f, 0.0f}},
+                                SM::Transitions::Rules::In::SetAnimation<PlayerState, PlayerView>{m_animManager.getAnimID("Char1/prerun")},
+                                SM::Transitions::Rules::ConvertToInertia<PlayerState, PlayerView>{true, false})
+                .done()
+    ));
+
     m_statemachine.addState(
         SM::Make<PlayerState, PlayerView>::state(
             PlayerState::IDLE,
 
             SM::CallBatch(
-                SM::Updaters::Notify<PlayerState, PlayerView>()),
+                SM::Updaters::SetDrag<PlayerState, PlayerView>{TimelineProperty<Vector2<float>>({
+                        {0, {0.1f, 0.0f}},
+                        {2, {0.5f, 0.0f}},
+                })}
+            ),
 
-            [](const PlayerView&) {
-                std::cout << "IDLE asked" << std::endl;
-                return SM::TransitionData<PlayerState>{PlayerState::IDLE, PlayerState::IDLE, ORIENTATION::UNSPECIFIED};
-            },
+            PlayerMake::SequentialConditions{}
+                .addCondition(std::make_unique<SM::Transition::Checks::OnPhysEvent<PlayerState, PlayerView>>(PlayerState::FLOAT, PhysicalEvents::Events::GROUNDED, false))
+                .addCondition(std::make_unique<SM::Transition::Checks::InputTest<PlayerState, PlayerView>>(PlayerState::PRERUN, InputMotions::HOLD_HORDIR, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
+                .done(),
 
-            [](const PlayerView&, const SM::TransitionData<PlayerState>&) {
-                std::cout << "IDLE from" << std::endl;
-            },
             PlayerMake::RulePipe{}
-                .setDefaultPipe(SM::Transitions::Rules::In::Notify<PlayerState, PlayerView>{},
+                .setDefaultPipe(SM::Transitions::Rules::SetDrag<PlayerState, PlayerView>{{0.0f, 0.0f}},
+                                SM::Transitions::Rules::SetMagnetLimit<PlayerState, PlayerView>{0})
+                .done(),
+
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(SM::Transitions::Rules::SetDrag<PlayerState, PlayerView>{{0.1f, 0.0f}},
+                                SM::Transitions::Rules::SetMagnetLimit<PlayerState, PlayerView>{4},
                                 SM::Transitions::Rules::In::SetGravity<PlayerState, PlayerView>{{0.0f, 0.0f}},
-                                SM::Transitions::Rules::In::SetAnimation<PlayerState, PlayerView>{m_animManager.getAnimID("Char1/idle")})
+                                SM::Transitions::Rules::In::SetAnimation<PlayerState, PlayerView>{m_animManager.getAnimID("Char1/idle")},
+                                SM::Transitions::Rules::ConvertToInertia<PlayerState, PlayerView>{true, false})
                 .done()
     ));
 
@@ -119,16 +215,22 @@ void PlayerSystem::setup(entt::entity playerId_)
                 SM::Updaters::Notify<PlayerState, PlayerView>()),
 
             PlayerMake::SequentialConditions{}
+                .addCondition(std::make_unique<SM::Transition::Checks::OnPhysEvent<PlayerState, PlayerView>>(PlayerState::FLOAT, PhysicalEvents::Events::GROUNDED, false))
+                .addCondition(std::make_unique<SM::Transition::Checks::InputTest<PlayerState, PlayerView>>(PlayerState::PRERUN, InputMotions::HOLD_HORDIR, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<SM::Transition::Checks::OnTimer<PlayerState, PlayerView>>(PlayerState::IDLE, 14))
                 .done(),
 
-            [](const PlayerView&, const SM::TransitionData<PlayerState>&) {
-                std::cout << "LANDING_RECOVERY from" << std::endl;
-            },
             PlayerMake::RulePipe{}
-                .setDefaultPipe(SM::Transitions::Rules::In::Notify<PlayerState, PlayerView>{},
+                .setDefaultPipe(SM::Transitions::Rules::SetInertiaApplicationMultiplier<PlayerState, PlayerView>{{1.0f, 1.0f}},
+                                SM::Transitions::Rules::SetMagnetLimit<PlayerState, PlayerView>{0})
+                .done(),
+
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(SM::Transitions::Rules::SetInertiaApplicationMultiplier<PlayerState, PlayerView>{{0.0f, 0.0f}},
+                                SM::Transitions::Rules::SetMagnetLimit<PlayerState, PlayerView>{4},
                                 SM::Transitions::Rules::In::SetGravity<PlayerState, PlayerView>{{0.0f, 0.0f}},
-                                SM::Transitions::Rules::In::SetAnimation<PlayerState, PlayerView>{m_animManager.getAnimID("Char1/landing_recovery")})
+                                SM::Transitions::Rules::In::SetAnimation<PlayerState, PlayerView>{m_animManager.getAnimID("Char1/landing_recovery")},
+                                SM::Transitions::Rules::ConvertToInertia<PlayerState, PlayerView>{true, false})
                 .done()
     ));
 
@@ -140,16 +242,16 @@ void PlayerSystem::setup(entt::entity playerId_)
                 SM::Updaters::Notify<PlayerState, PlayerView>()),
 
             PlayerMake::SequentialConditions{}
-                .addCondition(std::make_unique<SM::Transition::Checks::OnPhysEvent<PlayerState, PlayerView>>(PlayerState::LANDING_RECOVERY, PhysicalEvents::Events::TOUCHED_GROUND))
+                .addCondition(std::make_unique<SM::Transition::Checks::OnPhysEvent<PlayerState, PlayerView>>(PlayerState::LANDING_RECOVERY, PhysicalEvents::Events::GROUNDED))
                 .done(),
 
             [](const PlayerView&, const SM::TransitionData<PlayerState>&) {
-                std::cout << "Float from" << std::endl;
             },
             PlayerMake::RulePipe{}
                 .setDefaultPipe(SM::Transitions::Rules::In::Notify<PlayerState, PlayerView>{},
                                 SM::Transitions::Rules::In::SetGravity<PlayerState, PlayerView>{{0.0f, 0.5f}},
-                                SM::Transitions::Rules::In::SetAnimation<PlayerState, PlayerView>{m_animManager.getAnimID("Char1/float")})
+                                SM::Transitions::Rules::In::SetAnimation<PlayerState, PlayerView>{m_animManager.getAnimID("Char1/float")},
+                                SM::Transitions::Rules::ConvertToInertia<PlayerState, PlayerView>{false, true})
                 .done()
     ));
 

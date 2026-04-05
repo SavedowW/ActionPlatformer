@@ -4,16 +4,15 @@
 
 InputResolver::InputResolver() :
     m_inputComparators {
-        {InputMotions::FAIL, &InputResolver::checkAlwaysFail},
-        {InputMotions::SUCCESS, &InputResolver::checkAlwaysSuccess},
         {InputMotions::HOLD_HORDIR, &InputResolver::checkHoldHorDir},
-        {InputMotions::HOLD_HORDIR_BUFFERED, &InputResolver::checkHoldHorDirBuffered},
-        {InputMotions::HOLD_UP, &InputResolver::checkHoldUp},
-        {InputMotions::HOLD_DOWN, &InputResolver::checkHoldDown},
-        {InputMotions::TAP_UP, &InputResolver::checkTapUp},
-        {InputMotions::TAP_DOWN, &InputResolver::checkTapDown},
-        {InputMotions::TAP_UP_HORDIR, &InputResolver::checkStrictTapUpHorDir},
-        {InputMotions::TAP_ATTACK, &InputResolver::checkTapAttack}
+        {InputMotions::CHECK_NO_HORDIR, &InputResolver::checkNoHorDir},
+        //{InputMotions::HOLD_HORDIR_BUFFERED, &InputResolver::checkHoldHorDirBuffered},
+        //{InputMotions::HOLD_UP, &InputResolver::checkHoldUp},
+        //{InputMotions::HOLD_DOWN, &InputResolver::checkHoldDown},
+        //{InputMotions::TAP_UP, &InputResolver::checkTapUp},
+        //{InputMotions::TAP_DOWN, &InputResolver::checkTapDown},
+        //{InputMotions::TAP_UP_HORDIR, &InputResolver::checkStrictTapUpHorDir},
+        //{InputMotions::TAP_ATTACK, &InputResolver::checkTapAttack}
     }
 {}
 
@@ -22,16 +21,6 @@ void InputResolver::addFrame(const InputState &currentInput_)
     m_inputQueue.push(currentInput_);
 }
 
-
-bool InputResolver::checkAlwaysFail(ORIENTATION, unsigned int) const
-{
-    return false;
-}
-
-bool InputResolver::checkAlwaysSuccess(ORIENTATION, unsigned int) const
-{
-    return true;
-}
 
 bool InputResolver::checkHoldHorDir(ORIENTATION orientation_, unsigned int) const
 {
@@ -43,6 +32,17 @@ bool InputResolver::checkHoldHorDir(ORIENTATION orientation_, unsigned int) cons
     return m_inputQueue[0].m_dir.x == expected;
 }
 
+bool InputResolver::checkNoHorDir(ORIENTATION orientation_, unsigned int) const
+{
+    if (m_inputQueue.getFilled() == 0)
+        return false;
+
+    const int expected = (orientation_ == ORIENTATION::RIGHT ? 1 : -1);
+
+    return m_inputQueue[0].m_dir.x != expected;
+}
+
+/*
 bool InputResolver::checkHoldHorDirBuffered(ORIENTATION orientation_, unsigned int extendBuffer_) const
 {
     if (m_inputQueue.getFilled() == 0)
@@ -141,7 +141,7 @@ bool InputResolver::checkTapAttack(ORIENTATION, unsigned int extendBuffer_) cons
     }
 
     return false;
-}
+}*/
 
 
 Vector2<int> InputResolver::getCurrentInputDir() const

@@ -69,8 +69,7 @@ void PhysicsSystem::updateOverlappedObstacles()
     }
 }
 
-bool PhysicsSystem::attemptOffsetDown(const auto &clds_, const Vector2<float> &originalPos_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, unsigned int offset_,
-    bool noLanding_, float &touchedSlope_, entt::entity &onGround_)
+bool PhysicsSystem::attemptOffsetDown(const CollidersView &clds_, const Vector2<float> &originalPos_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, unsigned int offset_)
 {
     const auto oldPos = originalPos_;
     const auto newPos = originalPos_ + Vector2<int>(0, offset_);
@@ -92,13 +91,6 @@ bool PhysicsSystem::attemptOffsetDown(const auto &clds_, const Vector2<float> &o
 
             //std::cout << "Touched slope top, stopping at top, offset.y > 0\n";
 
-            if (!noLanding_)
-            {
-                if (!cld.m_resolved.isFlat())
-                    touchedSlope_ = cld.m_resolved.topAngleCoef();
-                onGround_ = idx;
-            }
-
             phys_.m_velocity.y = std::min<float>(phys_.m_velocity.y, 0);
             phys_.m_inertia.y = std::min<float>(phys_.m_inertia.y, 0);
 
@@ -111,7 +103,7 @@ bool PhysicsSystem::attemptOffsetDown(const auto &clds_, const Vector2<float> &o
     return true;
 }
 
-bool PhysicsSystem::attemptOffsetUp(const auto &clds_, const Vector2<float> &originalPos_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, unsigned int offset_)
+bool PhysicsSystem::attemptOffsetUp(const CollidersView &clds_, const Vector2<float> &originalPos_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, unsigned int offset_)
 {
     const auto newPos = originalPos_ - Vector2<int>(0, offset_);
 
@@ -147,8 +139,8 @@ bool PhysicsSystem::attemptOffsetUp(const auto &clds_, const Vector2<float> &ori
     return true;
 }
 
-bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, int offset_,
-    int originalY_, unsigned int maxYOffset_, int naturalYOffset_, float &touchedSlope_, entt::entity &onGround_)
+bool PhysicsSystem::attemptOffsetHorizontal(const CollidersView &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, int offset_,
+    int originalY_, unsigned int maxYOffset_)
 {
     const auto newPos = trans_.m_pos + Vector2<int>(offset_, 0);
 
@@ -157,10 +149,7 @@ bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, ComponentTransfor
     bool mustRise = false;
     int completeHighest = std::numeric_limits<int>::max();
 
-    entt::entity onGround = entt::null;
-    float touchedSlope = 0.0f;
-
-    for (auto [idx, cld] : clds_.each())
+    for (const auto &[idx, cld] : clds_.each())
     {
         if (!cld.m_isEnabled)
             continue;
@@ -186,8 +175,6 @@ bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, ComponentTransfor
                 {
                     completeHighest = highest;
                     mustRise = true;
-                    onGround = idx;
-                    touchedSlope = cld.m_resolved.topAngleCoef();
                 }
             }
             // If its an actual wall
@@ -219,13 +206,6 @@ bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, ComponentTransfor
     {
         if (attemptOffsetUp(clds_, newPos, trans_, phys_, obsFallthrough_, newPos.y - completeHighest))
         {
-            if (naturalYOffset_ >= 0)
-            {
-                if (touchedSlope != 0)
-                    touchedSlope_ = touchedSlope;
-                onGround_ = onGround;
-            }
-
             phys_.m_velocity.y = std::min<float>(phys_.m_velocity.y, 0);
             phys_.m_inertia.y = std::min<float>(phys_.m_inertia.y, 0);
         }
@@ -238,7 +218,7 @@ bool PhysicsSystem::attemptOffsetHorizontal(const auto &clds_, ComponentTransfor
     return true;
 }
 
-void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_)
+void PhysicsSystem::proceedEntity(const CollidersView &clds_, const entt::entity &idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_)
 {
     ev_.reset();
 
@@ -275,10 +255,8 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
     }
 
     phys_.m_calculatedOffset = offset;
-    bool noLanding = phys_.m_noLanding;
-
-    entt::entity onGround = entt::null;
-    float touchedSlope = 0.0f;
+    phys_.m_onGround = entt::null;
+    phys_.m_onSlopeWithAngle = 0.0f;
 
     // X axis movement handling
     {
@@ -289,14 +267,14 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
         if (offset.x > 0)
         {
             for (int i = 0; i < offset.x; ++i)
-                if (!attemptOffsetHorizontal(clds_, trans_, phys_, obsFallthrough_, 1, originalY, maxOffsetY, offset.y, touchedSlope, onGround))
+                if (!attemptOffsetHorizontal(clds_, trans_, phys_, obsFallthrough_, 1, originalY, maxOffsetY))
                     break;
         }
         // Moving to the left
         else if (offset.x < 0)
         {
             for (int i = 0; i > offset.x; --i)
-                if (!attemptOffsetHorizontal(clds_, trans_, phys_, obsFallthrough_, -1, originalY, maxOffsetY, offset.y, touchedSlope, onGround))
+                if (!attemptOffsetHorizontal(clds_, trans_, phys_, obsFallthrough_, -1, originalY, maxOffsetY))
                     break;
         }
     }
@@ -307,7 +285,7 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
         if (offset.y >= 0)
         {
             for (int i = 0; i < offset.y; ++i)
-                if (!attemptOffsetDown(clds_, trans_.m_pos, trans_, phys_, obsFallthrough_, 1, noLanding, touchedSlope, onGround))
+                if (!attemptOffsetDown(clds_, trans_.m_pos, trans_, phys_, obsFallthrough_, 1))
                     break;
 
             pb = phys_.m_pushbox + trans_.m_pos;
@@ -315,12 +293,6 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
         // Rising
         else
         {
-            if (noLanding)
-            {
-                touchedSlope = 0;
-                onGround = entt::null;
-            }
-            
             for (int i = 0; i > offset.y; --i)
                 if (!attemptOffsetUp(clds_, trans_.m_pos, trans_, phys_, obsFallthrough_, 1))
                     break;
@@ -329,21 +301,13 @@ void PhysicsSystem::proceedEntity(const auto &clds_, const entt::entity &idx_, C
         }
     }
 
-    phys_.m_lastSlopeAngle = phys_.m_onSlopeWithAngle;
-    phys_.m_onSlopeWithAngle = touchedSlope;
+    if (!phys_.m_noLanding)
+    {
+        if (offset.y >= 0)
+            magnetEntity(clds_, trans_, phys_, obsFallthrough_);
 
-    if (onGround != entt::null)
-    {
-        phys_.m_onGround = onGround;
-        ev_.setEvent(PhysicalEvents::Events::TOUCHED_GROUND);
-    }
-    else
-    {
-        if (offset.y < 0 || !magnetEntity(clds_, trans_, phys_, obsFallthrough_))
-        {
-            phys_.m_onGround = entt::null;
-            ev_.setEvent(PhysicalEvents::Events::LOST_GROUND);
-        }
+        if (phys_.m_onGround != entt::null)
+            ev_.setEvent(PhysicalEvents::Events::GROUNDED);
     }
 
     phys_.m_appliedOffset = trans_.m_pos - oldPos + phys_.m_pushedOffset;
@@ -363,12 +327,9 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentParticleP
     trans_.m_pos += offset;
 }
 
-bool PhysicsSystem::magnetEntity(const auto &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, const ComponentObstacleFallthrough &obsFallthrough_)
+bool PhysicsSystem::magnetEntity(const CollidersView &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, const ComponentObstacleFallthrough &obsFallthrough_)
 {
     //std::cout << "Magnet " << rand() << std::endl;
-    if (phys_.m_magnetLimit <= 0)
-        return false;
-
     const auto pb = phys_.m_pushbox + trans_.m_pos;
     const auto bot = pb.getBottomEdge();
 
@@ -381,7 +342,6 @@ bool PhysicsSystem::magnetEntity(const auto &clds_, ComponentTransform &trans_, 
         {
             //std::cout << "MAGNET: " << magnetRange << std::endl;
             trans_.m_pos.y = height - 1;
-            phys_.m_lastSlopeAngle = phys_.m_onSlopeWithAngle;
             phys_.m_onSlopeWithAngle = (bot > pcld->highestPoint() ? pcld->topAngleCoef() : 0.0f);
             phys_.m_onGround = found;
             return true;
@@ -391,7 +351,7 @@ bool PhysicsSystem::magnetEntity(const auto &clds_, ComponentTransform &trans_, 
     return false;
 }
 
-std::pair<entt::entity, const SlopeCollider*> PhysicsSystem::getHighestVerticalMagnetCoord(const auto &clds_, const Collider &cld_, int &coord_, const std::set<int> ignoredObstacles_, bool ignoreAllObstacles_)
+std::pair<entt::entity, const SlopeCollider*> PhysicsSystem::getHighestVerticalMagnetCoord(const CollidersView &clds_, const Collider &cld_, int &coord_, const std::set<int> &ignoredObstacles_, bool ignoreAllObstacles_)
 {
     const auto baseCoord = coord_;
     entt::entity foundGround = entt::null;
@@ -440,7 +400,7 @@ bool PhysicsSystem::isInsidePushbox(const Collider &pb_, const entt::entity &idx
     return false;
 }
 
-void PhysicsSystem::resetEntityObstacles(const ComponentTransform &trans_, const ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, const auto &clds_)
+void PhysicsSystem::resetEntityObstacles(const ComponentTransform &trans_, const ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, const CollidersView &clds_)
 {
     updateTouchedObstacles(phys_.m_pushbox + trans_.m_pos, obsFallthrough_, clds_);
     std::set<int> res;
@@ -455,7 +415,7 @@ void PhysicsSystem::resetEntityObstacles(const ComponentTransform &trans_, const
     obsFallthrough_.m_ignoredObstacles = res;
 }
 
-void PhysicsSystem::updateTouchedObstacles(const Collider &pb_, ComponentObstacleFallthrough &obsFallthrough_, const auto &clds_)
+void PhysicsSystem::updateTouchedObstacles(const Collider &pb_, ComponentObstacleFallthrough &obsFallthrough_, const CollidersView &clds_)
 {
     obsFallthrough_.m_overlappedObstacles.clear();
 

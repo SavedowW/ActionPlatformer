@@ -289,7 +289,7 @@ void LevelBuilder::loadTileLayer(const nlohmann::json &json_)
         {
             if (prop["name"] == "collider")
             {
-                entity = m_colliderIds[static_cast<int>(prop["value"])];
+                entity = m_colliderIds.at(static_cast<int>(prop["value"]));
                 existingEntity = true;
             }
             else if (prop["name"] == "layer")

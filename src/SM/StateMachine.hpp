@@ -79,11 +79,14 @@ namespace SM
             const GenericState<StateIDT, ViewT> &state = *m_states.at(possessor.stateId());
             state.update(entityView);
             
-            const TransitionData transition = state.canTransition(entityView);
-            if (transition.intoOrientation != ORIENTATION::UNSPECIFIED)
+            TransitionData transition = state.canTransition(entityView);
+
+            while (transition.intoOrientation != ORIENTATION::UNSPECIFIED)
             {
+                auto &newState = *m_states.at(transition.intoState);
                 state.handleTransitionFrom(entityView, transition);
-                m_states.at(transition.intoState)->handleTransitionInto(entityView, transition);
+                newState.handleTransitionInto(entityView, transition);
+                transition = newState.canTransition(entityView);
             }
         }
     }

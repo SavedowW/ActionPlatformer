@@ -1,5 +1,7 @@
 #pragma once
 #include "Core/CoreComponents.h"
+#include "Core/InputResolver.h"
+#include "Core/Vector2.hpp"
 #include "StateMachine.h"
 #include "TransitionCheck.h"
 #include "StateMachine.hpp"
@@ -44,15 +46,16 @@ namespace SM
     namespace Transition::Checks
     {
         template<typename StateIDT, typename ViewT>
-        OnPhysEvent<StateIDT, ViewT>::OnPhysEvent(const StateIDT &state_, const PhysicalEvents::Events &event_) :
+        OnPhysEvent<StateIDT, ViewT>::OnPhysEvent(const StateIDT &state_, const PhysicalEvents::Events &event_, bool isSet_) :
             AbstractCondition<StateIDT, ViewT>(state_),
-            m_event{event_}
+            m_event{event_},
+            m_isSet{isSet_}
         {}
 
         template<typename StateIDT, typename ViewT>
         ORIENTATION OnPhysEvent<StateIDT, ViewT>::operator()(const ViewT &view_)
         {
-            if (view_.template cget<PhysicalEvents>().checkEvent(m_event))
+            if (view_.template cget<PhysicalEvents>().checkEvent(m_event) == m_isSet)
                 return view_.template cget<ComponentTransform>().m_orientation;
 
             return ORIENTATION::UNSPECIFIED;
@@ -69,6 +72,52 @@ namespace SM
         {
             if (view_.template cget<StatePossessor<StateIDT>>().framesInState() >= m_framesLimit)
                 return view_.template cget<ComponentTransform>().m_orientation;
+
+            return ORIENTATION::UNSPECIFIED;
+        }
+
+
+        template<typename StateIDT, typename ViewT>
+        InputTest<StateIDT, ViewT>::InputTest(const StateIDT &state_, InputMotions input_, Flag<OrientationOptions> options_) :
+            AbstractCondition<StateIDT, ViewT>(state_),
+            m_input{input_},
+            m_orientations(options_)
+        {}
+
+        template<typename StateIDT, typename ViewT>
+        ORIENTATION InputTest<StateIDT, ViewT>::operator()(const ViewT &view_)
+        {
+            const auto &transform = view_.template cget<ComponentTransform>();
+            const auto &inputs = view_.template cget<InputResolver>();
+
+            if (transform.m_orientation == ORIENTATION::RIGHT)
+            {
+                if ((m_orientations & OrientationOptions::RIGHT) == OrientationOptions::RIGHT || (m_orientations & OrientationOptions::SAME) == OrientationOptions::SAME)
+                {
+                    if (inputs.checkInput(m_input, ORIENTATION::RIGHT, 0))
+                        return ORIENTATION::RIGHT;
+                }
+
+                if ((m_orientations & OrientationOptions::LEFT) == OrientationOptions::LEFT || (m_orientations & OrientationOptions::OPPOSITE) == OrientationOptions::OPPOSITE)
+                {
+                    if (inputs.checkInput(m_input, ORIENTATION::LEFT, 0))
+                        return ORIENTATION::LEFT;
+                }
+            }
+            else
+            {
+                if ((m_orientations & OrientationOptions::LEFT) == OrientationOptions::LEFT || (m_orientations & OrientationOptions::SAME) == OrientationOptions::SAME)
+                {
+                    if (inputs.checkInput(m_input, ORIENTATION::LEFT, 0))
+                        return ORIENTATION::LEFT;
+                }
+
+                if ((m_orientations & OrientationOptions::RIGHT) == OrientationOptions::RIGHT || (m_orientations & OrientationOptions::OPPOSITE) == OrientationOptions::OPPOSITE)
+                {
+                    if (inputs.checkInput(m_input, ORIENTATION::RIGHT, 0))
+                        return ORIENTATION::RIGHT;
+                }
+            }
 
             return ORIENTATION::UNSPECIFIED;
         }

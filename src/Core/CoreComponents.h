@@ -73,12 +73,11 @@ struct ComponentPhysical
     Vector2<float> m_extraoffset;
     Vector2<float> m_drag; 
     Vector2<float> m_gravity;
-    Vector2<float> m_inertiaMultiplier;
+    Vector2<float> m_inertiaMultiplier = {1.0f, 1.0f};
     Collider m_pushbox;
     bool m_onMovingPlatform = false;
     unsigned int m_magnetLimit = 0;
     float m_onSlopeWithAngle = 0.0f;
-    float m_lastSlopeAngle = 0.0f;
     uint32_t m_hitstopLeft = 0;
 
     const Vector2<float> *m_mulInsidePushbox = nullptr;
@@ -115,8 +114,8 @@ class PhysicalEvents
 public:
     enum class Events : uint8_t
     {
-        TOUCHED_GROUND,
-        LOST_GROUND,
+        // Event is active as long as you're grounded
+        GROUNDED,
         NONE
     };
 
@@ -139,6 +138,8 @@ struct ComponentStaticCollider
     ComponentStaticCollider &operator=(ComponentStaticCollider &&rhs_) = default;
 
     int m_obstacleId = 0;
+
+    // TODO: to separate component
     bool m_isEnabled = true;
 
     SlopeCollider m_proto;

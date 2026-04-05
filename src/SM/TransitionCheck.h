@@ -1,7 +1,18 @@
 #pragma once
 #include "Core/CoreComponents.h"
+#include "Core/InputResolver.h"
+#include "Core/StateCommon.h"
 #include "StateMachine.h"
 #include <vector>
+
+enum class OrientationOptions : uint8_t
+{
+    NONE     = 0b0000,
+    LEFT     = 0b0001,
+    RIGHT    = 0b0010,
+    SAME     = 0b0100,
+    OPPOSITE = 0b1000,
+};
 
 namespace SM
 {
@@ -38,12 +49,13 @@ namespace SM
         class OnPhysEvent : public AbstractCondition<StateIDT, ViewT>
         {
         public:
-            OnPhysEvent(const StateIDT &state_, const PhysicalEvents::Events &event_);
+            OnPhysEvent(const StateIDT &state_, const PhysicalEvents::Events &event_, bool isSet_ = true);
 
             ORIENTATION operator()(const ViewT &view_) override;
 
         private:
             const PhysicalEvents::Events m_event;
+            const bool m_isSet;
         };
 
         template<typename StateIDT, typename ViewT>
@@ -56,6 +68,19 @@ namespace SM
 
         private:
             const uint32_t m_framesLimit;
+        };
+
+        template<typename StateIDT, typename ViewT>
+        class InputTest : public AbstractCondition<StateIDT, ViewT>
+        {
+        public:
+            InputTest(const StateIDT &state_, InputMotions input_, Flag<OrientationOptions> options_);
+
+            ORIENTATION operator()(const ViewT &view_) override;
+
+        private:
+            const InputMotions m_input;
+            const Flag<OrientationOptions> m_orientations;
         };
     }
 }
