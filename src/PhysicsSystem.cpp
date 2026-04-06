@@ -261,7 +261,7 @@ void PhysicsSystem::proceedEntity(const CollidersView &clds_, const entt::entity
     // X axis movement handling
     {
         const int originalY = trans_.m_pos.y;
-        const auto maxOffsetY = static_cast<unsigned int>(1.3f * abs(static_cast<float>(offset.x)));
+        const auto maxOffsetY = static_cast<unsigned int>(1.3f * abs(static_cast<float>(offset.x)) + 1);
 
         // Moving to the right
         if (offset.x > 0)

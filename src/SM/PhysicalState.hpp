@@ -1,4 +1,6 @@
 #include "Core/CoreComponents.h"
+#include "Core/InputResolver.h"
+#include "Core/InputState.h"
 #include "Core/Vector2.hpp"
 #include "StateMachine.hpp"
 #include "PhysicalState.h"
@@ -70,6 +72,14 @@ namespace SM::Updaters
         auto &physical = view_.template get<ComponentPhysical>();
         const auto &current = m_drag[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()];
         physical.m_drag = current;
+    }
+
+
+    template<typename StateIDT, typename ViewT>
+    void TestFallthrough<StateIDT, ViewT>::operator()(const ViewT &view_) const
+    {
+        if (view_.template get<InputResolver>().isInputActive(INPUT_BUTTON::DOWN))
+            view_.template get<ComponentObstacleFallthrough>().setIgnoringObstacles();
     }
 }
 
@@ -189,5 +199,13 @@ namespace SM::Transitions::Rules
     void SetMagnetLimit<StateIDT, ViewT>::operator()(const ViewT &view_, const SM::TransitionData<StateIDT>&) const
     {
         view_.template get<ComponentPhysical>().m_magnetLimit = m_magnetLimit;
+    }
+
+
+    template<typename StateIDT, typename ViewT>
+    void TestFallthrough<StateIDT, ViewT>::operator()(const ViewT &view_, const SM::TransitionData<StateIDT>&) const
+    {
+        if (view_.template get<InputResolver>().isInputActive(INPUT_BUTTON::DOWN))
+            view_.template get<ComponentObstacleFallthrough>().setIgnoringObstacles();
     }
 }

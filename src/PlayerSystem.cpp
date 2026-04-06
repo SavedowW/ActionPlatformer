@@ -89,12 +89,18 @@ void PlayerSystem::setup(entt::entity playerId_)
             TimelineProperty(Vector2<float>{9999.9f, 0.0f}));
     */
 
-        m_statemachine.addState(
+
+    /*
+        TODO: particles, hurtboxes, hitboxes
+    */
+
+    m_statemachine.addState(
         SM::Make<PlayerState, PlayerView>::state(
             PlayerState::RUN_RECOVERY,
 
             SM::CallBatch(
-                SM::Updaters::Notify<PlayerState, PlayerView>()),
+                SM::Updaters::HorizontalVelocityLimit<PlayerState, PlayerView>{TimelineProperty{std::pair<float, float>{-2.5f, 2.5f}}}
+            ),
 
             PlayerMake::SequentialConditions{}
                 .addCondition(std::make_unique<SM::Transition::Checks::OnPhysEvent<PlayerState, PlayerView>>(PlayerState::FLOAT, PhysicalEvents::Events::GROUNDED, false))
@@ -126,7 +132,8 @@ void PlayerSystem::setup(entt::entity playerId_)
                         {0, {0.4f, 0.0f}},
                         {4, {0.6f, 0.0f}},
                     })},
-                SM::Updaters::HorizontalVelocityLimit<PlayerState, PlayerView>{TimelineProperty{std::pair<float, float>{-2.5f, 2.5f}}}),
+                SM::Updaters::HorizontalVelocityLimit<PlayerState, PlayerView>{TimelineProperty{std::pair<float, float>{-2.5f, 2.5f}}},
+                SM::Updaters::TestFallthrough<PlayerState, PlayerView>{}),
 
             PlayerMake::SequentialConditions{}
                 .addCondition(std::make_unique<SM::Transition::Checks::OnPhysEvent<PlayerState, PlayerView>>(PlayerState::FLOAT, PhysicalEvents::Events::GROUNDED, false))
@@ -142,7 +149,7 @@ void PlayerSystem::setup(entt::entity playerId_)
             PlayerMake::RulePipe{}
                 .setDefaultPipe(SM::Transitions::Rules::SetMagnetLimit<PlayerState, PlayerView>{4},
                                 SM::Transitions::Rules::SetDrag<PlayerState, PlayerView>{{0.5f, 0.0f}},
-                                SM::Transitions::Rules::In::Notify<PlayerState, PlayerView>{},
+                                SM::Transitions::Rules::TestFallthrough<PlayerState, PlayerView>{},
                                 SM::Transitions::Rules::AddOrientedVelocity<PlayerState, PlayerView>{{0.4f, 0.0f}},
                                 SM::Transitions::Rules::In::SetGravity<PlayerState, PlayerView>{{0.0f, 0.0f}},
                                 SM::Transitions::Rules::In::SetAnimation<PlayerState, PlayerView>{m_animManager.getAnimID("Char1/run")})
@@ -154,7 +161,13 @@ void PlayerSystem::setup(entt::entity playerId_)
             PlayerState::PRERUN,
 
             SM::CallBatch(
-                SM::Updaters::Notify<PlayerState, PlayerView>()),
+                SM::Updaters::AddOrientedVelocity<PlayerState, PlayerView>{TimelineProperty<Vector2<float>>( 
+                    {
+                        {0, {0.0f, 0.0f}},
+                        {1, {0.3f, 0.0f}},
+                    })},
+                SM::Updaters::HorizontalVelocityLimit<PlayerState, PlayerView>{TimelineProperty{std::pair<float, float>{-2.5f, 2.5f}}},
+                SM::Updaters::TestFallthrough<PlayerState, PlayerView>{}),
 
             PlayerMake::SequentialConditions{}
                 .addCondition(std::make_unique<SM::Transition::Checks::OnPhysEvent<PlayerState, PlayerView>>(PlayerState::FLOAT, PhysicalEvents::Events::GROUNDED, false))
@@ -169,6 +182,7 @@ void PlayerSystem::setup(entt::entity playerId_)
 
             PlayerMake::RulePipe{}
                 .setDefaultPipe(SM::Transitions::Rules::SetDrag<PlayerState, PlayerView>{{0.5f, 0.0f}},
+                                SM::Transitions::Rules::TestFallthrough<PlayerState, PlayerView>{},
                                 SM::Transitions::Rules::SetMagnetLimit<PlayerState, PlayerView>{4},
                                 SM::Transitions::Rules::In::Realign<PlayerState, PlayerView>{},
                                 SM::Transitions::Rules::In::SetGravity<PlayerState, PlayerView>{{0.0f, 0.0f}},
@@ -185,7 +199,8 @@ void PlayerSystem::setup(entt::entity playerId_)
                 SM::Updaters::SetDrag<PlayerState, PlayerView>{TimelineProperty<Vector2<float>>({
                         {0, {0.1f, 0.0f}},
                         {2, {0.5f, 0.0f}},
-                })}
+                })},
+                SM::Updaters::TestFallthrough<PlayerState, PlayerView>{}
             ),
 
             PlayerMake::SequentialConditions{}
@@ -200,6 +215,7 @@ void PlayerSystem::setup(entt::entity playerId_)
 
             PlayerMake::RulePipe{}
                 .setDefaultPipe(SM::Transitions::Rules::SetDrag<PlayerState, PlayerView>{{0.1f, 0.0f}},
+                                SM::Transitions::Rules::TestFallthrough<PlayerState, PlayerView>{},
                                 SM::Transitions::Rules::SetMagnetLimit<PlayerState, PlayerView>{4},
                                 SM::Transitions::Rules::In::SetGravity<PlayerState, PlayerView>{{0.0f, 0.0f}},
                                 SM::Transitions::Rules::In::SetAnimation<PlayerState, PlayerView>{m_animManager.getAnimID("Char1/idle")},

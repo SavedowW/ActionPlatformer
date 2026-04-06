@@ -59,6 +59,13 @@ namespace SM::Updaters
     private:
         TimelineProperty<Vector2<float>> m_drag;
     };
+
+    template<typename StateIDT, typename ViewT>
+    class TestFallthrough
+    {
+    public:
+        void operator()(const ViewT&) const;
+    };
 }
 
 
@@ -172,5 +179,12 @@ namespace SM::Transitions::Rules
     
     private:
         const unsigned int m_magnetLimit;
+    };
+
+    template<typename StateIDT, typename ViewT>
+    class TestFallthrough
+    {
+    public:
+        void operator()(const ViewT&, const SM::TransitionData<StateIDT> &transition_) const;
     };
 }

@@ -156,3 +156,11 @@ bool InputResolver::checkInput(InputMotions motion_, ORIENTATION orientation_, u
 {
     return (this->*m_inputComparators.at(motion_))(orientation_, extendBuffer_);
 }
+
+bool InputResolver::isInputActive(const INPUT_BUTTON button_) const
+{
+    if (m_inputQueue.getFilled() == 0)
+        return false;
+
+    return m_inputQueue[0].isInputActive(button_);
+}

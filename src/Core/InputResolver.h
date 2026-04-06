@@ -37,6 +37,8 @@ public:
     Vector2<int> getCurrentInputDir() const;
 
     bool checkInput(InputMotions motion_, ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    
+    bool isInputActive(INPUT_BUTTON button_) const;
 
 private:
     bool checkHoldHorDir(ORIENTATION orientation_, unsigned int extendBuffer_) const;

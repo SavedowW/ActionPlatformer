@@ -16,8 +16,8 @@ public:
 
         if (m_nextToFill >= rhs_)
             return m_data[m_nextToFill - rhs_];
-        else
-            return m_data[len - (rhs_ - m_nextToFill)];
+
+        return m_data[len - (rhs_ - m_nextToFill)];
     }
 
     virtual void push(const T &val_)
