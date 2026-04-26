@@ -1,6 +1,7 @@
 #pragma once
-#include "SM/Builder.hpp"
-#include "SM/StateMachine.h"
+#include "SM/Builder.h"
+#include "SM/StateProperties.h"
+#include "SM/TransitionChecks.h"
 #include "Core/ECS/ComponentsView.hpp"
 #include "Core/CoreComponents.h"
 #include "Core/StaticMapping.hpp"
@@ -34,3 +35,5 @@ SERIALIZE_ENUM(PlayerState, {
 
 using PlayerView = ComponentsView<SM::StatePossessor<PlayerState>, ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, PhysicalEvents, ComponentAnimationRenderable, InputResolver>;
 using PlayerMake = SM::Make<PlayerState, PlayerView>;
+using PlayerStateProperties = StateProperties<PlayerState, PlayerView>;
+using PlayerStateTransitions = TransitionChecks<PlayerState, PlayerView>;

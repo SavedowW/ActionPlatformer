@@ -76,16 +76,17 @@ namespace SM
         {
             ViewT entityView{ent};
             const StatePossessor<StateIDT> &possessor = entityView.template cget<StatePossessor<StateIDT>>();
-            const GenericState<StateIDT, ViewT> &state = *m_states.at(possessor.stateId());
-            state.update(entityView);
+            const GenericState<StateIDT, ViewT> *state = m_states.at(possessor.stateId()).get();
+            state->update(entityView);
             
-            TransitionData transition = state.canTransition(entityView);
+            TransitionData transition = state->canTransition(entityView);
 
             while (transition.intoOrientation != ORIENTATION::UNSPECIFIED)
             {
-                auto &newState = *m_states.at(transition.intoState);
-                state.handleTransitionFrom(entityView, transition);
+                const auto &newState = *m_states.at(transition.intoState);
+                state->handleTransitionFrom(entityView, transition);
                 newState.handleTransitionInto(entityView, transition);
+                state = &newState;
                 transition = newState.canTransition(entityView);
             }
         }

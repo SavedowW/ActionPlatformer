@@ -1,6 +1,6 @@
 #pragma once
 #include "CompoundState.h"
-#include "TransitionCheck.h"
+#include "TransitionChecks.h"
 
 namespace SM
 {
@@ -10,7 +10,7 @@ class Make
 {
 public:
     template<typename... Args>
-    static std::unique_ptr<CompoundState<StateIDT, ViewT, Args...>> state(StateIDT id_, Args&&... args_);
+    static std::unique_ptr<SM::CompoundState<StateIDT, ViewT, Args...>> state(StateIDT id_, Args&&... args_);
 
     class RulePipe
     {
@@ -30,11 +30,11 @@ public:
     class SequentialConditions
     {
     public:
-        Sequential<StateIDT, ViewT> &&done();
-        SequentialConditions &addCondition(std::unique_ptr<AbstractCondition<StateIDT, ViewT>> &&condition_);
+        TransitionChecks<StateIDT, ViewT>::Base::Sequential &&done();
+        SequentialConditions &addCondition(std::unique_ptr<typename TransitionChecks<StateIDT, ViewT>::Base::AbstractCondition> &&condition_);
 
     private:
-        Sequential<StateIDT, ViewT> m_conditions;
+        TransitionChecks<StateIDT, ViewT>::Base::Sequential m_conditions;
     };
 };
 

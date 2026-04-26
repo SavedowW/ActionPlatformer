@@ -59,7 +59,9 @@ namespace SM
     template<typename StateIDT, typename ViewT, typename UpdaterT, typename TransCheckT, typename HandlerFromT, typename HandlerIntoT>
     TransitionData<StateIDT> CompoundState<StateIDT, ViewT, UpdaterT, TransCheckT, HandlerFromT, HandlerIntoT>::canTransition(const ViewT &view_) const
     {
-        return m_transitionCheck(view_);
+        auto res = m_transitionCheck(view_);
+        res.fromState = this->m_id;
+        return res;
     }
 
     template<typename StateIDT, typename ViewT, typename UpdaterT, typename TransCheckT, typename HandlerFromT, typename HandlerIntoT>

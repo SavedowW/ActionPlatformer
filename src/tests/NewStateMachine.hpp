@@ -1,5 +1,5 @@
 #pragma once
-#include "SM/PhysicalState.hpp"
+#include "SM/StateProperties.hpp"
 #include "SM/Builder.hpp"
 #include "SM/CompoundState.hpp"
 #include "SM/StateMachine.hpp"
@@ -22,6 +22,7 @@ SERIALIZE_ENUM(TestStates, {
 
 using TestView = ComponentsView<SM::StatePossessor<TestStates>, ComponentTransform, ComponentPhysical, ComponentAnimationRenderable>;
 using TestMake = SM::Make<TestStates, TestView>;
+using TestStateProperties = StateProperties<TestStates, TestView>;
 
 
 void testNewStateMachine()
@@ -47,7 +48,7 @@ void testNewStateMachine()
             TestStates::IDLE,
 
             SM::CallBatch(
-                SM::Updaters::Notify<TestStates, TestView>()),
+                TestStateProperties::Update::Notify()),
 
             [](const TestView &view_) {
                 std::cout << "Idle asked" << std::endl;
@@ -55,13 +56,13 @@ void testNewStateMachine()
             },
 
             TestMake::RulePipe{}
-                .setDefaultPipe(SM::Transitions::Rules::Out::Notify<TestStates, TestView>{})
-                .setPipe(TestStates::RUN, SM::Transitions::Rules::Out::Notify<TestStates, TestView>{})
+                .setDefaultPipe(TestStateProperties::Pipe::Notify{"OUT"})
+                .setPipe(TestStates::RUN, TestStateProperties::Pipe::Notify{"OUT"})
                 .done(),
 
             TestMake::RulePipe{}
-                .setDefaultPipe(SM::Transitions::Rules::In::Notify<TestStates, TestView>{})
-                .setPipe(TestStates::RUN, SM::Transitions::Rules::In::Notify<TestStates, TestView>{})
+                .setDefaultPipe(TestStateProperties::Pipe::Notify{"IN"})
+                .setPipe(TestStates::RUN, TestStateProperties::Pipe::Notify{"IN"})
                 .done()
     ));
 
@@ -70,7 +71,7 @@ void testNewStateMachine()
             TestStates::RUN,
 
             SM::CallBatch(
-                SM::Updaters::Notify<TestStates, TestView>()),
+                TestStateProperties::Update::Notify()),
 
             [](const TestView&) {
                 std::cout << "Run asked" << std::endl;
@@ -78,13 +79,13 @@ void testNewStateMachine()
             },
 
             TestMake::RulePipe{}
-                .setDefaultPipe(SM::Transitions::Rules::Out::Notify<TestStates, TestView>{})
-                .setPipe(TestStates::IDLE, SM::Transitions::Rules::Out::Notify<TestStates, TestView>{})
+                .setDefaultPipe(TestStateProperties::Pipe::Notify{"OUT"})
+                .setPipe(TestStates::IDLE, TestStateProperties::Pipe::Notify{"OUT"})
                 .done(),
 
             TestMake::RulePipe{}
-                .setDefaultPipe(SM::Transitions::Rules::In::Notify<TestStates, TestView>{})
-                .setPipe(TestStates::IDLE, SM::Transitions::Rules::In::Notify<TestStates, TestView>{})
+                .setDefaultPipe(TestStateProperties::Pipe::Notify{"IN"})
+                .setPipe(TestStates::IDLE, TestStateProperties::Pipe::Notify{"IN"})
                 .done()
     ));
 
