@@ -8,7 +8,7 @@ class Application;
 
 struct LevelResult
 {
-	int nextLvl;
+	int nextLvl = 0;
 };
 
 class Level : public InputReactor
@@ -39,7 +39,7 @@ protected:
         ENTER,
         RUNNING,
         LEAVE
-    } m_state;
+    } m_state = STATE::ENTER;
 
     bool m_globalPause = false;
     bool m_allowIter = false;

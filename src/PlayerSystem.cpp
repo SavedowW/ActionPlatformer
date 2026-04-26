@@ -222,8 +222,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         PlayerMake::state(
             PlayerState::LANDING_RECOVERY,
 
-            SM::CallBatch(
-                PlayerStateProperties::Update::Notify()),
+            SM::CallBatch(),
 
             PlayerMake::SequentialConditions{}
                 .addCondition(std::make_unique<PlayerStateTransitions::OnPhysEvent>(PlayerState::FLOAT, PhysicalEvents::Events::GROUNDED, false))
@@ -249,8 +248,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         PlayerMake::state(
             PlayerState::FLOAT,
 
-            SM::CallBatch(
-                PlayerStateProperties::Update::Notify()),
+            SM::CallBatch(),
 
             PlayerMake::SequentialConditions{}
                 .addCondition(std::make_unique<PlayerStateTransitions::OnPhysEvent>(PlayerState::LANDING_RECOVERY, PhysicalEvents::Events::GROUNDED))
@@ -260,8 +258,7 @@ void PlayerSystem::setup(entt::entity playerId_)
             },
 
             PlayerMake::RulePipe{}
-                .setDefaultPipe(PlayerStateProperties::Pipe::Notify{"IN"},
-                                PlayerStateProperties::Pipe::SetGravity{{0.0f, 0.5f}},
+                .setDefaultPipe(PlayerStateProperties::Pipe::SetGravity{{0.0f, 0.5f}},
                                 PlayerStateProperties::Pipe::SetAnimation{m_animManager.getAnimID("Char1/float")},
                                 PlayerStateProperties::Pipe::ConvertToInertia{false, true})
                 .done()

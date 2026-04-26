@@ -34,7 +34,7 @@ std::string utils::cutBoundingSpaces(const std::string &functionName_)
         dst.erase(dst.begin());
 
     while (!dst.empty() && dst.back() == ' ')
-        dst.erase(dst.begin() + dst.size() - 1);
+        dst.pop_back();
 
     return dst;
 }

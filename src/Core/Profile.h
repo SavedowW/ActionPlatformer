@@ -74,14 +74,6 @@ size_t registerProfilePlace(const char *file_, const std::string &functionName_,
 #define CONCATENATE(x, y) CONCATENATE_DETAIL(x, y)
 #define VARNAME(name) CONCATENATE(CONCATENATE(name, __LINE__), _SRw453ytueh)
 
-#ifdef __clang__
-#define FUNCNAME __PRETTY_FUNCTION__
-#elifdef __GNUC__
-#define FUNCNAME __PRETTY_FUNCTION__
-#else
-#define FUNCNAME __FUNCSIG__
-#endif
-
 
 #ifdef DUMP_PROFILE
 

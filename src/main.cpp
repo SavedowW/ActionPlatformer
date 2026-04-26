@@ -1,8 +1,11 @@
+#include "Core/Logger.h"
+#include "Core/Logger.hpp"
 #include "tests/NewStateMachine.hpp"
 #include "Core/CoreComponents.h"
 #include "BattleLevel.h"
 #include "Core/Application.hpp"
 #include "Core/FilesystemUtils.h"
+#include "core/logger.hpp"
 #include <iostream>
 #include <memory>
 
@@ -29,7 +32,7 @@ int main(int, char**)
 
     try
     {
-        std::cout << Filesystem::getRootDirectory() << std::endl;
+        LOG_INFO(Filesystem::getRootDirectory());
         auto &app = Application::instance();
         
         app.makeLevel<BattleLevel>(1, Vector2{2048, 2048});
@@ -37,8 +40,7 @@ int main(int, char**)
     }
     catch (std::exception &ex_)
     {
-        std::cout << "Something went horribly wrong!" << std::endl;
-        std::cout << ex_.what() << std::endl;
+        LOG_ERROR("Something went horribly wrong!\n{}", ex_.what());
 
         return 1;
     }

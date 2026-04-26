@@ -1,4 +1,5 @@
 #include "FPSUtility.h"
+#include "Logger.hpp"
 #include <SDL3/SDL.h>
 #include <iostream>
 
@@ -52,6 +53,7 @@ void FPSUtility::cycle()
         if (passedFrames >= s_syncLimit)
         {
             std::cout << "Forced to skip " << passedFrames << " frames" << std::endl;
+            LOG_TRACE("Forced to skip {} frames", passedFrames);
             updateSyncPoint();
         }
     }

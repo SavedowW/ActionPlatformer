@@ -90,14 +90,10 @@ void Shader::compile(const char *vertexSource_, const char *fragmentSource_)
     validateShader(sVertex);
 
     // fragment Shader
-    try
-    {
-        sFragment = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(sFragment, 1, &fragmentSource_, NULL);
-        glCompileShader(sFragment);
-        validateShader(sFragment);
-    }
-    catch_extend("While creating fragment shader")
+    sFragment = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(sFragment, 1, &fragmentSource_, NULL);
+    glCompileShader(sFragment);
+    validateShader(sFragment);
 
     // shader program
     m_id = glCreateProgram();

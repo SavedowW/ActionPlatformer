@@ -28,6 +28,7 @@ BattleLevel::BattleLevel(int lvlId_, FPSUtility &fpsUtility_, const Vector2<int>
     m_lvlBuilder(m_registry)
 {
     auto playerId = m_registry.create();
+    m_registry.emplace<ComponentName>(playerId, "Player");
 
     const auto &ptrans = m_registry.emplace<ComponentTransform>(playerId);
     m_registry.emplace<ComponentReset<ComponentTransform>>(playerId, ptrans.m_pos, ptrans.m_orientation);
