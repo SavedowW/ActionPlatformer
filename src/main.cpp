@@ -5,7 +5,7 @@
 #include "BattleLevel.h"
 #include "Core/Application.hpp"
 #include "Core/FilesystemUtils.h"
-#include "core/logger.hpp"
+#include "Core/Logger.hpp"
 #include <iostream>
 #include <memory>
 

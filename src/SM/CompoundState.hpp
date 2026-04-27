@@ -61,6 +61,8 @@ namespace SM
     {
         auto res = m_transitionCheck(view_);
         res.fromState = this->m_id;
+        if (res.intoOrientation != ORIENTATION::UNSPECIFIED)
+            LOG_TRACE("{} => {} ({})", serialize(res.fromState), serialize(res.intoState), serialize(res.intoOrientation));
         return res;
     }
 

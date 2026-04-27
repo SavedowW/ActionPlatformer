@@ -27,6 +27,7 @@ void StateProperties<StateIDT, ViewT>::Update::UpdateGravity::operator()(const V
     physical.m_gravity = m_gravity[owner.framesInState()];
 }
 
+
 template<typename StateIDT, typename ViewT>
 StateProperties<StateIDT, ViewT>::Update::AddOrientedVelocity::AddOrientedVelocity(TimelineProperty<Vector2<float>> &&velocity_) :
     m_velocity{std::move(velocity_)}
@@ -44,6 +45,31 @@ void StateProperties<StateIDT, ViewT>::Update::AddOrientedVelocity::operator()(c
 }
 
 template<typename StateIDT, typename ViewT>
+StateProperties<StateIDT, ViewT>::Update::AddAbsoluteVelocity::AddAbsoluteVelocity(TimelineProperty<Vector2<float>> &&velocity_) :
+    m_velocity{std::move(velocity_)}
+{}
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Update::AddAbsoluteVelocity::operator()(const ViewT &view_) const
+{
+    auto &physical = view_.template get<ComponentPhysical>();
+    physical.m_velocity += m_velocity[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()];
+}
+
+template<typename StateIDT, typename ViewT>
+StateProperties<StateIDT, ViewT>::Update::MultiplyInertia::MultiplyInertia(TimelineProperty<Vector2<float>> &&multiplier_) :
+    m_multiplier{std::move(multiplier_)}
+{}
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Update::MultiplyInertia::operator()(const ViewT &view_) const
+{
+    auto &physical = view_.template get<ComponentPhysical>();
+    physical.m_inertia = physical.m_inertia.mulComponents(m_multiplier[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()]);
+}
+
+
+template<typename StateIDT, typename ViewT>
 StateProperties<StateIDT, ViewT>::Update::HorizontalVelocityLimit::HorizontalVelocityLimit(TimelineProperty<std::pair<float, float>> &&limits_) :
     m_limits{std::move(limits_)}
 {}
@@ -57,6 +83,22 @@ void StateProperties<StateIDT, ViewT>::Update::HorizontalVelocityLimit::operator
         physical.m_velocity.x = currentLimit.first;
     else if (physical.m_velocity.x > currentLimit.second)
         physical.m_velocity.x = currentLimit.second;
+}
+
+template<typename StateIDT, typename ViewT>
+StateProperties<StateIDT, ViewT>::Update::VerticalVelocityLimit::VerticalVelocityLimit(TimelineProperty<std::pair<float, float>> &&limits_) :
+    m_limits{std::move(limits_)}
+{}
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Update::VerticalVelocityLimit::operator()(const ViewT &view_) const
+{
+    auto &physical = view_.template get<ComponentPhysical>();
+    const auto &currentLimit = m_limits[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()];
+    if (physical.m_velocity.y < currentLimit.first)
+        physical.m_velocity.y = currentLimit.first;
+    else if (physical.m_velocity.y > currentLimit.second)
+        physical.m_velocity.y = currentLimit.second;
 }
 
 

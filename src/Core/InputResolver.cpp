@@ -6,8 +6,8 @@ InputResolver::InputResolver() :
     m_inputComparators {
         {InputMotions::HOLD_HORDIR, &InputResolver::checkHoldHorDir},
         {InputMotions::CHECK_NO_HORDIR, &InputResolver::checkNoHorDir},
+        {InputMotions::HOLD_UP, &InputResolver::checkHoldUp},
         //{InputMotions::HOLD_HORDIR_BUFFERED, &InputResolver::checkHoldHorDirBuffered},
-        //{InputMotions::HOLD_UP, &InputResolver::checkHoldUp},
         //{InputMotions::HOLD_DOWN, &InputResolver::checkHoldDown},
         //{InputMotions::TAP_UP, &InputResolver::checkTapUp},
         //{InputMotions::TAP_DOWN, &InputResolver::checkTapDown},
@@ -42,6 +42,14 @@ bool InputResolver::checkNoHorDir(ORIENTATION orientation_, unsigned int) const
     return m_inputQueue[0].m_dir.x != expected;
 }
 
+bool InputResolver::checkHoldUp(ORIENTATION, unsigned int) const
+{
+    if (m_inputQueue.getFilled() == 0)
+        return false;
+
+    return m_inputQueue[0].m_dir.y < 0;
+}
+
 /*
 bool InputResolver::checkHoldHorDirBuffered(ORIENTATION orientation_, unsigned int extendBuffer_) const
 {
@@ -59,14 +67,6 @@ bool InputResolver::checkHoldHorDirBuffered(ORIENTATION orientation_, unsigned i
     }
 
     return false;
-}
-
-bool InputResolver::checkHoldUp(ORIENTATION, unsigned int) const
-{
-    if (m_inputQueue.getFilled() == 0)
-        return false;
-
-    return m_inputQueue[0].m_dir.y < 0;
 }
 
 bool InputResolver::checkHoldDown(ORIENTATION, unsigned int) const

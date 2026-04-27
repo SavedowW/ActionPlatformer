@@ -127,7 +127,7 @@ void HudSystem::drawPlayerDebug() const
     }
 }
 
-void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_, /*const StateMachine &sm_, */const ComponentAI &ai_) const
+void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_, /*const StateMachine &sm_, */const ComponentAI &) const
 {
     const auto txt1 = std::string("SM name used to be here, TODO"); //sm_.getName();
     const auto txt2 = std::string("AI SM name used to be here, TODO");

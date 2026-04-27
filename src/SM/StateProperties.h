@@ -25,6 +25,7 @@ struct StateProperties
             TimelineProperty<Vector2<float>> m_gravity;
         };
 
+
         class AddOrientedVelocity
         {
         public:
@@ -36,6 +37,29 @@ struct StateProperties
             TimelineProperty<Vector2<float>> m_velocity;
         };
 
+        class AddAbsoluteVelocity
+        {
+        public:
+            AddAbsoluteVelocity(TimelineProperty<Vector2<float>> &&velocity_);
+
+            void operator()(const ViewT &view_) const;
+        
+        private:
+            TimelineProperty<Vector2<float>> m_velocity;
+        };
+
+        class MultiplyInertia
+        {
+        public:
+            MultiplyInertia(TimelineProperty<Vector2<float>> &&multiplier_);
+
+            void operator()(const ViewT &view_) const;
+        
+        private:
+            TimelineProperty<Vector2<float>> m_multiplier;
+        };
+
+
         class HorizontalVelocityLimit
         {
         public:
@@ -46,6 +70,18 @@ struct StateProperties
         private:
             TimelineProperty<std::pair<float, float>> m_limits;
         };
+
+        class VerticalVelocityLimit
+        {
+        public:
+            VerticalVelocityLimit(TimelineProperty<std::pair<float, float>> &&limits_);
+
+            void operator()(const ViewT &view_) const;
+        
+        private:
+            TimelineProperty<std::pair<float, float>> m_limits;
+        };
+
 
         class SetDrag
         {

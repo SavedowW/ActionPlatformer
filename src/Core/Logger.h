@@ -3,14 +3,6 @@
 #include "StaticMapping.hpp"
 #include <format>
 
-#ifdef __clang__
-#define FUNCNAME __PRETTY_FUNCTION__
-#elifdef __GNUC__
-#define FUNCNAME __PRETTY_FUNCTION__
-#else
-#define FUNCNAME __FUNCSIG__
-#endif
-
 struct ComponentName
 {
     std::string name;
@@ -53,8 +45,7 @@ SERIALIZE_ENUM(Logger::Level, {
 try { \
     if (LVL >= Logger::Level::TRACE) \
     { \
-        static const std::string functionName_trf34w5eryg = utils::prettifyFunction(FUNCNAME); \
-        Logger::logImpl(LVL, functionName_trf34w5eryg, __VA_ARGS__); \
+        Logger::logImpl(LVL, __func__, __VA_ARGS__); \
     } \
 } catch (const std::exception &ex_) { \
     std::print("Error while printing log at {}:{}: {}", __FILE__, __LINE__, ex_.what()); \

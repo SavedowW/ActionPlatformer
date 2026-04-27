@@ -344,6 +344,8 @@ bool PhysicsSystem::magnetEntity(const CollidersView &clds_, ComponentTransform 
             trans_.m_pos.y = height - 1;
             phys_.m_onSlopeWithAngle = (bot > pcld->highestPoint() ? pcld->topAngleCoef() : 0.0f);
             phys_.m_onGround = found;
+            phys_.m_velocity.y = 0;
+            phys_.m_inertia.y = 0;
             return true;
         }
     }

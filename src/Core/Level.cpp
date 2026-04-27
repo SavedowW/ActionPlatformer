@@ -39,13 +39,13 @@ LevelResult Level::proceed()
     fullFrameTime.begin();
     while (m_state == STATE::RUNNING)
     {
-        LOG_TRACE("Level frame {}", frame++);
-
         profiler.cleanFrame();
         m_input.handleInput();
 
         if (!m_globalPause || m_globalPause && m_allowIter || m_forcerun)
         {
+            LOG_TRACE("Level frame {}", frame++);
+
             update();
             m_allowIter = false;
         }

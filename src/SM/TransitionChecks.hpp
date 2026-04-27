@@ -7,17 +7,6 @@
 #include "StateMachine.hpp"
 
 template<typename StateIDT, typename ViewT>
-TransitionChecks<StateIDT, ViewT>::Base::AbstractCondition::AbstractCondition(const StateIDT &state_) :
-    m_state{state_}
-{}
-
-template<typename StateIDT, typename ViewT>
-TransitionChecks<StateIDT, ViewT>::Base::AbstractCondition::operator StateIDT() const
-{
-    return m_state;
-}
-
-template<typename StateIDT, typename ViewT>
 SM::TransitionData<StateIDT> TransitionChecks<StateIDT, ViewT>::Base::Sequential::operator()(const ViewT &view_) const
 {
     for (const auto &con : m_conditions)
@@ -42,8 +31,54 @@ TransitionChecks<StateIDT, ViewT>::Base::Sequential &TransitionChecks<StateIDT, 
 
 
 template<typename StateIDT, typename ViewT>
+TransitionChecks<StateIDT, ViewT>::Base::AbstractStateCondition::AbstractStateCondition(StateIDT state_) :
+    m_state{state_}
+{}
+
+template<typename StateIDT, typename ViewT>
+TransitionChecks<StateIDT, ViewT>::Base::AbstractStateCondition::operator StateIDT() const
+{
+    return m_state;
+}
+
+
+template<typename StateIDT, typename ViewT>
+template<typename T>
+TransitionChecks<StateIDT, ViewT>::Base::SinceFrameImpl<T>::SinceFrameImpl(uint32_t sinceFrame_, T &&condition_) :
+    m_sinceFrame{sinceFrame_},
+    m_condition{std::move(condition_)}
+{}
+
+template<typename StateIDT, typename ViewT>
+template<typename T>
+TransitionChecks<StateIDT, ViewT>::Base::SinceFrameImpl<T>::operator StateIDT() const
+{
+    return StateIDT(m_condition);
+}
+
+template<typename StateIDT, typename ViewT>
+template<typename T>
+ORIENTATION TransitionChecks<StateIDT, ViewT>::Base::SinceFrameImpl<T>::operator()(const ViewT &view_)
+{
+    const auto &stateDescr = view_.template cget<SM::StatePossessor<StateIDT>>();
+    if (stateDescr.framesInState() >= m_sinceFrame)
+        return m_condition(view_);
+
+    return ORIENTATION::UNSPECIFIED;
+}
+
+template<typename StateIDT, typename ViewT>
+template<typename T>
+auto TransitionChecks<StateIDT, ViewT>::sinceFrame(uint32_t sinceFrame_, T &&condition_)
+{
+    return std::make_unique<typename TransitionChecks<StateIDT, ViewT>::Base::template SinceFrameImpl<T>>(sinceFrame_, std::forward<T>(condition_));
+}
+
+
+
+template<typename StateIDT, typename ViewT>
 TransitionChecks<StateIDT, ViewT>::OnPhysEvent::OnPhysEvent(const StateIDT &state_, const PhysicalEvents::Events &event_, bool isSet_) :
-    Base::AbstractCondition(state_),
+    Base::AbstractStateCondition(state_),
     m_event{event_},
     m_isSet{isSet_}
 {}
@@ -59,7 +94,7 @@ ORIENTATION TransitionChecks<StateIDT, ViewT>::OnPhysEvent::operator()(const Vie
 
 template<typename StateIDT, typename ViewT>
 TransitionChecks<StateIDT, ViewT>::OnTimer::OnTimer(const StateIDT &state_, uint32_t framesLimit_) :
-    Base::AbstractCondition(state_),
+    Base::AbstractStateCondition(state_),
     m_framesLimit{framesLimit_}
 {}
 
@@ -75,7 +110,7 @@ ORIENTATION TransitionChecks<StateIDT, ViewT>::OnTimer::operator()(const ViewT &
 
 template<typename StateIDT, typename ViewT>
 TransitionChecks<StateIDT, ViewT>::InputTest::InputTest(const StateIDT &state_, InputMotions input_, Flag<OrientationOptions> options_) :
-    Base::AbstractCondition(state_),
+    Base::AbstractStateCondition(state_),
     m_input{input_},
     m_orientations(options_)
 {}

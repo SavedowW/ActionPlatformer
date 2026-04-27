@@ -22,15 +22,15 @@ struct TransitionChecks
         class AbstractCondition
         {
         public:
-            AbstractCondition(const StateIDT &state_);
-            operator StateIDT() const;
-
-            virtual ORIENTATION operator()(const ViewT &view_) = 0;
-
+            AbstractCondition() = default;
+            AbstractCondition(const AbstractCondition &) = default;
+            AbstractCondition &operator=(const AbstractCondition &) = default;
+            AbstractCondition(AbstractCondition &&) = default;
+            AbstractCondition &operator=(AbstractCondition &&) = default;
             virtual ~AbstractCondition() = default;
 
-        private:
-            const StateIDT m_state;
+            virtual operator StateIDT() const = 0;
+            virtual ORIENTATION operator()(const ViewT &view_) = 0;
         };
 
         class Sequential
@@ -42,10 +42,39 @@ struct TransitionChecks
         private:
             std::vector<std::unique_ptr<AbstractCondition>> m_conditions;
         };
+
+
+        class AbstractStateCondition : public AbstractCondition
+        {
+        public:
+            AbstractStateCondition(StateIDT state_);
+            operator StateIDT() const override;
+
+        private:
+            const StateIDT m_state;
+        };
+
+
+        template<typename T>
+        class SinceFrameImpl : public AbstractCondition
+        {
+        public:
+            SinceFrameImpl(uint32_t sinceFrame_, T &&condition_);
+            operator StateIDT() const override;
+
+            ORIENTATION operator()(const ViewT &view_) override;
+
+        private:
+            const uint32_t m_sinceFrame;
+            T m_condition;
+        };
     };
 
+    template<typename T>
+    static auto sinceFrame(uint32_t sinceFrame_, T &&condition_);
 
-    class OnPhysEvent : public Base::AbstractCondition
+
+    class OnPhysEvent : public Base::AbstractStateCondition
     {
     public:
         OnPhysEvent(const StateIDT &state_, const PhysicalEvents::Events &event_, bool isSet_ = true);
@@ -57,7 +86,7 @@ struct TransitionChecks
         const bool m_isSet;
     };
 
-    class OnTimer : public Base::AbstractCondition
+    class OnTimer : public Base::AbstractStateCondition
     {
     public:
         OnTimer(const StateIDT &state_, uint32_t framesLimit_);
@@ -68,7 +97,7 @@ struct TransitionChecks
         const uint32_t m_framesLimit;
     };
 
-    class InputTest : public Base::AbstractCondition
+    class InputTest : public Base::AbstractStateCondition
     {
     public:
         InputTest(const StateIDT &state_, InputMotions input_, Flag<OrientationOptions> options_);

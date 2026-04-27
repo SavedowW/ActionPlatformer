@@ -6,8 +6,8 @@ enum class InputMotions : uint8_t
 {
     HOLD_HORDIR,
     CHECK_NO_HORDIR,
+    HOLD_UP,
     //HOLD_HORDIR_BUFFERED,
-    //HOLD_UP,
     //HOLD_DOWN,
     //TAP_UP,
     //TAP_DOWN,
@@ -18,8 +18,8 @@ enum class InputMotions : uint8_t
 SERIALIZE_ENUM(InputMotions, {
     ENUM_AUTO(InputMotions, HOLD_HORDIR),
     ENUM_AUTO(InputMotions, CHECK_NO_HORDIR),
+    ENUM_AUTO(InputMotions, HOLD_UP),
     //ENUM_AUTO(InputMotions, HOLD_HORDIR_BUFFERED),
-    //ENUM_AUTO(InputMotions, HOLD_UP),
     //ENUM_AUTO(InputMotions, HOLD_DOWN),
     //ENUM_AUTO(InputMotions, TAP_UP),
     //ENUM_AUTO(InputMotions, TAP_DOWN),
@@ -43,8 +43,8 @@ public:
 private:
     bool checkHoldHorDir(ORIENTATION orientation_, unsigned int extendBuffer_) const;
     bool checkNoHorDir(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkHoldUp(ORIENTATION orientation_, unsigned int extendBuffer_) const;
     //bool checkHoldHorDirBuffered(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-    //bool checkHoldUp(ORIENTATION orientation_, unsigned int extendBuffer_) const;
     //bool checkHoldDown(ORIENTATION orientation_, unsigned int extendBuffer_) const;
     //bool checkTapUp(ORIENTATION orientation_, unsigned int extendBuffer_) const;
     //bool checkTapDown(ORIENTATION orientation_, unsigned int extendBuffer_) const;
