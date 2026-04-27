@@ -82,6 +82,17 @@ struct StateProperties
             TimelineProperty<std::pair<float, float>> m_limits;
         };
 
+        class HorizontalInertiaLimit
+        {
+        public:
+            HorizontalInertiaLimit(TimelineProperty<std::pair<float, float>> &&limits_);
+
+            void operator()(const ViewT &view_) const;
+        
+        private:
+            TimelineProperty<std::pair<float, float>> m_limits;
+        };
+
 
         class SetDrag
         {

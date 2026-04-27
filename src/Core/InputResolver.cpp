@@ -7,6 +7,7 @@ InputResolver::InputResolver() :
         {InputMotions::HOLD_HORDIR, &InputResolver::checkHoldHorDir},
         {InputMotions::CHECK_NO_HORDIR, &InputResolver::checkNoHorDir},
         {InputMotions::HOLD_UP, &InputResolver::checkHoldUp},
+        {InputMotions::HOLD_UP_FORWARD, &InputResolver::checkHoldUpForward},
         //{InputMotions::HOLD_HORDIR_BUFFERED, &InputResolver::checkHoldHorDirBuffered},
         //{InputMotions::HOLD_DOWN, &InputResolver::checkHoldDown},
         //{InputMotions::TAP_UP, &InputResolver::checkTapUp},
@@ -48,6 +49,20 @@ bool InputResolver::checkHoldUp(ORIENTATION, unsigned int) const
         return false;
 
     return m_inputQueue[0].m_dir.y < 0;
+}
+
+bool InputResolver::checkHoldUpForward(ORIENTATION orientation_, unsigned int) const
+{
+    if (m_inputQueue.getFilled() == 0)
+        return false;
+
+    if (m_inputQueue[0].m_dir.y >= 0)
+        return false;
+
+    if (orientation_ == ORIENTATION::RIGHT)
+        return m_inputQueue[0].m_dir.x > 0;
+
+    return m_inputQueue[0].m_dir.x < 0;
 }
 
 /*

@@ -101,6 +101,22 @@ void StateProperties<StateIDT, ViewT>::Update::VerticalVelocityLimit::operator()
         physical.m_velocity.y = currentLimit.second;
 }
 
+template<typename StateIDT, typename ViewT>
+StateProperties<StateIDT, ViewT>::Update::HorizontalInertiaLimit::HorizontalInertiaLimit(TimelineProperty<std::pair<float, float>> &&limits_) :
+    m_limits{std::move(limits_)}
+{}
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Update::HorizontalInertiaLimit::operator()(const ViewT &view_) const
+{
+    auto &physical = view_.template get<ComponentPhysical>();
+    const auto &currentLimit = m_limits[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()];
+    if (physical.m_inertia.x < currentLimit.first)
+        physical.m_inertia.x = currentLimit.first;
+    else if (physical.m_inertia.x > currentLimit.second)
+        physical.m_inertia.x = currentLimit.second;
+}
+
 
 template<typename StateIDT, typename ViewT>
 StateProperties<StateIDT, ViewT>::Update::SetDrag::SetDrag(TimelineProperty<Vector2<float>> &&drag_) :
