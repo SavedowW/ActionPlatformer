@@ -1,6 +1,6 @@
 #pragma once
-#include <string>
 #include "StaticMapping.hpp"
+#include <string>
 #include <format>
 
 struct ComponentName
