@@ -6,18 +6,15 @@
 class Window
 {
 public:
-    Window(const std::string &winName_);
+    Window(std::string &&winName_);
     ~Window();
 
-    Window& operator=(const Window &rhs) = delete;
-    Window(const Window &rhs) = delete;
+    Vector2<uint16_t> getResolution() const noexcept;
 
-    Window& operator=(Window &&rhs);
-    Window(Window &&rhs);
-
-    SDL_Window* getWindow();
+    SDL_Window* getWindow() const noexcept;
 
 private:
     SDL_Window* m_window = nullptr;
     std::string m_winName;
+    Vector2<uint16_t> m_resolution;
 };

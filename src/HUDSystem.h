@@ -60,6 +60,7 @@ public:
 
 private:
     Renderer &m_renderer;
+    const Window &m_window;
     TextManager &m_textManager;
     entt::registry &m_reg;
 

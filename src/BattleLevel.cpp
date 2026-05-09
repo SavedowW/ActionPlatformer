@@ -188,9 +188,13 @@ void BattleLevel::draw() const
 
     m_battlesys.debugDraw();
 
-    m_hudsys.draw();
+    renderer.switchToHUD({0, 0, 0, 0});
 
     m_chatBoxSys.draw();
+
+    renderer.switchToDBG({0, 0, 0, 0});
+
+    m_hudsys.draw();
 
     renderer.updateScreen(m_camera);
 }

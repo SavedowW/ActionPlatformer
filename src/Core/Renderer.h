@@ -1,4 +1,5 @@
 #pragma once
+#include "Window.h"
 #include "Collider.h"
 #include "Camera.h"
 #include "Shader.h"
@@ -13,18 +14,17 @@
 class Renderer
 {
 public:
-    Renderer(SDL_Window *window_);
+    Renderer(const Window &window_);
 
     static std::vector<unsigned int> surfacesToTexture(const std::vector<SDL_Surface*> &surfaces);
 
     // Switch to provided texture as a target
-    void attachTex(const Texture &texture_);
-
-    // Switch to world framebuffer and texture as a target
-    void attachTex();
+    void setTarget(const Texture &texture_);
+    void resetTarget();
 
     void prepareRenderer(const SDL_Color &col_);
     void switchToHUD(const SDL_Color &col_);
+    void switchToDBG(const SDL_Color &col_);
     void fillRenderer(const SDL_Color &col_);
     void updateScreen(const Camera &cam_);
 
@@ -60,7 +60,9 @@ public:
     void renderTile(unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_, const Vector2<int> &tilesetPixelsPos_);
 
 private:
-    SDL_Window *m_window = nullptr;
+    void selectTarget(const Framebuffer &fb_, const Vector2<int> &size_);
+
+    const Window &m_window;
     SDL_GLContext m_context = nullptr;
 
     Shader m_rectShader;
@@ -82,8 +84,18 @@ private:
     // Framebuffer used only for in-game HUD, uses specified resolution
     Framebuffer m_hudFB;
 
+    // Framebuffer used only for debugging HUD, uses window resolution
+    Framebuffer m_dbgFB;
+
     // Framebuffer used only for custom targets 
     Framebuffer m_customFB;
+
+    enum class Stage : uint8_t
+    {
+        WORLD,
+        HUD,
+        DBG
+    } m_stage = Stage::WORLD;
 
 
     // Texture only for world objects, uses max camera size
@@ -91,6 +103,9 @@ private:
 
     // Texture for HUD framebuffer
     Texture m_renderHudTargetTexture;
+
+    // Texture for debugging HUD rendering
+    Texture m_renderDbgTargetTexture;
 
     /**
      *  Texture used for outline effect

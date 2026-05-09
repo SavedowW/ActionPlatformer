@@ -104,7 +104,7 @@ namespace TextAligners
 TextManager::TextManager(Renderer &renderer_) :
     m_charChunks(Filesystem::getRootDirectory() + "Resources/GeneralCharacterList.txt"),
     m_renderer(renderer_),
-    m_fonts{fonts::Font(renderer_, generateSimpleShadedSymbols, 12, m_charChunks, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  12, SDL_Color{255, 255, 255, 255}, SDL_Color{100, 100, 100, 255}), // Screen debug data
+    m_fonts{fonts::Font(renderer_, generateSimpleShadedSymbols, 36, m_charChunks, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  36, SDL_Color{255, 255, 255, 255}, SDL_Color{100, 100, 100, 255}), // Screen debug data
     fonts::Font(renderer_, generateSimpleSymbols, 10, m_charChunks, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  10, gamedata::colors::LVL1), // For npc debug
     fonts::Font(renderer_, generateSimpleSymbols, 8, m_charChunks, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  8, SDL_Color{255, 255, 255, 255}), // For navigation system
     fonts::Font(renderer_, generateSimpleSymbols, 16, m_charChunks, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  16, gamedata::colors::LVL1)} // Used for chatbox
@@ -197,12 +197,12 @@ void TextManager::generateSimpleShadedSymbols(Renderer &renderer_, std::vector<s
             symbols_.at(i).m_tex.init(Texture::Config{shadedTex.size().add(1, 1)});
             TTF_GetGlyphMetrics(font, chid, &symbols_.at(i).m_minx, &symbols_.at(i).m_maxx, &symbols_.at(i).m_miny, &symbols_.at(i).m_maxy, &symbols_.at(i).m_advance);
 
-            renderer_.attachTex(symbols_.at(i).m_tex);
+            renderer_.setTarget(symbols_.at(i).m_tex);
             renderer_.fillRenderer(SDL_Color{255, 255, 255, 0});
             renderer_.renderTexture(shadedTex.handler(), {0, 0}, shadedTex.size(), SDL_FLIP_VERTICAL, 1.0f);
             renderer_.renderTexture(unshadedTex.handler(), {0, 2}, unshadedTex.size(), SDL_FLIP_VERTICAL, 1.0f);
 
-            renderer_.attachTex();
+            renderer_.resetTarget();
         }
         symbolChunks_.push_back(std::move(symbols_));
     }

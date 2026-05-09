@@ -12,6 +12,7 @@
 
 HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> &lvlSize_) :
     m_renderer(Application::instance().m_renderer),
+    m_window{Application::instance().m_window},
     m_textManager(Application::instance().m_textManager),
     m_reg(reg_),
     m_cam(cam_),
@@ -28,7 +29,6 @@ void HudSystem::draw() const
 {
     const auto npcs = m_reg.view<ComponentTransform, ComponentPhysical/*, StateMachine*/, ComponentAI>();
 
-    m_renderer.switchToHUD({0, 0, 0, 0});
     drawCommonDebug();
     drawPlayerDebug();
 
@@ -53,7 +53,7 @@ void HudSystem::drawCommonDebug() const
     else
         m_avgFrames.push(static_cast<float>(lastFrameTime));
 
-    ImmediateScreenLog<TextAligners::AlignerLeft> commonLog{0, 12, {1, 1}};
+    ImmediateScreenLog<TextAligners::AlignerLeft> commonLog{0, 36, {1, 1}};
 
     commonLog.dumpLine("[" + std::to_string(m_lvlId) + "] " + std::string(m_lvlSize));
     commonLog.dumpLine("Camera pos: " + std::string(m_cam.getPos()));
@@ -83,7 +83,9 @@ void HudSystem::drawPlayerDebug() const
     //for (const auto &el : m_pc->m_cooldowns)
     //    cooldowns += std::to_string(!el.isActive());
 
-    ImmediateScreenLog<TextAligners::AlignerRight> playerLog{0, 12, {gamedata::global::hudLayerResolution.x - 1, 1}};
+    const auto resolution = m_window.getResolution();
+
+    ImmediateScreenLog<TextAligners::AlignerRight> playerLog{0, 36, {resolution.x - 1, 1}};
 
     playerLog.dumpLine("Player pos: " + std::string(ptransform.m_pos));
     playerLog.dumpLine("Player vel: " + std::string(pphysical.m_velocity));
@@ -97,11 +99,11 @@ void HudSystem::drawPlayerDebug() const
 
     auto inputs = pinp.getCurrentInputDir();
 
-    const std::array<Vector2<float>, 4> arrowPos {
-        Vector2{320.0f, 25.0f},
-        Vector2{355.0f, 60.0f},
-        Vector2{320.0f, 95.0f},
-        Vector2{285.0f, 60.0f},
+    const std::array<Vector2<int>, 4> arrowPos {
+        Vector2{resolution.x / 2, 25},
+        Vector2{resolution.x / 2 + 35, 60},
+        Vector2{resolution.x / 2, 95},
+        Vector2{resolution.x / 2 - 35, 60},
     };
 
     const std::array<bool, 4> isValid {
@@ -137,7 +139,7 @@ void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPh
     const Vector2<int> camTL = m_cam.getTopLeft();
     const auto screenRelPos = (worldOrigin - camTL).mulComponents(1.0f / camSize.x, 1.0f / camSize.y);
     
-	const Vector2<int> screenOrigin = screenRelPos.mulComponents(gamedata::global::hudLayerResolution);
+	const Vector2<int> screenOrigin = screenRelPos.mulComponents(m_window.getResolution());
 
     m_textManager.renderText<TextAligners::AlignerLeft>(txt1, 1, screenOrigin);
     m_textManager.renderText<TextAligners::AlignerLeft>(txt2, 1, screenOrigin + Vector2{0.0f, 10.0f});

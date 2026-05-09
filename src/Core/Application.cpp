@@ -52,7 +52,7 @@ const FPSUtility &Application::getFPSUtility() const
 
 Application::Application() :
     m_window("GameName"),
-    m_renderer(m_window.getWindow()),
+    m_renderer(m_window),
     m_textManager(m_renderer),
     m_fpsUtility{60}
 {

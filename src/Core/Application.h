@@ -27,7 +27,6 @@ class Application
 {
 private:
     SDLCore m_sdlCore;
-    Window m_window;
 
 public:
     static Application &instance();
@@ -46,6 +45,7 @@ public:
     Application &operator=(const Application&) = delete;
     Application &operator=(Application&&) = delete;
 
+    Window m_window;
     Renderer m_renderer;
     InputSystem m_inputSystem;
     TextureManager m_textureManager;

@@ -1,15 +1,13 @@
 #include "Window.h"
-#include "GameData.h"
 #include "Configuration.h"
-#include "JsonUtils.hpp"
 #include <stdexcept>
 
-Window::Window(const std::string &winName_) :
-    m_winName(winName_)
+Window::Window(std::string &&winName_) :
+    m_winName(std::move(winName_))
 {
-    auto resolution = ConfigurationManager::instance().m_settings["video"]["window_resolution"].readOrSet<Vector2<int>>({1920, 1080});
+    m_resolution = ConfigurationManager::instance().m_settings["video"]["window_resolution"].readOrSet<Vector2<uint16_t>>({1920, 1080});
 
-    m_window = SDL_CreateWindow(m_winName.c_str(), resolution.x, resolution.y, SDL_WINDOW_OPENGL);
+    m_window = SDL_CreateWindow(m_winName.c_str(), m_resolution.x, m_resolution.y, SDL_WINDOW_OPENGL);
     if (!m_window)
     {
         std::cout << "Window creation error: " << SDL_GetError() << std::endl;
@@ -22,25 +20,12 @@ Window::~Window()
     SDL_DestroyWindow(m_window);
 }
 
-Window& Window::operator=(Window &&rhs)
+Vector2<uint16_t> Window::getResolution() const noexcept
 {
-    m_window = rhs.m_window;
-    m_winName = rhs.m_winName;
-
-    rhs.m_window = nullptr;
-
-    return *this;
+    return m_resolution;
 }
 
-Window::Window(Window &&rhs)
-{
-    m_window = rhs.m_window;
-    m_winName = rhs.m_winName;
-
-    rhs.m_window = nullptr;
-}
-
-SDL_Window* Window::getWindow()
+SDL_Window* Window::getWindow() const noexcept
 {
     return m_window;
 }

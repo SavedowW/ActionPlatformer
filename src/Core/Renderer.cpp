@@ -3,14 +3,13 @@
 #include "Framebuffer.hpp"
 #include "GameData.h"
 #include "Shader.hpp"
-#include "Configuration.h"
 #include "glad/glad.h"
 #include <SDL3/SDL_opengl.h>
 #include <stdexcept>
 
-Renderer::Renderer(SDL_Window *window_) :
+Renderer::Renderer(const Window &window_) :
     m_window(window_),
-    m_context(SDL_GL_CreateContext( window_ )) // SDL_GL_DestroyContext()
+    m_context(SDL_GL_CreateContext( window_.getWindow() )) // SDL_GL_DestroyContext()
 {
     if (!m_context)
         throw std::runtime_error(std::format("Failed to initialize context: {}", SDL_GetError()));
@@ -143,6 +142,7 @@ Renderer::Renderer(SDL_Window *window_) :
     // Framebuffers
     m_worldFB.init();
     m_hudFB.init();
+    m_dbgFB.init();
     m_customFB.init();
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_worldFB);
@@ -167,6 +167,20 @@ Renderer::Renderer(SDL_Window *window_) :
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         throw std::runtime_error("Framebuffer is not complete!");
+
+
+    // DBG framebuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, m_dbgFB);
+
+    // Generating texture
+    m_renderDbgTargetTexture.init(Texture::Config{m_window.getResolution()});
+
+    // Binding texture
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_renderDbgTargetTexture.handler(), 0); 
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        throw std::runtime_error("Framebuffer is not complete!");
+
 
     // Generating intermediate texture
     m_intermTexture.init(Texture::Config{gamedata::global::maxCameraSize}.useRGB());
@@ -206,41 +220,62 @@ std::vector<unsigned int> Renderer::surfacesToTexture(const std::vector<SDL_Surf
     return ids;
 }
 
-void Renderer::attachTex(const Texture &texture_)
+void Renderer::setTarget(const Texture &texture_)
 {
-    const auto &size = texture_.size();
-    glViewport(0, 0, size.x, size.y);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_customFB);
+    selectTarget(m_customFB, texture_.size());
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_.handler(), 0);
-
-    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(size.x), 
-        static_cast<float>(size.y), 0.0f, -1.0f, 1.0f);
-    m_spriteShader.use();
-    m_spriteShader.setMatrix4("projection", projection);
 }
 
-void Renderer::attachTex()
+void Renderer::resetTarget()
 {
-    glViewport(0, 0, gamedata::global::maxCameraSize.x, gamedata::global::maxCameraSize.y);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_worldFB);
+    switch (m_stage)
+    {
+        case Stage::WORLD:
+            selectTarget(m_worldFB, m_renderWorldTargetTexture.size());
+        break;
 
-    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(gamedata::global::maxCameraSize.x), 
-        static_cast<float>(gamedata::global::maxCameraSize.y), 0.0f, -1.0f, 1.0f);
+        case Stage::HUD:
+            selectTarget(m_hudFB, m_renderHudTargetTexture.size());
+        break;
+
+        case Stage::DBG:
+            selectTarget(m_dbgFB, m_renderDbgTargetTexture.size());
+        break;
+    }
+}
+
+void Renderer::selectTarget(const Framebuffer &fb_, const Vector2<int> &size_)
+{
+    glViewport(0, 0, size_.x, size_.y);
+    glBindFramebuffer(GL_FRAMEBUFFER, fb_);
+
+    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(size_.x), 
+        static_cast<float>(size_.y), 0.0f, -1.0f, 1.0f);
     m_spriteShader.use();
     m_spriteShader.setMatrix4("projection", projection);
+
+    m_spriteShaderRotate.use();
+    m_spriteShaderRotate.setMatrix4("projection", projection);
 }
 
 void Renderer::prepareRenderer(const SDL_Color &col_)
 {
-    glViewport(0, 0, gamedata::global::maxCameraSize.x, gamedata::global::maxCameraSize.y);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_worldFB);
+    m_stage = Stage::WORLD;
+    selectTarget(m_worldFB, m_renderWorldTargetTexture.size());
     fillRenderer(col_);
 }
 
 void Renderer::switchToHUD(const SDL_Color &col_)
 {
-    glViewport(0, 0, gamedata::global::hudLayerResolution.x, gamedata::global::hudLayerResolution.y);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_hudFB);
+    m_stage = Stage::HUD;
+    selectTarget(m_hudFB, m_renderHudTargetTexture.size());
+    fillRenderer(col_);
+}
+
+void Renderer::switchToDBG(const SDL_Color &col_)
+{
+    m_stage = Stage::DBG;
+    selectTarget(m_dbgFB, m_renderDbgTargetTexture.size());
     fillRenderer(col_);
 }
 
@@ -253,7 +288,7 @@ void Renderer::fillRenderer(const SDL_Color &col_)
 void Renderer::updateScreen(const Camera &cam_)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    const auto resolution = ConfigurationManager::instance().m_settings["video"]["window_resolution"].readOrSet<Vector2<int>>({1920, 1080});
+    const auto resolution = m_window.getResolution();
     glViewport(0, 0, resolution.x, resolution.y);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -270,7 +305,10 @@ void Renderer::updateScreen(const Camera &cam_)
     glBindTexture(GL_TEXTURE_2D, m_renderHudTargetTexture.handler());
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    SDL_GL_SwapWindow( m_window );
+    glBindTexture(GL_TEXTURE_2D, m_renderDbgTargetTexture.handler());
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    SDL_GL_SwapWindow( m_window.getWindow() );
 }
 
 void Renderer::drawRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const SDL_Color &col_)
