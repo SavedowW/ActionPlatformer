@@ -1,21 +1,22 @@
 #include "Renderer.h"
 #include "FilesystemUtils.h"
+#include "Framebuffer.hpp"
 #include "GameData.h"
 #include "Shader.hpp"
 #include "Configuration.h"
+#include "glad/glad.h"
 #include <SDL3/SDL_opengl.h>
+#include <stdexcept>
 
 Renderer::Renderer(SDL_Window *window_) :
     m_window(window_),
     m_context(SDL_GL_CreateContext( window_ )) // SDL_GL_DestroyContext()
 {
     if (!m_context)
-        throw std::runtime_error(std::string("Failed to compile shader:\n") + SDL_GetError());
+        throw std::runtime_error(std::format("Failed to initialize context: {}", SDL_GetError()));
 
-    if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-    }
+    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress)))
+         throw std::runtime_error("Failed to initialize GLAD");
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -140,64 +141,35 @@ Renderer::Renderer(SDL_Window *window_) :
 
 
     // Framebuffers
-    glGenFramebuffers(1, &m_renderTarget);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_renderTarget);
+    m_worldFB.init();
+    m_hudFB.init();
+    m_customFB.init();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_worldFB);
 
     // Generating texture
-    glGenTextures(1, &m_renderTargetTexture);
-    glBindTexture(GL_TEXTURE_2D, m_renderTargetTexture);
-    
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, gamedata::global::maxCameraSize.x, gamedata::global::maxCameraSize.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    m_renderWorldTargetTexture.init(Texture::Config{gamedata::global::maxCameraSize}.useRGB());
 
     // Binding texture
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_renderTargetTexture, 0); 
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_renderWorldTargetTexture.handler(), 0); 
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+        throw std::runtime_error("Framebuffer is not complete!");
 
     // Hud framebuffer
-    glGenFramebuffers(1, &m_renderHudTarget);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_renderHudTarget);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_hudFB);
 
     // Generating texture
-    glGenTextures(1, &m_renderHudTargetTexture);
-    glBindTexture(GL_TEXTURE_2D, m_renderHudTargetTexture);
-    
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, gamedata::global::hudLayerResolution.x, gamedata::global::hudLayerResolution.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    m_renderHudTargetTexture.init(Texture::Config{gamedata::global::hudLayerResolution});
 
     // Binding texture
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_renderHudTarget, 0); 
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_renderHudTargetTexture.handler(), 0); 
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+        throw std::runtime_error("Framebuffer is not complete!");
 
     // Generating intermediate texture
-    glGenTextures(1, &m_intermTexture);
-    glBindTexture(GL_TEXTURE_2D, m_intermTexture);
-    
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, gamedata::global::maxCameraSize.x, gamedata::global::maxCameraSize.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    m_intermTexture.init(Texture::Config{gamedata::global::maxCameraSize}.useRGB());
 }
 
 std::vector<unsigned int> Renderer::surfacesToTexture(const std::vector<SDL_Surface *> &surfaces_)
@@ -238,8 +210,8 @@ void Renderer::attachTex(const Texture &texture_)
 {
     const auto &size = texture_.size();
     glViewport(0, 0, size.x, size.y);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_renderTarget);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_.handler(), 0); 
+    glBindFramebuffer(GL_FRAMEBUFFER, m_customFB);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_.handler(), 0);
 
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(size.x), 
         static_cast<float>(size.y), 0.0f, -1.0f, 1.0f);
@@ -250,29 +222,25 @@ void Renderer::attachTex(const Texture &texture_)
 void Renderer::attachTex()
 {
     glViewport(0, 0, gamedata::global::maxCameraSize.x, gamedata::global::maxCameraSize.y);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_renderTarget);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_renderTargetTexture, 0);
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, m_worldFB);
 
-
-    glm::mat4 projection = glm::ortho(0.0f, 640.0f, 
-        360.0f, 0.0f, -1.0f, 1.0f);
+    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(gamedata::global::maxCameraSize.x), 
+        static_cast<float>(gamedata::global::maxCameraSize.y), 0.0f, -1.0f, 1.0f);
     m_spriteShader.use();
     m_spriteShader.setMatrix4("projection", projection);
 }
 
 void Renderer::prepareRenderer(const SDL_Color &col_)
 {
-    glViewport(0, 0, 640, 360);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_renderTarget);
+    glViewport(0, 0, gamedata::global::maxCameraSize.x, gamedata::global::maxCameraSize.y);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_worldFB);
     fillRenderer(col_);
 }
 
 void Renderer::switchToHUD(const SDL_Color &col_)
 {
     glViewport(0, 0, gamedata::global::hudLayerResolution.x, gamedata::global::hudLayerResolution.y);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_renderHudTarget);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_hudFB);
     fillRenderer(col_);
 }
 
@@ -294,12 +262,12 @@ void Renderer::updateScreen(const Camera &cam_)
     m_screenShader.setFloat("scale", cam_.getScale());
     
     glBindVertexArray(m_screenVAO);
-    glBindTexture(GL_TEXTURE_2D, m_renderTargetTexture);
+    glBindTexture(GL_TEXTURE_2D, m_renderWorldTargetTexture.handler());
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     m_screenShader.setFloat("scale", 1.0f);
     
-    glBindTexture(GL_TEXTURE_2D, m_renderHudTargetTexture);
+    glBindTexture(GL_TEXTURE_2D, m_renderHudTargetTexture.handler());
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     SDL_GL_SwapWindow( m_window );
@@ -432,9 +400,9 @@ void Renderer::drawCollider(const Collider &cld_, const SDL_Color &fillCol_, con
 void Renderer::renderTextureOutlined(const unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_)
 {
     glCopyImageSubData(
-        m_renderTargetTexture, GL_TEXTURE_2D, 0, 0, 0, 0,
-        m_intermTexture, GL_TEXTURE_2D, 0, 0, 0, 0,
-        640, 360, 1
+        m_renderWorldTargetTexture.handler(), GL_TEXTURE_2D, 0, 0, 0, 0,
+        m_intermTexture.handler(), GL_TEXTURE_2D, 0, 0, 0, 0,
+        m_renderWorldTargetTexture.size().x, m_renderWorldTargetTexture.size().y, 1
     );
     
     glBindVertexArray(m_spriteVAO);
@@ -470,7 +438,7 @@ void Renderer::renderTextureOutlined(const unsigned int tex_, const Vector2<int>
     glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_2D, tex_);
     glActiveTexture(GL_TEXTURE0 + 1);
-    glBindTexture(GL_TEXTURE_2D, m_intermTexture);
+    glBindTexture(GL_TEXTURE_2D, m_intermTexture.handler());
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -543,7 +511,7 @@ void Renderer::renderTexture(const unsigned int tex_, const Vector2<int> &pos_, 
 
     auto realPivot = pivot_ + pos_;
 
-    int top, bot, lft, rgt;
+    int top = 0, bot = 0, lft = 0, rgt = 0;
     if (flip_ & SDL_FLIP_VERTICAL)
     {
         top = pos_.y + size_.y;
@@ -588,7 +556,7 @@ void Renderer::renderTextureFlash(const unsigned int tex_, const Vector2<int> &p
     glBindVertexArray(m_spriteVAO);
     m_spriteShaderFlash.use();
 
-    int top, bot, lft, rgt;
+    int top = 0, bot = 0, lft = 0, rgt = 0;
     if (flip_ & SDL_FLIP_VERTICAL)
     {
         top = pos_.y + size_.y;

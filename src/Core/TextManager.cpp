@@ -1,9 +1,7 @@
 #include "GameData.h"
 #include "TextManager.h"
 #include "FilesystemUtils.h"
-#include "Logger.hpp"
 #include "SDLWrappers.h"
-#include "glad/glad.h"
 #include <fstream>
 
 fonts::Symbol& fonts::Symbol::operator=(fonts::Symbol &&rhs_) noexcept

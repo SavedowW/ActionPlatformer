@@ -1,13 +1,13 @@
 #pragma once
+#include "utf8.h"
 #include "Texture.h"
 #include "Renderer.h"
+#include "Vector2.hpp"
+#include "TimelineProperty.hpp"
+#include <SDL3_ttf/SDL_ttf.h>
 #include <concepts>
 #include <vector>
 #include <array>
-#include <SDL3_ttf/SDL_ttf.h>
-#include "Vector2.hpp"
-#include "TimelineProperty.hpp"
-#include "utf8.h"
 #include <set>
 
 namespace fonts

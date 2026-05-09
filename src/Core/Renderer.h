@@ -4,6 +4,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "Vector2.hpp"
+#include "Framebuffer.hpp"
 
 #include <SDL3/SDL.h>
 #include <glm/glm.hpp>
@@ -16,7 +17,10 @@ public:
 
     static std::vector<unsigned int> surfacesToTexture(const std::vector<SDL_Surface*> &surfaces);
 
+    // Switch to provided texture as a target
     void attachTex(const Texture &texture_);
+
+    // Switch to world framebuffer and texture as a target
     void attachTex();
 
     void prepareRenderer(const SDL_Color &col_);
@@ -72,11 +76,26 @@ private:
     unsigned int m_screenVAO = 0;
     unsigned int m_spriteVAO = 0;
 
-    unsigned int m_renderTarget = 0;
-    unsigned int m_renderTargetTexture = 0;
+    // Framebuffer for world entities,
+    Framebuffer m_worldFB;
 
-    unsigned int m_renderHudTarget = 0;
-    unsigned int m_renderHudTargetTexture = 0;
+    // Framebuffer used only for in-game HUD, uses specified resolution
+    Framebuffer m_hudFB;
 
-    unsigned int m_intermTexture = 0;
+    // Framebuffer used only for custom targets 
+    Framebuffer m_customFB;
+
+
+    // Texture only for world objects, uses max camera size
+    Texture m_renderWorldTargetTexture;
+
+    // Texture for HUD framebuffer
+    Texture m_renderHudTargetTexture;
+
+    /**
+     *  Texture used for outline effect
+     *  since opengl does not define behavior when reading texture
+     *  that is currently used for rendering
+     */
+    Texture m_intermTexture;
 };

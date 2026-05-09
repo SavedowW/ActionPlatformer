@@ -10,6 +10,12 @@ Texture::Config::Config(const SDL_Surface &sur) :
     m_pixels{sur.pixels}
 {}
 
+Texture::Config &Texture::Config::useRGB() noexcept
+{
+    m_format = GL_RGB;
+    return *this;
+}
+
 Texture::Texture(const Config &cfg_)
 {
     init(cfg_);
@@ -23,7 +29,7 @@ void Texture::init(const Config &cfg_)
 
     glGenTextures(1, &m_id);
     glBindTexture(GL_TEXTURE_2D, m_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cfg_.m_size.x, cfg_.m_size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, cfg_.m_pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, cfg_.m_format, cfg_.m_size.x, cfg_.m_size.y, 0, cfg_.m_format, GL_UNSIGNED_BYTE, cfg_.m_pixels);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
