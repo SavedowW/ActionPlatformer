@@ -200,29 +200,6 @@ Renderer::Renderer(SDL_Window *window_) :
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-unsigned int Renderer::surfaceToTexture(SDL_Surface *sur_) // TODO: remove
-{
-    if (!sur_)
-        throw std::runtime_error("Trying to create texture from non-existing surface");
-
-    unsigned int res = 0;
-
-    glGenTextures(1, &res);
-    glBindTexture(GL_TEXTURE_2D, res);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sur_->w, sur_->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, sur_->pixels);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    dumpErrors();
-
-    return res;
-}
-
 std::vector<unsigned int> Renderer::surfacesToTexture(const std::vector<SDL_Surface *> &surfaces_)
 {
     assert(!surfaces_.empty());
@@ -255,25 +232,6 @@ std::vector<unsigned int> Renderer::surfacesToTexture(const std::vector<SDL_Surf
     }
 
     return ids;
-}
-
-unsigned int Renderer::createTextureRGBA(int width_, int height_) // TODO: remove
-{
-    unsigned int texid = 0;
-
-    // Generating intermediate texture
-    glGenTextures(1, &texid);
-    glBindTexture(GL_TEXTURE_2D, texid);
-    
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    return texid;
 }
 
 void Renderer::attachTex(const Texture &texture_)

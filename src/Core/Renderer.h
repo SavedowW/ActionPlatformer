@@ -14,9 +14,7 @@ class Renderer
 public:
     Renderer(SDL_Window *window_);
 
-    static unsigned int surfaceToTexture(SDL_Surface *sur_);
     static std::vector<unsigned int> surfacesToTexture(const std::vector<SDL_Surface*> &surfaces);
-    static unsigned int createTextureRGBA(int width_, int height_);
 
     void attachTex(const Texture &texture_);
     void attachTex();

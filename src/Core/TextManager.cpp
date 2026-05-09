@@ -1,6 +1,8 @@
 #include "GameData.h"
 #include "TextManager.h"
 #include "FilesystemUtils.h"
+#include "Logger.hpp"
+#include "SDLWrappers.h"
 #include "glad/glad.h"
 #include <fstream>
 
@@ -112,19 +114,13 @@ TextManager::TextManager(Renderer &renderer_) :
 }
 
 
-void TextManager::generateSimpleSymbols(Renderer &renderer_, std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, const std::string &basePath_, const std::string &font_, int size_, const SDL_Color &color_)
+void TextManager::generateSimpleSymbols(Renderer&, std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, const std::string &basePath_, const std::string &font_, int size_, const SDL_Color &color_)
 {
     std::cout << "Run " << __func__ << " generator" << std::endl;
-    TTF_Font *font = TTF_OpenFont((basePath_ + font_).c_str(), size_);
-    if (font == nullptr)
-    {
-            std::cout << "Cannot create font: " << SDL_GetError() << std::endl;
-            return;
-    }
+    FontWrapper font((basePath_ + font_).c_str(), size_);
 
     int notProvided = 0;
     int charsTotal = 0;
-    int generated = 0;
 
     for (const auto &chunkInitVal : distrib_.m_chunks)
     {
@@ -141,21 +137,10 @@ void TextManager::generateSimpleSymbols(Renderer &renderer_, std::vector<std::ar
                 continue;
             }
 
-            auto *surf = TTF_RenderGlyph_Solid(font, chid, color_);
-            if (surf == nullptr)
-            {
-                std::cout << "Cannot create surface: " << SDL_GetError() << std::endl;
-                continue;
-            }
+            SurfaceWrapper surf{TTF_RenderGlyph_Solid(font, chid, color_)};
+            SurfaceWrapper nsurf{SDL_ConvertSurface(surf, SDL_PIXELFORMAT_ABGR8888)};
 
-            generated++;
-
-            auto *nsurf = SDL_ConvertSurface(surf, SDL_PIXELFORMAT_ABGR8888);
-
-            symbols_.at(i).m_tex.init(Texture::Config{*nsurf});
-
-            SDL_DestroySurface(surf);
-            SDL_DestroySurface(nsurf);
+            symbols_.at(i).m_tex.init(Texture::Config{nsurf});
 
             TTF_GetGlyphMetrics(font, chid, &symbols_.at(i).m_minx, &symbols_.at(i).m_maxx, &symbols_.at(i).m_miny, &symbols_.at(i).m_maxy, &symbols_.at(i).m_advance);
         }
@@ -163,23 +148,16 @@ void TextManager::generateSimpleSymbols(Renderer &renderer_, std::vector<std::ar
         symbolChunks_.push_back(std::move(symbols_));
     }
 
-    TTF_CloseFont(font);
-    std::cout << generated << " characters generated out of " << charsTotal << ", " << notProvided << " characters not provided" << std::endl;
+    std::cout << charsTotal - notProvided << " characters generated out of " << charsTotal << ", " << notProvided << " characters not provided" << std::endl;
 }
 
 void TextManager::generateSimpleShadedSymbols(Renderer &renderer_, std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, const std::string &basePath_, const std::string &font_, int size_, const SDL_Color &color_, const SDL_Color &shadeColor_)
 {
     std::cout << "Run " << __func__ << " generator" << std::endl;
-    TTF_Font *font = TTF_OpenFont((basePath_ + font_).c_str(), size_);
-    if (font == nullptr)
-    {
-            std::cout << "Cannot create font: " << SDL_GetError() << std::endl;
-            return;
-    }
+    FontWrapper font((basePath_ + font_).c_str(), size_);
 
     int notProvided = 0;
     int charsTotal = 0;
-    int generated = 0;
 
     for (const auto &chunkInitVal : distrib_.m_chunks)
     {
@@ -197,62 +175,41 @@ void TextManager::generateSimpleShadedSymbols(Renderer &renderer_, std::vector<s
             }
 
 
-            unsigned int unshadedTex = 0;
-            unsigned int shadedTex = 0;
-            Vector2<int> unshadedSize, shadedSize;
+            Texture shadedTex;
+            Texture unshadedTex;
 
             {
                 // Outline (background)
                 TTF_SetFontOutline(font, 1);
-                auto surf = TTF_RenderGlyph_Solid(font, chid, shadeColor_);
-                if (surf == nullptr)
-                {
-                    std::cout << "Cannot create 1st surface: " << SDL_GetError() << std::endl;
-                    continue;
-                }
-                auto nsurf = SDL_ConvertSurface(surf, SDL_PIXELFORMAT_ABGR8888);
-                shadedTex = Renderer::surfaceToTexture(nsurf);
-                shadedSize = {nsurf->w, nsurf->h};
-                SDL_DestroySurface(surf);
-                SDL_DestroySurface(nsurf);
+                SurfaceWrapper surf{TTF_RenderGlyph_Solid(font, chid, shadeColor_)};
+                SurfaceWrapper surfConverted{SDL_ConvertSurface(surf, SDL_PIXELFORMAT_ABGR8888)};
 
-                // Inner letter
-                TTF_SetFontOutline(font, 0);
-                surf = TTF_RenderGlyph_Solid(font, chid, color_);
-                if (surf == nullptr)
-                {
-                    std::cout << "Cannot create 2nd surface: " << SDL_GetError() << std::endl;
-                    continue;
-                }
-
-                generated++;
-
-                nsurf = SDL_ConvertSurface(surf, SDL_PIXELFORMAT_ABGR8888);
-                unshadedTex = renderer_.surfaceToTexture(nsurf);
-                unshadedSize = {nsurf->w, nsurf->h};
-                SDL_DestroySurface(surf);
-                SDL_DestroySurface(nsurf);
+                shadedTex.init(Texture::Config{surfConverted});
             }
 
-            symbols_.at(i).m_tex.init(Texture::Config{shadedSize.add(1, 1)});
+            {
+                // Inner letter
+                TTF_SetFontOutline(font, 0);
+                SurfaceWrapper surf{TTF_RenderGlyph_Solid(font, chid, color_)};
+                SurfaceWrapper surfConverted{SDL_ConvertSurface(surf, SDL_PIXELFORMAT_ABGR8888)};
+
+                unshadedTex.init(Texture::Config{surfConverted});
+            }
+
+            symbols_.at(i).m_tex.init(Texture::Config{shadedTex.size().add(1, 1)});
             TTF_GetGlyphMetrics(font, chid, &symbols_.at(i).m_minx, &symbols_.at(i).m_maxx, &symbols_.at(i).m_miny, &symbols_.at(i).m_maxy, &symbols_.at(i).m_advance);
 
             renderer_.attachTex(symbols_.at(i).m_tex);
             renderer_.fillRenderer(SDL_Color{255, 255, 255, 0});
-            renderer_.renderTexture(shadedTex, {0, 0}, shadedSize, SDL_FLIP_VERTICAL, 1.0f);
-            renderer_.renderTexture(unshadedTex, {0, 2}, unshadedSize, SDL_FLIP_VERTICAL, 1.0f);
+            renderer_.renderTexture(shadedTex.handler(), {0, 0}, shadedTex.size(), SDL_FLIP_VERTICAL, 1.0f);
+            renderer_.renderTexture(unshadedTex.handler(), {0, 2}, unshadedTex.size(), SDL_FLIP_VERTICAL, 1.0f);
 
             renderer_.attachTex();
-            dumpErrors();
-
-            glDeleteTextures(1, &unshadedTex);
-            glDeleteTextures(1, &shadedTex);
         }
         symbolChunks_.push_back(std::move(symbols_));
     }
 
-    TTF_CloseFont(font);
-    std::cout << generated << " characters generated out of " << charsTotal << ", " << notProvided << " characters not provided" << std::endl;
+    std::cout << charsTotal - notProvided << " characters generated out of " << charsTotal << ", " << notProvided << " characters not provided" << std::endl;
 }
 
 const fonts::Symbol *TextManager::getSymbol(int fontid_, uint32_t ch_) const

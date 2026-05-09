@@ -9,6 +9,34 @@
 #include <cassert>
 #include <fstream>
 
+TextureArr::TextureArr(std::vector<unsigned int> &&tex_, size_t amount_, std::vector<size_t> &&framesData_, int w_, int h_, const Vector2<int> &origin_) :
+    m_tex(std::move(tex_)),
+    m_amount(amount_),
+    m_w(w_),
+    m_h(h_),
+    m_origin(origin_),
+    m_framesData(std::move(framesData_))
+{
+    for (const auto &el : m_framesData)
+    {
+        if (el >= m_tex.size())
+            throw std::runtime_error(std::format("framedata references texture {}, but only {} textures exist", el, m_tex.size()));
+    }
+}
+
+unsigned int TextureArr::operator[](uint32_t frame_) const noexcept
+{
+    if (frame_ >= m_framesData.size())
+        frame_ = m_framesData.size() - 1;
+
+    return m_tex[m_framesData[frame_]];
+}
+
+uint32_t TextureArr::duration() const noexcept
+{
+    return m_framesData.size();
+}
+
 AnimationManager::AnimationManager()
 {
     Filesystem::ensureDirectoryRelative("Resources/Animations");
@@ -91,7 +119,7 @@ std::shared_ptr<TextureArr> AnimationManager::getTextureArr(ResID id_)
     for (uint32_t i = 0; i < duration; ++i)
         framesData[i] = fileIdsToInternal[timelineFileIds[i]];
 
-    auto reqElem = std::make_shared<TextureArr>(std::move(texIds), surfaces.size(), duration, std::move(framesData), surfaces[0]->w, surfaces[0]->h, origin);
+    auto reqElem = std::make_shared<TextureArr>(std::move(texIds), surfaces.size(), std::move(framesData), surfaces[0]->w, surfaces[0]->h, origin);
     m_textureArrs[id_].m_texArr = reqElem;
     return reqElem;
 }
@@ -155,7 +183,7 @@ unsigned int Animation::getSprite() const
 bool Animation::isFinished()
 {
     if (m_direction > 0)
-        return m_currentFrame == static_cast<int>(m_textures->m_totalDuration - 1);
+        return m_currentFrame == static_cast<int>(m_textures->duration() - 1);
     
     return !m_currentFrame;
 }
@@ -187,16 +215,16 @@ void Animation::animFinished()
         break;
 
     case (LOOPMETHOD::JUMP_LOOP):
-        if (m_currentFrame >= static_cast<int>(m_textures->m_totalDuration - 1))
+        if (m_currentFrame >= static_cast<int>(m_textures->duration() - 1))
             m_currentFrame = 0;
         else if (m_currentFrame <= 0)
-            m_currentFrame = m_textures->m_totalDuration - 1;
+            m_currentFrame = m_textures->duration() - 1;
         break;
 
     case (LOOPMETHOD::SWITCH_DIR_LOOP):
         m_direction *= -1;
         if (m_direction == -1)
-            m_currentFrame = m_textures->m_totalDuration - 1;
+            m_currentFrame = m_textures->duration() - 1;
         else
             m_currentFrame = 0;
         break;

@@ -7,32 +7,22 @@
 //Texture array structure
 struct TextureArr
 {
-    TextureArr(std::vector<unsigned int> &&tex_, size_t amount_, uint32_t totalDuration_, std::vector<size_t> &&framesData_, int w_, int h_, const Vector2<int> &origin_) :
-        m_tex(std::move(tex_)),
-        m_amount(amount_),
-        m_w(w_),
-        m_h(h_),
-        m_totalDuration(totalDuration_),
-        m_origin(origin_),
-        m_framesData(std::move(framesData_))
-    {
-    }
+    TextureArr(std::vector<unsigned int> &&tex_, size_t amount_, std::vector<size_t> &&framesData_, int w_, int h_, const Vector2<int> &origin_);
 
-    unsigned int operator[](const int rhs)
-    {
-        return m_tex[m_framesData[rhs]];
-    }
+    [[nodiscard]]
+    unsigned int operator[](uint32_t frame_) const noexcept;
+
+    uint32_t duration() const noexcept;
 
     //Texture array and required info
-    std::vector<unsigned int> m_tex;
-    size_t m_amount;
-    int m_w, m_h;
-    uint32_t m_totalDuration;
-    Vector2<int> m_origin;
-    std::vector<size_t> m_framesData;
+    const std::vector<unsigned int> m_tex;
+    const size_t m_amount;
+    const int m_w, m_h;
+    const Vector2<int> m_origin;
+    const std::vector<size_t> m_framesData;
 
     //Properly removes texture
-    virtual ~TextureArr();
+    ~TextureArr();
 };
 
 struct ContainedAnimationData

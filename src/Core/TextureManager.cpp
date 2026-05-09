@@ -79,5 +79,5 @@ std::shared_ptr<Texture> TextureManager::loadTexture(const std::string &path_)
     
     LOG_TRACE("Loaded {}: {}", path_, SDL_GetPixelFormatName(imgSurface.get().format));
 
-    return std::make_shared<Texture>(Texture::Config{imgSurface.get()});
+    return std::make_shared<Texture>(Texture::Config{imgSurface});
 }
