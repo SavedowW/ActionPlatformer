@@ -20,7 +20,7 @@ public:
 	void preload(ResID id_);
 
 	ResID getTexID(const std::string &texName_) const;
-    std::shared_ptr<TextureResource> loadTexture(const std::string &path_);
+    std::shared_ptr<Texture> loadTexture(const std::string &path_);
 
 private:
 	std::map<std::string, ResID> m_ids;

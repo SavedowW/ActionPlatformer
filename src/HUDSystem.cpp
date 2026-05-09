@@ -122,8 +122,8 @@ void HudSystem::drawPlayerDebug() const
     {
         const auto &spr = (isValid.at(i) ? *m_arrowIn : *m_arrowOut);
 
-        m_renderer.renderTexture(spr.m_id,
-        arrowPos.at(i) - spr.m_size / 2, spr.m_size,SDL_FLIP_NONE, angles.at(i), spr.m_size / 2);
+        m_renderer.renderTexture(spr.handler(),
+        arrowPos.at(i) - spr.size() / 2, spr.size(), SDL_FLIP_NONE, angles.at(i), spr.size() / 2);
     }
 }
 

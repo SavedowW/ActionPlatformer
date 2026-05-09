@@ -51,6 +51,7 @@ Shader.cpp
 Configuration.cpp
 Behavior.cpp
 StaticMapping.cpp
+SDLWrappers.cpp
 Localization/LocalizationGen.cpp
 )
 

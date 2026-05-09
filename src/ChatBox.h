@@ -156,6 +156,8 @@ private:
 /*
     Abstract technical symbol
     Applies any sort of effect that might be handled during the iteration or during the rendering
+
+    TODO: rework to avoid dynamic casts
 */
 class TechSymbol : public fonts::Symbol
 {

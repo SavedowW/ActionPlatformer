@@ -1,6 +1,7 @@
 #include "TextureManager.h"
 #include "FilesystemUtils.h"
-#include "glad/glad.h"
+#include "Logger.hpp"
+#include "SDLWrappers.h"
 #include <SDL3_image/SDL_image.h>
 
 TextureManager::TextureManager()
@@ -39,7 +40,7 @@ std::shared_ptr<Texture> TextureManager::getTexture(ResID id_)
     if (m_textures_[id_].m_tex.expired())
     {
         //auto sprPath = m_rootPath + "/Resources/Sprites/";
-        auto reqElem = loadTexture((m_textures_[id_].m_path).c_str());
+        auto reqElem = loadTexture(m_textures_[id_].m_path);
         m_textures_[id_].m_tex = reqElem;
         return reqElem;
     }
@@ -72,36 +73,11 @@ ResID TextureManager::getTexID(const std::string &texName_) const
     }
 }
 
-std::shared_ptr<TextureResource> TextureManager::loadTexture(const std::string &path_)
+std::shared_ptr<Texture> TextureManager::loadTexture(const std::string &path_)
 {
-    auto *imgSurface = IMG_Load(path_.c_str());
-
-    if (!imgSurface)
-    {
-        std::cout << "Failed to load texture \"" << path_ << "\"" << std::endl;
-        return nullptr;
-    }
-
+    SurfaceWrapper imgSurface{IMG_Load(path_.c_str())};
     
-    std::cout << SDL_GetPixelFormatName(imgSurface->format) << std::endl;
+    LOG_TRACE("Loaded {}: {}", path_, SDL_GetPixelFormatName(imgSurface.get().format));
 
-    Vector2<int> texSize(imgSurface->w, imgSurface->h);
-    unsigned int texId = 0;
-
-    glGenTextures(1, &texId);
-    glBindTexture(GL_TEXTURE_2D, texId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texSize.x, texSize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, imgSurface->pixels);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    dumpErrors();
-
-    SDL_DestroySurface(imgSurface);
-
-    return std::make_shared<TextureResource>(path_, texSize, texId);
+    return std::make_shared<Texture>(Texture::Config{imgSurface.get()});
 }

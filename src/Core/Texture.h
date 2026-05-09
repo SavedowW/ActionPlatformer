@@ -1,32 +1,40 @@
 #pragma once
 #include "Vector2.hpp"
-
-class TextureManager;
-
-namespace fonts
-{
-    struct Symbol;
-}
+#include <SDL3/SDL_surface.h>
 
 struct Texture
 {
-    Vector2<int> m_size;
-    unsigned int m_id = 0;
-};
-
-class TextureResource : public Texture
-{
 public:
-    TextureResource() = default;
-    TextureResource(const std::string &name_, const Vector2<int> &size_, unsigned int id_);
-    TextureResource(const TextureResource &tex_) = delete;
-    TextureResource& operator=(const TextureResource &tex_) = delete;
-    TextureResource(TextureResource &&tex_) noexcept;
-    TextureResource& operator=(TextureResource &&tex_) noexcept;
-    ~TextureResource();
+    class Config
+    {
+    public:
+        Config(const Vector2<int> &size_);
+        Config(const SDL_Surface &sur);
 
-    void cleanSelf();
+    private:
+        const Vector2<int> m_size;
+        const void *m_pixels = nullptr;
+
+        friend Texture;
+    };
+
+    Texture() = default;
+    Texture(const Texture&) = delete;
+    Texture &operator=(const Texture&) = delete;
+    Texture(Texture&&) noexcept;
+    Texture &operator=(Texture&&) noexcept;
+
+    Texture(const Config &cfg_);
+
+    void init(const Config &cfg_);
+    void free();
+
+    const Vector2<int> &size() const noexcept;
+    unsigned int handler() const noexcept;
+
+    ~Texture();
 
 private:
-    std::string m_name;
+    Vector2<int> m_size;
+    unsigned int m_id = 0;
 };

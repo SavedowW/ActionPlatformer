@@ -1,7 +1,9 @@
 #pragma once
 #include "StaticMapping.hpp"
 #include <string>
+#include <string_view>
 #include <format>
+#include <print>
 
 struct ComponentName
 {

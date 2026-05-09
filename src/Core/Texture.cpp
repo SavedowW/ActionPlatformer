@@ -1,51 +1,81 @@
 #include "Texture.h"
 #include "glad/glad.h"
-#include <SDL3/SDL.h>
 
-void TextureResource::cleanSelf()
+Texture::Config::Config(const Vector2<int> &size_) :
+    m_size{ size_ }
+{}
+
+Texture::Config::Config(const SDL_Surface &sur) :
+    m_size{ sur.w, sur.h },
+    m_pixels{sur.pixels}
+{}
+
+Texture::Texture(const Config &cfg_)
+{
+    init(cfg_);
+}
+
+void Texture::init(const Config &cfg_)
+{
+    free();
+
+    m_size = cfg_.m_size;
+
+    glGenTextures(1, &m_id);
+    glBindTexture(GL_TEXTURE_2D, m_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cfg_.m_size.x, cfg_.m_size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, cfg_.m_pixels);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void Texture::free()
 {
     if (m_id != 0)
     {
-        std::cout << "Deleting loaded TextureResource \"" << m_name << "\"" << std::endl;
         glDeleteTextures(1, &m_id);
         m_id = 0;
     }
 }
 
-TextureResource::TextureResource(const std::string &name_, const Vector2<int> &size_, const unsigned int id_) :
-    Texture(size_, id_),
-    m_name(name_)
+const Vector2<int> &Texture::size() const noexcept
 {
+    return m_size;
 }
 
-TextureResource::TextureResource(TextureResource &&tex_) noexcept :
-    Texture(tex_),
-    m_name(tex_.m_name)
+unsigned int Texture::handler() const noexcept
 {
-    m_size = tex_.m_size;
-    m_id = tex_.m_id;
-
-    tex_.m_id = 0;
-    tex_.m_size = {0, 0};
-    tex_.m_name = "<DELETED>";
+    return m_id;
 }
 
-TextureResource &TextureResource::operator=(TextureResource &&tex_) noexcept
+Texture::Texture(Texture &&rhs_) noexcept :
+    m_size{rhs_.m_size},
+    m_id{rhs_.m_id}
 {
-    cleanSelf();
-        
-    m_name = tex_.m_name;
-    m_size = tex_.m_size;
-    m_id = tex_.m_id;
+    rhs_.m_size.x = 0;
+    rhs_.m_size.y = 0;
+    rhs_.m_id = 0;
+}
 
-    tex_.m_id = 0;
-    tex_.m_size = {0, 0};
-    tex_.m_name = "<DELETED>";
+Texture &Texture::operator=(Texture &&rhs_) noexcept
+{
+    free();
+
+    m_size = rhs_.m_size;
+    m_id = rhs_.m_id;
+
+    rhs_.m_size.x = 0;
+    rhs_.m_size.y = 0;
+    rhs_.m_id = 0;
 
     return *this;
 }
 
-TextureResource::~TextureResource()
+Texture::~Texture()
 {
-    cleanSelf();
+    free();
 }

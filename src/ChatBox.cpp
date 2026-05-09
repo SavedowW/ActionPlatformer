@@ -174,7 +174,7 @@ void ChatboxSystem::renderMessage(const ChatMessage &msg_, const Vector2<int> &t
             pos.y += msg_.m_lineHeights[currentLine];
             newLine = true;
         }
-        else if (sym->m_tex.m_id)
+        else if (sym->m_tex.handler())
         {
             const bool applyAppearOffset = i >= msg_.m_firstCharacterForFadingIn;
             const float progress = applyAppearOffset ? Easing::circ(msg_.m_symbolAppearTimers[i].getProgressNormalized()) : 1.0f;
@@ -187,7 +187,7 @@ void ChatboxSystem::renderMessage(const ChatMessage &msg_, const Vector2<int> &t
             }
 
             //ren.drawRectangle({pos.x, pos.y - 5 + int(5 * progress)}, sym->m_tex.m_size, SDL_Color{255, 255, 255, 255});
-            m_renderer.renderTexture(sym->m_tex.m_id, Vector2{pos.x, pos.y - 5 + int(5 * progress)} + offset, sym->m_tex.m_size, SDL_FLIP_NONE, progress);
+            m_renderer.renderTexture(sym->m_tex.handler(), Vector2{pos.x, pos.y - 5 + int(5 * progress)} + offset, sym->m_tex.size(), SDL_FLIP_NONE, progress);
             pos.x += sym->m_advance;
         }
         else if (auto *renSym = const_cast<IRenderSymbol*>(dynamic_cast<const IRenderSymbol*>(sym)))
@@ -247,7 +247,7 @@ void ChatboxSystem::draw() const
         const auto worldCamPosY = worldPos.y - srcpoint.m_vOffset - m_camera.getTopLeft().y;
         const auto screenPosY = worldCamPosY / camSize.y * gamedata::global::hudLayerResolution.y;
 
-        if (screenPosY >= m_edgeGap + m_chatboxPointer->m_size.y + seq.m_currentSize.y + m_chatboxEdge->m_size.y * 2)
+        if (screenPosY >= m_edgeGap + m_chatboxPointer->size().y + seq.m_currentSize.y + m_chatboxEdge->size().y * 2)
             boxTop = true;
     }
     else if (seq.m_side == ChatBoxSide::PREFER_BOTTOM)
@@ -255,7 +255,7 @@ void ChatboxSystem::draw() const
         const auto worldCamPosY = worldPos.y - srcpoint.m_vOffset - m_camera.getTopLeft().y;
         const auto screenPosY = worldCamPosY / camSize.y * gamedata::global::hudLayerResolution.y;
 
-        if (screenPosY > gamedata::global::hudLayerResolution.y - m_edgeGap - m_chatboxPointer->m_size.y - seq.m_currentSize.y - m_chatboxEdge->m_size.y * 2)
+        if (screenPosY > gamedata::global::hudLayerResolution.y - m_edgeGap - m_chatboxPointer->size().y - seq.m_currentSize.y - m_chatboxEdge->size().y * 2)
             boxTop = true;
     }
     else if (seq.m_side == ChatBoxSide::AUTO)
@@ -280,11 +280,11 @@ void ChatboxSystem::draw() const
     if (seq.m_fitScreen)
     {
         if (boxTop)
-            screenPos.y = utils::clamp(screenPos.y, static_cast<float>(m_chatboxPointer->m_size.y + seq.m_currentSize.y + m_chatboxEdge->m_size.y * 2 + m_edgeGap), static_cast<float>(gamedata::global::hudLayerResolution.y - m_edgeGap));
+            screenPos.y = utils::clamp(screenPos.y, static_cast<float>(m_chatboxPointer->size().y + seq.m_currentSize.y + m_chatboxEdge->size().y * 2 + m_edgeGap), static_cast<float>(gamedata::global::hudLayerResolution.y - m_edgeGap));
         else
-            screenPos.y = utils::clamp(screenPos.y, static_cast<float>(m_edgeGap), static_cast<float>(gamedata::global::hudLayerResolution.y - m_edgeGap - m_chatboxPointer->m_size.y - seq.m_currentSize.y + m_chatboxEdge->m_size.y * 2));
+            screenPos.y = utils::clamp(screenPos.y, static_cast<float>(m_edgeGap), static_cast<float>(gamedata::global::hudLayerResolution.y - m_edgeGap - m_chatboxPointer->size().y - seq.m_currentSize.y + m_chatboxEdge->size().y * 2));
 
-        screenPos.x = utils::clamp(screenPos.x, static_cast<float>(m_edgeGap + m_chatboxEdge->m_size.x + m_chatboxPointer->m_size.x / 2 + 1), static_cast<float>(gamedata::global::hudLayerResolution.x - m_edgeGap - m_chatboxEdge->m_size.x - m_chatboxPointer->m_size.x / 2 - 1));
+        screenPos.x = utils::clamp(screenPos.x, static_cast<float>(m_edgeGap + m_chatboxEdge->size().x + m_chatboxPointer->size().x / 2 + 1), static_cast<float>(gamedata::global::hudLayerResolution.x - m_edgeGap - m_chatboxEdge->size().x - m_chatboxPointer->size().x / 2 - 1));
     }
 
     m_renderer.fillRectangle(screenPos - Vector2{1, 1}, {2, 2}, {0, 255, 0, 150});
@@ -296,16 +296,16 @@ void ChatboxSystem::draw() const
         std::cout << el.getCurrentFrame() << " ";
     std::cout << std::endl;*/
 
-    if (seq.m_currentSize.x >= m_chatboxPointer->m_size.x)
+    if (seq.m_currentSize.x >= m_chatboxPointer->size().x)
     {
         if (boxTop)
-            m_renderer.renderTexture(m_chatboxPointer->m_id, {iScreenPos.x - m_chatboxPointer->m_size.x / 2, iScreenPos.y - m_chatboxPointer->m_size.y}, m_chatboxPointer->m_size, SDL_FLIP_VERTICAL, 1.0f);
+            m_renderer.renderTexture(m_chatboxPointer->handler(), {iScreenPos.x - m_chatboxPointer->size().x / 2, iScreenPos.y - m_chatboxPointer->size().y}, m_chatboxPointer->size(), SDL_FLIP_VERTICAL, 1.0f);
         else
-            m_renderer.renderTexture(m_chatboxPointer->m_id, {iScreenPos.x - m_chatboxPointer->m_size.x / 2, iScreenPos.y}, m_chatboxPointer->m_size, SDL_FLIP_NONE, 1.0f);
+            m_renderer.renderTexture(m_chatboxPointer->handler(), {iScreenPos.x - m_chatboxPointer->size().x / 2, iScreenPos.y}, m_chatboxPointer->size(), SDL_FLIP_NONE, 1.0f);
     }
 
-    Vector2<int> outerBoundTL(iScreenPos.x - seq.m_currentSize.x / 2 - m_chatboxEdge->m_size.x, (boxTop ? iScreenPos.y - m_chatboxPointer->m_size.y - seq.m_currentSize.y - m_chatboxEdge->m_size.y * 2 : iScreenPos.y + m_chatboxPointer->m_size.y) + int(boxTop));
-    Vector2<int> outerBoundBR(iScreenPos.x + seq.m_currentSize.x / 2 + m_chatboxEdge->m_size.x, (boxTop ? iScreenPos.y - m_chatboxPointer->m_size.y : iScreenPos.y + m_chatboxPointer->m_size.y + m_chatboxEdge->m_size.y * 2 + seq.m_currentSize.y) + int(boxTop));
+    Vector2<int> outerBoundTL(iScreenPos.x - seq.m_currentSize.x / 2 - m_chatboxEdge->size().x, (boxTop ? iScreenPos.y - m_chatboxPointer->size().y - seq.m_currentSize.y - m_chatboxEdge->size().y * 2 : iScreenPos.y + m_chatboxPointer->size().y) + int(boxTop));
+    Vector2<int> outerBoundBR(iScreenPos.x + seq.m_currentSize.x / 2 + m_chatboxEdge->size().x, (boxTop ? iScreenPos.y - m_chatboxPointer->size().y : iScreenPos.y + m_chatboxPointer->size().y + m_chatboxEdge->size().y * 2 + seq.m_currentSize.y) + int(boxTop));
 
 
     if (outerBoundTL.x < m_edgeGap)
@@ -323,28 +323,28 @@ void ChatboxSystem::draw() const
 
     //ren.drawRectangle(outerBoundTL, outerBoundBR - outerBoundTL, {255, 0, 0, 255});
 
-    m_renderer.fillRectangle(Vector2(outerBoundTL.x + m_chatboxEdge->m_size.x, outerBoundTL.y), seq.m_currentSize + Vector2{0, m_chatboxEdge->m_size.y * 2}, gamedata::colors::LVL4);
-    m_renderer.fillRectangle(Vector2(outerBoundTL.x, outerBoundTL.y + m_chatboxEdge->m_size.y), seq.m_currentSize + Vector2{m_chatboxEdge->m_size.x * 2, 0}, gamedata::colors::LVL4);
+    m_renderer.fillRectangle(Vector2(outerBoundTL.x + m_chatboxEdge->size().x, outerBoundTL.y), seq.m_currentSize + Vector2{0, m_chatboxEdge->size().y * 2}, gamedata::colors::LVL4);
+    m_renderer.fillRectangle(Vector2(outerBoundTL.x, outerBoundTL.y + m_chatboxEdge->size().y), seq.m_currentSize + Vector2{m_chatboxEdge->size().x * 2, 0}, gamedata::colors::LVL4);
 
-    m_renderer.renderTexture(m_chatboxEdge->m_id,
+    m_renderer.renderTexture(m_chatboxEdge->handler(),
             outerBoundTL,
-            m_chatboxEdge->m_size, SDL_FLIP_NONE, 1.0f);
+            m_chatboxEdge->size(), SDL_FLIP_NONE, 1.0f);
 
-    m_renderer.renderTexture(m_chatboxEdge->m_id,
-            {outerBoundBR.x - m_chatboxEdge->m_size.x, outerBoundTL.y},
-            m_chatboxEdge->m_size, SDL_FLIP_HORIZONTAL, 1.0f);
+    m_renderer.renderTexture(m_chatboxEdge->handler(),
+            {outerBoundBR.x - m_chatboxEdge->size().x, outerBoundTL.y},
+            m_chatboxEdge->size(), SDL_FLIP_HORIZONTAL, 1.0f);
 
-    m_renderer.renderTexture(m_chatboxEdge->m_id,
-            {outerBoundTL.x, outerBoundBR.y - m_chatboxEdge->m_size.y},
-            m_chatboxEdge->m_size, SDL_FLIP_VERTICAL, 1.0f);
+    m_renderer.renderTexture(m_chatboxEdge->handler(),
+            {outerBoundTL.x, outerBoundBR.y - m_chatboxEdge->size().y},
+            m_chatboxEdge->size(), SDL_FLIP_VERTICAL, 1.0f);
 
-    m_renderer.renderTexture(m_chatboxEdge->m_id,
-            outerBoundBR - m_chatboxEdge->m_size,
-            m_chatboxEdge->m_size, SDL_FlipMode(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL), 1.0f);
+    m_renderer.renderTexture(m_chatboxEdge->handler(),
+            outerBoundBR - m_chatboxEdge->size(),
+            m_chatboxEdge->size(), SDL_FlipMode(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL), 1.0f);
 
     std::cout << (int)seq.m_currentState << std::endl;
     if (!seq.empty() && seq.m_currentState == ChatMessageSequence::BoxState::IDLE)
-        renderMessage(seq.currentMessage(), outerBoundTL + Vector2{m_chatboxEdge->m_size.x + ChatConsts::ChatEdgeGap, m_chatboxEdge->m_size.y + ChatConsts::ChatEdgeGap});
+        renderMessage(seq.currentMessage(), outerBoundTL + Vector2{m_chatboxEdge->size().x + ChatConsts::ChatEdgeGap, m_chatboxEdge->size().y + ChatConsts::ChatEdgeGap});
 }
 
 ChatMessageSequence::ChatMessageSequence(entt::entity src_, const ChatBoxSide &side_, bool fitScreen_, bool proceedByInput_, bool claimInputs_, bool returnInputs_) :

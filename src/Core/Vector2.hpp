@@ -62,11 +62,13 @@ struct Vector2
     }
 
     template <Numeric TR>
+    [[nodiscard]]
     constexpr bool operator==(const Vector2<TR> &rhs) const noexcept
     {
         return (x == rhs.x && y == rhs.y);
     }
 
+    [[nodiscard]]
     constexpr bool operator==(const ORIENTATION &rhs_) const noexcept
     {
         return (x == static_cast<T>(rhs_));
@@ -77,35 +79,41 @@ struct Vector2
         return static_cast<ORIENTATION>(x);
     }
 
+    [[nodiscard]]
     constexpr ORIENTATION getOrientation() const noexcept
     {
         return static_cast<ORIENTATION>(ValueToOrientation(x));
     }
 
     template<Numeric TR>
+    [[nodiscard]]
     constexpr auto operator+(const Vector2<TR>& rhs) const noexcept -> Vector2<decltype(x+rhs.x)>
     {
         return { x + rhs.x, y + rhs.y };
     }
 
     template<Numeric TR>
+    [[nodiscard]]
     constexpr auto operator-(const Vector2<TR>& rhs) const noexcept -> Vector2<decltype(x-rhs.x)>
     {
         return { x - rhs.x, y - rhs.y };
     }
 
+    [[nodiscard]]
     constexpr Vector2<T> operator-() const noexcept
     {
         return { -x, -y };
     }
 
     template<Numeric TR>
+    [[nodiscard]]
     constexpr auto operator*(const TR& num) const noexcept -> Vector2<decltype(x*num)>
     {
         return { x * num, y * num };
     }
 
     template<Numeric TR>
+    [[nodiscard]]
     constexpr auto operator/(const TR& num) const noexcept -> Vector2<decltype(x/num)>
     {
         assert(num != 0);
@@ -145,11 +153,13 @@ struct Vector2
         return *this;
     }
 
+    [[nodiscard]]
     constexpr auto length() const noexcept
     {
         return sqrt(x * x + y * y);
     }
 
+    [[nodiscard]]
     constexpr auto sqLength() const noexcept
     {
         return x * x + y * y;
@@ -167,6 +177,7 @@ struct Vector2
         return Vector2{std::pow(x, pow_), std::pow(y, pow_)};
     }
 
+    [[nodiscard]]
     constexpr auto square() const noexcept
     {
         return x * y;
@@ -211,24 +222,28 @@ struct Vector2
     }
 
     template<Numeric TR>
+    [[nodiscard]]
     constexpr auto dot(const Vector2<TR>& rhs) const noexcept -> decltype(x * rhs.x)
     {
         return x * rhs.x + y * rhs.y;
     }
 
     template<Numeric TR>
+    [[nodiscard]]
     constexpr auto cross(const Vector2<TR>& rhs) const noexcept -> decltype(x * rhs.x)
     {
         return x * rhs.y - y * rhs.x;
     }
 
     template<bool ON_ZEROES = true, Numeric T2>
+    [[nodiscard]]
     constexpr bool areAlignedOnX(const Vector2<T2> &rhs_) const noexcept
     {
         return utils::sameSign<ON_ZEROES, T, T2>(x, rhs_.x);
     }
 
     template<bool ON_ZEROES = true, Numeric T2>
+    [[nodiscard]]
     constexpr bool areAlignedOnY(const Vector2<T2> &rhs_) const noexcept
     {
         return utils::sameSign<ON_ZEROES, T, T2>(y, rhs_.y);
@@ -253,12 +268,14 @@ std::ostream& operator<< (std::ostream& out, const Vector2<T>& vec)
 namespace utils
 {
     template <Numeric T>
+    [[nodiscard]]
     inline Vector2<T> clamp(const Vector2<T>& val, const Vector2<T> &min, const Vector2<T> &max) noexcept
     {
         return {clamp(val.x, min.x, max.x), clamp(val.y, min.y, max.y)};
     }
 
     template <Numeric T>
+    [[nodiscard]]
     inline Vector2<T> limitVectorLength(const Vector2<T>& val, const T &limit) noexcept
     {
         assert(val.x != 0 || val.y != 0);
@@ -299,6 +316,7 @@ namespace utils
 }
 
 // https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
+[[nodiscard]]
 inline std::pair<float, float> overlaps(const std::pair<Vector2<float>, Vector2<float>> &con1_, const std::pair<Vector2<float>, Vector2<float>> &con2_) noexcept
 {
     auto r = con1_.second - con1_.first;

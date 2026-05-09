@@ -2,6 +2,7 @@
 #include "Collider.h"
 #include "Camera.h"
 #include "Shader.h"
+#include "Texture.h"
 #include "Vector2.hpp"
 
 #include <SDL3/SDL.h>
@@ -17,7 +18,7 @@ public:
     static std::vector<unsigned int> surfacesToTexture(const std::vector<SDL_Surface*> &surfaces);
     static unsigned int createTextureRGBA(int width_, int height_);
 
-    void attachTex(unsigned int tex_, const Vector2<unsigned int> &size_);
+    void attachTex(const Texture &texture_);
     void attachTex();
 
     void prepareRenderer(const SDL_Color &col_);

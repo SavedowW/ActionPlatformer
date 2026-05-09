@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "GameData.h"
+#include "Logger.hpp"
 #include "Tileset.h"
 
 const unsigned TilesetBase::FLIPPED_HORIZONTALLY_FLAG  = 0x80000000;
@@ -19,21 +20,22 @@ void Tileset::load(const std::string &spritesheet_)
 
     m_tex = m_texManager.getTexture(m_texManager.getTexID(spritesheet_));
 
-    const auto tilesetTilesWidth = m_tex->m_size.x / gamedata::tiles::tileSize.x;
-    const auto tilesetTilesHeight = m_tex->m_size.y / gamedata::tiles::tileSize.y;
+    const auto tilesetTilesWidth = m_tex->size().x / gamedata::tiles::tileSize.x;
+    const auto tilesetTilesHeight = m_tex->size().y / gamedata::tiles::tileSize.y;
 
     for (m_size.y = 0; m_size.y < tilesetTilesHeight; ++m_size.y)
     {
         for (m_size.x = 0; m_size.x < tilesetTilesWidth; ++m_size.x)
         {
-            m_tiles.push_back({m_tex->m_id, Vector2{m_size.x * gamedata::tiles::tileSize.x, m_size.y * gamedata::tiles::tileSize.y}});
+            m_tiles.push_back({.m_tex=m_tex->handler(), 
+                .m_tilePos=Vector2{m_size.x * gamedata::tiles::tileSize.x, m_size.y * gamedata::tiles::tileSize.y}});
         }
     }
 }
 
 TileView *Tileset::getView(uint32_t id_)
 {
-    return &m_tiles[id_ - m_firstgid];
+    return &m_tiles.at(id_ - m_firstgid);
 }
 
 SDL_FlipMode TilesetBase::flagsToFlip(uint32_t gid_)

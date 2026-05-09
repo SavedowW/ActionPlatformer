@@ -200,7 +200,7 @@ Renderer::Renderer(SDL_Window *window_) :
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-unsigned int Renderer::surfaceToTexture(SDL_Surface *sur_)
+unsigned int Renderer::surfaceToTexture(SDL_Surface *sur_) // TODO: remove
 {
     if (!sur_)
         throw std::runtime_error("Trying to create texture from non-existing surface");
@@ -257,7 +257,7 @@ std::vector<unsigned int> Renderer::surfacesToTexture(const std::vector<SDL_Surf
     return ids;
 }
 
-unsigned int Renderer::createTextureRGBA(int width_, int height_)
+unsigned int Renderer::createTextureRGBA(int width_, int height_) // TODO: remove
 {
     unsigned int texid = 0;
 
@@ -267,23 +267,24 @@ unsigned int Renderer::createTextureRGBA(int width_, int height_)
     
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     return texid;
 }
 
-void Renderer::attachTex(unsigned int tex_, const Vector2<unsigned int> &size_)
+void Renderer::attachTex(const Texture &texture_)
 {
-    glViewport(0, 0, size_.x, size_.y);
+    const auto &size = texture_.size();
+    glViewport(0, 0, size.x, size.y);
     glBindFramebuffer(GL_FRAMEBUFFER, m_renderTarget);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_, 0); 
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_.handler(), 0); 
 
-    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(size_.x), 
-        static_cast<float>(size_.y), 0.0f, -1.0f, 1.0f);
+    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(size.x), 
+        static_cast<float>(size.y), 0.0f, -1.0f, 1.0f);
     m_spriteShader.use();
     m_spriteShader.setMatrix4("projection", projection);
 }

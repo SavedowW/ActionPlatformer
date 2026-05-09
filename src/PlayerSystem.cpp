@@ -116,7 +116,8 @@ void PlayerSystem::setup(entt::entity playerId_)
                 .done(),
 
             PlayerMake::RulePipe{}
-                .setDefaultPipe(PlayerStateProperties::Pipe::SetInertiaApplicationMultiplier{{0.0f, 0.0f}},
+                .setDefaultPipe(PlayerStateProperties::Pipe::Realign{},
+                                PlayerStateProperties::Pipe::SetInertiaApplicationMultiplier{{0.0f, 0.0f}},
                                 PlayerStateProperties::Pipe::SetGravity{{0.0f, 0.0f}},
                                 PlayerStateProperties::Pipe::SetDrag{{0.0f, 0.0f}},
                                 PlayerStateProperties::Pipe::SetMagnetLimit{4},

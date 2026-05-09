@@ -38,7 +38,8 @@ namespace fonts
         Symbol(Symbol &rhs_) = delete;
         Symbol& operator=(Symbol &&rhs_) noexcept;
         Symbol(Symbol &&rhs_) noexcept;
-        virtual ~Symbol();
+
+        virtual ~Symbol() = default;
     };
 
     class Font

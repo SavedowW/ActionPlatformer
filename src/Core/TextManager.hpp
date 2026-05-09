@@ -14,7 +14,7 @@ void TextManager::renderText(const std::string &text_, int fontid_, Vector2<int>
     for (auto &ch : wrp)
     {
         const auto &sym = font[ch.getu8()];
-        m_renderer.renderTexture(sym.m_tex.m_id, pos_, sym.m_tex.m_size, SDL_FLIP_NONE, 1.0f, cam_);
+        m_renderer.renderTexture(sym.m_tex.handler(), pos_, sym.m_tex.size(), SDL_FLIP_NONE, 1.0f, cam_);
         pos_.x += sym.m_advance;
     }
 }
@@ -32,7 +32,7 @@ void TextManager::renderText(const std::string &text_, int fontid_, Vector2<int>
     for (auto &ch : wrp)
     {
         const auto &sym = font[ch.getu8()];
-        m_renderer.renderTexture(sym.m_tex.m_id, pos_, sym.m_tex.m_size, SDL_FLIP_NONE, 1.0f);
+        m_renderer.renderTexture(sym.m_tex.handler(), pos_, sym.m_tex.size(), SDL_FLIP_NONE, 1.0f);
         pos_.x += sym.m_advance;
     }
 }
