@@ -1,13 +1,8 @@
-#include "Core/Logger.h"
-#include "Core/Logger.hpp"
-#include "tests/NewStateMachine.hpp"
-#include "Core/CoreComponents.h"
+#include "Core/Logger.hpp" // IWYU pragma: keep
+#include "tests/NewStateMachine.hpp"  // IWYU pragma: keep
 #include "BattleLevel.h"
 #include "Core/Application.hpp"
 #include "Core/FilesystemUtils.h"
-#include "Core/Logger.hpp"
-#include <iostream>
-#include <memory>
 
 //#define EXPERIMENTS
 

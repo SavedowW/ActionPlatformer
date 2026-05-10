@@ -269,7 +269,7 @@ void RenderSystem::drawBattleActorColliders(const ComponentTransform &trans_, co
 void RenderSystem::drawCollider(const ComponentTransform &trans_, const ComponentPhysical &phys_) const
 {
     auto pb = phys_.m_pushbox + trans_.m_pos;
-    m_renderer.drawCollider(pb, {238, 195, 154, 50}, m_camera);
+    m_renderer.drawCollider(pb, gamedata::characters::pushboxColor, m_camera);
 
     auto edgex = (trans_.m_orientation == ORIENTATION::RIGHT ? pb.getRightEdge() : 
                     (trans_.m_orientation == ORIENTATION::LEFT ? pb.getLeftEdge() : pb.m_topLeft.x + pb.m_size.x / 2));

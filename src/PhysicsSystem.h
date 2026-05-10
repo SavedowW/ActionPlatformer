@@ -2,38 +2,62 @@
 #include "Core/CoreComponents.h"
 #include <entt/entt.hpp>
 
-struct PhysicsSystem
-{
-    using CollidersView = decltype(entt::registry{}.view<ComponentStaticCollider>());
+using CollidersView = decltype(entt::registry{}.view<ComponentStaticCollider>());
 
+class PhysicsEntityHandler
+{
+public:
+    PhysicsEntityHandler(const CollidersView &cld_, ComponentTransform &trans_, 
+        ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &events_);
+
+    void moveRight(int offset_);
+    void moveLeft(int offset_);
+    void moveDown(int offset_);
+    void moveUp(int offset_);
+    
+    void magnet();
+
+    /**
+     *  Update:
+     *   PhysicalEvents
+     *    (currently none)
+     *   ComponentPhysical:
+     *    onSlopeWithAngle
+     *    onGround
+     *   ComponentObstacleFallthrough:
+     *    ignoredObstacles
+     */
+    void discoverPosition();
+    
+private:
+    const SlopeCollider *getHighestVerticalMagnetCoord(int &coord_);
+
+    const CollidersView &m_cld;
+
+    ComponentTransform &m_trans;
+    ComponentPhysical &m_phys;
+    const Collider m_pushbox;
+    ComponentObstacleFallthrough &m_obsFallthrough;
+    PhysicalEvents &m_events;
+
+    bool m_requireMagnet = false;
+
+    static const float VerticalOffsetLimitMul;
+};
+
+class PhysicsSystem
+{
+public:
     PhysicsSystem(entt::registry &reg_, Vector2<int> levelSize_);
 
     void prepHitstop();
     void prepEntities();
     void updatePhysics();
-    void updateOverlappedObstacles();
 
-    /*
-        Attempt to move entity in a direction with offset if it doesn't collide with anything, unchanged otherwise
-        True if succeeded
-    */
-    bool attemptOffsetDown(const CollidersView &clds_, const Vector2<float> &originalPos_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, unsigned int offset_);
-    bool attemptOffsetUp(const CollidersView &clds_, const Vector2<float> &originalPos_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, unsigned int offset_);
-    bool attemptOffsetHorizontal(const CollidersView &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, int offset_,
-        int originalY_, unsigned int maxYOffset_);
-
-    void proceedEntity(const CollidersView &clds_, const entt::entity &idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_);
-    void proceedEntity(ComponentTransform &trans_, ComponentParticlePhysics &phys_);
+private:
+    static void proceedEntity(const CollidersView &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_);
+    static void proceedEntity(ComponentTransform &trans_, ComponentParticlePhysics &phys_);
     
-    bool magnetEntity(const CollidersView &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, const ComponentObstacleFallthrough &obsFallthrough_);
-    std::pair<entt::entity, const SlopeCollider*> getHighestVerticalMagnetCoord(const CollidersView &clds_, const Collider &cld_, int &coord_, const std::set<int> &ignoredObstacles_, bool ignoreAllObstacles_);
-
-    // Evil, iterates over all entities for a selected entity
-    bool isInsidePushbox(const Collider &pb_, const entt::entity &idx_);
-
-    void resetEntityObstacles(const ComponentTransform &trans_, const ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, const CollidersView &clds_);
-    void updateTouchedObstacles(const Collider &pb_, ComponentObstacleFallthrough &obsFallthrough_, const CollidersView &clds_);
-
     entt::registry &m_reg;
     const Vector2<int> m_levelSize;
 };

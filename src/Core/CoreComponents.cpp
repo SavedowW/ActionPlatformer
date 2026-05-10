@@ -66,43 +66,9 @@ bool ComponentObstacleFallthrough::isIgnoringAllObstacles() const
     return m_isIgnoringObstacles.isActive();
 }
 
-// true if not ignored
-bool ComponentObstacleFallthrough::touchedObstacleTop(int obstacleId_)
-{
-    if (m_isIgnoringObstacles.isActive())
-    {
-        m_ignoredObstacles.insert(obstacleId_);
-        return false;
-    }
-
-    return !m_ignoredObstacles.contains(obstacleId_);
-}
-
-bool ComponentObstacleFallthrough::touchedObstacleSlope(int obstacleId_)
-{
-    if (m_isIgnoringObstacles.isActive())
-    {
-        m_ignoredObstacles.insert(obstacleId_);
-        return false;
-    }
-    return !m_ignoredObstacles.contains(obstacleId_);
-}
-
 bool ComponentObstacleFallthrough::checkIgnoringObstacle(int obstacleId_) const
 {
     return m_isIgnoringObstacles.isActive() || m_ignoredObstacles.contains(obstacleId_);
-}
-
-bool ComponentObstacleFallthrough::touchedObstacleBottom(int obstacleId_)
-{
-    m_ignoredObstacles.insert(obstacleId_);
-    return false;
-}
-
-bool ComponentObstacleFallthrough::touchedObstacleSide(int obstacleId_)
-{
-    m_ignoredObstacles.insert(obstacleId_);
-    return false;
 }
 
 bool ComponentObstacleFallthrough::setIgnoreObstacle(int obstacleId_)

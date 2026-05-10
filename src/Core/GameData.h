@@ -1,5 +1,5 @@
 #pragma once
-#include <SDL3/SDL.h>
+#include "Color.hpp"
 #include "Vector2.hpp"
 
 // TODO: move properties to config file
@@ -9,10 +9,10 @@ namespace gamedata
 {
     namespace colors
     {
-        inline constexpr SDL_Color LVL1 = {233, 239, 236, 255};
-        inline constexpr SDL_Color LVL2 = {160, 160, 139, 255};
-        inline constexpr SDL_Color LVL3 = {85, 85, 104, 255};
-        inline constexpr SDL_Color LVL4 = {33, 30, 32, 255};
+        inline constexpr Color LVL1{233, 239, 236, 255};
+        inline constexpr Color LVL2{160, 160, 139, 255};
+        inline constexpr Color LVL3{85, 85, 104, 255};
+        inline constexpr Color LVL4{33, 30, 32, 255};
     }
 
     namespace debug_defaults
@@ -32,10 +32,10 @@ namespace gamedata
 
     namespace global
     {
-        inline constexpr Vector2<int> baseResolution = {640, 360}; // 320 x 180 or 480 x 270
-        inline constexpr Vector2<int> maxCameraSize = {640, 360};
-        inline constexpr Vector2<int> minCameraSize = {320, 180};
-        inline constexpr Vector2<int> hudLayerResolution = {640, 360};
+        inline constexpr Vector2<uint16_t> baseResolution = {640, 360}; // 320 x 180 or 480 x 270
+        inline constexpr Vector2<uint16_t> maxCameraSize = {640, 360};
+        inline constexpr Vector2<uint16_t> minCameraSize = {320, 180};
+        inline constexpr Vector2<uint16_t> hudLayerResolution = {640, 360};
         inline constexpr float baseCameraScale = maxCameraSize.y / (float)baseResolution.y;
         inline constexpr float minCameraScale = (float)maxCameraSize.y / maxCameraSize.y;
         inline constexpr float maxCameraScale = (float)maxCameraSize.y / minCameraSize.y;
@@ -49,8 +49,8 @@ namespace gamedata
 
     namespace characters
     {
-        inline constexpr SDL_Color pushboxColor = {255, 242, 0, 50};
-        inline constexpr SDL_Color hitboxColor = {255, 0, 0, 100};
-        inline constexpr SDL_Color hurtboxColor = {0, 255, 0, 100};
+        inline constexpr Color pushboxColor{115, 94, 74, 100};
+        inline constexpr Color hitboxColor{255, 0, 0, 100};
+        inline constexpr Color hurtboxColor{0, 255, 0, 100};
     }
 }

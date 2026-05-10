@@ -1,11 +1,12 @@
 #include "Renderer.h"
 #include "FilesystemUtils.h"
-#include "Framebuffer.hpp"
+#include "Framebuffer.hpp"  // IWYU pragma: keep
 #include "GameData.h"
-#include "Shader.hpp"
+#include "Shader.hpp"  // IWYU pragma: keep
 #include "glad/glad.h"
 #include <SDL3/SDL_opengl.h>
 #include <stdexcept>
+#include <array>
 
 Renderer::Renderer(const Window &window_) :
     m_window(window_),
@@ -15,7 +16,7 @@ Renderer::Renderer(const Window &window_) :
         throw std::runtime_error(std::format("Failed to initialize context: {}", SDL_GetError()));
 
     if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress)))
-         throw std::runtime_error("Failed to initialize GLAD");
+        throw std::runtime_error("Failed to initialize GLAD");
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -258,30 +259,30 @@ void Renderer::selectTarget(const Framebuffer &fb_, const Vector2<int> &size_)
     m_spriteShaderRotate.setMatrix4("projection", projection);
 }
 
-void Renderer::prepareRenderer(const SDL_Color &col_)
+void Renderer::switchToWorld(const Color &col_)
 {
     m_stage = Stage::WORLD;
     selectTarget(m_worldFB, m_renderWorldTargetTexture.size());
     fillRenderer(col_);
 }
 
-void Renderer::switchToHUD(const SDL_Color &col_)
+void Renderer::switchToHUD(const Color &col_)
 {
     m_stage = Stage::HUD;
     selectTarget(m_hudFB, m_renderHudTargetTexture.size());
     fillRenderer(col_);
 }
 
-void Renderer::switchToDBG(const SDL_Color &col_)
+void Renderer::switchToDBG(const Color &col_)
 {
     m_stage = Stage::DBG;
     selectTarget(m_dbgFB, m_renderDbgTargetTexture.size());
     fillRenderer(col_);
 }
 
-void Renderer::fillRenderer(const SDL_Color &col_)
+void Renderer::fillRenderer(const Color &col_)
 {
-    glClearColor(col_.r / 255.0f, col_.g / 255.0f, col_.b / 255.0f, col_.a / 255.0f);
+    glClearColor(col_.r(), col_.g(), col_.b(), col_.a());
     glClear( GL_COLOR_BUFFER_BIT );
 }
 
@@ -311,12 +312,12 @@ void Renderer::updateScreen(const Camera &cam_)
     SDL_GL_SwapWindow( m_window.getWindow() );
 }
 
-void Renderer::drawRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const SDL_Color &col_)
+void Renderer::drawRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const Color &col_)
 {
     glBindVertexArray(m_rectVAO);
     m_rectShader.use();
 
-    m_rectShader.setVector4f("color", col_.r / 255.0f, col_.g / 255.0f, col_.b / 255.0f, col_.a / 255.0f);
+    m_rectShader.setVector4f("color", col_.r(), col_.g(), col_.b(), col_.a());
     m_rectShader.setVector2f("vertices[0]", pos_.x + 0.375f, pos_.y + 0.375f);
     m_rectShader.setVector2f("vertices[1]", pos_.x + 0.375f + size_.x - 1, pos_.y + 0.375f);
     m_rectShader.setVector2f("vertices[2]", pos_.x + 0.375f + size_.x - 1, pos_.y + 0.375f + size_.y - 1);
@@ -324,18 +325,18 @@ void Renderer::drawRectangle(const Vector2<int> &pos_, const Vector2<int> &size_
     glDrawArrays(GL_LINE_LOOP, 0, 4);
 }
 
-void Renderer::drawRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const SDL_Color &col_, const Camera &cam_)
+void Renderer::drawRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const Color &col_, const Camera &cam_)
 {
     Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
     drawRectangle(pos_ - camTL, size_, col_);
 }
 
-void Renderer::fillRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const SDL_Color &col_)
+void Renderer::fillRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const Color &col_)
 {
     glBindVertexArray(m_rectVAO);
     m_rectShader.use();
 
-    m_rectShader.setVector4f("color", col_.r / 255.0f, col_.g / 255.0f, col_.b / 255.0f, col_.a / 255.0f);
+    m_rectShader.setVector4f("color", col_.r(), col_.g(), col_.b(), col_.a());
     
     m_rectShader.setVector2f("vertices[0]", pos_.x, pos_.y);
     m_rectShader.setVector2f("vertices[1]", pos_.x + size_.x, pos_.y);
@@ -345,18 +346,18 @@ void Renderer::fillRectangle(const Vector2<int> &pos_, const Vector2<int> &size_
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-void Renderer::fillRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const SDL_Color &col_, const Camera &cam_)
+void Renderer::fillRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const Color &col_, const Camera &cam_)
 {
     Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
     fillRectangle(pos_ - camTL, size_, col_);
 }
 
-void Renderer::drawLine(const Vector2<int> &p1_, const Vector2<int> &p2_, const SDL_Color &col_)
+void Renderer::drawLine(const Vector2<int> &p1_, const Vector2<int> &p2_, const Color &col_)
 {
     glBindVertexArray(m_rectVAO);
     m_rectShader.use();
 
-    m_rectShader.setVector4f("color", col_.r / 255.0f, col_.g / 255.0f, col_.b / 255.0f, col_.a / 255.0f);
+    m_rectShader.setVector4f("color", col_.r(), col_.g(), col_.b(), col_.a());
     
     m_rectShader.setVector2f("vertices[0]", p1_.x, p1_.y);
     m_rectShader.setVector2f("vertices[1]", p2_.x, p2_.y);
@@ -364,24 +365,24 @@ void Renderer::drawLine(const Vector2<int> &p1_, const Vector2<int> &p2_, const 
     glDrawArrays(GL_LINES, 0, 2);
 }
 
-void Renderer::drawLine(const Vector2<int> &p1_, const Vector2<int> &p2_, const SDL_Color &col_, const Camera &cam_)
+void Renderer::drawLine(const Vector2<int> &p1_, const Vector2<int> &p2_, const Color &col_, const Camera &cam_)
 {
     Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
     drawLine(p1_ - camTL, p2_ - camTL, col_);
 }
 
-void Renderer::drawCross(const Vector2<int> &center_, const Vector2<int> &vSize_, const Vector2<int> &hSize_, const SDL_Color &col_, const Camera &cam_)
+void Renderer::drawCross(const Vector2<int> &center_, const Vector2<int> &vSize_, const Vector2<int> &hSize_, const Color &col_, const Camera &cam_)
 {
     Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
     drawCross(center_ - camTL, vSize_, hSize_, col_);
 }
 
-void Renderer::drawCircleOutline(const Vector2<int> &center_, float radius_, const SDL_Color &col_)
+void Renderer::drawCircleOutline(const Vector2<int> &center_, float radius_, const Color &col_)
 {
     glBindVertexArray(m_rectVAO);
     m_circleShader.use();
 
-    m_circleShader.setVector4f("color", col_.r / 255.0f, col_.g / 255.0f, col_.b / 255.0f, col_.a / 255.0f);
+    m_circleShader.setVector4f("color", col_.r(), col_.g(), col_.b(), col_.a());
     
     m_circleShader.setVector2f("vertices[0]", center_.x - radius_, center_.y - radius_);
     m_circleShader.setVector2f("vertices[1]", center_.x + radius_, center_.y - radius_);
@@ -395,31 +396,31 @@ void Renderer::drawCircleOutline(const Vector2<int> &center_, float radius_, con
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-void Renderer::drawCircleOutline(const Vector2<int> &center_, float radius_, const SDL_Color &col_, const Camera &cam_)
+void Renderer::drawCircleOutline(const Vector2<int> &center_, float radius_, const Color &col_, const Camera &cam_)
 {
     Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
     drawCircleOutline(center_ - camTL, radius_, col_);
 }
 
-void Renderer::drawCross(const Vector2<int> &center_, const Vector2<int> &vSize_, const Vector2<int> &hSize_, const SDL_Color &col_)
+void Renderer::drawCross(const Vector2<int> &center_, const Vector2<int> &vSize_, const Vector2<int> &hSize_, const Color &col_)
 {
     drawRectangle({center_.x - vSize_.x / 2, center_.y - vSize_.y / 2}, {vSize_.x, vSize_.y}, col_);
     drawRectangle({center_.x - hSize_.x / 2, center_.y - hSize_.y / 2}, {hSize_.x, hSize_.y }, col_);
 }
 
-void Renderer::drawCollider(const Collider &cld_, const SDL_Color &fillCol_, const Camera &cam_)
+void Renderer::drawCollider(const Collider &cld_, const Color &fillCol_, const Camera &cam_)
 {
     fillRectangle(cld_.m_topLeft, cld_.m_size, fillCol_, cam_);
 }
 
-void Renderer::drawCollider(const SlopeCollider &cld_, const SDL_Color &fillCol_, const Camera &cam_)
+void Renderer::drawCollider(const SlopeCollider &cld_, const Color &fillCol_, const Camera &cam_)
 {
     const Vector2<int> camTL = Vector2<int>(cam_.getPos() - gamedata::global::maxCameraSize / 2.0f);
 
     glBindVertexArray(m_rectVAO);
     m_rectShader.use();
 
-    m_rectShader.setVector4f("color", fillCol_.r / 255.0f, fillCol_.g / 255.0f, fillCol_.b / 255.0f, fillCol_.a / 255.0f);
+    m_rectShader.setVector4f("color", fillCol_.r(), fillCol_.g(), fillCol_.b(), fillCol_.a());
     
     m_rectShader.setVector2f("vertices[0]", cld_.leftX() - camTL.x, cld_.leftY() - camTL.y);
     m_rectShader.setVector2f("vertices[1]", cld_.rightX() - camTL.x + 1, cld_.rightY() - camTL.y);
@@ -429,7 +430,7 @@ void Renderer::drawCollider(const SlopeCollider &cld_, const SDL_Color &fillCol_
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-void Renderer::drawCollider(const Collider &cld_, const SDL_Color &fillCol_, const SDL_Color &borderCol_, const Camera &cam_)
+void Renderer::drawCollider(const Collider &cld_, const Color &fillCol_, const Color &borderCol_, const Camera &cam_)
 {
     fillRectangle(cld_.m_topLeft, cld_.m_size, fillCol_, cam_);
     drawRectangle(cld_.m_topLeft, cld_.m_size, borderCol_, cam_);

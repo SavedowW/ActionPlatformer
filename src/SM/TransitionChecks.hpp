@@ -93,6 +93,23 @@ ORIENTATION TransitionChecks<StateIDT, ViewT>::OnPhysEvent::operator()(const Vie
 }
 
 template<typename StateIDT, typename ViewT>
+TransitionChecks<StateIDT, ViewT>::OnGrounded::OnGrounded(const StateIDT &state_, bool isGrounded_) :
+    Base::AbstractStateCondition(state_),
+    m_isGrounded{isGrounded_}
+{}
+
+template<typename StateIDT, typename ViewT>
+ORIENTATION TransitionChecks<StateIDT, ViewT>::OnGrounded::operator()(const ViewT &view_)
+{
+    const auto &phys = view_.template cget<ComponentPhysical>();
+
+    if ((phys.m_onGround != entt::null) == m_isGrounded)
+        return view_.template cget<ComponentTransform>().m_orientation;
+
+    return ORIENTATION::UNSPECIFIED;
+}
+
+template<typename StateIDT, typename ViewT>
 TransitionChecks<StateIDT, ViewT>::OnTimer::OnTimer(const StateIDT &state_, uint32_t framesLimit_) :
     Base::AbstractStateCondition(state_),
     m_framesLimit{framesLimit_}

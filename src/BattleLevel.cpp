@@ -152,8 +152,6 @@ void BattleLevel::update()
 
     m_physsys.updatePhysics();
     
-    m_physsys.updateOverlappedObstacles();
-
     m_battlesys.update();
     m_battlesys.handleAttacks();
 
@@ -177,7 +175,7 @@ void BattleLevel::draw() const
     PROFILE_FUNCTION;
 
     auto &renderer = Application::instance().m_renderer;
-    renderer.prepareRenderer(gamedata::colors::LVL2);
+    renderer.switchToWorld(gamedata::colors::LVL2);
 
     m_rendersys.draw();
 

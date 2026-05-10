@@ -1,6 +1,5 @@
 #pragma once
 #include "Vector2.hpp"
-#include "glad/glad.h"
 #include <SDL3/SDL_surface.h>
 
 struct Texture
@@ -18,7 +17,7 @@ public:
     private:
         const Vector2<int> m_size;
         const void *m_pixels = nullptr;
-        GLint m_format = GL_RGBA;
+        int m_format;
 
         friend Texture;
     };

@@ -1,5 +1,4 @@
 #pragma once
-#include "Renderer.h"
 #include "Texture.h"
 #include <memory>
 #include <map>

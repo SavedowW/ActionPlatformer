@@ -186,7 +186,7 @@ void ChatboxSystem::renderMessage(const ChatMessage &msg_, const Vector2<int> &t
                     offset = stack.top()->getOffset();
             }
 
-            //ren.drawRectangle({pos.x, pos.y - 5 + int(5 * progress)}, sym->m_tex.m_size, SDL_Color{255, 255, 255, 255});
+            //ren.drawRectangle({pos.x, pos.y - 5 + int(5 * progress)}, sym->m_tex.m_size, Color{255, 255, 255, 255});
             m_renderer.renderTexture(sym->m_tex.handler(), Vector2{pos.x, pos.y - 5 + int(5 * progress)} + offset, sym->m_tex.size(), SDL_FLIP_NONE, progress);
             pos.x += sym->m_advance;
         }

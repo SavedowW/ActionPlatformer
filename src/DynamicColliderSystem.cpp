@@ -111,6 +111,9 @@ void DynamicColliderSystem::solveRouteIter(MoveCollider2Points &m2p_, ColliderRo
     }
 }
 
+/**
+ *  TODO: rework, its impossible to deal with
+ */
 void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, ComponentStaticCollider &scld_, const Vector2<int> &newtl_)
 {
     const Vector2<float> offset = newtl_ - trans_.m_pos;
@@ -162,8 +165,10 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                 // If was above
                 if (collision && oldpos.y < oldHighest)
                 {
-                    if (fallthrough && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
-                        continue;
+                    // TODO:
+                    //if (fallthrough && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
+                    //    continue;
+                    
                     //std::cout << "Teleporting entity on top while moving platform up" << std::endl;
                     // Teleport on top
                     trans.m_pos.y = newHighest - 1;
@@ -177,8 +182,11 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                 // If was standing on top
                 if ((oldColres & OverlapResult::OVERLAP_X) == OverlapResult::OVERLAP_X && oldpos.y == oldHighest - 1)
                 {
-                    if (fallthrough && scld_.m_obstacleId && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
+                    if (fallthrough && scld_.m_obstacleId && fallthrough->checkIgnoringObstacle(scld_.m_obstacleId))
+                    {
+                        fallthrough->setIgnoreObstacle(scld_.m_obstacleId);
                         continue;
+                    }
 
                     //std::cout << "Teleporting entity on top while moving platform down" << std::endl;
                     // Teleport on top
@@ -190,8 +198,11 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                 // If was below and now overlaps
                 else if (collision && oldTop > scld_.m_resolved.bottomY())
                 {
-                    if (fallthrough && scld_.m_obstacleId && !fallthrough->touchedObstacleBottom(scld_.m_obstacleId))
+                    if (fallthrough && scld_.m_obstacleId)
+                    {
+                        fallthrough->setIgnoreObstacle(scld_.m_obstacleId);
                         continue;
+                    }
 
                     //std::cout << "Teleporting entity to bottom while moving platform down" << std::endl;
                     // Teleport to bottom
@@ -230,9 +241,10 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                     auto rightest = newcld.getMostRightAt(pb);
                     auto onSlope = !(rightest == newcldYOnly.rightX());
 
-                    if (fallthrough &&  onSlope && scld_.m_obstacleId && !fallthrough->touchedObstacleSlope(scld_.m_obstacleId) ||
-                        fallthrough && !onSlope && scld_.m_obstacleId && !fallthrough->touchedObstacleSide(scld_.m_obstacleId))
-                        continue;
+                    // TODO:
+                    //if (fallthrough &&  onSlope && scld_.m_obstacleId && !fallthrough->touchedObstacleSlope(scld_.m_obstacleId) ||
+                    //    fallthrough && !onSlope && scld_.m_obstacleId && !fallthrough->touchedObstacleSide(scld_.m_obstacleId))
+                    //    continue;
 
                     //std::cout << "Teleporting to right " << rand() << std::endl;
                     // Teleport to right edge
@@ -256,9 +268,10 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                 auto leftest = newcld.getMostLeftAt(pb);
                 auto onSlope = !(leftest == newcldYOnly.leftX());
 
-                if (fallthrough &&  onSlope && scld_.m_obstacleId && !fallthrough->touchedObstacleSlope(scld_.m_obstacleId) ||
-                    fallthrough && !onSlope && scld_.m_obstacleId && !fallthrough->touchedObstacleSide(scld_.m_obstacleId))
-                    continue;
+                // TODO:
+                //if (fallthrough &&  onSlope && scld_.m_obstacleId && !fallthrough->touchedObstacleSlope(scld_.m_obstacleId) ||
+                //    fallthrough && !onSlope && scld_.m_obstacleId && !fallthrough->touchedObstacleSide(scld_.m_obstacleId))
+                //    continue;
 
                 // If now collides
                 if ((newColres & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
@@ -282,8 +295,9 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
             // If stands on it
             if (!teleported && (phys.m_onGround != entt::null) && (oldColres & OverlapResult::OVERLAP_X) == OverlapResult::OVERLAP_X && abs(trans.m_pos.y - newHighest) <= 1.0f)
             {
-                if (fallthrough && scld_.m_obstacleId && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
-                    continue;
+                // TODO:
+                //if (fallthrough && scld_.m_obstacleId && !fallthrough->touchedObstacleTop(scld_.m_obstacleId))
+                //    continue;
 
                 //std::cout << "Standing on top, pushing in the movement direction" << std::endl;
 

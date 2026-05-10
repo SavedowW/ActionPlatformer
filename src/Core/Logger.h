@@ -3,7 +3,7 @@
 #include <string>
 #include <string_view>
 #include <format>
-#include <print>
+#include <print>  // IWYU pragma: keep
 
 struct ComponentName
 {

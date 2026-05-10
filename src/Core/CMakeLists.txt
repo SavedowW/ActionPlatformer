@@ -52,6 +52,7 @@ Configuration.cpp
 Behavior.cpp
 StaticMapping.cpp
 SDLWrappers.cpp
+Utils.cpp
 Localization/LocalizationGen.cpp
 )
 

@@ -269,17 +269,17 @@ namespace utils
 {
     template <Numeric T>
     [[nodiscard]]
-    inline Vector2<T> clamp(const Vector2<T>& val, const Vector2<T> &min, const Vector2<T> &max) noexcept
+    constexpr Vector2<T> clamp(const Vector2<T>& val, const Vector2<T> &min, const Vector2<T> &max) noexcept
     {
         return {clamp(val.x, min.x, max.x), clamp(val.y, min.y, max.y)};
     }
 
     template <Numeric T>
     [[nodiscard]]
-    inline Vector2<T> limitVectorLength(const Vector2<T>& val, const T &limit) noexcept
+    constexpr Vector2<T> limitVectorLength(const Vector2<T>& val, const T &limit) noexcept
     {
-        assert(val.x != 0 || val.y != 0);
-        assert(limit != 0);
+        if (limit == 0)
+            return Vector2<T>{};
 
         auto curlen = val.length();
         if (curlen > limit)
@@ -291,12 +291,14 @@ namespace utils
     }
 
     template <Numeric T, Numeric aT>
-    inline Vector2<T> lerp(const Vector2<T> &min, const Vector2<T> &max, const aT &alpha) noexcept
+    [[nodiscard]]
+    constexpr Vector2<T> lerp(const Vector2<T> &min, const Vector2<T> &max, const aT &alpha) noexcept
     {
         return {min + (max - min) * alpha};
     }
 
-    inline float distToLineSegment(const Vector2<float> &lineP1_, const Vector2<float> &lineP2_, const Vector2<float> &point_) noexcept
+    [[nodiscard]]
+    constexpr float distToLineSegment(const Vector2<float> &lineP1_, const Vector2<float> &lineP2_, const Vector2<float> &point_) noexcept
     {
         auto dir1 = lineP2_ - lineP1_;
         auto p1 = point_ - lineP1_;
@@ -317,7 +319,7 @@ namespace utils
 
 // https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
 [[nodiscard]]
-inline std::pair<float, float> overlaps(const std::pair<Vector2<float>, Vector2<float>> &con1_, const std::pair<Vector2<float>, Vector2<float>> &con2_) noexcept
+constexpr std::pair<float, float> overlaps(const std::pair<Vector2<float>, Vector2<float>> &con1_, const std::pair<Vector2<float>, Vector2<float>> &con2_) noexcept
 {
     auto r = con1_.second - con1_.first;
     auto s = con2_.second - con2_.first;

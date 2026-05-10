@@ -2,7 +2,6 @@
 #include "Core/CameraFocusArea.h"
 #include "Core/CoreComponents.h"
 #include "Core/GameData.h"
-#include "Core/Profile.h"
 #include "Core/Configuration.h"
 
 CameraSystem::CameraSystem(entt::registry &reg_, Camera &cam_) :
@@ -48,7 +47,7 @@ void CameraSystem::update()
 
     if (phys.m_appliedOffset.y != 0)
     {
-        float vprio = (phys.m_onSlopeWithAngle == 0.0f && phys.m_onMovingPlatform == false ? 0.0f : 1.5f);
+        float vprio = (phys.m_onSlopeWithAngle == 0.0f && !phys.m_onMovingPlatform ? 0.0f : 1.5f);
         if (phys.m_appliedOffset.y >= 5.0f)
             vprio = 3.0f;
         else if (phys.m_onSlopeWithAngle != 0.0f)
@@ -110,8 +109,8 @@ bool CameraSystem::updateFocus(const Collider &playerPb_)
         auto &area = m_reg.get<CameraFocusArea>(*m_currentFocusArea);
         if (area.checkIfEnters(playerPb_, true))
             return true;
-        else
-            m_currentFocusArea.reset();
+
+        m_currentFocusArea.reset();
     }
 
     auto areas = m_reg.view<CameraFocusArea>();

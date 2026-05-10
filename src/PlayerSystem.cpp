@@ -102,7 +102,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 PlayerStateProperties::Update::MultiplyInertia{TimelineProperty<Vector2<float>>( 
                     {
                         {0, {1.0f, 1.0f}},
-                        {1, {0.5f, 1.0f}},
+                        {1, {0.75f, 1.0f}},
                     })},
                 PlayerStateProperties::Update::HorizontalInertiaLimit{TimelineProperty{std::pair<float, float>{-4.f, 4.f}}}
             ),
@@ -138,7 +138,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 PlayerStateProperties::Update::MultiplyInertia{TimelineProperty<Vector2<float>>( 
                     {
                         {0, {1.0f, 1.0f}},
-                        {1, {0.5f, 1.0f}},
+                        {1, {0.75f, 1.0f}},
                     })}
             ),
 
@@ -168,7 +168,7 @@ void PlayerSystem::setup(entt::entity playerId_)
             ),
 
             PlayerMake::SequentialConditions{}
-                .addCondition(std::make_unique<PlayerStateTransitions::OnPhysEvent>(PlayerState::FLOAT, PhysicalEvents::Events::GROUNDED, false))
+                .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP_FORWARD, InputMotions::HOLD_UP_FORWARD, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP, InputMotions::HOLD_UP, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PRERUN, InputMotions::HOLD_HORDIR, OrientationOptions::OPPOSITE))
@@ -203,7 +203,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 PlayerStateProperties::Update::TestFallthrough{}),
 
             PlayerMake::SequentialConditions{}
-                .addCondition(std::make_unique<PlayerStateTransitions::OnPhysEvent>(PlayerState::FLOAT, PhysicalEvents::Events::GROUNDED, false))
+                .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP_FORWARD, InputMotions::HOLD_UP_FORWARD, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP, InputMotions::HOLD_UP, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PRERUN, InputMotions::HOLD_HORDIR, OrientationOptions::OPPOSITE))
@@ -239,7 +239,7 @@ void PlayerSystem::setup(entt::entity playerId_)
                 PlayerStateProperties::Update::TestFallthrough{}),
 
             PlayerMake::SequentialConditions{}
-                .addCondition(std::make_unique<PlayerStateTransitions::OnPhysEvent>(PlayerState::FLOAT, PhysicalEvents::Events::GROUNDED, false))
+                .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP_FORWARD, InputMotions::HOLD_UP_FORWARD, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP, InputMotions::HOLD_UP, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PRERUN, InputMotions::HOLD_HORDIR, OrientationOptions::OPPOSITE))
@@ -275,7 +275,7 @@ void PlayerSystem::setup(entt::entity playerId_)
             ),
 
             PlayerMake::SequentialConditions{}
-                .addCondition(std::make_unique<PlayerStateTransitions::OnPhysEvent>(PlayerState::FLOAT, PhysicalEvents::Events::GROUNDED, false))
+                .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP_FORWARD, InputMotions::HOLD_UP_FORWARD, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP, InputMotions::HOLD_UP, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PRERUN, InputMotions::HOLD_HORDIR, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
@@ -303,7 +303,7 @@ void PlayerSystem::setup(entt::entity playerId_)
             SM::CallBatch(),
 
             PlayerMake::SequentialConditions{}
-                .addCondition(std::make_unique<PlayerStateTransitions::OnPhysEvent>(PlayerState::FLOAT, PhysicalEvents::Events::GROUNDED, false))
+                .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP_FORWARD, InputMotions::HOLD_UP_FORWARD, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP, InputMotions::HOLD_UP, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PRERUN, InputMotions::HOLD_HORDIR, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
@@ -329,7 +329,7 @@ void PlayerSystem::setup(entt::entity playerId_)
             SM::CallBatch(),
 
             PlayerMake::SequentialConditions{}
-                .addCondition(PlayerStateTransitions::sinceFrame(1, PlayerStateTransitions::OnPhysEvent{PlayerState::LANDING_RECOVERY, PhysicalEvents::Events::GROUNDED}))
+                .addCondition(PlayerStateTransitions::sinceFrame(1, PlayerStateTransitions::OnGrounded{PlayerState::LANDING_RECOVERY}))
                 .done(),
 
             [](const PlayerView&, const SM::TransitionData<PlayerState>&) {

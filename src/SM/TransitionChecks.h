@@ -86,6 +86,17 @@ struct TransitionChecks
         const bool m_isSet;
     };
 
+    class OnGrounded : public Base::AbstractStateCondition
+    {
+    public:
+        OnGrounded(const StateIDT &state_, bool isGrounded_ = true);
+
+        ORIENTATION operator()(const ViewT &view_) override;
+
+    private:
+        const bool m_isGrounded;
+    };
+
     class OnTimer : public Base::AbstractStateCondition
     {
     public:

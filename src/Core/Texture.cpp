@@ -2,12 +2,14 @@
 #include "glad/glad.h"
 
 Texture::Config::Config(const Vector2<int> &size_) :
-    m_size{ size_ }
+    m_size{ size_ },
+    m_format{GL_RGBA}
 {}
 
 Texture::Config::Config(const SDL_Surface &sur) :
     m_size{ sur.w, sur.h },
-    m_pixels{sur.pixels}
+    m_pixels{sur.pixels},
+    m_format{GL_RGBA}
 {}
 
 Texture::Config &Texture::Config::useRGB() noexcept

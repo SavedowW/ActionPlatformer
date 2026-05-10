@@ -5,11 +5,11 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "Vector2.hpp"
-#include "Framebuffer.hpp"
-
+#include "Color.hpp"
+#include "Framebuffer.h"
 #include <SDL3/SDL.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/type_ptr.hpp> // is needed?
 
 class Renderer
 {
@@ -22,27 +22,27 @@ public:
     void setTarget(const Texture &texture_);
     void resetTarget();
 
-    void prepareRenderer(const SDL_Color &col_);
-    void switchToHUD(const SDL_Color &col_);
-    void switchToDBG(const SDL_Color &col_);
-    void fillRenderer(const SDL_Color &col_);
+    void switchToWorld(const Color &col_);
+    void switchToHUD(const Color &col_);
+    void switchToDBG(const Color &col_);
+    void fillRenderer(const Color &col_);
     void updateScreen(const Camera &cam_);
 
     // Line, cross
-    void drawRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const SDL_Color& col_);
-    void drawRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const SDL_Color& col_, const Camera &cam_);
-    void fillRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const SDL_Color& col_);
-    void fillRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const SDL_Color& col_, const Camera &cam_);
-    void drawLine(const Vector2<int> &p1_, const Vector2<int> &p2_, const SDL_Color& col_);
-    void drawLine(const Vector2<int> &p1_, const Vector2<int> &p2_, const SDL_Color& col_, const Camera &cam_);
-    void drawCross(const Vector2<int> &center_, const Vector2<int> &vSize_, const Vector2<int> &hSize_, const SDL_Color& col_);
-    void drawCross(const Vector2<int> &center_, const Vector2<int> &vSize_, const Vector2<int> &hSize_, const SDL_Color& col_, const Camera &cam_);
-    void drawCircleOutline(const Vector2<int> &center_, float radius_, const SDL_Color& col_);
-    void drawCircleOutline(const Vector2<int> &center_, float radius_, const SDL_Color& col_, const Camera &cam_);
+    void drawRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const Color& col_);
+    void drawRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const Color& col_, const Camera &cam_);
+    void fillRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const Color& col_);
+    void fillRectangle(const Vector2<int> &pos_, const Vector2<int> &size_, const Color& col_, const Camera &cam_);
+    void drawLine(const Vector2<int> &p1_, const Vector2<int> &p2_, const Color& col_);
+    void drawLine(const Vector2<int> &p1_, const Vector2<int> &p2_, const Color& col_, const Camera &cam_);
+    void drawCross(const Vector2<int> &center_, const Vector2<int> &vSize_, const Vector2<int> &hSize_, const Color& col_);
+    void drawCross(const Vector2<int> &center_, const Vector2<int> &vSize_, const Vector2<int> &hSize_, const Color& col_, const Camera &cam_);
+    void drawCircleOutline(const Vector2<int> &center_, float radius_, const Color& col_);
+    void drawCircleOutline(const Vector2<int> &center_, float radius_, const Color& col_, const Camera &cam_);
 
-    void drawCollider(const Collider &cld_, const SDL_Color &fillCol_, const Camera &cam_);
-    void drawCollider(const SlopeCollider &cld_, const SDL_Color &fillCol_, const Camera &cam_);
-    void drawCollider(const Collider &cld_, const SDL_Color &fillCol_, const SDL_Color &borderCol_, const Camera &cam_);
+    void drawCollider(const Collider &cld_, const Color &fillCol_, const Camera &cam_);
+    void drawCollider(const SlopeCollider &cld_, const Color &fillCol_, const Camera &cam_);
+    void drawCollider(const Collider &cld_, const Color &fillCol_, const Color &borderCol_, const Camera &cam_);
 
     // TODO: templated integral param, to hpp
     void renderTextureOutlined(unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_);

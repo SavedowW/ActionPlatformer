@@ -17,7 +17,7 @@ struct CameraSystem : public InputReactor
     void receiveEvents(GAMEPLAY_EVENTS event, float scale_) override;
 
     entt::registry &m_reg;
-    entt::entity playerId;
+    entt::entity playerId = entt::null;
     Camera &m_cam;
     std::optional<entt::entity> m_currentFocusArea;
 

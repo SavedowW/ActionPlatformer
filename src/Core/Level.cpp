@@ -44,7 +44,7 @@ LevelResult Level::proceed()
 
         if (!m_globalPause || m_globalPause && m_allowIter || m_forcerun)
         {
-            LOG_TRACE("Level frame {}", frame++);
+            //LOG_TRACE("Level frame {}", frame++);
 
             update();
             m_allowIter = false;

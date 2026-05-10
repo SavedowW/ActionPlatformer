@@ -1,4 +1,6 @@
 #pragma once
+#include <algorithm>
+#include <numbers>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -13,7 +15,7 @@ concept Numeric = std::is_arithmetic_v<T>;
 
 namespace Easing
 {
-    inline float circ(float val_)
+    constexpr float circ(float val_) noexcept
     {
         return sqrt(1.0f - powf(val_ - 1.0f, 2.0f));
     }
@@ -26,13 +28,13 @@ namespace utils
     class Average
     {
     public:
-        Average(const T &def_ = 0) :
+        constexpr Average(const T &def_ = 0) :
             sum(def_)
         {
         }
 
         template<typename T2>
-        Average &operator+=(const T2 &rhs_) noexcept
+        constexpr Average &operator+=(const T2 &rhs_) noexcept
         {
             sum += rhs_;
             cnt++;
@@ -40,14 +42,14 @@ namespace utils
         }
 
         template<typename T2>
-        operator T2() noexcept
+        constexpr operator T2() noexcept
         {
             if (cnt == 0)
                 return 0;
             return sum / cnt;
         }
 
-        inline bool isSet() const noexcept
+        constexpr bool isSet() const noexcept
         {
             return cnt > 0;
         }
@@ -59,13 +61,13 @@ namespace utils
     };
 
     template<Numeric T>
-    auto degreesToRadians(const T &degrees_) noexcept -> decltype(degrees_ * 1.0f)
+    constexpr auto degreesToRadians(const T &degrees_) noexcept -> decltype(degrees_ * 1.0f)
     {
-        return degrees_ * 3.14159f / 180;
+        return degrees_ * std::numbers::pi_v<float> / 180.0f;
     }
 
     template <Numeric T>
-    inline T clamp(const T& val, const T &min, const T &max) noexcept
+    constexpr T clamp(const T& val, const T &min, const T &max) noexcept
     {
         if (val < min)
             return min;
@@ -77,7 +79,7 @@ namespace utils
     }
     
     template <Numeric T>
-    inline T clampMaxPriority(const T& val, const T &min, const T &max) noexcept
+    constexpr T clampMaxPriority(const T& val, const T &min, const T &max) noexcept
     {
         if (val > max)
             return max;
@@ -86,36 +88,36 @@ namespace utils
         {
             if (max <= min)
                 return max;
-            else
-                return min;
+
+            return min;
         }
     
         return val;
     }
 
     template <bool ON_NULLS = true, Numeric T1, Numeric T2>
-    inline bool sameSign(const T1 &v1, const T2 &v2) noexcept
+    constexpr bool sameSign(const T1 &v1, const T2 &v2) noexcept
     {
         return (v1 > 0 && v2 > 0 || v1 < 0 && v2 < 0 || v1 == v2 && ON_NULLS);
     }
 
     template <Numeric T>
-    inline T signof(const T &val_) noexcept
+    constexpr T signof(const T &val_) noexcept
     {
         if (val_ >= 0)
             return 1;
-        else
-            return -1;
+
+        return -1;
     }
 
     template <Numeric T, Numeric aT>
-    inline T lerp(const T &min, const T &max, const aT &alpha) noexcept
+    constexpr T lerp(const T &min, const T &max, const aT &alpha) noexcept
     {
         return {min + (max - min) * alpha};
     }
 
     template <Numeric T>
-    inline T reverseLerp(const T& val, const T &min, const T &max)
+    constexpr T reverseLerp(const T& val, const T &min, const T &max)
     {
         T alpha = (val - min) / (max - min);
         return clamp<T>(alpha, 0, 1);
@@ -123,7 +125,7 @@ namespace utils
 
     // Gets portion of l1, overlapped by l2, result is in range [0, 1]
     template<Numeric T>
-    inline constexpr auto getOverlapPortion(T l1min_, T l1max_, T l2min_, T l2max_) noexcept -> decltype(1.0f / l1min_)
+    constexpr auto getOverlapPortion(T l1min_, T l1max_, T l2min_, T l2max_) noexcept -> decltype(1.0f / l1min_)
     {
         assert(l1max_ > l1min_);
         assert(l2max_ > l2min_);
@@ -137,30 +139,24 @@ namespace utils
         return static_cast<float>(pmax - pmin) / (l1max_ - l1min_);
     }
 
-    constexpr inline std::string getIntend(size_t intend_)
-    {
-        return std::string(intend_, ' ');
-    }
+    std::string getIntend(size_t intend_);
 
-    constexpr inline std::string wrap(const std::string &src_)
-    {
-        return "\"" + src_ + "\"";
-    }
+    std::string wrap(const std::string &src_);
 
     // value_ <= bound_ for bound < 0 or value_ >= bound_ otherwise
     template<Numeric T>
-    constexpr inline bool isLowerOrGreater(const T& value_, const T& bound_) noexcept
+    constexpr bool isLowerOrGreater(const T& value_, const T& bound_) noexcept
     {
         return bound_ < 0 ? value_ <= bound_ : value_ >= bound_;
     }
 
 #if 0 // Builin regex bad
-    inline std::string replaceAll(std::string src_, const std::string &replacable_, const std::string &toReplace_)
+    std::string replaceAll(std::string src_, const std::string &replacable_, const std::string &toReplace_)
     {
         return std::regex_replace(src_, std::regex(replacable_), toReplace_);
     }
 
-    inline std::string normalizeType(const std::string &reg_)
+    std::string normalizeType(const std::string &reg_)
     {
 
         auto res = replaceAll(reg_, "struct ", "");
@@ -183,7 +179,7 @@ namespace utils
     }
 
 
-    inline void dumpType(std::ostream &os_, const std::string &type_)
+    void dumpType(std::ostream &os_, const std::string &type_)
     {
         auto res = replaceAll(type_, " ", "");
         size_t intendLevel = 0;
@@ -213,7 +209,7 @@ namespace utils
     }
 #endif
 
-    inline bool startsWith(const std::string &base_, const std::string &beginning_)
+    constexpr bool startsWith(const std::string &base_, const std::string &beginning_)
     {
         for (size_t i = 0; i < beginning_.size(); ++i)
         {
@@ -224,40 +220,14 @@ namespace utils
         return true;
     }
 
-    inline std::vector<std::string> tokenize(const std::string &src_, const char splitter_)
-    {
-        std::stringstream ss(src_);
-        std::vector<std::string> res;
+    std::vector<std::string> tokenize(const std::string &src_, const char splitter_);
 
-        while (ss.good())
-        {
-            std::string substr;
-            std::getline(ss, substr, splitter_);
-            res.push_back(substr);
-        }
-
-        return res;
-    }
-
-    inline std::string padToRight(const size_t &len_, const std::string &line_)
-    {
-        if (line_.size() >= len_)
-            return line_;
-
-        return std::string(len_ - line_.size(), ' ') + line_;
-    }
-
-    inline std::string strip(std::string line_)
-    {
-        //while (!line_.empty() && )
-        return line_;
-    }
-
+    std::string padToRight(const size_t &len_, const std::string &line_);
 }
 
 
 template <typename T, size_t len>
-inline std::ostream& operator<< (std::ostream& out, const std::array<T, len>& arr)
+constexpr std::ostream& operator<< (std::ostream& out, const std::array<T, len>& arr)
 {
     out << "[";
     for (int i = 0; i < len; ++i)
@@ -271,7 +241,7 @@ inline std::ostream& operator<< (std::ostream& out, const std::array<T, len>& ar
 }
 
 template <typename T>
-inline std::ostream& operator<< (std::ostream& out, const std::vector<T>& vec)
+constexpr std::ostream& operator<< (std::ostream& out, const std::vector<T>& vec)
 {
     out << "[";
     for (int i = 0; i < vec.size(); ++i)

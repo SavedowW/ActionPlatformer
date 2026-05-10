@@ -80,7 +80,8 @@ struct ComponentPhysical
     float m_onSlopeWithAngle = 0.0f;
     uint32_t m_hitstopLeft = 0;
 
-    const Vector2<float> *m_mulInsidePushbox = nullptr;
+    // TODO: find a way to do it without hurting parallelization
+    //const Vector2<float> *m_mulInsidePushbox = nullptr;
 
     entt::entity m_onGround = entt::null;
     entt::entity m_onWall = entt::null;
@@ -115,7 +116,6 @@ public:
     enum class Events : uint8_t
     {
         // Event is active as long as you're grounded
-        GROUNDED,
         NONE
     };
 
@@ -172,16 +172,11 @@ struct ComponentObstacleFallthrough
 
     void setIgnoringObstacles();
     bool isIgnoringAllObstacles() const;
-    bool touchedObstacleTop(int obstacleId_);
-    bool touchedObstacleBottom(int obstacleId_);
-    bool touchedObstacleSlope(int obstacleId_);
-    bool touchedObstacleSide(int obstacleId_);
     bool setIgnoreObstacle(int obstacleId_);
     bool checkIgnoringObstacle(int obstacleId_) const;
 
     FrameTimer<false> m_isIgnoringObstacles;
     std::set<int> m_ignoredObstacles;
-    std::set<int> m_overlappedObstacles;
 };
 
 class Flash

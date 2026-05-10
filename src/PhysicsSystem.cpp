@@ -1,7 +1,334 @@
 #include "PhysicsSystem.h"
 #include "Core/CoreComponents.h"
-#include "Core/Profile.h"
-#include "SM/StateMachine.h"
+#include <stack>
+
+const float PhysicsEntityHandler::VerticalOffsetLimitMul = 1.3f;
+
+PhysicsEntityHandler::PhysicsEntityHandler(const CollidersView &cld_, ComponentTransform &trans_, 
+        ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &events_) :
+    m_cld{cld_},
+    m_trans{trans_},
+    m_phys{phys_},
+    m_pushbox{phys_.m_pushbox},
+    m_obsFallthrough{obsFallthrough_},
+    m_events{events_}
+{  
+}
+
+struct AttemptPos
+{
+    AttemptPos(const Vector2<int> &pos_, int xLoopbackLimit_, bool requireMagnet_, bool haltMovement_) :
+        pos{pos_},
+        xLoopbackLimit{xLoopbackLimit_},
+        requireMagnet{requireMagnet_},
+        haltMovement{haltMovement_}
+    {}
+
+    const Vector2<int> pos;
+    int xLoopbackLimit;
+    bool requireMagnet;
+    bool haltMovement;
+};
+
+void PhysicsEntityHandler::moveRight(const int offset_)
+{
+    assert(offset_ > 0);
+
+    const auto startingPos = m_trans.m_pos;
+
+    const auto halfWidth = m_pushbox.m_size.x / 2;
+
+    std::stack<AttemptPos> attempts;
+    attempts.emplace(startingPos.add(offset_, 0), startingPos.x + 1, true, false);
+
+    while (!attempts.empty())
+    {
+        const auto attempt = attempts.top();
+        attempts.pop();
+        bool valid = true;
+
+        for (const auto& [idx, cld] : m_cld.each())
+        {
+            if (!cld.m_isEnabled)
+                continue;
+
+            const auto newPb = m_pushbox + attempt.pos;
+
+            int highest = 0;
+            const auto overlap = cld.m_resolved.checkOverlap(newPb, highest);
+            if ((overlap & OverlapResult::OVERLAP_BOTH) != OverlapResult::OVERLAP_BOTH)
+                continue;
+
+            const Vector2<int> topPos{attempt.pos.x, highest - 1};
+
+            // Here and below +1 is added because slopes rely on floating point math and that work bad when getting onto the slope
+            const bool upCondition = static_cast<float>(startingPos.y - topPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(topPos.x - startingPos.x);
+
+            if (cld.m_obstacleId && (m_obsFallthrough.checkIgnoringObstacle(cld.m_obstacleId) || !upCondition))
+                continue;
+
+            valid = false;
+            const auto leftmost = cld.m_resolved.getMostLeftAt(newPb) - halfWidth - 1;
+            const Vector2<int> bottomPos{attempt.pos.x, cld.m_resolved.bottomY() + m_pushbox.m_size.y};
+            
+            if (leftmost >= attempt.xLoopbackLimit)
+                attempts.emplace(Vector2{leftmost, attempt.pos.y}, attempt.xLoopbackLimit, true, true);
+            if (static_cast<float>(bottomPos.y - startingPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(bottomPos.x - startingPos.x))
+                attempts.emplace(bottomPos, attempt.pos.x + 1, true, attempt.haltMovement);
+            if (upCondition)
+                attempts.emplace(topPos, attempt.pos.x + 1, false, attempt.haltMovement);
+
+            break;
+        }
+
+        if (valid)
+        {
+            m_trans.m_pos = attempt.pos;
+            m_requireMagnet = attempt.requireMagnet;
+            if (attempt.haltMovement)
+            {
+                m_phys.m_velocity.x = 0;
+                m_phys.m_inertia.x = 0;
+            }
+            return;
+        }
+    }
+}
+
+void PhysicsEntityHandler::moveLeft(const int offset_)
+{
+    assert(offset_ > 0);
+
+    const auto startingPos = m_trans.m_pos;
+
+    const auto halfWidth = m_pushbox.m_size.x / 2;
+
+    std::stack<AttemptPos> attempts;
+    attempts.emplace(startingPos.sub(offset_, 0), startingPos.x - 1, true, false);
+
+    while (!attempts.empty())
+    {
+        const auto attempt = attempts.top();
+        attempts.pop();
+        bool valid = true;
+
+        for (const auto& [idx, cld] : m_cld.each())
+        {
+            if (!cld.m_isEnabled)
+                continue;
+
+            const auto newPb = m_pushbox + attempt.pos;
+
+            int highest = 0;
+            const auto overlap = cld.m_resolved.checkOverlap(newPb, highest);
+            if ((overlap & OverlapResult::OVERLAP_BOTH) != OverlapResult::OVERLAP_BOTH)
+                continue;
+
+            const Vector2<int> topPos{attempt.pos.x, highest - 1};
+            const bool upCondition = static_cast<float>(startingPos.y - topPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(startingPos.x - topPos.x);
+
+            if (cld.m_obstacleId && (m_obsFallthrough.checkIgnoringObstacle(cld.m_obstacleId) || !upCondition))
+                continue;
+
+            valid = false;
+            const auto rightmost = cld.m_resolved.getMostRightAt(newPb) + halfWidth;
+            const Vector2<int> bottomPos{attempt.pos.x, cld.m_resolved.bottomY() + m_pushbox.m_size.y};
+            
+            if (rightmost <= attempt.xLoopbackLimit)
+                attempts.emplace(Vector2{rightmost, attempt.pos.y}, attempt.xLoopbackLimit, true, true);
+            if (static_cast<float>(bottomPos.y - startingPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(startingPos.x - bottomPos.x))
+                attempts.emplace(bottomPos, attempt.pos.x + 1, true, attempt.haltMovement);
+            if (upCondition)
+                attempts.emplace(topPos, attempt.pos.x + 1, false, attempt.haltMovement);
+
+            break;
+        }
+
+        if (valid)
+        {
+            m_trans.m_pos = attempt.pos;
+            m_requireMagnet = attempt.requireMagnet;
+            if (attempt.haltMovement)
+            {
+                m_phys.m_velocity.x = 0;
+                m_phys.m_inertia.x = 0;
+            }
+            return;
+        }
+    }
+}
+
+void PhysicsEntityHandler::moveDown(int offset_)
+{
+    assert(offset_ > 0);
+
+    m_requireMagnet = false;
+    
+    auto newPos = m_trans.m_pos.add(0, offset_);
+
+    bool positionConfirmed = false;
+    while (!positionConfirmed)
+    {
+        positionConfirmed = true;
+        
+        for (const auto& [idx, cld] : m_cld.each())
+        {
+            if (!cld.m_isEnabled)
+                continue;
+
+            const auto newPb = m_pushbox + newPos;
+
+            int highest = 0;
+            const auto overlap = cld.m_resolved.checkOverlap(newPb, highest);
+            if ((overlap & OverlapResult::OVERLAP_BOTH) != OverlapResult::OVERLAP_BOTH)
+                continue;
+
+            if (cld.m_obstacleId && m_obsFallthrough.checkIgnoringObstacle(cld.m_obstacleId))
+                continue;
+
+            m_phys.m_velocity.y = 0;
+            m_phys.m_inertia.y = 0;
+
+            positionConfirmed = false;
+            newPos.y = highest - 1;
+            break;
+        }
+    }
+
+    m_trans.m_pos = newPos;
+}
+
+void PhysicsEntityHandler::moveUp(int offset_)
+{
+    assert(offset_ > 0);
+
+    m_requireMagnet = false;
+    
+    auto newPos = m_trans.m_pos.sub(0, offset_);
+
+    bool positionConfirmed = false;
+    while (!positionConfirmed)
+    {
+        positionConfirmed = true;
+        
+        for (const auto& [idx, cld] : m_cld.each())
+        {
+            if (!cld.m_isEnabled)
+                continue;
+
+            const auto newPb = m_pushbox + newPos;
+
+            const auto overlap = cld.m_resolved.checkOverlap(newPb);
+            if ((overlap & OverlapResult::OVERLAP_BOTH) != OverlapResult::OVERLAP_BOTH)
+                continue;
+
+            if (cld.m_obstacleId)
+                continue;
+
+            positionConfirmed = false;
+            newPos.y = cld.m_resolved.bottomY() + m_pushbox.m_size.y;
+            break;
+        }
+    }
+
+    m_trans.m_pos = newPos;
+}
+
+void PhysicsEntityHandler::magnet()
+{
+    if (!m_requireMagnet || m_phys.m_noLanding)
+        return;
+
+    m_requireMagnet = false;
+
+    int height = m_trans.m_pos.y;
+    const auto *pcld = getHighestVerticalMagnetCoord(height);
+    if ( pcld )
+    {
+        const auto magnetRange = static_cast<unsigned int>(height - m_trans.m_pos.y - 1);
+        if (magnetRange <= m_phys.m_magnetLimit)
+        {
+            //std::cout << "MAGNET: " << magnetRange << std::endl;
+            m_trans.m_pos.y = height - 1;
+            m_phys.m_velocity.y = 0;
+            m_phys.m_inertia.y = 0;
+        }
+    }
+}
+
+void PhysicsEntityHandler::discoverPosition()
+{
+    m_events.reset();
+    m_obsFallthrough.m_ignoredObstacles.clear();
+
+    const auto pushbox = m_pushbox + m_trans.m_pos;
+
+    m_phys.m_onGround = entt::null;
+    m_phys.m_onSlopeWithAngle = 0.0f;
+
+    for (const auto& [idx, cld] : m_cld.each())
+    {
+        if (!cld.m_isEnabled)
+            continue;
+
+        int highest = m_trans.m_pos.y;
+        const auto overlap = cld.m_resolved.checkOverlap(pushbox, highest);
+
+        if ((overlap & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
+        {
+            if (cld.m_obstacleId)
+                m_obsFallthrough.setIgnoreObstacle(cld.m_obstacleId);
+        }
+        else if (!m_phys.m_noLanding 
+            && (overlap & OverlapResult::OVERLAP_X) == OverlapResult::OVERLAP_X
+            && (!cld.m_obstacleId || !m_obsFallthrough.checkIgnoringObstacle(cld.m_obstacleId)))
+        {
+            if (highest - 1 == m_trans.m_pos.y && (m_phys.m_onGround == entt::null || m_phys.m_onSlopeWithAngle != 0.0f))
+            {
+                m_phys.m_onGround = idx;
+                m_phys.m_onSlopeWithAngle = cld.m_resolved.topAngleCoef();
+            }
+        }
+    }
+
+    if (m_phys.m_onGround != entt::null)
+    {
+        m_phys.m_velocity.y = 0;
+        m_phys.m_inertia.y = 0;
+    }
+
+    m_obsFallthrough.m_isIgnoringObstacles.update();
+}
+
+const SlopeCollider *PhysicsEntityHandler::getHighestVerticalMagnetCoord(int &coord_)
+{
+    const auto baseCoord = coord_;
+    entt::entity foundGround = entt::null;
+    const SlopeCollider *foundcld = nullptr;
+
+    auto pushbox = m_pushbox + m_trans.m_pos;
+    
+    for (const auto [idx, areaCld_] : m_cld.each())
+    {
+        if (!areaCld_.m_isEnabled || areaCld_.m_obstacleId && m_obsFallthrough.checkIgnoringObstacle(areaCld_.m_obstacleId))
+            continue;
+
+        int height = 0;
+        auto horOverlap = areaCld_.m_resolved.checkOverlap(pushbox, height);
+        if ((horOverlap & OverlapResult::OVERLAP_X) == OverlapResult::OVERLAP_X)
+        {
+            if (height >= baseCoord && (foundGround == entt::null || height < coord_))
+            {
+                coord_ = height;
+                foundGround = idx;
+                foundcld = &areaCld_.m_resolved;
+            }
+        }
+    }
+
+    return foundcld;
+}
+
 
 PhysicsSystem::PhysicsSystem(entt::registry &reg_, Vector2<int> levelSize_) :
     m_reg(reg_),
@@ -39,7 +366,7 @@ void PhysicsSystem::updatePhysics()
         if (phys.m_hitstopLeft)
             continue;
 
-        proceedEntity(viewscld, idx, trans, phys, obsfall, ev);
+        proceedEntity(viewscld, trans, phys, obsfall, ev);
     }
 
     for (auto [idx, trans, phys] : viewPhysSimplified.each())
@@ -55,174 +382,11 @@ void PhysicsSystem::updatePhysics()
     */
 }
 
-void PhysicsSystem::updateOverlappedObstacles()
+void PhysicsSystem::proceedEntity(const CollidersView &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_)
 {
-    auto viewTransPhysObs = m_reg.view<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough>();
-    auto viewColliders = m_reg.view<ComponentStaticCollider>();
-    for (auto [idx, trans, phys, obsfallthrough] : viewTransPhysObs.each())
-    {
-        if (phys.m_hitstopLeft)
-            continue;
-            
-        resetEntityObstacles(trans, phys, obsfallthrough, viewColliders);
-        obsfallthrough.m_isIgnoringObstacles.update();
-    }
-}
-
-bool PhysicsSystem::attemptOffsetDown(const CollidersView &clds_, const Vector2<float> &originalPos_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, unsigned int offset_)
-{
-    const auto oldPos = originalPos_;
-    const auto newPos = originalPos_ + Vector2<int>(0, offset_);
-
-    const auto newPb = phys_.m_pushbox + newPos;
-
-    int highest = 0;
-
-    for (auto [idx, cld] : clds_.each())
-    {
-        if (!cld.m_isEnabled)
-            continue;
-
-        auto overlap = cld.m_resolved.checkOverlap(newPb, highest);
-        if ((overlap & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
-        {
-            if (cld.m_obstacleId && (!obsFallthrough_.touchedObstacleTop(cld.m_obstacleId) || oldPos.y - highest > 0))
-                continue;
-
-            //std::cout << "Touched slope top, stopping at top, offset.y > 0\n";
-
-            phys_.m_velocity.y = std::min<float>(phys_.m_velocity.y, 0);
-            phys_.m_inertia.y = std::min<float>(phys_.m_inertia.y, 0);
-
-            return false;
-        }
-    }
-
-    trans_.m_pos = newPos;
-
-    return true;
-}
-
-bool PhysicsSystem::attemptOffsetUp(const CollidersView &clds_, const Vector2<float> &originalPos_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, unsigned int offset_)
-{
-    const auto newPos = originalPos_ - Vector2<int>(0, offset_);
-
-    const auto newPb = phys_.m_pushbox + newPos;
-
-    for (auto [idx, cld] : clds_.each())
-    {
-        if (!cld.m_isEnabled)
-            continue;
-
-        auto overlap = cld.m_resolved.checkOverlap(newPb);
-        if ((overlap & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
-        {
-            if (cld.m_obstacleId && !obsFallthrough_.touchedObstacleBottom(cld.m_obstacleId))
-                continue;
-
-            //std::cout << "Touched ceiling, stopping at bottom, offset.y < 0\n";
-
-            auto overlapPortion = utils::getOverlapPortion(newPb.getLeftEdge(), newPb.getRightEdge(), cld.m_resolved.leftX(), cld.m_resolved.rightX());
-
-            if (overlapPortion >= 0.7f)
-            {
-                phys_.m_velocity.y = 0;
-                phys_.m_inertia.y = 0;
-            }
-
-            return false;
-        }
-    }
-
-    trans_.m_pos = newPos;
-
-    return true;
-}
-
-bool PhysicsSystem::attemptOffsetHorizontal(const CollidersView &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, int offset_,
-    int originalY_, unsigned int maxYOffset_)
-{
-    const auto newPos = trans_.m_pos + Vector2<int>(offset_, 0);
-
-    const auto newPb = phys_.m_pushbox + newPos;
-
-    bool mustRise = false;
-    int completeHighest = std::numeric_limits<int>::max();
-
-    for (const auto &[idx, cld] : clds_.each())
-    {
-        if (!cld.m_isEnabled)
-            continue;
-
-        int highest = std::numeric_limits<int>::max();
-
-        auto overlap = cld.m_resolved.checkOverlap(newPb, highest);
-
-        // If we touched collider
-        if ((overlap & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
-        {
-            highest--;
-
-            // If we can rise on top of it
-            if (static_cast<unsigned int>(originalY_ - highest) <= maxYOffset_)
-            {
-                if (cld.m_obstacleId && !obsFallthrough_.touchedObstacleSlope(cld.m_obstacleId))
-                    continue;
-
-                //std::cout << "Touched slope, (potentially) getting at it's top, offset.x > 0\n";
-
-                if (!mustRise || highest < completeHighest)
-                {
-                    completeHighest = highest;
-                    mustRise = true;
-                }
-            }
-            // If its an actual wall
-            else
-            {
-                if (cld.m_obstacleId && !obsFallthrough_.touchedObstacleSide(cld.m_obstacleId))
-                    continue;
-
-                auto overlapPortion = utils::getOverlapPortion(newPb.getTopEdge(), newPb.getBottomEdge(), highest, cld.m_resolved.bottomY());
-
-                if (overlapPortion >= 0.15)
-                {
-                    //std::cout << "Touched edge, stopping at it (hard), offset.x > 0\n";
-                    if (phys_.m_velocity.x + phys_.m_inertia.x > 0)
-                    {
-                        phys_.m_velocity.x = 0;
-                        phys_.m_inertia.x = 0;
-                    }
-                }
-                //else
-                //    std::cout << "Touched edge, stopping at it (soft), offset.x > 0\n";
-
-                return false;
-            }
-        }
-    }
-
-    if (mustRise)
-    {
-        if (attemptOffsetUp(clds_, newPos, trans_, phys_, obsFallthrough_, newPos.y - completeHighest))
-        {
-            phys_.m_velocity.y = std::min<float>(phys_.m_velocity.y, 0);
-            phys_.m_inertia.y = std::min<float>(phys_.m_inertia.y, 0);
-        }
-    }
-    else
-    {
-        trans_.m_pos = newPos;
-    }
-
-    return true;
-}
-
-void PhysicsSystem::proceedEntity(const CollidersView &clds_, const entt::entity &idx_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_)
-{
-    ev_.reset();
-
     const auto oldPos = trans_.m_pos;
+
+    PhysicsEntityHandler handler{clds_, trans_, phys_, obsFallthrough_, ev_};
 
     // Common stuff
     phys_.m_velocity += phys_.m_gravity;
@@ -243,72 +407,33 @@ void PhysicsSystem::proceedEntity(const CollidersView &clds_, const entt::entity
         phys_.m_inertia.y = m_inertiaSign * absInertia;
     }
 
-    //std::cout << m_staticColliderQuery.size() << std::endl;
-
     // Prepare vars for collision detection
-    auto pb = phys_.m_pushbox + trans_.m_pos;
-    auto offset = phys_.claimOffset();
-
-    if (phys_.m_mulInsidePushbox && isInsidePushbox(pb, idx_))
-    {
-        offset = offset.mulComponents(*phys_.m_mulInsidePushbox);
-    }
+    const auto offset = phys_.claimOffset();
 
     phys_.m_calculatedOffset = offset;
-    phys_.m_onGround = entt::null;
-    phys_.m_onSlopeWithAngle = 0.0f;
 
     // X axis movement handling
     {
-        const int originalY = trans_.m_pos.y;
-        const auto maxOffsetY = static_cast<unsigned int>(1.3f * abs(static_cast<float>(offset.x)) + 1);
-
         // Moving to the right
         if (offset.x > 0)
-        {
-            for (int i = 0; i < offset.x; ++i)
-                if (!attemptOffsetHorizontal(clds_, trans_, phys_, obsFallthrough_, 1, originalY, maxOffsetY))
-                    break;
-        }
+            handler.moveRight(offset.x);
         // Moving to the left
         else if (offset.x < 0)
-        {
-            for (int i = 0; i > offset.x; --i)
-                if (!attemptOffsetHorizontal(clds_, trans_, phys_, obsFallthrough_, -1, originalY, maxOffsetY))
-                    break;
-        }
+            handler.moveLeft(-offset.x);
     }
 
     // Y axis movement handling
     {
-        // Falling / staying in place
-        if (offset.y >= 0)
-        {
-            for (int i = 0; i < offset.y; ++i)
-                if (!attemptOffsetDown(clds_, trans_.m_pos, trans_, phys_, obsFallthrough_, 1))
-                    break;
-
-            pb = phys_.m_pushbox + trans_.m_pos;
-        }
+        // Falling
+        if (offset.y > 0)
+            handler.moveDown(offset.y);
         // Rising
-        else
-        {
-            for (int i = 0; i > offset.y; --i)
-                if (!attemptOffsetUp(clds_, trans_.m_pos, trans_, phys_, obsFallthrough_, 1))
-                    break;
-
-            pb = phys_.m_pushbox + trans_.m_pos;
-        }
+        else if (offset.y < 0)
+            handler.moveUp(-offset.y);
     }
 
-    if (!phys_.m_noLanding)
-    {
-        if (offset.y >= 0)
-            magnetEntity(clds_, trans_, phys_, obsFallthrough_);
-
-        if (phys_.m_onGround != entt::null)
-            ev_.setEvent(PhysicalEvents::Events::GROUNDED);
-    }
+    handler.magnet();
+    handler.discoverPosition();
 
     phys_.m_appliedOffset = trans_.m_pos - oldPos + phys_.m_pushedOffset;
     phys_.m_extraoffset = {0.0f, 0.0f};
@@ -325,108 +450,4 @@ void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentParticleP
     // Prepare vars for collision detection
     const auto offset = phys_.claimOffset();
     trans_.m_pos += offset;
-}
-
-bool PhysicsSystem::magnetEntity(const CollidersView &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, const ComponentObstacleFallthrough &obsFallthrough_)
-{
-    //std::cout << "Magnet " << rand() << std::endl;
-    const auto pb = phys_.m_pushbox + trans_.m_pos;
-    const auto bot = pb.getBottomEdge();
-
-    int height = trans_.m_pos.y;
-    const auto [found, pcld] = getHighestVerticalMagnetCoord(clds_, pb, height, obsFallthrough_.m_ignoredObstacles, obsFallthrough_.m_isIgnoringObstacles.isActive());
-    if ( found != entt::null )
-    {
-        const auto magnetRange = static_cast<unsigned int>(height - trans_.m_pos.y - 1);
-        if (magnetRange <= phys_.m_magnetLimit)
-        {
-            //std::cout << "MAGNET: " << magnetRange << std::endl;
-            trans_.m_pos.y = height - 1;
-            phys_.m_onSlopeWithAngle = (bot > pcld->highestPoint() ? pcld->topAngleCoef() : 0.0f);
-            phys_.m_onGround = found;
-            phys_.m_velocity.y = 0;
-            phys_.m_inertia.y = 0;
-            return true;
-        }
-    }
-
-    return false;
-}
-
-std::pair<entt::entity, const SlopeCollider*> PhysicsSystem::getHighestVerticalMagnetCoord(const CollidersView &clds_, const Collider &cld_, int &coord_, const std::set<int> &ignoredObstacles_, bool ignoreAllObstacles_)
-{
-    const auto baseCoord = coord_;
-    entt::entity foundGround = entt::null;
-    const SlopeCollider *foundcld = nullptr;
-    
-    for (const auto [idx, areaCld_] : clds_.each())
-    {
-        if (!areaCld_.m_isEnabled || areaCld_.m_obstacleId && (ignoreAllObstacles_ || ignoredObstacles_.contains(areaCld_.m_obstacleId)))
-            continue;
-
-        int height = 0;
-        auto horOverlap = areaCld_.m_resolved.checkOverlap(cld_, height);
-        if ((horOverlap & OverlapResult::OVERLAP_X) == OverlapResult::OVERLAP_X)
-        {
-            if (height >= baseCoord && (foundGround == entt::null || height < coord_))
-            {
-                coord_ = height;
-                foundGround = idx;
-                foundcld = &areaCld_.m_resolved;
-            }
-        }
-    }
-
-    return {foundGround, foundcld};
-}
-
-bool PhysicsSystem::isInsidePushbox(const Collider &pb_, const entt::entity &idx_)
-{
-    const auto viewPhys = m_reg.view<ComponentTransform, ComponentPhysical>();
-
-    for (const auto &[idx, trans, phys] : viewPhys.each())
-    {
-        if (idx == idx_)
-            continue;
-        
-        if (phys.m_pushbox.m_size.x <= 0 || phys.m_pushbox.m_size.y <= 0)
-            continue;
-
-        const auto pb2 = phys.m_pushbox + trans.m_pos;
-        const auto overlap = pb_.checkOverlap(pb2);
-
-        if ((overlap & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
-            return true;
-    }
-
-    return false;
-}
-
-void PhysicsSystem::resetEntityObstacles(const ComponentTransform &trans_, const ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, const CollidersView &clds_)
-{
-    updateTouchedObstacles(phys_.m_pushbox + trans_.m_pos, obsFallthrough_, clds_);
-    std::set<int> res;
-    std::set_intersection(
-        obsFallthrough_.m_ignoredObstacles.begin(), obsFallthrough_.m_ignoredObstacles.end(),
-        obsFallthrough_.m_overlappedObstacles.begin(), obsFallthrough_.m_overlappedObstacles.end(),
-        std::inserter(res, res.begin()));
-
-    //if (obsFallthrough_.m_ignoredObstacles.size() != res.size())
-    //    std::cout << "Reseted obstacles\n";
-
-    obsFallthrough_.m_ignoredObstacles = res;
-}
-
-void PhysicsSystem::updateTouchedObstacles(const Collider &pb_, ComponentObstacleFallthrough &obsFallthrough_, const CollidersView &clds_)
-{
-    obsFallthrough_.m_overlappedObstacles.clear();
-
-    for (auto [idx, cld] : clds_.each())
-    {
-        if (obsFallthrough_.m_overlappedObstacles.contains(cld.m_obstacleId))
-            continue;
-
-        if ((cld.m_resolved.checkOverlap(pb_) & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
-            obsFallthrough_.m_overlappedObstacles.insert(cld.m_obstacleId);
-    }
 }

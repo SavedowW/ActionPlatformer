@@ -104,15 +104,15 @@ namespace TextAligners
 TextManager::TextManager(Renderer &renderer_) :
     m_charChunks(Filesystem::getRootDirectory() + "Resources/GeneralCharacterList.txt"),
     m_renderer(renderer_),
-    m_fonts{fonts::Font(renderer_, generateSimpleShadedSymbols, 36, m_charChunks, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  36, SDL_Color{255, 255, 255, 255}, SDL_Color{100, 100, 100, 255}), // Screen debug data
+    m_fonts{fonts::Font(renderer_, generateSimpleShadedSymbols, 32, m_charChunks, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  32, Color{255, 255, 255, 255}, Color{100, 100, 100, 255}), // Screen debug data
     fonts::Font(renderer_, generateSimpleSymbols, 10, m_charChunks, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  10, gamedata::colors::LVL1), // For npc debug
-    fonts::Font(renderer_, generateSimpleSymbols, 8, m_charChunks, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  8, SDL_Color{255, 255, 255, 255}), // For navigation system
+    fonts::Font(renderer_, generateSimpleSymbols, 8, m_charChunks, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  8, Color{255, 255, 255, 255}), // For navigation system
     fonts::Font(renderer_, generateSimpleSymbols, 16, m_charChunks, Filesystem::getRootDirectory(), "/Resources/Fonts/Silkscreen.ttf",  16, gamedata::colors::LVL1)} // Used for chatbox
 {
 }
 
 
-void TextManager::generateSimpleSymbols(Renderer&, std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, const std::string &basePath_, const std::string &font_, int size_, const SDL_Color &color_)
+void TextManager::generateSimpleSymbols(Renderer&, std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, const std::string &basePath_, const std::string &font_, int size_, const Color &color_)
 {
     std::cout << "Run " << __func__ << " generator" << std::endl;
     FontWrapper font((basePath_ + font_).c_str(), size_);
@@ -135,7 +135,8 @@ void TextManager::generateSimpleSymbols(Renderer&, std::vector<std::array<fonts:
                 continue;
             }
 
-            SurfaceWrapper surf{TTF_RenderGlyph_Solid(font, chid, color_)};
+            SurfaceWrapper surf{TTF_RenderGlyph_Solid(font, chid, 
+                {color_.ir(), color_.ig(), color_.ib(), color_.ia()})};
             SurfaceWrapper nsurf{SDL_ConvertSurface(surf, SDL_PIXELFORMAT_ABGR8888)};
 
             symbols_.at(i).m_tex.init(Texture::Config{nsurf});
@@ -149,7 +150,7 @@ void TextManager::generateSimpleSymbols(Renderer&, std::vector<std::array<fonts:
     std::cout << charsTotal - notProvided << " characters generated out of " << charsTotal << ", " << notProvided << " characters not provided" << std::endl;
 }
 
-void TextManager::generateSimpleShadedSymbols(Renderer &renderer_, std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, const std::string &basePath_, const std::string &font_, int size_, const SDL_Color &color_, const SDL_Color &shadeColor_)
+void TextManager::generateSimpleShadedSymbols(Renderer &renderer_, std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, const std::string &basePath_, const std::string &font_, int size_, const Color &color_, const Color &shadeColor_)
 {
     std::cout << "Run " << __func__ << " generator" << std::endl;
     FontWrapper font((basePath_ + font_).c_str(), size_);
@@ -179,7 +180,8 @@ void TextManager::generateSimpleShadedSymbols(Renderer &renderer_, std::vector<s
             {
                 // Outline (background)
                 TTF_SetFontOutline(font, 1);
-                SurfaceWrapper surf{TTF_RenderGlyph_Solid(font, chid, shadeColor_)};
+                SurfaceWrapper surf{TTF_RenderGlyph_Solid(font, chid, 
+                    {shadeColor_.ir(), shadeColor_.ig(), shadeColor_.ib(), shadeColor_.ia()})};
                 SurfaceWrapper surfConverted{SDL_ConvertSurface(surf, SDL_PIXELFORMAT_ABGR8888)};
 
                 shadedTex.init(Texture::Config{surfConverted});
@@ -188,7 +190,8 @@ void TextManager::generateSimpleShadedSymbols(Renderer &renderer_, std::vector<s
             {
                 // Inner letter
                 TTF_SetFontOutline(font, 0);
-                SurfaceWrapper surf{TTF_RenderGlyph_Solid(font, chid, color_)};
+                SurfaceWrapper surf{TTF_RenderGlyph_Solid(font, chid, 
+                    {color_.ir(), color_.ig(), color_.ib(), color_.ia()})};
                 SurfaceWrapper surfConverted{SDL_ConvertSurface(surf, SDL_PIXELFORMAT_ABGR8888)};
 
                 unshadedTex.init(Texture::Config{surfConverted});
@@ -198,7 +201,7 @@ void TextManager::generateSimpleShadedSymbols(Renderer &renderer_, std::vector<s
             TTF_GetGlyphMetrics(font, chid, &symbols_.at(i).m_minx, &symbols_.at(i).m_maxx, &symbols_.at(i).m_miny, &symbols_.at(i).m_maxy, &symbols_.at(i).m_advance);
 
             renderer_.setTarget(symbols_.at(i).m_tex);
-            renderer_.fillRenderer(SDL_Color{255, 255, 255, 0});
+            renderer_.fillRenderer(Color{255, 255, 255, 0});
             renderer_.renderTexture(shadedTex.handler(), {0, 0}, shadedTex.size(), SDL_FLIP_VERTICAL, 1.0f);
             renderer_.renderTexture(unshadedTex.handler(), {0, 2}, unshadedTex.size(), SDL_FLIP_VERTICAL, 1.0f);
 
