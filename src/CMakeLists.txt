@@ -45,7 +45,11 @@ nlohmann_json::nlohmann_json
 EnTT::EnTT
 )
 
-message(${LINK_LIBRARIES})
+if (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL GNU)
+  list(APPEND LINK_LIBRARIES stdc++exp)
+endif()
+
+message(Libraries: ${LINK_LIBRARIES})
 
 add_executable (${PROJECT_NAME} ${SRC_FILES})
 
