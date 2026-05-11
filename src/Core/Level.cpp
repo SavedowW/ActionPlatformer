@@ -42,7 +42,9 @@ LevelResult Level::proceed()
         profiler.cleanFrame();
         m_input.handleInput();
 
-        if (!m_globalPause || m_globalPause && m_allowIter || m_forcerun)
+        const auto iterateCon = !m_globalPause || m_globalPause && m_allowIter || m_forcerun;
+
+        if (iterateCon)
         {
             //LOG_TRACE("Level frame {}", frame++);
 
@@ -52,8 +54,11 @@ LevelResult Level::proceed()
 
         draw();
         #ifdef DUMP_PROFILE_CONSOLE
+        if (iterateCon)
+        {
             profiler.dump();
             std::cout << std::endl;
+        }
         #endif
 
         m_fpsUtility.cycle();

@@ -117,6 +117,26 @@ void StateProperties<StateIDT, ViewT>::Update::HorizontalInertiaLimit::operator(
         physical.m_inertia.x = currentLimit.second;
 }
 
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Update::AirDrift::operator()(const ViewT &view_) const
+{
+    auto &physical = view_.template get<ComponentPhysical>();
+    auto &inputs = view_.template get<InputResolver>();
+    if (physical.m_velocity.x < 2.5f
+            && inputs.checkInput(InputMotions::HOLD_HORDIR, ORIENTATION::RIGHT, 0))
+        physical.m_velocity.x += 0.15f;
+
+    if (physical.m_velocity.x > -2.5f
+            && inputs.checkInput(InputMotions::HOLD_HORDIR, ORIENTATION::LEFT, 0))
+        physical.m_velocity.x -= 0.15f;
+
+    if (physical.m_velocity.y < 0
+            && view_.template cget<SM::StatePossessor<StateIDT>>().framesInState() < 10
+            && inputs.checkInput(InputMotions::HOLD_UP, ORIENTATION::UNSPECIFIED, 0))
+        physical.m_velocity.y -= 0.4f;
+}
+
+
 
 template<typename StateIDT, typename ViewT>
 StateProperties<StateIDT, ViewT>::Update::SetDrag::SetDrag(TimelineProperty<Vector2<float>> &&drag_) :

@@ -27,7 +27,7 @@ public:
 private:
     void updateSyncPoint();
 
-    inline constexpr static uint64_t s_syncLimit = 5;
+    constexpr static uint64_t s_syncLimit = 5;
     uint64_t m_lastSyncPointNS = 0;
     uint64_t m_properFrameDurationNS = 0;
     const uint64_t m_defaultProperFrameDurationNS = 0;

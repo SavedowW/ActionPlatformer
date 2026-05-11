@@ -1,4 +1,5 @@
 #include "Utils.hpp"
+#include <sstream>
 
 namespace utils
 {

@@ -1,12 +1,12 @@
 #include "HUDSystem.h"
 #include "Core/TextManager.hpp"
+#include "Core/Utils.hpp"
 #include "PlayableCharacter.h"
 #include "SM/StateMachine.h"
-#include "Core/ImmediateScreenLog.hpp"
+#include "Core/ImmediateScreenLog.hpp" // IWYU pragma: keep
 #include "Core/Application.h"
 #include "Core/CoreComponents.h"
 #include "Core/InputResolver.h"
-#include "Core/GameData.h"
 #include "Core/Localization/LocalizationGen.h"
 #include "Core/Configuration.h"
 
@@ -59,7 +59,7 @@ void HudSystem::drawCommonDebug() const
     commonLog.dumpLine("Camera pos: " + std::string(m_cam.getPos()));
     commonLog.dumpLine("Camera size: " + std::string(m_cam.getSize()));
     commonLog.dumpLine("Camera scale: " + std::to_string(m_cam.getScale()));
-    commonLog.dumpLine("Real frame time (ns): " + std::to_string(lastFrameTime));
+    commonLog.dumpLine("Real frame time (ns): " + utils::prettyNum(lastFrameTime));
     commonLog.dumpLine("Avg frame time (ms): " + std::to_string( m_avgFrames.avg() / 1'000'000.0f));
     commonLog.dumpLine("FPS: " + std::to_string(1'000'000'000.0f / static_cast<float>(lastFrameTime)));
     commonLog.dumpLine("Avg FPS: " + std::to_string( 1'000'000'000.0f / m_avgFrames.avg()));

@@ -1,5 +1,6 @@
 #include "FPSUtility.h"
 #include "Logger.hpp"
+#include "Utils.hpp"
 #include <SDL3/SDL.h>
 #include <iostream>
 
@@ -34,6 +35,8 @@ void FPSUtility::cycle()
     const uint64_t currentTS = SDL_GetTicksNS();
     const auto frameDur = currentTS - m_lastSyncPointNS;
 
+    //LOG_TRACE("frame duration ({}): {}", utils::prettyNum(m_properFrameDurationNS), utils::prettyNum(frameDur));
+
     // Debug only
     lastCycleCalls[1] = lastCycleCalls[0];
     lastCycleCalls[0] = currentTS;
@@ -48,11 +51,11 @@ void FPSUtility::cycle()
     else
     {
         const uint64_t passedFrames = frameDur / m_properFrameDurationNS;
+        m_lastSyncPointNS += m_properFrameDurationNS;
 
         // If there were too many slow frames - recovery attempt may cause long speedup, so let's try to at least recover regular speed
         if (passedFrames >= s_syncLimit)
         {
-            std::cout << "Forced to skip " << passedFrames << " frames" << std::endl;
             LOG_TRACE("Forced to skip {} frames", passedFrames);
             updateSyncPoint();
         }

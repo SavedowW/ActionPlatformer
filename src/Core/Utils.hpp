@@ -1,8 +1,9 @@
 #pragma once
+#include "Color.hpp"
+#include <ostream>
 #include <algorithm>
 #include <numbers>
 #include <string>
-#include <sstream>
 #include <vector>
 #include <cassert>
 #include <cmath>
@@ -220,7 +221,59 @@ namespace utils
         return true;
     }
 
-    std::vector<std::string> tokenize(const std::string &src_, const char splitter_);
+    template<Integral T>
+    std::string prettyNum(const T &val_)
+    {
+        std::string res = std::to_string(val_);
+        if (res.size() <= 3)
+            return res;
+    
+        size_t id = res.size() - 3;
+        while (true)
+        {
+            res.insert(id, "'");
+            if (id <= 3)
+                return res;
+            id -= 3;
+        }
+
+    };
+
+    /*
+        17712345
+        01234567  8 - 3 = 5
+             ^
+
+        17712'345
+        012345678   5 - 3 = 2
+          ^
+
+        17'712'345
+        0123456789
+
+        
+        7712345
+        0123456  7 - 3 = 4
+            ^
+
+        7712'345
+        01234567  4 - 3 = 1
+         ^
+
+        7'712'345
+        012345678
+
+
+        712345
+        012345  6 - 3 = 3
+           ^
+
+        712'345
+        0123456
+    */
+
+
+    std::vector<std::string> tokenize(const std::string &src_, char splitter_);
 
     std::string padToRight(const size_t &len_, const std::string &line_);
 }

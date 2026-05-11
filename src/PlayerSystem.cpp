@@ -300,7 +300,7 @@ void PlayerSystem::setup(entt::entity playerId_)
         PlayerMake::state(
             PlayerState::LANDING_RECOVERY,
 
-            SM::CallBatch(),
+            SM::CallBatch(PlayerStateProperties::Update::TestFallthrough{}),
 
             PlayerMake::SequentialConditions{}
                 .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
@@ -315,7 +315,8 @@ void PlayerSystem::setup(entt::entity playerId_)
                 .done(),
 
             PlayerMake::RulePipe{}
-                .setDefaultPipe(PlayerStateProperties::Pipe::SetMagnetLimit{4},
+                .setDefaultPipe(PlayerStateProperties::Pipe::TestFallthrough{},
+                                PlayerStateProperties::Pipe::SetMagnetLimit{4},
                                 PlayerStateProperties::Pipe::SetGravity{{0.0f, 0.0f}},
                                 PlayerStateProperties::Pipe::SetAnimation{m_animManager.getAnimID("Char1/landing_recovery")},
                                 PlayerStateProperties::Pipe::ConvertToInertia{true, false})
@@ -326,7 +327,8 @@ void PlayerSystem::setup(entt::entity playerId_)
         PlayerMake::state(
             PlayerState::FLOAT,
 
-            SM::CallBatch(),
+            SM::CallBatch(PlayerStateProperties::Update::TestFallthrough{},
+                PlayerStateProperties::Update::AirDrift{}),
 
             PlayerMake::SequentialConditions{}
                 .addCondition(PlayerStateTransitions::sinceFrame(1, PlayerStateTransitions::OnGrounded{PlayerState::LANDING_RECOVERY}))
@@ -336,7 +338,8 @@ void PlayerSystem::setup(entt::entity playerId_)
             },
 
             PlayerMake::RulePipe{}
-                .setDefaultPipe(PlayerStateProperties::Pipe::SetGravity{{0.0f, 0.5f}},
+                .setDefaultPipe(PlayerStateProperties::Pipe::TestFallthrough{},
+                                PlayerStateProperties::Pipe::SetGravity{{0.0f, 0.5f}},
                                 PlayerStateProperties::Pipe::SetAnimation{m_animManager.getAnimID("Char1/float")},
                                 PlayerStateProperties::Pipe::ConvertToInertia{false, true})
                 .done()

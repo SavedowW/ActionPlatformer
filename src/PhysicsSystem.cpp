@@ -1,5 +1,6 @@
 #include "PhysicsSystem.h"
 #include "Core/CoreComponents.h"
+#include "Core/Profile.h"
 #include <stack>
 
 const float PhysicsEntityHandler::VerticalOffsetLimitMul = 1.3f;
@@ -357,6 +358,8 @@ void PhysicsSystem::prepEntities()
 
 void PhysicsSystem::updatePhysics()
 {
+    PROFILE_FUNCTION;
+
     auto viewPhys = m_reg.view<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, PhysicalEvents>();
     auto viewPhysSimplified = m_reg.view<ComponentTransform, ComponentParticlePhysics>();
     const auto viewscld = m_reg.view<ComponentStaticCollider>();

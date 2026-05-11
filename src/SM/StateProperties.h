@@ -93,6 +93,12 @@ struct StateProperties
             TimelineProperty<std::pair<float, float>> m_limits;
         };
 
+        class AirDrift
+        {
+        public:
+            void operator()(const ViewT &view_) const;
+        };
+
 
         class SetDrag
         {
