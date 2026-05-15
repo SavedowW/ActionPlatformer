@@ -7,7 +7,7 @@ EnvironmentSystem::EnvironmentSystem(entt::registry &reg_) :
 {
 }
 
-void EnvironmentSystem::update(entt::entity)
+void EnvironmentSystem::update()
 {
     auto physicals = m_reg.view<ComponentTransform, ComponentPhysical>();
     auto grassTops = m_reg.view<ComponentTransform, GrassTopComp>();
@@ -16,12 +16,12 @@ void EnvironmentSystem::update(entt::entity)
     {
         if (grass.update({.reg=&m_reg, .idx=idx}))
         {
-            for (auto [idx2, trans2, phys2] : physicals.each())
+            for (const auto &[idx2, trans2, phys2] : physicals.each())
             {
                 Collider grassPb;
-                if (phys2.m_appliedOffset.x > 0.01f)
+                if (phys2.m_appliedOffset.x > 0)
                     grassPb = GrassTopComp::colliderRight + trans.m_pos;
-                else if (phys2.m_appliedOffset.x <= -0.01f)
+                else if (phys2.m_appliedOffset.x <= -0)
                     grassPb = GrassTopComp::colliderLeft + trans.m_pos;
                 else
                     continue;

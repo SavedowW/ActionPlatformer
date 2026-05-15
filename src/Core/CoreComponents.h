@@ -39,7 +39,7 @@ struct ComponentParticlePrimitive
 
 struct ComponentSpawnLocation
 {
-    Vector2<float> m_location;
+    Vector2<int> location;
 };
 
 struct ComponentParticlePhysics

@@ -1,6 +1,5 @@
 #include "BattleLevel.h"
 #include "SM/StateMachine.hpp"
-#include "World.h"
 #include "ResetHandlers.h"
 #include "Core/GameData.h"
 #include "Core/Application.h"
@@ -15,9 +14,9 @@ BattleLevel::BattleLevel(int lvlId_, FPSUtility &fpsUtility_, const Vector2<int>
     m_rendersys(m_registry, m_camera, m_cldRoutesCollection),
     m_inputsys(m_registry),
     m_physsys(m_registry, size_),
-    m_camsys(m_registry, m_camera),
-    m_hudsys(m_registry, m_camera, lvlId_, size_),
-    m_enemysys(m_registry, m_navsys, m_camera, m_partsys),
+    m_camsys(m_registry, m_camera, m_playerSystem),
+    m_hudsys(m_registry, m_camera, lvlId_, size_, m_playerSystem),
+    m_enemysys(m_registry, m_navsys, m_camera, m_partsys, m_playerSystem),
     m_aisys(m_registry),
     m_navsys(m_registry, m_graph),
     m_colsys(m_registry),
@@ -27,51 +26,8 @@ BattleLevel::BattleLevel(int lvlId_, FPSUtility &fpsUtility_, const Vector2<int>
     m_envSystem(m_registry),
     m_lvlBuilder(m_registry)
 {
-    auto playerId = m_registry.create();
-    m_registry.emplace<ComponentName>(playerId, "Player");
-
-    const auto &ptrans = m_registry.emplace<ComponentTransform>(playerId);
-    m_registry.emplace<ComponentReset<ComponentTransform>>(playerId, ptrans.m_pos, ptrans.m_orientation);
-
-    m_registry.emplace<ComponentPhysical>(playerId);
-    m_registry.emplace<ComponentResetStatic<ComponentPhysical>>(playerId);
-
-    m_registry.emplace<ComponentObstacleFallthrough>(playerId);
-    
-    m_registry.emplace<ComponentAnimationRenderable>(playerId).m_drawOutline = true;
-    m_registry.emplace<ComponentResetStatic<ComponentAnimationRenderable>>(playerId);
-
-    m_registry.emplace<RenderLayer>(playerId, 6);
-    m_registry.emplace<InputResolver>(playerId);
-
-    m_registry.emplace<ComponentDynamicCameraTarget>(playerId);
-    m_registry.emplace<ComponentResetStatic<ComponentDynamicCameraTarget>>(playerId);
-
-    m_registry.emplace<World>(playerId, m_registry, m_camera, m_partsys, m_navsys);
-
-    m_registry.emplace<SM::StatePossessor<PlayerState>>(playerId, PlayerState::FLOAT);
-    // m_registry.emplace<StateMachine>(playerId); TODO:
-    // m_registry.emplace<ComponentReset<StateMachine>>(playerId);
-
-    m_registry.emplace<PhysicalEvents>(playerId);
-    m_registry.emplace<BattleActor>(playerId, BattleTeams::PLAYER);
-    m_registry.emplace<HUDPoint>(playerId, HUDPosRule::REL_TRANSFORM, Vector2{0, -16}, 16);
-    m_registry.emplace<HealthOwner>(playerId, 3);
-    m_registry.emplace<HealthRendererCommonWRT>(playerId, 3, Vector2{0.0f, -28.0f});
-    
-    
-
-    m_playerId = playerId;
-    m_camsys.playerId = playerId;
-    m_hudsys.playerId = playerId;
-    m_enemysys.m_playerId = playerId;
-
     //m_envSystem.makeGrassTop(Vector2{230, 351});
-    
-    m_lvlBuilder.buildLevel("Tilemaps/Level1.json", playerId, m_graph, m_cldRoutesCollection);
-    
-    m_chatBoxSys.setPlayerEntity(m_playerId);
-    
+        
     subscribe(GAMEPLAY_EVENTS::FN4);
     subscribe(GAMEPLAY_EVENTS::RESET_DBG);
 
@@ -83,7 +39,8 @@ void BattleLevel::enter()
 {
     Level::enter();
 
-    m_playerSystem.setup(m_playerId);
+    m_lvlBuilder.buildLevel("Tilemaps/Level1.json", m_graph, m_cldRoutesCollection);
+    m_playerSystem.createPlayer();
 
     m_camera.setScale(1.0f);
     m_camera.setPos({320.0f, 383.0f});
@@ -96,7 +53,7 @@ void BattleLevel::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
         case GAMEPLAY_EVENTS::FN4:
             if (scale_ > 0)
             {
-                ChatMessageSequence seq{m_playerId, ChatBoxSide::PREFER_TOP, true, true, true, true};
+                ChatMessageSequence seq{m_playerSystem.getPlayerId(), ChatBoxSide::PREFER_TOP, true, true, true, true};
                 seq.addMessage({ll::test_dlg1(), 3});
                 seq.addMessage({ll::test_dlg2(), 3});
                 seq.addMessage({ll::test_dlg3(), 3});
@@ -104,7 +61,7 @@ void BattleLevel::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
                 //seq.m_messages.emplace_back("<shake=2, 2, 0.001>I believe I shall\nanswer your<charspd=8,default>...</shake> <charspd=default,default><shake=2,2, 0.5>request</shake>.", 3);
                 m_chatBoxSys.addSequence(std::move(seq));
 
-                ChatMessageSequence seq2{m_enemyId, ChatBoxSide::PREFER_BOTTOM, true, true, true, true};
+                ChatMessageSequence seq2{entt::null, ChatBoxSide::PREFER_BOTTOM, true, true, true, true};
                 seq2.addMessage({ll::test_dlg4(), 3});
                 seq2.addMessage({ll::test_dlg5(), 3});
                 m_chatBoxSys.addSequence(std::move(seq2));
@@ -155,7 +112,7 @@ void BattleLevel::update()
     m_battlesys.update();
     m_battlesys.handleAttacks();
 
-    m_envSystem.update(m_playerId);
+    m_envSystem.update();
 
     m_camsys.update();
 

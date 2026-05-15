@@ -127,8 +127,6 @@ class ChatboxSystem : public InputReactor
 public:
     ChatboxSystem(entt::registry &reg_, Camera &camera_, InputHandlingSystem &inputSystem_);
     
-    void setPlayerEntity(entt::entity playerId_);
-
     void addSequence(ChatMessageSequence &&seq_);
     void receiveEvents(HUD_EVENTS event, float scale_) override;
 
@@ -143,8 +141,6 @@ private:
     Renderer &m_renderer;
     InputHandlingSystem &m_inputSystem;
     std::vector<ChatMessageSequence> m_sequences;
-
-    entt::entity m_playerId = entt::null;
 
     std::shared_ptr<Texture> m_chatboxEdge;
     std::shared_ptr<Texture> m_chatboxPointer;

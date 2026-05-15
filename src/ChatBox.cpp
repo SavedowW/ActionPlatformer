@@ -111,10 +111,6 @@ ChatboxSystem::ChatboxSystem(entt::registry &reg_, Camera &camera_, InputHandlin
     m_chatboxPointer = texman.getTexture(texman.getTexID("UI/chatbox_pointer"));
 }
 
-void ChatboxSystem::setPlayerEntity(entt::entity playerId_)
-{
-    m_playerId = playerId_;
-}
 
 void ChatboxSystem::addSequence(ChatMessageSequence &&seq_)
 {

@@ -8,6 +8,7 @@
 #include "Core/CoreComponents.h"
 #include "Core/CameraFocusArea.h"
 #include "Core/FilesystemUtils.h"
+#include <algorithm>
 #include <fstream>
 #include <limits>
 #include <sstream>
@@ -58,7 +59,7 @@ LevelBuilder::LevelBuilder(entt::registry &reg_) :
     ADD_NAME_FACTORY_PAIR(GrassTopComp);
 }
 
-void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_)
+void LevelBuilder::buildLevel(const std::string &mapDescr_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_)
 {
     const auto fullpath = Filesystem::getRootDirectory() + mapDescr_;
 
@@ -78,7 +79,7 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
         layers.emplace_back(layer);
     }
 
-    std::sort(layers.begin(), layers.end(), [](const LayerDescr &lhs_, const LayerDescr &rhs_){
+    std::ranges::sort(layers, [](const LayerDescr &lhs_, const LayerDescr &rhs_){
         return lhs_.m_priority < rhs_.m_priority;
     });
 
@@ -111,7 +112,7 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, entt::entity playerI
         {
             if ((*layer.m_layer)["name"] == "Meta")
             {
-                loadMetaLayer(*layer.m_layer, playerId_);
+                loadMetaLayer(*layer.m_layer);
             }
             else if ((*layer.m_layer)["name"] == "Collision")
             {
@@ -328,15 +329,18 @@ void LevelBuilder::loadTileLayer(const nlohmann::json &json_)
     }
 }
 
-void LevelBuilder::loadMetaLayer(const nlohmann::json &json_, entt::entity playerId_)
+void LevelBuilder::loadMetaLayer(const nlohmann::json &json_)
 {
     for (const auto &obj : json_["objects"])
     {
         if (obj["type"] == "SpawnPoint")
-            m_reg.emplace_or_replace<ComponentSpawnLocation>(playerId_, Vector2{
-                static_cast<float>(obj["x"]),
-                static_cast<float>(obj["y"])
+        {
+            auto metaEntity = m_reg.create();
+            m_reg.emplace<ComponentSpawnLocation>(metaEntity, Vector2{
+                static_cast<int>(obj["x"]),\
+                static_cast<int>(obj["y"])
             });
+        }
     }
 }
 

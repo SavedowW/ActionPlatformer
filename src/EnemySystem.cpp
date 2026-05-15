@@ -9,9 +9,10 @@
 #include "ResetHandlers.h"
 #include "Core/Behavior.hpp"
 
-EnemySystem::EnemySystem(entt::registry &reg_, NavSystem &navsys_, Camera &cam_, ParticleSystem &partsys_) :
+EnemySystem::EnemySystem(entt::registry &reg_, NavSystem &navsys_, Camera &cam_, ParticleSystem &partsys_, const PlayerSystem &playerSystem_) :
     m_reg(reg_),
     m_animManager(Application::instance().m_animationManager),
+    m_playersys{playerSystem_},
     m_navsys(navsys_),
     m_partsys(partsys_),
     m_cam(cam_)
@@ -75,9 +76,4 @@ entt::entity EnemySystem::makeEnemy()
 void EnemySystem::update()
 {
     
-}
-
-void EnemySystem::setPlayerId(const entt::entity &playerId_)
-{
-    m_playerId = playerId_;
 }

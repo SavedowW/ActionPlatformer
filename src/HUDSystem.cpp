@@ -10,11 +10,12 @@
 #include "Core/Localization/LocalizationGen.h"
 #include "Core/Configuration.h"
 
-HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> &lvlSize_) :
+HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> &lvlSize_, const PlayerSystem &playersys_) :
     m_renderer(Application::instance().m_renderer),
     m_window{Application::instance().m_window},
     m_textManager(Application::instance().m_textManager),
     m_reg(reg_),
+    m_playersys{playersys_},
     m_cam(cam_),
     m_lvlId(lvlId_),
     m_lvlSize(lvlSize_)
@@ -30,7 +31,10 @@ void HudSystem::draw() const
     const auto npcs = m_reg.view<ComponentTransform, ComponentPhysical/*, StateMachine*/, ComponentAI>();
 
     drawCommonDebug();
-    drawPlayerDebug();
+
+    const auto playerId = m_playersys.getPlayerId();
+    if (playerId != entt::null)
+        drawPlayerDebug(playerId);
 
     if (ConfigurationManager::instance().m_debug.m_drawNpcDebug)
     {
@@ -67,13 +71,13 @@ void HudSystem::drawCommonDebug() const
     commonLog.dumpLine(ll::dbg_localization());
 }
 
-void HudSystem::drawPlayerDebug() const
+void HudSystem::drawPlayerDebug(entt::entity playerId_) const
 {
-    const auto &obsfall = m_reg.get<ComponentObstacleFallthrough>(playerId);
-    const auto &ptransform = m_reg.get<ComponentTransform>(playerId);
-    const auto &pphysical = m_reg.get<ComponentPhysical>(playerId);
-    const auto &psm = m_reg.get<SM::StatePossessor<PlayerState>>(playerId);
-    const auto &pinp = m_reg.get<InputResolver>(playerId);
+    const auto &obsfall = m_reg.get<ComponentObstacleFallthrough>(playerId_);
+    const auto &ptransform = m_reg.get<ComponentTransform>(playerId_);
+    const auto &pphysical = m_reg.get<ComponentPhysical>(playerId_);
+    const auto &psm = m_reg.get<SM::StatePossessor<PlayerState>>(playerId_);
+    const auto &pinp = m_reg.get<InputResolver>(playerId_);
 
     std::string ignoredObstacles;
     for (const auto &el : obsfall.m_ignoredObstacles)

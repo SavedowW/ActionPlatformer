@@ -12,7 +12,7 @@ class LevelBuilder
 {
 public:
     LevelBuilder(entt::registry &reg_);
-    void buildLevel(const std::string &mapDescr_, entt::entity playerId_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_);
+    void buildLevel(const std::string &mapDescr_, NavGraph &graph_, ColliderRoutesCollection &rtCollection_);
 
 private:
     /*
@@ -39,7 +39,7 @@ private:
     void loadUtilTileset(const std::filesystem::path &jsonLoc_, uint32_t firstgid_);
 
     void loadTileLayer(const nlohmann::json &json_);
-    void loadMetaLayer(const nlohmann::json &json_, entt::entity playerId_);
+    void loadMetaLayer(const nlohmann::json &json_);
     void loadEnvLayer(const nlohmann::json &json_, EnvironmentSystem &env_);
     void loadCollisionLayer(const nlohmann::json &json_, ColliderRoutesCollection &rtCollection_);
     void loadNavigationLayer(const nlohmann::json &json_, NavGraph &graph_);
@@ -63,5 +63,5 @@ private:
     std::map<int, entt::entity> m_colliderIds;
     std::unordered_map<int, FactoryMethod> m_utilTilesetFactories;
 
-    int m_autoLayer;
+    int m_autoLayer = 0;
 };

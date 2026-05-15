@@ -59,9 +59,6 @@ protected:
 
     NavGraph m_graph;
 
-    entt::entity m_playerId = entt::null;
-    entt::entity m_enemyId = entt::null;
-
     ColliderRoutesCollection m_cldRoutesCollection;
     LevelBuilder m_lvlBuilder;
 };

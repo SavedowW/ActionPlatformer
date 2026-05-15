@@ -3,12 +3,14 @@
 #include "Core/FrameTimer.h"
 #include "Core/Renderer.h"
 #include "Core/InputSystem.h"
+#include "PlayerSystem.h"
 #include <entt/entt.hpp>
 #include <optional>
 
 struct CameraSystem : public InputReactor
 {
-    CameraSystem(entt::registry &reg_, Camera &cam_);
+public:
+    CameraSystem(entt::registry &reg_, Camera &cam_, const PlayerSystem &playersys_);
 
     void update();
     bool updateFocus(const Collider &playerPb_);
@@ -16,8 +18,9 @@ struct CameraSystem : public InputReactor
 
     void receiveEvents(GAMEPLAY_EVENTS event, float scale_) override;
 
+private:
     entt::registry &m_reg;
-    entt::entity playerId = entt::null;
+    const PlayerSystem &m_playersys;
     Camera &m_cam;
     std::optional<entt::entity> m_currentFocusArea;
 

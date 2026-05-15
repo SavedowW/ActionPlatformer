@@ -1,6 +1,7 @@
 #include "PlayerSystem.h"
-#include "SM/Builder.hpp"
-#include "SM/StateProperties.hpp"
+#include "Hit.h"
+#include "SM/Builder.hpp"  // IWYU pragma: keep
+#include "SM/StateProperties.hpp"  // IWYU pragma: keep
 #include "ResetHandlers.h"
 #include "Core/Application.h"
 
@@ -8,83 +9,6 @@ PlayerSystem::PlayerSystem(entt::registry &reg_) :
     m_reg(reg_),
     m_animManager(Application::instance().m_animationManager)
 {
-    
-}
-
-void PlayerSystem::setup(entt::entity playerId_)
-{
-    auto [trans, phys, inp, animrnd, state, transreset/*, smreset*/] = m_reg.get<ComponentTransform, ComponentPhysical, InputResolver, ComponentAnimationRenderable, SM::StatePossessor<PlayerState>,
-        ComponentReset<ComponentTransform>/*, ComponentReset<SM::StatePossessor<PlayerState>>*/>(playerId_);
-
-    if (m_reg.all_of<ComponentSpawnLocation>(playerId_))
-    {
-        trans.m_pos = m_reg.get<ComponentSpawnLocation>(playerId_).m_location;
-    }
-
-    trans.m_orientation = ORIENTATION::RIGHT;
-
-    transreset.m_defaultPos = trans.m_pos;
-    transreset.m_defaultOrientation = trans.m_orientation;
-
-    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/idle"));
-    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/run"));
-    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/prejump"));
-    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/float"), LOOPMETHOD::NOLOOP);
-    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/wall_cling"), LOOPMETHOD::NOLOOP);
-    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/wall_prejump"), LOOPMETHOD::NOLOOP);
-    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/prerun"), LOOPMETHOD::NOLOOP);
-    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/run_recovery"), LOOPMETHOD::NOLOOP);
-    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/landing_recovery"), LOOPMETHOD::NOLOOP);
-    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/attack1"), LOOPMETHOD::NOLOOP);
-    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/attack1_chain"), LOOPMETHOD::NOLOOP);
-    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/air_attack"), LOOPMETHOD::NOLOOP);
-
-    animrnd.m_currentAnimation = &animrnd.m_animations.at(m_animManager.getAnimID("Char1/float"));
-    animrnd.m_currentAnimation->reset();
-
-    m_animManager.preload("Char1/particles/particle_jump");
-    m_animManager.preload("Char1/particles/particle_land");
-    m_animManager.preload("Char1/particles/particle_run");
-    m_animManager.preload("Char1/particles/particle_run_loop");
-    m_animManager.preload("Char1/particles/particle_wall_jump");
-    m_animManager.preload("Char1/particles/particle_wall_slide");
-    m_animManager.preload("Char1/particles/attack1_trace");
-    m_animManager.preload("Char1/particles/attack1_chain_trace");
-    m_animManager.preload("Char1/particles/air_attack_trace");
-
-
-    phys.m_pushbox = {.m_topLeft=Vector2{-7.0f, -32.0f}, .m_size=Vector2{14.0f, 32.0f}};
-    phys.m_gravity = {0.0f, 0.0f};
-
-
-    // TODO: Configure SM
-
-    /*
-    sm.addState<PlayerState<false, false, false, InputComparatorIdle, InputComparatorIdle, false, InputComparatorIdle, InputComparatorIdle>>(
-            CharacterState::IDLE, StateMarker{}, m_animManager.getAnimID("Char1/idle"))
-        .setGravity(Vector2<float>{0.0f, 0.0f})
-        .setDrag(TimelineProperty<Vector2<float>>({{0, Vector2{0.1f, 0.1f}}, {3, Vector2{0.5f, 0.5f}}}))
-        .setConvertVelocityOnSwitch(true, false)
-        .setTransitionOnLostGround(CharacterState::FLOAT)
-        .setMagnetLimit(TimelineProperty<unsigned int>(4))
-        .setHurtboxes({
-            {
-                HurtboxGroup(
-                    {
-                        {
-                            {{{-6, -28}, {12, 28}}, TimelineProperty<bool>(true)}
-                        }
-                    }, HurtTrait::NORMAL
-                )
-            }
-        })
-        .setCanFallThrough(TimelineProperty<bool>(true))
-        .setUpdateSpeedLimitData(
-            TimelineProperty(Vector2<float>{9999.9f, 0.0f}),
-            TimelineProperty(Vector2<float>{9999.9f, 0.0f}));
-    */
-
-
     /*
         TODO: particles, hurtboxes, hitboxes
     */
@@ -344,14 +268,90 @@ void PlayerSystem::setup(entt::entity playerId_)
                                 PlayerStateProperties::Pipe::ConvertToInertia{false, true})
                 .done()
     ));
+}
 
-    m_statemachine.init(m_reg, playerId_);
+void PlayerSystem::createPlayer()
+{
+    if (m_playerId != entt::null)
+        m_reg.destroy(m_playerId);
+
+    m_playerId = m_reg.create();
+    m_reg.emplace<ComponentName>(m_playerId, "Player");
+
+    auto &trans = m_reg.emplace<ComponentTransform>(m_playerId);
+    m_reg.emplace<ComponentReset<ComponentTransform>>(m_playerId, trans.m_pos, trans.m_orientation);
+
+    auto &phys = m_reg.emplace<ComponentPhysical>(m_playerId);
+    m_reg.emplace<ComponentResetStatic<ComponentPhysical>>(m_playerId);
+
+    m_reg.emplace<ComponentObstacleFallthrough>(m_playerId);
+    
+    auto &animrnd = m_reg.emplace<ComponentAnimationRenderable>(m_playerId);
+    m_reg.emplace<ComponentResetStatic<ComponentAnimationRenderable>>(m_playerId);
+
+    m_reg.emplace<RenderLayer>(m_playerId, 6);
+    m_reg.emplace<InputResolver>(m_playerId);
+
+    m_reg.emplace<ComponentDynamicCameraTarget>(m_playerId);
+    m_reg.emplace<ComponentResetStatic<ComponentDynamicCameraTarget>>(m_playerId);
+
+    m_reg.emplace<SM::StatePossessor<PlayerState>>(m_playerId, PlayerState::FLOAT);
+    // m_reg.emplace<StateMachine>(m_playerId); TODO:
+    // m_reg.emplace<ComponentReset<StateMachine>>(m_playerId);
+
+    m_reg.emplace<PhysicalEvents>(m_playerId);
+    m_reg.emplace<BattleActor>(m_playerId, BattleTeams::PLAYER);
+    m_reg.emplace<HUDPoint>(m_playerId, HUDPosRule::REL_TRANSFORM, Vector2{0, -16}, 16);
+    m_reg.emplace<HealthOwner>(m_playerId, 3);
+    m_reg.emplace<HealthRendererCommonWRT>(m_playerId, 3, Vector2{0.0f, -28.0f});
+
+    const auto spawnView = m_reg.view<ComponentSpawnLocation>().each();
+    if (spawnView.cbegin() != spawnView.cend())
+        trans.m_pos = std::get<ComponentSpawnLocation&>(*spawnView.cbegin()).location;
+
+    animrnd.m_drawOutline = true;
+    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/idle"));
+    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/run"));
+    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/prejump"));
+    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/float"), LOOPMETHOD::NOLOOP);
+    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/wall_cling"), LOOPMETHOD::NOLOOP);
+    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/wall_prejump"), LOOPMETHOD::NOLOOP);
+    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/prerun"), LOOPMETHOD::NOLOOP);
+    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/run_recovery"), LOOPMETHOD::NOLOOP);
+    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/landing_recovery"), LOOPMETHOD::NOLOOP);
+    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/attack1"), LOOPMETHOD::NOLOOP);
+    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/attack1_chain"), LOOPMETHOD::NOLOOP);
+    animrnd.loadAnimation(m_animManager, m_animManager.getAnimID("Char1/air_attack"), LOOPMETHOD::NOLOOP);
+
+    animrnd.m_currentAnimation = &animrnd.m_animations.at(m_animManager.getAnimID("Char1/float"));
+    animrnd.m_currentAnimation->reset();
+
+    m_animManager.preload("Char1/particles/particle_jump");
+    m_animManager.preload("Char1/particles/particle_land");
+    m_animManager.preload("Char1/particles/particle_run");
+    m_animManager.preload("Char1/particles/particle_run_loop");
+    m_animManager.preload("Char1/particles/particle_wall_jump");
+    m_animManager.preload("Char1/particles/particle_wall_slide");
+    m_animManager.preload("Char1/particles/attack1_trace");
+    m_animManager.preload("Char1/particles/attack1_chain_trace");
+    m_animManager.preload("Char1/particles/air_attack_trace");
+
+
+    phys.m_pushbox = {.m_topLeft=Vector2{-7.0f, -32.0f}, .m_size=Vector2{14.0f, 32.0f}};
+    phys.m_gravity = {0.0f, 0.0f};
+
+
+    m_statemachine.init(m_reg, m_playerId);
 
     //sm.setInitialState(PlayerState::FLOAT);
-    //smreset.m_defaultStates = {static_cast<CharState>(PlayerState::FLOAT)}; // TODO: allow any type
 }
 
 void PlayerSystem::update()
 {
     m_statemachine.update(m_reg);
+}
+
+entt::entity PlayerSystem::getPlayerId() const noexcept
+{
+    return m_playerId;
 }

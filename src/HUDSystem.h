@@ -4,6 +4,7 @@
 #include "CommonAI.h"
 #include "Core/CoreComponents.h"
 #include "Core/Camera.h"
+#include "PlayerSystem.h"
 #include <entt/entt.hpp>
 
 template<Numeric T, size_t len, uint8_t updatePeriod>
@@ -49,24 +50,26 @@ protected:
 struct HudSystem
 {
 public:
-    HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> &lvlSize_);
+    HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> &lvlSize_, const PlayerSystem &playersys_);
 
     void draw() const;
     void drawCommonDebug() const;
-    void drawPlayerDebug() const;
+    void drawPlayerDebug(entt::entity playerId_) const;
     void drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_, /*const StateMachine &sm_,*/ const ComponentAI &ai_) const;
 
-    entt::entity playerId = entt::null;
+    void setPlayerId(entt::entity playerId_) noexcept;
 
+    
 private:
     Renderer &m_renderer;
     const Window &m_window;
     TextManager &m_textManager;
     entt::registry &m_reg;
+    const PlayerSystem &m_playersys;
 
     Camera &m_cam;
     int m_lvlId;
-    Vector2<float> m_lvlSize;
+    const Vector2<float> m_lvlSize;
     mutable AveragingQueue<float, 20, 5> m_avgFrames;
 
     std::shared_ptr<Texture> m_arrowIn;

@@ -7,7 +7,7 @@ class EnvironmentSystem
 public:
     EnvironmentSystem(entt::registry &reg_);
 
-    void update(entt::entity playerId_);
+    void update();
 
 private:
     entt::registry &m_reg;

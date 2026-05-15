@@ -4,8 +4,9 @@
 #include "Core/GameData.h"
 #include "Core/Configuration.h"
 
-CameraSystem::CameraSystem(entt::registry &reg_, Camera &cam_) :
+CameraSystem::CameraSystem(entt::registry &reg_, Camera &cam_, const PlayerSystem &playersys_) :
     m_reg(reg_),
+    m_playersys{playersys_},
     m_cam(cam_)
 {
     subscribe(GAMEPLAY_EVENTS::CAM_STOP);
@@ -14,11 +15,13 @@ CameraSystem::CameraSystem(entt::registry &reg_, Camera &cam_) :
 
 void CameraSystem::update()
 {
-    if (m_cameraStopped)
+    const auto playerId = m_playersys.getPlayerId();
+
+    if (m_cameraStopped || playerId == entt::null)
         return;
 
     Vector2<int> target;
-    auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(playerId);
+    const auto &[trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(playerId);
 
     if (phys.m_appliedOffset.x != 0)
     {
@@ -129,7 +132,9 @@ bool CameraSystem::updateFocus(const Collider &playerPb_)
 
 void CameraSystem::debugDraw(Renderer &ren_, const Camera &cam_) const
 {
-    if (ConfigurationManager::instance().m_debug.m_drawCameraOffset)
+    const auto playerId = m_playersys.getPlayerId();
+
+    if (ConfigurationManager::instance().m_debug.m_drawCameraOffset && playerId != entt::null)
     {
         auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(playerId);
         ren_.drawLine(trans.m_pos, trans.m_pos + dtar.m_offset, {188, 74, 155, 255}, cam_);

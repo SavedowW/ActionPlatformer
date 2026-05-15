@@ -4,14 +4,20 @@
 #include "Core/AnimationManager.h"
 #include <entt/entt.hpp>
 
-struct PlayerSystem
+class PlayerSystem
 {
+public:
     PlayerSystem(entt::registry &reg_);
 
-    void setup(entt::entity playerId_);
+    void createPlayer();
     void update();
 
+    entt::entity getPlayerId() const noexcept;
+
+private:
+    entt::entity m_playerId = entt::null;
     entt::registry &m_reg;
+    
     AnimationManager &m_animManager;
     SM::StateMachine<PlayerState, PlayerView> m_statemachine;
 };
