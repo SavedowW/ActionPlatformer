@@ -25,18 +25,23 @@ Texture::Texture(const Config &cfg_)
 
 void Texture::init(const Config &cfg_)
 {
-    free();
-
     m_size = cfg_.m_size;
 
-    glGenTextures(1, &m_id);
-    glBindTexture(GL_TEXTURE_2D, m_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, cfg_.m_format, cfg_.m_size.x, cfg_.m_size.y, 0, cfg_.m_format, GL_UNSIGNED_BYTE, cfg_.m_pixels);
+    if (!m_id)
+    {
+        glGenTextures(1, &m_id);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glBindTexture(GL_TEXTURE_2D, m_id);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    }
+    else
+        glBindTexture(GL_TEXTURE_2D, m_id);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, cfg_.m_format, cfg_.m_size.x, cfg_.m_size.y, 0, cfg_.m_format, GL_UNSIGNED_BYTE, cfg_.m_pixels);
 
     glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -48,6 +53,11 @@ void Texture::free()
         glDeleteTextures(1, &m_id);
         m_id = 0;
     }
+}
+
+void Texture::release() noexcept
+{
+    m_id = 0;
 }
 
 const Vector2<int> &Texture::size() const noexcept

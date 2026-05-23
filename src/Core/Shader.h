@@ -21,16 +21,16 @@ public:
 
     // utility functions
     template<Numeric T>
-    inline void setFloat(const char *name_, T value_);
+    void setFloat(const char *name_, T value_);
     
     template<Numeric T>
-    inline void setVector2f(const char *name_, T x_, T y_);
+    void setVector2f(const char *name_, T x_, T y_);
 
     template<Numeric T>
-    inline void setVector3f(const char *name_, T x_, T y_, T z_);
+    void setVector3f(const char *name_, T x_, T y_, T z_);
 
     template<Numeric T>
-    inline void setVector4f(const char *name_, T x_, T y_, T z_, T w_);
+    void setVector4f(const char *name_, T x_, T y_, T z_, T w_);
 
     void setVector2f(const char *name_, const glm::vec2 &value_);
     void setVector3f(const char *name_, const glm::vec3 &value_);
@@ -38,12 +38,12 @@ public:
     void setMatrix4(const char *name_, const glm::mat4 &matrix_);
     void setInteger(const char *name_, int value_);
     
-    private:
+private:
     void compile(const char *vertexSourcePath_, const char *fragmentSourcePath_);
 
-    void validateShader(unsigned int object_); 
-    void validateProgram(unsigned int object_);
-    int claimUniformLoc(const char *name_);
+    static void validateShader(unsigned int object_); 
+    void validateProgram() const;
+    int claimUniformLoc(const char *name_) const;
 
     unsigned int m_id = 0; 
 };

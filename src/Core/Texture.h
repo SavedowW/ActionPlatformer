@@ -33,6 +33,9 @@ public:
     void init(const Config &cfg_);
     void free();
 
+    // Loses ownership over texture without destroying it
+    void release() noexcept;
+
     const Vector2<int> &size() const noexcept;
     unsigned int handler() const noexcept;
 

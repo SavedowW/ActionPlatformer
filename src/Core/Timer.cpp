@@ -7,11 +7,11 @@ void Timer::begin() noexcept
     m_timeBegin = SDL_GetTicksNS();
 }
 
-void Timer::profileDumpAndBegin(const std::string &msg_)
+uint64_t Timer::iterate() noexcept
 {
-    auto newTicks = SDL_GetTicksNS();
-    std::cout << msg_ << static_cast<float>(newTicks - m_timeBegin) / 1000000.0f << std::endl;
-    m_timeBegin = newTicks;
+    const auto prev = m_timeBegin;
+    m_timeBegin = SDL_GetTicksNS();
+    return m_timeBegin - prev;
 }
 
 uint64_t Timer::getPassed() const noexcept

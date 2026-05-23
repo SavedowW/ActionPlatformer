@@ -1,60 +1,47 @@
 #pragma once
+#include "SDLWrappers.h"
 #include "utf8.h"
-#include "Texture.h"
 #include "Renderer.h"
 #include "Vector2.hpp"
-#include "TimelineProperty.hpp"
 #include <SDL3_ttf/SDL_ttf.h>
-#include <concepts>
 #include <vector>
 #include <array>
-#include <set>
 
 namespace fonts
 {
-    inline constexpr uint32_t CHUNK_SIZE = 256;
-
-    struct CharChunkDistribution
-    {
-        CharChunkDistribution(const std::string &charlist_);
-
-        std::set<uint32_t> m_chunks;
-        TimelineProperty<uint32_t> m_chunkSearch;
-    };
-
-    enum class HOR_ALIGN : uint8_t
-    {
-        LEFT,
-        CENTER,
-        RIGHT
-    };
-
+    // Doesn't own anything
     struct Symbol
     {
-        Texture m_tex;
+        unsigned int m_id = 0;
+        Vector2<int> m_size;
         int m_minx = 0, m_maxx = 0, m_miny = 0, m_maxy = 0, m_advance = 0;
-        Symbol() noexcept = default;
-        Symbol& operator=(Symbol &rhs_) = delete;
-        Symbol(Symbol &rhs_) = delete;
-        Symbol& operator=(Symbol &&rhs_) noexcept;
-        Symbol(Symbol &&rhs_) noexcept;
+    };
 
-        virtual ~Symbol() = default;
+    using Chunk = std::vector<Symbol>;
+
+    class SymbolGenerator
+    {
+    public:
+        SymbolGenerator(uint8_t height_);
+        virtual void fillChunk(Chunk &chunk_, uint32_t firstChar_) = 0;
+        uint8_t height() const noexcept;
+        virtual ~SymbolGenerator() = default;
+
+    protected:
+        const uint8_t m_height;
     };
 
     class Font
     {
     public:
-        template<typename Func, typename... Args>
-        Font(Renderer &renderer_, Func generateSymbols_, int height_, const CharChunkDistribution &distrib_, Args&&... args_)
-            requires std::invocable<Func, Renderer&, std::vector<std::array<Symbol, CHUNK_SIZE>>&, decltype(distrib_), Args...>;
-        const Symbol &operator[](uint32_t ch_) const;
-
-        const int m_height;
+        Font(size_t chunkSize_, std::unique_ptr<SymbolGenerator> &&generator_);
+        uint8_t height() const noexcept;
+        const Symbol &operator[](uint32_t char_);
 
     private:
-        const CharChunkDistribution &m_distrib;
-        std::vector<std::array<Symbol, CHUNK_SIZE>> m_symbols;
+        const size_t m_chunkSize;
+        std::unordered_map<uint32_t, std::vector<Symbol>> m_chunks;
+        const std::unique_ptr<SymbolGenerator> m_generator;
     };
 }
 
@@ -67,62 +54,91 @@ namespace TextAligners
         virtual ~CommonAligner() = default;
 
     protected:
-        CommonAligner(const U8Wrapper &wrp_, const fonts::Font &font_) noexcept;
+        CommonAligner(const U8Wrapper &wrp_, fonts::Font &font_) noexcept;
         int collectLength() const noexcept;
 
     private:
         const U8Wrapper &m_wrp;
-        const fonts::Font &m_font;
+        fonts::Font &m_font;
     };
 
     class AlignerLeft : public CommonAligner
     {
     public:
-        AlignerLeft(const U8Wrapper &wrp_, const fonts::Font &font_) noexcept;
+        AlignerLeft(const U8Wrapper &wrp_, fonts::Font &font_) noexcept;
         Vector2<int> adjustPos(Vector2<int> pos_) const noexcept override;
     };
 
     class AlignerCenter : public CommonAligner
     {
     public:
-        AlignerCenter(const U8Wrapper &wrp_, const fonts::Font &font_) noexcept;
+        AlignerCenter(const U8Wrapper &wrp_, fonts::Font &font_) noexcept;
         Vector2<int> adjustPos(Vector2<int> pos_) const noexcept override;
     };
 
     class AlignerRight : public CommonAligner
     {
     public:
-        AlignerRight(const U8Wrapper &wrp_, const fonts::Font &font_) noexcept;
+        AlignerRight(const U8Wrapper &wrp_, fonts::Font &font_) noexcept;
         Vector2<int> adjustPos(Vector2<int> pos_) const noexcept override;
     };
 } // TextAligners
+
+class SymbolGeneratorSimple : public fonts::SymbolGenerator
+{
+public:
+    SymbolGeneratorSimple(const std::string &file_, uint8_t size_, const Color &color_);
+
+    void fillChunk(fonts::Chunk &chunk_, uint32_t firstChar_) override;
+
+private:
+    FontWrapper m_font;
+    const Color m_color;
+};
+
+class SymbolGeneratorShaded : public fonts::SymbolGenerator
+{
+public:
+    SymbolGeneratorShaded(Renderer &renderer_, const std::string &file_, uint8_t size_, const Color &shadeColor_, const Color &primaryColor_);
+    void fillChunk(fonts::Chunk &chunk_, uint32_t firstChar_) override;
+
+private:
+    FontWrapper m_font;
+    const Color m_shadeColor;
+    const Color m_primaryColor;
+    Renderer &m_renderer;
+};
+
+
+enum class Fonts : uint8_t
+{
+    DBG_UI = 0,
+    DBG_NPC,
+    DBG_NAVSYS,
+    CHATBOX,
+    NONE
+};
 
 
 class TextManager
 {
 private:
-    using Fonts = std::array<fonts::Font, 4>;
+    using FontsContainer = std::array<fonts::Font, static_cast<size_t>(Fonts::NONE)>;
 
 public:
     TextManager(Renderer &renderer_);
 
     // Ignores '\n', '\t'
     template<typename AlignerT>
-    void renderText(const std::string &text_, int fontid_, Vector2<int> pos_, const Camera &cam_);
+    void renderText(const std::string &text_, Fonts font_, Vector2<int> pos_, const Camera &cam_);
 
     // Ignores '\n', '\t'
     template<typename AlignerT>
-    void renderText(const std::string &text_, int fontid_, Vector2<int> pos_);
+    void renderText(const std::string &text_, Fonts font_, Vector2<int> pos_);
 
-    const fonts::Symbol *getSymbol(int fontid_, uint32_t ch_) const;
-    int getFontHeight(int fontid_) const;
+    fonts::Font &getFont(Fonts font_);
 
 private:
-    static void generateSimpleSymbols(Renderer &renderer_, std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, const std::string &basePath_, const std::string &font_, int size_, const Color &color_);
-    static void generateSimpleShadedSymbols(Renderer &renderer_, std::vector<std::array<fonts::Symbol, fonts::CHUNK_SIZE>> &symbolChunks_, const fonts::CharChunkDistribution &distrib_, const std::string &basePath_, const std::string &font_, int size_, const Color &color_, const Color &shadeColor_);
-
-    fonts::CharChunkDistribution m_charChunks;
     Renderer &m_renderer;
-    Fonts m_fonts;
-
+    FontsContainer m_fonts;
 };

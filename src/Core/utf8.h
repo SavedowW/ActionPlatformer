@@ -2,14 +2,6 @@
 #include <cstdint>
 #include <string>
 #include <bitset>
-#include <array>
-#include <type_traits>
-
-template<typename T> requires std::is_integral_v<T>
-union CharRep {
-        T full;
-        std::array<uint8_t, sizeof(T)> bytes;
-};
 
 namespace utf8
 {

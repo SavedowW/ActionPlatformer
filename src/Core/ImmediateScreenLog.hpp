@@ -3,7 +3,7 @@
 #include "Application.h"
 
 template<typename AlignerT>
-ImmediateScreenLog<AlignerT>::ImmediateScreenLog(int font_, int offsetPerLine_, const Vector2<int> &origin_) :
+ImmediateScreenLog<AlignerT>::ImmediateScreenLog(Fonts font_, int offsetPerLine_, const Vector2<int> &origin_) :
     m_textManager(Application::instance().m_textManager),
     m_pos{origin_},
     m_font(font_),

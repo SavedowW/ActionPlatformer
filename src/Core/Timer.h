@@ -12,7 +12,7 @@ public:
 
     uint64_t getPassed() const noexcept;
 
-    void profileDumpAndBegin(const std::string &msg_);
+    uint64_t iterate() noexcept;
 
 private:
     uint64_t m_timeBegin = 0;

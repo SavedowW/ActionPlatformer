@@ -55,7 +55,7 @@ void NavGraph::draw(const Camera &cam_) const
         {
             const auto &node = m_nodes[i];
             m_ren.drawRectangle(node.m_position - nodeSize / 2.0f, nodeSize, {255, 127, 39, 255}, cam_);
-            m_textman.renderText<TextAligners::AlignerCenter>(std::to_string(i), 2, node.m_position - Vector2{0, 12}, cam_);
+            m_textman.renderText<TextAligners::AlignerCenter>(std::to_string(i), Fonts::DBG_NAVSYS, node.m_position - Vector2{0, 12}, cam_);
         }
     
         for (const auto &con : m_connections)
@@ -63,7 +63,7 @@ void NavGraph::draw(const Camera &cam_) const
             m_ren.drawLine(m_nodes[con.m_nodes[0]].m_position - Vector2{1.0f, 1.0f}, m_nodes[con.m_nodes[1]].m_position - Vector2{1.0f, 1.0f}, {255, 127, 39, 200}, cam_);
     
             auto center = (m_nodes[con.m_nodes[0]].m_position + m_nodes[con.m_nodes[1]].m_position) / 2.0f;
-            m_textman.renderText<TextAligners::AlignerCenter>(std::to_string(con.m_ownId), 2, center - Vector2{0, 12}, cam_);
+            m_textman.renderText<TextAligners::AlignerCenter>(std::to_string(con.m_ownId), Fonts::DBG_NAVSYS, center - Vector2{0, 12}, cam_);
         }
     }
 }

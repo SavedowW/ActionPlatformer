@@ -1,7 +1,6 @@
 #include "utf8.h"
 #include <bit>
 #include <iostream>
-#include <span>
 
 uint8_t utf8::readCharSize(const char *ch_) noexcept
 {

@@ -1,5 +1,4 @@
 #include "Shader.hpp"
-#include "Logger.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -100,7 +99,7 @@ void Shader::compile(const char *vertexSource_, const char *fragmentSource_)
     glAttachShader(m_id, sVertex);
     glAttachShader(m_id, sFragment);
     glLinkProgram(m_id);
-    validateProgram(m_id);
+    validateProgram();
 
     glDeleteShader(sVertex);
     glDeleteShader(sFragment);
@@ -134,31 +133,31 @@ void Shader::setMatrix4(const char *name_, const glm::mat4 &matrix_)
 
 void Shader::validateShader(unsigned int object_)
 {
-    int success;
-    char infoLog[1024];
+    int success = 0;
     glGetShaderiv(object_, GL_COMPILE_STATUS, &success);
     if (!success)
     {
-        glGetShaderInfoLog(object_, 1024, NULL, infoLog);
+        std::string infoLog(1024, '\0');
+        glGetShaderInfoLog(object_, 1024, nullptr, infoLog.data());
         throw std::runtime_error(std::string("Failed to compile shader:\n") + infoLog);
     }
 }
 
-void Shader::validateProgram(unsigned int object_)
+void Shader::validateProgram() const
 {
-    int success;
-    char infoLog[1024];
-    glGetProgramiv(object_, GL_LINK_STATUS, &success);
+    int success = 0;
+    glGetProgramiv(m_id, GL_LINK_STATUS, &success);
     if (!success)
     {
-        glGetProgramInfoLog(object_, 1024, NULL, infoLog);
-        throw std::runtime_error(std::string("Failed to compile shader program:\n") + infoLog);
+        std::string infoLog(1024, '\0');
+        glGetProgramInfoLog(m_id, 1024, nullptr, infoLog.data());
+        throw std::runtime_error("Failed to compile shader program:\n" + infoLog);
     }
 }
 
-int Shader::claimUniformLoc(const char *name_)
+int Shader::claimUniformLoc(const char *name_) const
 {
-    auto res = glGetUniformLocation(m_id, name_);
+    const auto res = glGetUniformLocation(m_id, name_);
     if (res == -1)
     {
         std::cout << "Failed to retrieve \"" << name_ << "\" uniform." << std::endl;

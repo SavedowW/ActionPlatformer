@@ -57,7 +57,7 @@ void HudSystem::drawCommonDebug() const
     else
         m_avgFrames.push(static_cast<float>(lastFrameTime));
 
-    ImmediateScreenLog<TextAligners::AlignerLeft> commonLog{0, 32, {1, 1}};
+    ImmediateScreenLog<TextAligners::AlignerLeft> commonLog{Fonts::DBG_UI, 32, {1, 1}};
 
     commonLog.dumpLine("[" + std::to_string(m_lvlId) + "] " + std::string(m_lvlSize));
     commonLog.dumpLine("Camera pos: " + std::string(m_cam.getPos()));
@@ -89,7 +89,7 @@ void HudSystem::drawPlayerDebug(entt::entity playerId_) const
 
     const auto resolution = m_window.getResolution();
 
-    ImmediateScreenLog<TextAligners::AlignerRight> playerLog{0, 32, {resolution.x - 1, 1}};
+    ImmediateScreenLog<TextAligners::AlignerRight> playerLog{Fonts::DBG_UI, 32, {resolution.x - 1, 1}};
 
     playerLog.dumpLine("Player pos: " + std::string(ptransform.m_pos));
     playerLog.dumpLine("Player vel: " + std::string(pphysical.m_velocity));
@@ -145,6 +145,6 @@ void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPh
     
 	const Vector2<int> screenOrigin = screenRelPos.mulComponents(m_window.getResolution());
 
-    m_textManager.renderText<TextAligners::AlignerLeft>(txt1, 1, screenOrigin);
-    m_textManager.renderText<TextAligners::AlignerLeft>(txt2, 1, screenOrigin + Vector2{0.0f, 10.0f});
+    m_textManager.renderText<TextAligners::AlignerLeft>(txt1, Fonts::DBG_NPC, screenOrigin);
+    m_textManager.renderText<TextAligners::AlignerLeft>(txt2, Fonts::DBG_NPC, screenOrigin + Vector2{0.0f, 10.0f});
 }

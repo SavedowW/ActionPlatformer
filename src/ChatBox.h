@@ -6,6 +6,7 @@
 #include <entt/entt.hpp>
 #include <stack>
 
+// TODO: store last used direction in sequence, don't change it if not necessary
 enum class ChatBoxSide : uint8_t
 {
     STRICT_TOP, // Always on top even if it has to leave the screen
@@ -15,10 +16,11 @@ enum class ChatBoxSide : uint8_t
     AUTO // Wherever there is more free space
 };
 
-struct ChatMessage;
-struct ChatMessageSequence;
-class SymbolRenderShake;
-
+/**
+    Utility to parse sequences of comma-separated tokens
+    Takes line like "8,default,3", lets you extract individual elements by indices.
+    "default" is a key word that forces it to pick default value.
+*/
 class InlinedValueHandler
 {
 public:
@@ -30,96 +32,179 @@ public:
     template<typename T>
     T getParam(size_t index_, const T &default_);
 
+    const std::string &getCommand() const noexcept;
+
 private:
+    std::string m_command;
     std::vector<std::string> m_tokens;
 };
 
-struct ChatMessage
+struct CharAppearanceSpeed
 {
-    ChatMessage(std::string &&textRaw_, int font_);
-    ChatMessage(ChatMessage &&rhs_) = default;
-    ChatMessage &operator=(ChatMessage &&rhs_) = default;
-    std::string m_textRaw;
-    int m_baseFont;
-    std::vector<const fonts::Symbol*> m_symbols;
-    std::vector<FrameTimer<false>> m_symbolAppearTimers;
-    std::vector<int> m_lineHeights;
-    std::vector<std::unique_ptr<fonts::Symbol>> m_techSymbols;
+    static const uint32_t defaultDelay;
+    static const uint32_t defaultDuration;
 
-    Vector2<int> m_size;
+    uint32_t delay = defaultDelay;
+    uint32_t duration = defaultDuration;
+};
 
-    // Timer for delay between characters
-    FrameTimer<true> m_charDelayTimer;
-
-    static uint32_t m_defaultCharacterDelay;
-    static uint32_t m_defaultAppearDuration;
-
-    uint32_t m_characterDelay = m_defaultCharacterDelay;
-    uint32_t m_appearDuration = m_defaultAppearDuration;
-    size_t m_currentProceedingCharacter = 0;
-    size_t m_firstCharacterForFadingIn = 0;
-
-    enum class MessageState : uint8_t
+struct ChatSymbol
+{
+    const struct RenderData
     {
-        APPEAR,
-        IDLE
-    } m_currentState = MessageState::APPEAR;
+        RenderData(const fonts::Symbol &symbol_);
 
-    void compileAndSetSize();
+        unsigned int id = 0;
+        Vector2<int> size;
+        int advance = 0;
+    } renderData;
+
+    FrameTimer<false> appearanceDelay;
+    FrameTimer<false> appearanceDuration;
+
+    const struct Effects
+    {
+        struct Shake
+        {
+            static const uint8_t defaultXAmp;
+            static const uint8_t defaultYAmp;
+            static const float defaultProb;
+
+            // Amplitude, offset from -xAmp/2 to xAmp/2
+            uint8_t xAmp = defaultXAmp;
+
+            // Amplitude, offset from -yAmp/2 to yAmp/2
+            uint8_t yAmp = defaultYAmp;
+
+            // Probability of a given symbol being shaked by offset
+            float prob = defaultProb;
+        } shake;
+    } effects;
+
+    ChatSymbol(const fonts::Symbol &symbol_, CharAppearanceSpeed speed_, uint32_t extraDelay_, const Effects &effects_);
+};
+
+struct Line
+{
+    Line(int minx_, int height_);
+
+    void addSymbol(ChatSymbol &&sym_);
+    int height() const noexcept;
+    int width() const noexcept;
+
+    ChatSymbol &operator[](size_t id_);
+    size_t size() const noexcept;
+    std::vector<ChatSymbol> &symbols() noexcept;
+    const std::vector<ChatSymbol> &symbols() const noexcept;
+
+    const int minx = 0;
+    
+private:
+    std::vector<ChatSymbol> m_symbols;
+    const int m_height = 0;
+    int m_width = 0;
+};
+
+/**
+ *  Description of a text in a single text box, parsed in a constructor
+ */
+class ChatMessage
+{
+public:
+    ChatMessage(const std::string &str_);
+
+    bool update();
     void skip();
 
-    void proceedUntilNonTechCharacter();
+    Vector2<int> size() const noexcept;
+    const std::vector<Line> &lines() const noexcept;
+
+private:
+    size_t m_lineForDelay = 0;
+    size_t m_symbolForDelay = 0;
+    std::vector<Line> m_lines;
+    Vector2<int> m_size;
 };
 
 struct ChatMessageSequence
 {
 public:
-    ChatMessageSequence(entt::entity src_, const ChatBoxSide &side_, bool fitScreen_, bool proceedByInput_, bool claimInputs_, bool returnInputs_);
-    ChatMessageSequence(ChatMessageSequence &&) noexcept = default;
-    ChatMessageSequence &operator=(ChatMessageSequence &&) noexcept = default;
-    void compileAndSetSize();
-    void takeInput();
-    const fonts::Symbol* currentSymbol() const;
+    ChatMessageSequence(entt::entity source_, ChatBoxSide side_, bool fitScreen_);
 
-    void update();
+    void addMessage(const std::string &message_ );
+    bool empty() const noexcept;
+    bool hasMessagesLeft() const noexcept;
+    const ChatMessage &message() const noexcept;
 
-    bool isMarkedForDeletion() const noexcept;
+    // Returns true if it's done and can be deleted
+    bool update();
 
-    bool empty() const;
-    const ChatMessage &currentMessage() const;
-    void addMessage(ChatMessage &&message_);
+    // Called on input
+    void proceed();
 
-    entt::entity m_source;
-    Vector2<int> m_oldSize;
-    Vector2<int> m_currentSize;
-    Vector2<int> m_targetSize;
-    ChatBoxSide m_side;
-    bool m_fitScreen;
+    ChatBoxSide side() const noexcept;
 
-    // Timer for box appear / disappear animation
-    FrameTimer<true> m_windowTimer;
+    entt::entity source() const;
 
-    // Progress with inputs
-    bool m_proceedByInput = false;
+    Vector2<int> currentSize() const noexcept;
 
-    // Disable inputs for the player when the sequence begins
-    bool m_claimInputs = false;
-
-    // Return inputs to the player once the sequence is over
-    bool m_returnInputs = false;
-
-    enum class BoxState : uint8_t { APPEAR, IDLE, DISAPPEAR } m_currentState = BoxState::APPEAR;
-
-    /*
-        Effects applied while rendering
-        Multiple effects can be applied at once, but only the last version of each effect is applied
-    */
-    using RenderEffects = std::tuple<std::stack<SymbolRenderShake*>>;
+    bool fitScreen() const noexcept;
 
 private:
+    size_t m_currentMessage = 0;
     std::vector<ChatMessage> m_messages;
-    ChatMessage *m_currentMessage = nullptr;
-    bool m_toBeDeleted = false;
+    ChatBoxSide m_side;
+
+    entt::entity m_source;
+
+    // Timer used for box states
+    FrameTimer<true> m_timer;
+
+    enum class State : uint8_t 
+    { 
+        APPEAR, // Time before text starts appearing, uses timer naturally
+        PRINTING, // Time while text is being printed, uses timer to resize it between replicas
+        IDLE, // Time when text is complete, uses timer like PRINTING
+        DISAPPEAR // Time after text disappeared, uses timer naturally
+    } m_currentState = State::APPEAR;
+
+    Vector2<int> lastSize;
+    Vector2<int> newSize;
+
+    bool m_fitScreen;
+};
+
+class SequenceRenderer
+{
+public:
+    SequenceRenderer(const ChatMessageSequence &seq_, const entt::registry &reg_, const Camera &cam_, const Texture &chatboxEdge_, const Texture &chatboxPointer_);
+    void draw();
+
+private:
+    void calcPos();
+    void drawImpl() const;
+    void drawMessageImpl(const ChatMessage &msg) const;
+
+    Renderer &m_renderer;
+    const ChatMessageSequence &m_seq;
+    const entt::registry &m_reg;
+    const Camera &m_cam;
+
+    const Texture &m_chatboxEdge;
+    const Texture &m_chatboxPointer;
+
+    // Pixels along each axis from edges (their inner sides) to the actual sequence
+    const int m_edgeGap = 4;
+
+    // Including edges
+    Vector2<int> m_internalSize;
+
+    // Excluding edges
+    Vector2<int> m_externalSize;
+
+    Vector2<int> m_screenPos;
+    Vector2<int> m_outerBoundTL, m_outerBoundBR;
+    bool m_boxTop = false;
 };
 
 class ChatboxSystem : public InputReactor
@@ -128,11 +213,8 @@ public:
     ChatboxSystem(entt::registry &reg_, Camera &camera_, InputHandlingSystem &inputSystem_);
     
     void addSequence(ChatMessageSequence &&seq_);
-    void receiveEvents(HUD_EVENTS event, float scale_) override;
-
-    void renderMessage(const ChatMessage &msg_, const Vector2<int> &tl_) const;
-
     void update();
+    void receiveEvents(HUD_EVENTS event, float scale_) override;
     void draw() const;
 
 private:
@@ -144,124 +226,5 @@ private:
 
     std::shared_ptr<Texture> m_chatboxEdge;
     std::shared_ptr<Texture> m_chatboxPointer;
-
-    const int m_edgeGap = 6;
 };
 
-
-/*
-    Abstract technical symbol
-    Applies any sort of effect that might be handled during the iteration or during the rendering
-
-    TODO: rework to avoid dynamic casts
-*/
-class TechSymbol : public fonts::Symbol
-{
-public:
-    // Symbol was naturally reached by message, returns true if should proceed further
-    virtual bool onReached(ChatMessage&) = 0;
-
-    // Symbol was naturally reached by sequence while rendering
-    virtual void onRenderReached(ChatMessageSequence::RenderEffects&);
-};
-
-/*
-    Abstract rendering symbol
-    Since it applies an effect to be handled while rendering, it doesn't need an onReached() implementation
-*/
-class IRenderSymbol : public TechSymbol
-{
-public:
-    bool onReached(ChatMessage&) override;
-};
-
-
-/*
-    Base class for all rendering symbols
-    Add itself to the sequence using CRTP (which keeps current rendering state)
-*/
-template<typename OwnT>
-class RenderSymbol : public IRenderSymbol
-{
-public:
-    void onRenderReached(ChatMessageSequence::RenderEffects &effects) override;
-
-private:
-    RenderSymbol() = default;
-
-    friend SymbolRenderShake;
-};
-
-/*
-    Base class for all closing rendering symbols
-    Removes last symbol of that type from the sequence using CRTP (which keeps current rendering state)
-*/
-template<typename OwnT>
-class RenderDropSymbol : public IRenderSymbol
-{
-public:
-    void onRenderReached(ChatMessageSequence::RenderEffects &effects) override;
-};
-
-
-/*
-    shake = xAmp, yAmp
-    <shake=4,6>
-*/
-class SymbolRenderShake : public RenderSymbol<SymbolRenderShake>
-{
-public:
-    SymbolRenderShake(int xAmp_, int yAmp_, float prob_);
-
-    Vector2<int> getOffset() const;
-
-private:
-    int m_xAmp;
-    int m_yAmp;
-    float m_prob;
-};
-
-/*
-    <delay=30>
-*/
-class SymbolDelay : public TechSymbol
-{
-public:
-    SymbolDelay(int delay_);
-
-    bool onReached(ChatMessage &message_) override;
-
-private:
-    int m_delay = 0;
-};
-
-/*
-    shake = chardelay, appearDuration
-    <charspd=5,15>
-    <charspd=5,default>
-    <charspd=default,default>
-*/
-class SymbolSetCharacterSpeed : public TechSymbol
-{
-public:
-    SymbolSetCharacterSpeed(uint32_t characterDelay_, uint32_t appearDuration_);
-
-    bool onReached(ChatMessage &message_) override;
-
-private:
-    uint32_t m_characterDelay = 0;
-    uint32_t m_appearDuration = 0;
-};
-
-
-template<typename OwnT>
-void RenderSymbol<OwnT>::onRenderReached(ChatMessageSequence::RenderEffects &effects)
-{
-    std::get<std::stack<OwnT*>>(effects).push(dynamic_cast<OwnT*>(this));
-}
-
-template<typename OwnT>
-void RenderDropSymbol<OwnT>::onRenderReached(ChatMessageSequence::RenderEffects &effects)
-{
-    std::get<std::stack<OwnT*>>(effects).pop();
-}
