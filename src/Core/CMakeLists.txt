@@ -39,7 +39,6 @@ InputResolver.cpp
 Collider.cpp
 CameraFocusArea.cpp
 Tileset.cpp
-Trigger.cpp
 CoreComponents.cpp
 NavGraph.cpp
 NavSystem.cpp

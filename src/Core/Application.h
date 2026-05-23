@@ -12,7 +12,6 @@
 
 namespace gamedata::levels
 {
-    inline constexpr int numberOfLevels = 2;
     inline constexpr int initialLevelId = 1;
 }
 

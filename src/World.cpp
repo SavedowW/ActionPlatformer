@@ -43,19 +43,6 @@ bool World::isOverlappingObstacle(const Collider &cld_) const
     return false;
 }
 
-EntityAnywhere World::getOverlappedTrigger(const Collider &cld_, Trigger::Tag tag_) const
-{
-    auto trgview = m_registry.view<ComponentTrigger>();
-
-    for (auto [idx, trg] : trgview.each())
-    {
-        if ((trg.m_trigger.m_tag & tag_) == tag_ && (trg.m_trigger.checkOverlap(cld_) & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
-            return {.reg=&m_registry, .idx=idx};
-    }
-
-    return {.reg=nullptr};
-}
-
 entt::entity World::isWallAt(const ORIENTATION checkSide_, const Vector2<int> &pos_) const
 {
     auto cldview = m_registry.view<ComponentStaticCollider>();

@@ -45,12 +45,6 @@ void LevelBuilder::makeObject<GrassTopComp>(const Vector2<int> &pos_, bool visib
     GrassTopComp::m_flickLeftAnimId = animManager.getAnimID("Environment/grass_single_top_flickL");
 }
 
-void addTrigger(entt::registry &reg_, const Trigger &trg_)
-{
-    auto newid = reg_.create();
-    reg_.emplace<ComponentTrigger>(newid, trg_);
-}
-
 LevelBuilder::LevelBuilder(entt::registry &reg_) :
     m_reg(reg_)
 {

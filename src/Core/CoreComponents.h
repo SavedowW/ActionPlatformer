@@ -6,7 +6,6 @@
 #include "AnimationManager.h"
 #include "NavGraph.h"
 #include "NavSystem.h"
-#include "Trigger.h"
 #include <bitset>
 #include <entt/entt.hpp>
 #include <set>
@@ -154,11 +153,6 @@ struct SwitchCollider
     bool m_isEnabled = true;
 
     bool updateTimer();
-};
-
-struct ComponentTrigger
-{
-    Trigger m_trigger;
 };
 
 struct ComponentObstacleFallthrough

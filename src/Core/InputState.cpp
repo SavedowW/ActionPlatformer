@@ -55,3 +55,13 @@ InputState &InputState::operator=(InputState &&rhs_) noexcept
     m_inputs = std::forward<std::map<INPUT_BUTTON, INPUT_BUTTON_STATE>>(rhs_.m_inputs);
     return *this;
 }
+
+std::ostream& operator<< (std::ostream& out_, const InputState& inState_)
+{
+    out_ << "(" << inState_.m_dir << "): ";
+    for (const auto &el : {INPUT_BUTTON::UP, INPUT_BUTTON::DOWN, INPUT_BUTTON::LEFT, INPUT_BUTTON::RIGHT, INPUT_BUTTON::ATTACK})
+    {
+        out_ << static_cast<int>(inState_.m_inputs.at(el));
+    }
+    return out_;
+}

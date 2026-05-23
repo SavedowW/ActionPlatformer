@@ -348,7 +348,7 @@ void InputSystem::importMappingEnsureUnique(const std::string &fileName_)
 }
 
 template <typename InputT, typename ButtonT, typename EventT>
-inline void InputSystem::resolveBinding(const std::map<InputT, EventT> &bindings_, const ButtonT &input_, float value_)
+void InputSystem::resolveBinding(const std::map<InputT, EventT> &bindings_, const ButtonT &input_, float value_)
 {
     auto res = bindings_.find(InputT(input_));
     if (res != bindings_.end())

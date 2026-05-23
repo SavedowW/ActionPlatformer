@@ -15,6 +15,7 @@ concept TEnumUnsigned = TEnum<T> && std::unsigned_integral<std::underlying_type_
 // Hold count_ bool values set to false by default
 // For some reason works notably faster than just a regular std::vector<bool> with compiler optimization
 // which should do the same thing under the hood
+// TODO: remove if will end up unused
 class StateMarker
 {
 public:

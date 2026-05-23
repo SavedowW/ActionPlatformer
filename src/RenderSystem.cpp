@@ -73,7 +73,6 @@ void RenderSystem::draw() const
     if (conf.m_debug.m_drawColliders)
     {
         const auto viewColliders = m_reg.view<ComponentStaticCollider>();
-        const auto viewTriggers = m_reg.view<ComponentTrigger>();
         const auto viewPhysical = m_reg.view<ComponentTransform, ComponentPhysical>();
         const auto viewBtlAct = m_reg.view<ComponentTransform, BattleActor>();
         const auto viewGrassTop = m_reg.view<ComponentTransform, GrassTopComp>();
@@ -85,10 +84,7 @@ void RenderSystem::draw() const
             else
                 drawCollider(scld);
         }
-
-        for (auto [idx, trg] : viewTriggers.each())
-            drawTrigger(trg);
-
+        
         for (auto [idx, trans, phys] : viewPhysical.each())
             drawCollider(trans, phys);
 
@@ -289,11 +285,6 @@ void RenderSystem::drawObstacle(const ComponentStaticCollider &cld_) const
 {
     if (cld_.m_isEnabled)
         m_renderer.drawCollider(cld_.m_resolved, {50, 50, 255, 100}, m_camera);
-}
-
-void RenderSystem::drawTrigger(const ComponentTrigger &cld_) const
-{
-    m_renderer.drawCollider(cld_.m_trigger, {255, 50, 255, 50}, m_camera);
 }
 
 void RenderSystem::drawFocusArea(const CameraFocusArea &cfa_) const

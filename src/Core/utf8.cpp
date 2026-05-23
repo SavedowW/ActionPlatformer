@@ -2,6 +2,14 @@
 #include <bit>
 #include <iostream>
 
+namespace utf8
+{
+    // Size byte masks
+    inline constexpr uint8_t oct4 = 0b11110000;
+    inline constexpr uint8_t oct3 = 0b11100000;
+    inline constexpr uint8_t oct2 = 0b11000000;
+}
+
 uint8_t utf8::readCharSize(const char *ch_) noexcept
 {
     if ((*ch_ & oct4) == oct4)

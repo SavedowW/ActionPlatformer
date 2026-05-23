@@ -66,11 +66,11 @@ private:
 
 template <bool READ_ONLY>
 template <typename T>
-inline T ConfigurationView<READ_ONLY>::readOrSet(const T &default_) requires (!READ_ONLY)
+T ConfigurationView<READ_ONLY>::readOrSet(const T &default_) requires (!READ_ONLY)
 {
     try 
     {
-        return m_dataRef.template get<T>();
+        return m_dataRef.get<T>();
     }
     catch (std::exception &)
     {
@@ -82,7 +82,7 @@ inline T ConfigurationView<READ_ONLY>::readOrSet(const T &default_) requires (!R
 
 template <bool READ_ONLY>
 template <typename T>
-inline T ConfigurationView<READ_ONLY>::readOrDefault(const T &default_) const
+T ConfigurationView<READ_ONLY>::readOrDefault(const T &default_) const
 {
     try
     {

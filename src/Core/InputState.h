@@ -30,14 +30,6 @@ struct InputState
     InputState &operator=(InputState &&rhs_) noexcept;
 };
 
-inline std::ostream& operator<< (std::ostream& out_, const InputState& inState_)
-{
-    out_ << "(" << inState_.m_dir << "): ";
-    for (const auto &el : {INPUT_BUTTON::UP, INPUT_BUTTON::DOWN, INPUT_BUTTON::LEFT, INPUT_BUTTON::RIGHT, INPUT_BUTTON::ATTACK})
-    {
-        out_ << static_cast<int>(inState_.m_inputs.at(el));
-    }
-    return out_;
-}
+std::ostream& operator<< (std::ostream& out_, const InputState& inState_);
 
 using InputQueue = FixedQueue<InputState, 30>;

@@ -6,7 +6,7 @@
 namespace utils {
 
     template<bool REMOVE_HASHTAG>
-    inline SDL_Color hexToCol(const std::string &s_)
+    SDL_Color hexToCol(const std::string &s_)
     {
         int offset = (REMOVE_HASHTAG ? 1 : 0);
 

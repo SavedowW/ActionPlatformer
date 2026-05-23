@@ -242,7 +242,6 @@ T_NAME_AUTO(const ComponentPhysical);
 T_NAME_AUTO(PhysicalEvents);
 T_NAME_AUTO(ComponentStaticCollider);
 T_NAME_AUTO(SwitchCollider);
-T_NAME_AUTO(ComponentTrigger);
 T_NAME_AUTO(ComponentObstacleFallthrough);
 T_NAME_AUTO(ComponentAnimationRenderable);
 T_NAME_AUTO(ComponentDynamicCameraTarget);

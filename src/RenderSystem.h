@@ -25,7 +25,6 @@ struct RenderSystem : public InputReactor
     void drawCollider(const ComponentTransform &trans_, const ComponentPhysical &phys_) const;
     void drawCollider(const ComponentStaticCollider &cld_) const;
     void drawObstacle(const ComponentStaticCollider &cld_) const;
-    void drawTrigger(const ComponentTrigger &cld_) const;
     void drawFocusArea(const CameraFocusArea &cfa_) const;
     void drawTransform(const ComponentTransform &trans_) const;
     void drawHealth(const ComponentTransform &trans_, const HealthRendererCommonWRT &howner_) const;

@@ -5,16 +5,9 @@
 
 namespace utf8
 {
-    // Size byte masks
-    inline constexpr uint8_t oct4 = 0b11110000;
-    inline constexpr uint8_t oct3 = 0b11100000;
-    inline constexpr uint8_t oct2 = 0b11000000;
-
-    
-
     // Represent all bytes of any number in binary form, like "10101010'10101010'101..."
     template <typename T>
-    inline std::string numericToString(T value_)
+    std::string numericToString(T value_)
     {
         std::string res;
         const uint8_t *ptr = reinterpret_cast<const uint8_t*>(&value_);
@@ -31,7 +24,7 @@ namespace utf8
     }
 
     template <typename T>
-    inline std::string numericToString(T value_, const std::string &chunkSeparator_)
+    std::string numericToString(T value_, const std::string &chunkSeparator_)
     {
         std::string res;
         const uint8_t *ptr = reinterpret_cast<const uint8_t*>(&value_);
@@ -150,7 +143,7 @@ private:
 // Operator overloading
 
 template<typename T>
-inline T operator+(const T &lhs_, const U8Wrapper::iterator &rhs_)
+T operator+(const T &lhs_, const U8Wrapper::iterator &rhs_)
 {
     auto s = lhs_;
     return utf8::appendChar(s, rhs_.m_ch, rhs_.m_byteSize);
@@ -160,7 +153,7 @@ std::string operator+(const U8Wrapper::iterator &lhs_, const std::string &rhs_);
 std::wstring operator+(const U8Wrapper::iterator &lhs_, const std::wstring &rhs_);
 
 template<typename T>
-inline T &operator+=(T &lhs_, const U8Wrapper::iterator &rhs_)
+T &operator+=(T &lhs_, const U8Wrapper::iterator &rhs_)
 {
     return utf8::appendChar(lhs_, rhs_.m_ch, rhs_.m_byteSize);
 }

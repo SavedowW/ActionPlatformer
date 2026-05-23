@@ -1,5 +1,4 @@
 #pragma once
-#include "Core/Trigger.h"
 #include "ParticleSystem.h"
 #include "Core/NavSystem.h"
 #include "Core/Camera.h"
@@ -18,7 +17,6 @@ public:
     World(entt::registry &reg_, Camera &cam_, ParticleSystem &partsys_, NavSystem &navsys_);
     bool isAreaFree(const Collider &cld_, bool considerObstacles_) const;
     bool isOverlappingObstacle(const Collider &cld_) const;
-    EntityAnywhere getOverlappedTrigger(const Collider &cld_, Trigger::Tag tag_) const;
     entt::entity isWallAt(const ORIENTATION checkSide_, const Vector2<int> &pos_) const;
 
     ParticleSystem &getParticleSys();

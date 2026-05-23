@@ -43,16 +43,3 @@ protected:
     size_t m_filled = 0;
 
 };
-
-namespace utils
-{
-    template <typename T, size_t len>
-    inline void printQueue(const FixedQueue<T, len> &q_, char separator_ = ' ')
-    {
-        for (int i = 0; i < q_.getFilled(); ++i)
-        {
-            std::cout << q_[i] << separator_;
-        }
-        std::cout << "\n";
-    }
-}
