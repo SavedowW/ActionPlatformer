@@ -59,14 +59,14 @@ void HudSystem::drawCommonDebug() const
 
     ImmediateScreenLog<TextAligners::AlignerLeft> commonLog{Fonts::DBG_UI, 32, {1, 1}};
 
-    commonLog.dumpLine("[" + std::to_string(m_lvlId) + "] " + std::string(m_lvlSize));
-    commonLog.dumpLine("Camera pos: " + std::string(m_cam.getPos()));
-    commonLog.dumpLine("Camera size: " + std::string(m_cam.getSize()));
-    commonLog.dumpLine("Camera scale: " + std::to_string(m_cam.getScale()));
-    commonLog.dumpLine("Real frame time (ns): " + utils::prettyNum(lastFrameTime));
-    commonLog.dumpLine("Avg frame time (ms): " + std::to_string( m_avgFrames.avg() / 1'000'000.0f));
-    commonLog.dumpLine("FPS: " + std::to_string(1'000'000'000.0f / static_cast<float>(lastFrameTime)));
-    commonLog.dumpLine("Avg FPS: " + std::to_string( 1'000'000'000.0f / m_avgFrames.avg()));
+    commonLog.dumpLine(std::format("[{}] {}", m_lvlId, m_lvlSize));
+    commonLog.dumpLine(std::format("Camera pos: ", m_cam.getPos()));
+    commonLog.dumpLine(std::format("Camera size: ", m_cam.getSize()));
+    commonLog.dumpLine(std::format("Camera scale: ", m_cam.getScale()));
+    commonLog.dumpLine(std::format("Real frame time (ns): {}", lastFrameTime));
+    commonLog.dumpLine(std::format("Avg frame time (ms): {}", m_avgFrames.avg() / 1'000'000.0f));
+    commonLog.dumpLine(std::format("FPS: {}", 1'000'000'000.0f / static_cast<float>(lastFrameTime)));
+    commonLog.dumpLine(std::format("Avg FPS: ", 1'000'000'000.0f / m_avgFrames.avg()));
     commonLog.dumpLine("UTF-8: Кириллица работает");
     commonLog.dumpLine(ll::dbg_localization());
 }
@@ -76,6 +76,7 @@ void HudSystem::drawPlayerDebug(entt::entity playerId_) const
     const auto &obsfall = m_reg.get<ComponentObstacleFallthrough>(playerId_);
     const auto &ptransform = m_reg.get<ComponentTransform>(playerId_);
     const auto &pphysical = m_reg.get<ComponentPhysical>(playerId_);
+    const auto &worldPos = m_reg.get<WorldPosition>(playerId_);
     const auto &psm = m_reg.get<SM::StatePossessor<PlayerState>>(playerId_);
     const auto &pinp = m_reg.get<InputResolver>(playerId_);
 
@@ -91,15 +92,15 @@ void HudSystem::drawPlayerDebug(entt::entity playerId_) const
 
     ImmediateScreenLog<TextAligners::AlignerRight> playerLog{Fonts::DBG_UI, 32, {resolution.x - 1, 1}};
 
-    playerLog.dumpLine("Player pos: " + std::string(ptransform.m_pos));
-    playerLog.dumpLine("Player vel: " + std::string(pphysical.m_velocity));
-    playerLog.dumpLine("Player inr: " + std::string(pphysical.m_inertia));
-    playerLog.dumpLine("Gravity: " + std::string(pphysical.m_gravity));
-    playerLog.dumpLine(std::string("Player action: ") + serialize(psm.stateId()) + ':' + std::to_string(psm.framesInState()));
-    playerLog.dumpLine(std::string("Ignored obstacles: ") + ignoredObstacles);
-    playerLog.dumpLine(std::string("On slope: ") + std::to_string(pphysical.m_onSlopeWithAngle));
-    playerLog.dumpLine(std::string("Grounded: ") + std::to_string(pphysical.m_onGround != entt::null));
-    playerLog.dumpLine(std::string("Attached: ") + std::to_string(pphysical.m_onWall != entt::null));
+    playerLog.dumpLine(std::format("Player pos: {}", ptransform.m_pos));
+    playerLog.dumpLine(std::format("Player vel: {}", pphysical.m_velocity));
+    playerLog.dumpLine(std::format("Player inr: {}", pphysical.m_inertia));
+    playerLog.dumpLine(std::format("Gravity: {}", pphysical.m_gravity));
+    playerLog.dumpLine(std::format("Player action: {}:{}", serialize(psm.stateId()), psm.framesInState()));
+    playerLog.dumpLine(std::format("Ignored obstacles: {}", ignoredObstacles));
+    playerLog.dumpLine(std::format("On slope: {}", worldPos.ground.onSlopeWithAngle));
+    playerLog.dumpLine(std::format("Grounded: {}", worldPos.ground.onGround != entt::null));
+    playerLog.dumpLine(std::format("Has wall: {}-{}", worldPos.wall.leftWall != entt::null, worldPos.wall.rightWall != entt::null));
 
     auto inputs = pinp.getCurrentInputDir();
 

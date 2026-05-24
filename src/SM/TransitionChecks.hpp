@@ -77,22 +77,6 @@ auto TransitionChecks<StateIDT, ViewT>::sinceFrame(uint32_t sinceFrame_, T &&con
 
 
 template<typename StateIDT, typename ViewT>
-TransitionChecks<StateIDT, ViewT>::OnPhysEvent::OnPhysEvent(const StateIDT &state_, const PhysicalEvents::Events &event_, bool isSet_) :
-    Base::AbstractStateCondition(state_),
-    m_event{event_},
-    m_isSet{isSet_}
-{}
-
-template<typename StateIDT, typename ViewT>
-ORIENTATION TransitionChecks<StateIDT, ViewT>::OnPhysEvent::operator()(const ViewT &view_)
-{
-    if (view_.template cget<PhysicalEvents>().checkEvent(m_event) == m_isSet)
-        return view_.template cget<ComponentTransform>().m_orientation;
-
-    return ORIENTATION::UNSPECIFIED;
-}
-
-template<typename StateIDT, typename ViewT>
 TransitionChecks<StateIDT, ViewT>::OnGrounded::OnGrounded(const StateIDT &state_, bool isGrounded_) :
     Base::AbstractStateCondition(state_),
     m_isGrounded{isGrounded_}
@@ -101,9 +85,9 @@ TransitionChecks<StateIDT, ViewT>::OnGrounded::OnGrounded(const StateIDT &state_
 template<typename StateIDT, typename ViewT>
 ORIENTATION TransitionChecks<StateIDT, ViewT>::OnGrounded::operator()(const ViewT &view_)
 {
-    const auto &phys = view_.template cget<ComponentPhysical>();
+    const auto &worldpos = view_.template cget<WorldPosition>();
 
-    if ((phys.m_onGround != entt::null) == m_isGrounded)
+    if ((worldpos.ground.onGround != entt::null) == m_isGrounded)
         return view_.template cget<ComponentTransform>().m_orientation;
 
     return ORIENTATION::UNSPECIFIED;

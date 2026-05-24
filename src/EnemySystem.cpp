@@ -32,7 +32,7 @@ entt::entity EnemySystem::makeEnemy()
     phys.m_pushbox = Collider(Vector2{-15, -30}, Vector2{30, 30});
     phys.m_gravity = {0.0f, 0.2f};
 
-    m_reg.emplace<PhysicalEvents>(enemyId);
+    m_reg.emplace<WorldPosition>(enemyId);
     m_reg.emplace<BattleActor>(enemyId, BattleTeams::ENEMIES);
 
     auto &nav = m_reg.emplace<Navigatable>(enemyId);

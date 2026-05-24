@@ -6,7 +6,6 @@
 #include "AnimationManager.h"
 #include "NavGraph.h"
 #include "NavSystem.h"
-#include <bitset>
 #include <entt/entt.hpp>
 #include <set>
 #include <map>
@@ -76,16 +75,10 @@ struct ComponentPhysical
     Collider m_pushbox;
     bool m_onMovingPlatform = false;
     unsigned int m_magnetLimit = 0;
-    float m_onSlopeWithAngle = 0.0f;
     uint32_t m_hitstopLeft = 0;
 
     // TODO: find a way to do it without hurting parallelization
     //const Vector2<float> *m_mulInsidePushbox = nullptr;
-
-    entt::entity m_onGround = entt::null;
-    entt::entity m_onWall = entt::null;
-
-    bool m_noLanding = false;
 
     // Used to identify offset applied before collision resolution
     Vector2<int> m_calculatedOffset;
@@ -109,21 +102,23 @@ struct ComponentPhysical
     Vector2<float> m_velocityLeftover;
 };
 
-class PhysicalEvents
+struct WorldPosition
 {
-public:
-    enum class Events : uint8_t
+    struct Ground
     {
-        // Event is active as long as you're grounded
-        NONE
-    };
+        bool demand = true;
+        float onSlopeWithAngle = 0.0f;
+        entt::entity onGround = entt::null;
+    } ground;
 
-    void setEvent(const Events &event_);
-    void reset() noexcept;
-    bool checkEvent(const Events &event_) const;
+    struct Wall
+    {
+        bool demand = true;
+        entt::entity leftWall = entt::null;
+        entt::entity rightWall = entt::null;
+    } wall;
 
-private:
-    std::bitset<static_cast<size_t>(Events::NONE)> m_events;
+    void reset();
 };
 
 struct ComponentStaticCollider

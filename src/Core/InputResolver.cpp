@@ -1,5 +1,6 @@
 #include "InputResolver.h"
 #include "GameData.h"
+#include "InputState.h"
 #include "Vector2.hpp"
 
 InputResolver::InputResolver() :
@@ -8,6 +9,8 @@ InputResolver::InputResolver() :
         {InputMotions::CHECK_NO_HORDIR, &InputResolver::checkNoHorDir},
         {InputMotions::HOLD_UP, &InputResolver::checkHoldUp},
         {InputMotions::HOLD_UP_FORWARD, &InputResolver::checkHoldUpForward},
+        {InputMotions::BUFFER_UP, &InputResolver::checkBufferUp},
+        {InputMotions::BUFFER_UP_FORWARD, &InputResolver::checkBufferUpForward},
         //{InputMotions::HOLD_HORDIR_BUFFERED, &InputResolver::checkHoldHorDirBuffered},
         //{InputMotions::HOLD_DOWN, &InputResolver::checkHoldDown},
         //{InputMotions::TAP_UP, &InputResolver::checkTapUp},
@@ -23,7 +26,7 @@ void InputResolver::addFrame(const InputState &currentInput_)
 }
 
 
-bool InputResolver::checkHoldHorDir(ORIENTATION orientation_, unsigned int) const
+bool InputResolver::checkHoldHorDir(const ORIENTATION orientation_, unsigned int) const
 {
     if (m_inputQueue.getFilled() == 0)
         return false;
@@ -33,7 +36,7 @@ bool InputResolver::checkHoldHorDir(ORIENTATION orientation_, unsigned int) cons
     return m_inputQueue[0].m_dir.x == expected;
 }
 
-bool InputResolver::checkNoHorDir(ORIENTATION orientation_, unsigned int) const
+bool InputResolver::checkNoHorDir(const ORIENTATION orientation_, unsigned int) const
 {
     if (m_inputQueue.getFilled() == 0)
         return false;
@@ -51,7 +54,7 @@ bool InputResolver::checkHoldUp(ORIENTATION, unsigned int) const
     return m_inputQueue[0].m_dir.y < 0;
 }
 
-bool InputResolver::checkHoldUpForward(ORIENTATION orientation_, unsigned int) const
+bool InputResolver::checkHoldUpForward(const ORIENTATION orientation_, unsigned int) const
 {
     if (m_inputQueue.getFilled() == 0)
         return false;
@@ -64,6 +67,43 @@ bool InputResolver::checkHoldUpForward(ORIENTATION orientation_, unsigned int) c
 
     return m_inputQueue[0].m_dir.x < 0;
 }
+
+bool InputResolver::checkBufferUp(ORIENTATION, const unsigned int extendBuffer_) const
+{
+    if (m_inputQueue.getFilled() == 0)
+        return false;
+
+    size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
+    for (size_t i = 0; i <= lookAt; ++i)
+    {
+        const auto &in = m_inputQueue[i];
+        if (in.m_inputs.at(INPUT_BUTTON::UP) == INPUT_BUTTON_STATE::PRESSED && in.m_dir.y < 0)
+            return true;
+    }
+
+    return false;
+}
+
+bool InputResolver::checkBufferUpForward(const ORIENTATION orientation_, const unsigned int extendBuffer_) const
+{
+    if (m_inputQueue.getFilled() == 0)
+        return false;
+
+    const auto expectedButton = (orientation_ == ORIENTATION::RIGHT ? INPUT_BUTTON::RIGHT : INPUT_BUTTON::LEFT);
+    const auto expectedDir = (orientation_ == ORIENTATION::RIGHT ? 1 : -1);
+
+    size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
+    for (size_t i = 0; i <= lookAt; ++i)
+    {
+        const auto &in = m_inputQueue[i];
+        if (in.m_inputs.at(INPUT_BUTTON::UP) == INPUT_BUTTON_STATE::PRESSED && in.m_dir.y < 0 &&
+            in.m_inputs.at(expectedButton) == INPUT_BUTTON_STATE::PRESSED && in.m_dir.x == expectedDir)
+            return true;
+    }
+
+    return false;
+}
+
 
 /*
 bool InputResolver::checkHoldHorDirBuffered(ORIENTATION orientation_, unsigned int extendBuffer_) const

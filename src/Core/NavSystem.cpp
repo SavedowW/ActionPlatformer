@@ -25,7 +25,7 @@ void NavSystem::update()
             continue;
 
         if (nav.m_checkIfGrounded)
-            if (m_reg.get<ComponentPhysical>(idx).m_onGround == entt::null)
+            if (m_reg.get<WorldPosition>(idx).ground.onGround == entt::null)
                 continue;
 
         bool possibleLoss = true;

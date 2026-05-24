@@ -40,19 +40,14 @@ Vector2<float> ComponentPhysical::peekRawOffset() const
     return m_velocity + m_inertia.mulComponents(m_inertiaMultiplier) + m_extraoffset + m_velocityLeftover;
 }
 
-void PhysicalEvents::setEvent(const Events &event_)
-{
-    m_events.set(static_cast<size_t>(event_));
-}
 
-void PhysicalEvents::reset() noexcept
+void WorldPosition::reset()
 {
-    m_events.reset();
-}
+    ground.onSlopeWithAngle = 0.0f;
+    ground.onGround = entt::null;
 
-bool PhysicalEvents::checkEvent(const Events &event_) const
-{
-    return m_events.test(static_cast<size_t>(event_));
+    wall.leftWall = entt::null;
+    wall.rightWall = entt::null;
 }
 
 
@@ -159,7 +154,7 @@ uint8_t FlashDelayedLinear::getFlashAlpha() const
     if (m_currentFrame < m_delayDuration)
         return 255;
 
-    return static_cast<uint8_t>(255 * (1.0f - static_cast<float>(m_currentFrame - m_delayDuration) / m_fadeDuration));
+    return static_cast<uint8_t>(255 * (1.0f - static_cast<float>(m_currentFrame - m_delayDuration) / static_cast<float>(m_fadeDuration)));
 }
 
 std::unique_ptr<Flash> FlashDelayedLinear::clone() const
@@ -239,7 +234,7 @@ T_NAME_AUTO(ComponentSpawnLocation);
 T_NAME_AUTO(ComponentParticlePhysics);
 T_NAME_AUTO(ComponentPhysical);
 T_NAME_AUTO(const ComponentPhysical);
-T_NAME_AUTO(PhysicalEvents);
+T_NAME_AUTO(WorldPosition);
 T_NAME_AUTO(ComponentStaticCollider);
 T_NAME_AUTO(SwitchCollider);
 T_NAME_AUTO(ComponentObstacleFallthrough);

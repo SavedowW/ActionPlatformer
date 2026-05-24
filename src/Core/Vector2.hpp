@@ -265,6 +265,17 @@ std::ostream& operator<< (std::ostream& out, const Vector2<T>& vec)
     return out;
 }
 
+template <Numeric T> 
+struct std::formatter<Vector2<T>> : std::formatter<std::string_view> 
+{
+    auto format(const Vector2<T> &vec_, format_context &ctx_) const 
+    {
+        return formatter<std::string_view>::format(
+            std::format("{{{}, {}}}", vec_.x, vec_.y), 
+            ctx_);
+    }
+};
+
 namespace utils
 {
     template <Numeric T>

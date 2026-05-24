@@ -73,19 +73,6 @@ struct TransitionChecks
     template<typename T>
     static auto sinceFrame(uint32_t sinceFrame_, T &&condition_);
 
-
-    class OnPhysEvent : public Base::AbstractStateCondition
-    {
-    public:
-        OnPhysEvent(const StateIDT &state_, const PhysicalEvents::Events &event_, bool isSet_ = true);
-
-        ORIENTATION operator()(const ViewT &view_) override;
-
-    private:
-        const PhysicalEvents::Events m_event;
-        const bool m_isSet;
-    };
-
     class OnGrounded : public Base::AbstractStateCondition
     {
     public:

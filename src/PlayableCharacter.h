@@ -36,7 +36,7 @@ SERIALIZE_ENUM(PlayerState, {
     ENUM_AUTO(PlayerState, PREJUMP_FORWARD),
 })
 
-using PlayerView = ComponentsView<ComponentName, SM::StatePossessor<PlayerState>, ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, PhysicalEvents, ComponentAnimationRenderable, InputResolver>;
+using PlayerView = ComponentsView<ComponentName, SM::StatePossessor<PlayerState>, ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, WorldPosition, ComponentAnimationRenderable, InputResolver>;
 using PlayerMake = SM::Make<PlayerState, PlayerView>;
 using PlayerStateProperties = StateProperties<PlayerState, PlayerView>;
 using PlayerStateTransitions = TransitionChecks<PlayerState, PlayerView>;

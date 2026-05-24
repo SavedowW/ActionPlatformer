@@ -6,13 +6,13 @@
 const float PhysicsEntityHandler::VerticalOffsetLimitMul = 1.3f;
 
 PhysicsEntityHandler::PhysicsEntityHandler(const CollidersView &cld_, ComponentTransform &trans_, 
-        ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &events_) :
+        ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, WorldPosition &worldPos_) :
     m_cld{cld_},
     m_trans{trans_},
     m_phys{phys_},
     m_pushbox{phys_.m_pushbox},
     m_obsFallthrough{obsFallthrough_},
-    m_events{events_}
+    m_worldPos{worldPos_}
 {  
 }
 
@@ -237,7 +237,7 @@ void PhysicsEntityHandler::moveUp(int offset_)
 
 void PhysicsEntityHandler::magnet()
 {
-    if (!m_requireMagnet || m_phys.m_noLanding)
+    if (!m_requireMagnet || !m_worldPos.ground.demand)
         return;
 
     m_requireMagnet = false;
@@ -259,13 +259,11 @@ void PhysicsEntityHandler::magnet()
 
 void PhysicsEntityHandler::discoverPosition()
 {
-    m_events.reset();
+    m_worldPos.reset();
+
     m_obsFallthrough.m_ignoredObstacles.clear();
 
     const auto pushbox = m_pushbox + m_trans.m_pos;
-
-    m_phys.m_onGround = entt::null;
-    m_phys.m_onSlopeWithAngle = 0.0f;
 
     for (const auto& [idx, cld] : m_cld.each())
     {
@@ -280,19 +278,22 @@ void PhysicsEntityHandler::discoverPosition()
             if (cld.m_obstacleId)
                 m_obsFallthrough.setIgnoreObstacle(cld.m_obstacleId);
         }
-        else if (!m_phys.m_noLanding 
-            && (overlap & OverlapResult::OVERLAP_X) == OverlapResult::OVERLAP_X
-            && (!cld.m_obstacleId || !m_obsFallthrough.checkIgnoringObstacle(cld.m_obstacleId)))
+        else
         {
-            if (highest - 1 == m_trans.m_pos.y && (m_phys.m_onGround == entt::null || m_phys.m_onSlopeWithAngle != 0.0f))
+            if (m_worldPos.ground.demand
+                && (overlap & OverlapResult::OVERLAP_X) == OverlapResult::OVERLAP_X
+                && (!cld.m_obstacleId || !m_obsFallthrough.checkIgnoringObstacle(cld.m_obstacleId)))
             {
-                m_phys.m_onGround = idx;
-                m_phys.m_onSlopeWithAngle = cld.m_resolved.topAngleCoef();
+                if (highest - 1 == m_trans.m_pos.y && (m_worldPos.ground.onGround == entt::null || m_worldPos.ground.onSlopeWithAngle != 0.0f))
+                {
+                    m_worldPos.ground.onGround = idx;
+                    m_worldPos.ground.onSlopeWithAngle = cld.m_resolved.topAngleCoef();
+                }
             }
         }
     }
 
-    if (m_phys.m_onGround != entt::null)
+    if (m_worldPos.ground.onGround != entt::null)
     {
         m_phys.m_velocity.y = 0;
         m_phys.m_inertia.y = 0;
@@ -360,7 +361,7 @@ void PhysicsSystem::updatePhysics()
 {
     PROFILE_FUNCTION;
 
-    auto viewPhys = m_reg.view<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, PhysicalEvents>();
+    auto viewPhys = m_reg.view<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, WorldPosition>();
     auto viewPhysSimplified = m_reg.view<ComponentTransform, ComponentParticlePhysics>();
     const auto viewscld = m_reg.view<ComponentStaticCollider>();
 
@@ -385,11 +386,11 @@ void PhysicsSystem::updatePhysics()
     */
 }
 
-void PhysicsSystem::proceedEntity(const CollidersView &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_)
+void PhysicsSystem::proceedEntity(const CollidersView &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, WorldPosition &worldPos_)
 {
     const auto oldPos = trans_.m_pos;
 
-    PhysicsEntityHandler handler{clds_, trans_, phys_, obsFallthrough_, ev_};
+    PhysicsEntityHandler handler{clds_, trans_, phys_, obsFallthrough_, worldPos_};
 
     // Common stuff
     phys_.m_velocity += phys_.m_gravity;

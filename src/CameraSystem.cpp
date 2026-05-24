@@ -21,7 +21,7 @@ void CameraSystem::update()
         return;
 
     Vector2<int> target;
-    const auto &[trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(playerId);
+    const auto &[trans, phys, dtar, worldPos] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget, WorldPosition>(playerId);
 
     if (phys.m_appliedOffset.x != 0)
     {
@@ -50,10 +50,10 @@ void CameraSystem::update()
 
     if (phys.m_appliedOffset.y != 0)
     {
-        float vprio = (phys.m_onSlopeWithAngle == 0.0f && !phys.m_onMovingPlatform ? 0.0f : 1.5f);
+        float vprio = (worldPos.ground.onSlopeWithAngle == 0.0f && !phys.m_onMovingPlatform ? 0.0f : 1.5f);
         if (phys.m_appliedOffset.y >= 5.0f)
             vprio = 3.0f;
-        else if (phys.m_onSlopeWithAngle != 0.0f)
+        else if (worldPos.ground.onSlopeWithAngle != 0.0f)
             vprio = 1.5f;
         auto targetoffset = utils::signof(phys.m_appliedOffset.y) * std::min(abs(phys.m_appliedOffset.y * vprio * 20.0f), 40.0f);
         auto delta = (targetoffset - dtar.m_offset.y) * dtar.m_lookaheadSpeedSensitivity.y;
@@ -78,7 +78,7 @@ void CameraSystem::update()
         }
     }
 
-    if (phys.m_onSlopeWithAngle == 0.0f)
+    if (worldPos.ground.onSlopeWithAngle == 0.0f)
         dtar.m_offset.y = utils::signof(dtar.m_offset.y) * utils::clamp(abs(dtar.m_offset.y), 0, 20);
 
     target = Vector2<int>{trans.m_pos} + BODY_OFFSET + Vector2<int>{dtar.m_offset};

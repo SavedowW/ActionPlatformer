@@ -8,7 +8,7 @@ class PhysicsEntityHandler
 {
 public:
     PhysicsEntityHandler(const CollidersView &cld_, ComponentTransform &trans_, 
-        ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &events_);
+        ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, WorldPosition &worldPos_);
 
     void moveRight(int offset_);
     void moveLeft(int offset_);
@@ -38,7 +38,7 @@ private:
     ComponentPhysical &m_phys;
     const Collider m_pushbox;
     ComponentObstacleFallthrough &m_obsFallthrough;
-    PhysicalEvents &m_events;
+    WorldPosition &m_worldPos;
 
     bool m_requireMagnet = false;
 
@@ -55,7 +55,7 @@ public:
     void updatePhysics();
 
 private:
-    static void proceedEntity(const CollidersView &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, PhysicalEvents &ev_);
+    static void proceedEntity(const CollidersView &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, WorldPosition &worldPos_);
     static void proceedEntity(ComponentTransform &trans_, ComponentParticlePhysics &phys_);
     
     entt::registry &m_reg;
