@@ -15,6 +15,40 @@ PlayerSystem::PlayerSystem(entt::registry &reg_) :
 
     m_statemachine.addState(
         PlayerMake::state(
+            PlayerState::WALL_CLING,
+            
+            SM::CallBatch(
+                PlayerStateProperties::Update::UpdateGravity{TimelineProperty<Vector2<float>>({
+                    {0, {0.0f, 0.02f}}
+                })},
+                PlayerStateProperties::Update::SetDrag{TimelineProperty<Vector2<float>>({
+                    {0, {1.0f, 0.2f}},
+                    {1, {1.0f, 0.4f}}
+                })}
+            ),
+
+            PlayerMake::SequentialConditions{}
+                .addCondition(PlayerStateTransitions::sinceFrame(1, PlayerStateTransitions::OnGrounded{PlayerState::LANDING_RECOVERY}))
+                .addCondition(std::make_unique<PlayerStateTransitions::WallClingLeaveTest>(PlayerState::FLOAT))
+                .done(),
+            
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(PlayerStateProperties::Pipe::SetDemandWall{false})
+                .done(),
+            
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(PlayerStateProperties::Pipe::SetDemandWall{true},
+                                PlayerStateProperties::Pipe::SetAnimation{m_animManager.getAnimID("Char1/wall_cling")},
+                                PlayerStateProperties::Pipe::Realign{},
+                                PlayerStateProperties::Pipe::HaltSideDownwardMomentum{},
+                                PlayerStateProperties::Pipe::SetGravity{{0.0f, 0.5f}},
+                                PlayerStateProperties::Pipe::SetDrag{{1.0f, 0.2f}},
+                                PlayerStateProperties::Pipe::ConvertToInertia{true, false})
+                .done()
+    ));
+
+    m_statemachine.addState(
+        PlayerMake::state(
             PlayerState::PREJUMP_FORWARD,
 
             SM::CallBatch(
@@ -259,13 +293,16 @@ PlayerSystem::PlayerSystem(entt::registry &reg_) :
 
             PlayerMake::SequentialConditions{}
                 .addCondition(PlayerStateTransitions::sinceFrame(1, PlayerStateTransitions::OnGrounded{PlayerState::LANDING_RECOVERY}))
+                .addCondition(std::make_unique<PlayerStateTransitions::WallClingEnterTest>(PlayerState::WALL_CLING))
                 .done(),
 
-            [](const PlayerView&, const SM::TransitionData<PlayerState>&) {
-            },
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(PlayerStateProperties::Pipe::SetDemandWall{false})
+                .done(),
 
             PlayerMake::RulePipe{}
                 .setDefaultPipe(PlayerStateProperties::Pipe::TestFallthrough{},
+                                PlayerStateProperties::Pipe::SetDemandWall{true},
                                 PlayerStateProperties::Pipe::SetGravity{{0.0f, 0.5f}},
                                 PlayerStateProperties::Pipe::SetAnimation{m_animManager.getAnimID("Char1/float")},
                                 PlayerStateProperties::Pipe::ConvertToInertia{false, true})

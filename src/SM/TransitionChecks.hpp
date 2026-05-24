@@ -153,3 +153,51 @@ ORIENTATION TransitionChecks<StateIDT, ViewT>::InputTest::operator()(const ViewT
 
     return ORIENTATION::UNSPECIFIED;
 }
+
+template<typename StateIDT, typename ViewT>
+TransitionChecks<StateIDT, ViewT>::WallClingEnterTest::WallClingEnterTest(const StateIDT &state_) :
+    Base::AbstractStateCondition(state_)
+{}
+
+template<typename StateIDT, typename ViewT>
+ORIENTATION TransitionChecks<StateIDT, ViewT>::WallClingEnterTest::operator()(const ViewT &view_)
+{
+    const auto &physical = view_.template cget<ComponentPhysical>();
+    const auto &inputs = view_.template cget<InputResolver>();
+    const auto &worldPos = view_.template cget<WorldPosition>();
+
+    const auto offset = physical.peekOffset();
+
+    if (offset.x >= 0 && 
+        inputs.checkInput(InputMotions::HOLD_HORDIR_BUFFERED, ORIENTATION::RIGHT, 0) &&
+        worldPos.wall.rightWall != entt::null)
+        return ORIENTATION::LEFT;
+    
+    if (offset.x <= 0 && 
+        inputs.checkInput(InputMotions::HOLD_HORDIR_BUFFERED, ORIENTATION::LEFT, 0) &&
+        worldPos.wall.leftWall != entt::null)
+        return ORIENTATION::RIGHT;
+
+    return ORIENTATION::UNSPECIFIED;
+}
+
+
+template<typename StateIDT, typename ViewT>
+TransitionChecks<StateIDT, ViewT>::WallClingLeaveTest::WallClingLeaveTest(const StateIDT &state_) :
+    Base::AbstractStateCondition(state_)
+{}
+
+template<typename StateIDT, typename ViewT>
+ORIENTATION TransitionChecks<StateIDT, ViewT>::WallClingLeaveTest::operator()(const ViewT &view_)
+{
+    const auto &transform = view_.template cget<ComponentTransform>();
+    const auto &worldPos = view_.template cget<WorldPosition>();
+
+    if (transform.m_orientation == ORIENTATION::LEFT && worldPos.wall.rightWall == entt::null)
+        return ORIENTATION::LEFT;
+
+    if (transform.m_orientation == ORIENTATION::RIGHT && worldPos.wall.leftWall == entt::null)
+        return ORIENTATION::RIGHT;
+
+    return ORIENTATION::UNSPECIFIED;
+}

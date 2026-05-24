@@ -280,15 +280,29 @@ void PhysicsEntityHandler::discoverPosition()
         }
         else
         {
-            if (m_worldPos.ground.demand
-                && (overlap & OverlapResult::OVERLAP_X) == OverlapResult::OVERLAP_X
-                && (!cld.m_obstacleId || !m_obsFallthrough.checkIgnoringObstacle(cld.m_obstacleId)))
+            if (m_worldPos.ground.demand)
             {
-                if (highest - 1 == m_trans.m_pos.y && (m_worldPos.ground.onGround == entt::null || m_worldPos.ground.onSlopeWithAngle != 0.0f))
+                if ((overlap & OverlapResult::OVERLAP_X) == OverlapResult::OVERLAP_X
+                    && (!cld.m_obstacleId || !m_obsFallthrough.checkIgnoringObstacle(cld.m_obstacleId)))
                 {
-                    m_worldPos.ground.onGround = idx;
-                    m_worldPos.ground.onSlopeWithAngle = cld.m_resolved.topAngleCoef();
+                    if (highest - 1 == m_trans.m_pos.y && (m_worldPos.ground.onGround == entt::null || m_worldPos.ground.onSlopeWithAngle != 0.0f))
+                    {
+                        m_worldPos.ground.onGround = idx;
+                        m_worldPos.ground.onSlopeWithAngle = cld.m_resolved.topAngleCoef();
+                    }
                 }
+            }
+
+            if (m_worldPos.wall.demand)
+            {
+                const Vector2<int> rightPoint{pushbox.getRightEdge() + 1, pushbox.getTopEdge() + pushbox.m_size.y / 2};
+                const Vector2<int> leftPoint{pushbox.getLeftEdge() - 1, pushbox.getTopEdge() + pushbox.m_size.y / 2};
+
+                if (cld.m_resolved.leftX() == rightPoint.x && cld.m_resolved.leftY() <= rightPoint.y && cld.m_resolved.bottomY() >= rightPoint.y)
+                    m_worldPos.wall.rightWall = idx;
+
+                if (cld.m_resolved.rightX() == leftPoint.x && cld.m_resolved.rightY() <= leftPoint.y && cld.m_resolved.bottomY() >= leftPoint.y)
+                    m_worldPos.wall.leftWall = idx;
             }
         }
     }

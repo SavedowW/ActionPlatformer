@@ -106,4 +106,21 @@ struct TransitionChecks
         const InputMotions m_input;
         const Flag<OrientationOptions> m_orientations;
     };
+
+
+    class WallClingEnterTest : public Base::AbstractStateCondition
+    {
+    public:
+        WallClingEnterTest(const StateIDT &state_);
+
+        ORIENTATION operator()(const ViewT &view_) override;
+    };
+
+    class WallClingLeaveTest : public Base::AbstractStateCondition
+    {
+    public:
+        WallClingLeaveTest(const StateIDT &state_);
+
+        ORIENTATION operator()(const ViewT &view_) override;
+    };
 };

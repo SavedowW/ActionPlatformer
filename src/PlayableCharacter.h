@@ -16,9 +16,9 @@ enum class PlayerState : SM::StateID {
     RUN_RECOVERY,
     PREJUMP,
     PREJUMP_FORWARD,
+    WALL_CLING,
     /*
     HARD_LANDING_RECOVERY,
-    WALL_CLING,
     WALL_CLING_PREJUMP,
     ATTACK_1,
     ATTACK_1_CHAIN,
@@ -34,6 +34,7 @@ SERIALIZE_ENUM(PlayerState, {
     ENUM_AUTO(PlayerState, RUN_RECOVERY),
     ENUM_AUTO(PlayerState, PREJUMP),
     ENUM_AUTO(PlayerState, PREJUMP_FORWARD),
+    ENUM_AUTO(PlayerState, WALL_CLING),
 })
 
 using PlayerView = ComponentsView<ComponentName, SM::StatePossessor<PlayerState>, ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, WorldPosition, ComponentAnimationRenderable, InputResolver>;

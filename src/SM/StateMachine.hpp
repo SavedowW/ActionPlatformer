@@ -3,6 +3,7 @@
 #include "Core/Vector2.hpp"
 #include "StateMachine.h"
 #include <entt/entt.hpp>
+#include <stdexcept>
 
 namespace SM
 {
@@ -53,6 +54,12 @@ namespace SM
     template<typename StateIDT, typename ViewT>
     void StateMachine<StateIDT, ViewT>::addState(std::unique_ptr<GenericState<StateIDT, ViewT>> &&newState_)
     {
+        if (!newState_)
+            throw std::runtime_error("Trying to add nullptr state");
+
+        if (m_states.contains(newState_->id()))
+            throw std::runtime_error(std::format("State machine already contains state {}", serialize(newState_->id())));
+
         m_states[newState_->id()] = std::move(newState_);
     }
 

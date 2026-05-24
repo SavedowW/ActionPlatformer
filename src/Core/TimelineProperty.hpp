@@ -31,19 +31,15 @@ public:
         m_isEmpty(false)
     {
         if (values_.empty())
-        {
             throw std::runtime_error("Trying to create a timeline property from an empty map");
-        }
-        else
-        {
-            m_keys.reserve(values_.size());
-            m_values.reserve(values_.size());
 
-            for (const auto &el : values_)
-            {
-                m_keys.emplace_back(el.first);
-                m_values.emplace_back(el.second);
-            }
+        m_keys.reserve(values_.size());
+        m_values.reserve(values_.size());
+
+        for (const auto &el : values_)
+        {
+            m_keys.emplace_back(el.first);
+            m_values.emplace_back(el.second);
         }
 
         m_last = 0;

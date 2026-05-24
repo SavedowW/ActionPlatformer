@@ -11,7 +11,7 @@ InputResolver::InputResolver() :
         {InputMotions::HOLD_UP_FORWARD, &InputResolver::checkHoldUpForward},
         {InputMotions::BUFFER_UP, &InputResolver::checkBufferUp},
         {InputMotions::BUFFER_UP_FORWARD, &InputResolver::checkBufferUpForward},
-        //{InputMotions::HOLD_HORDIR_BUFFERED, &InputResolver::checkHoldHorDirBuffered},
+        {InputMotions::HOLD_HORDIR_BUFFERED, &InputResolver::checkBufferedHoldHorDir},
         //{InputMotions::HOLD_DOWN, &InputResolver::checkHoldDown},
         //{InputMotions::TAP_UP, &InputResolver::checkTapUp},
         //{InputMotions::TAP_DOWN, &InputResolver::checkTapDown},
@@ -92,7 +92,7 @@ bool InputResolver::checkBufferUpForward(const ORIENTATION orientation_, const u
     const auto expectedButton = (orientation_ == ORIENTATION::RIGHT ? INPUT_BUTTON::RIGHT : INPUT_BUTTON::LEFT);
     const auto expectedDir = (orientation_ == ORIENTATION::RIGHT ? 1 : -1);
 
-    size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
+    const size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
     for (size_t i = 0; i <= lookAt; ++i)
     {
         const auto &in = m_inputQueue[i];
@@ -104,16 +104,14 @@ bool InputResolver::checkBufferUpForward(const ORIENTATION orientation_, const u
     return false;
 }
 
-
-/*
-bool InputResolver::checkHoldHorDirBuffered(ORIENTATION orientation_, unsigned int extendBuffer_) const
+bool InputResolver::checkBufferedHoldHorDir(const ORIENTATION orientation_, const unsigned int extendBuffer_) const
 {
     if (m_inputQueue.getFilled() == 0)
         return false;
 
     const int expected = (orientation_ == ORIENTATION::RIGHT ? 1 : -1);
 
-    size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
+    const size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
     for (size_t i = 0; i <= lookAt; ++i)
     {
         const auto &in = m_inputQueue[i];
@@ -124,6 +122,8 @@ bool InputResolver::checkHoldHorDirBuffered(ORIENTATION orientation_, unsigned i
     return false;
 }
 
+
+/*
 bool InputResolver::checkHoldDown(ORIENTATION, unsigned int) const
 {
     if (m_inputQueue.getFilled() == 0)

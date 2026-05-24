@@ -274,3 +274,28 @@ void StateProperties<StateIDT, ViewT>::Pipe::TestFallthrough::operator()(const V
     if (view_.template get<InputResolver>().isInputActive(INPUT_BUTTON::DOWN))
         view_.template get<ComponentObstacleFallthrough>().setIgnoringObstacles();
 }
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Pipe::HaltSideDownwardMomentum::operator()(const ViewT &view_, const SM::TransitionData<StateIDT>&) const
+{
+    auto &physical = view_.template get<ComponentPhysical>();
+
+    if (physical.m_inertia.y > 0)
+        physical.m_inertia.y = 0;
+    if (physical.m_velocity.y > 0)
+        physical.m_velocity.y = 0;
+
+    physical.m_velocity.x = 0;
+    physical.m_inertia.x = 0;
+}
+
+template<typename StateIDT, typename ViewT>
+constexpr StateProperties<StateIDT, ViewT>::Pipe::SetDemandWall::SetDemandWall(bool demandWall_) :
+    m_demandWall{demandWall_}
+{}
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Pipe::SetDemandWall::operator()(const ViewT &view_, const SM::TransitionData<StateIDT>&) const
+{
+    view_.template get<WorldPosition>().wall.demand = m_demandWall;
+}

@@ -218,5 +218,22 @@ struct StateProperties
         public:
             void operator()(const ViewT&, const SM::TransitionData<StateIDT> &transition_) const;
         };
+
+        class HaltSideDownwardMomentum
+        {
+        public:
+            void operator()(const ViewT&, const SM::TransitionData<StateIDT> &transition_) const;
+        };
+
+        class SetDemandWall
+        {
+        public:
+            constexpr SetDemandWall(bool demandWall_);
+            
+            void operator()(const ViewT&, const SM::TransitionData<StateIDT> &transition_) const;
+
+        private:
+            bool m_demandWall;
+        };
     };
 };

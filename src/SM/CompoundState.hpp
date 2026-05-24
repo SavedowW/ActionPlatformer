@@ -99,7 +99,7 @@ namespace SM
         auto found = m_pipes.find(transition_.fromState);
         if (found != m_pipes.end())
             (*found->second)(view_, transition_);
-        else
+        else if (m_defaultPipe)
             (*m_defaultPipe)(view_, transition_);
     }
 
