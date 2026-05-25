@@ -6,31 +6,45 @@ enum class InputMotions : uint8_t
 {
     HOLD_HORDIR,
     CHECK_NO_HORDIR,
-    HOLD_UP,
-    HOLD_UP_FORWARD,
-    BUFFER_UP,
-    BUFFER_UP_FORWARD,
     HOLD_HORDIR_BUFFERED,
-    //HOLD_DOWN,
-    //TAP_UP,
-    //TAP_DOWN,
-    //TAP_UP_HORDIR,
-    //TAP_ATTACK,
+
+    TAP_ANY_EXCEPT_BACKWARDS,
+
+    HOLD_UP,
+    BUFFER_UP,
+    BUFFER_UP_STRICT,
+    
+    HOLD_UP_FORWARD,
+    BUFFER_UP_FORWARD,
+    BUFFER_UP_FORWARD_STRICT,
+
+    BUFFER_FORWARD_STRICT,
+
+    BUFFER_DOWN_FORWARD_STRICT,
+
+    BUFFER_DOWN_STRICT
 };
 
 SERIALIZE_ENUM(InputMotions, {
     ENUM_AUTO(InputMotions, HOLD_HORDIR),
     ENUM_AUTO(InputMotions, CHECK_NO_HORDIR),
-    ENUM_AUTO(InputMotions, HOLD_UP),
-    ENUM_AUTO(InputMotions, HOLD_UP_FORWARD),
-    ENUM_AUTO(InputMotions, BUFFER_UP),
-    ENUM_AUTO(InputMotions, BUFFER_UP_FORWARD),
     ENUM_AUTO(InputMotions, HOLD_HORDIR_BUFFERED),
-    //ENUM_AUTO(InputMotions, HOLD_DOWN),
-    //ENUM_AUTO(InputMotions, TAP_UP),
-    //ENUM_AUTO(InputMotions, TAP_DOWN),
-    //ENUM_AUTO(InputMotions, TAP_UP_HORDIR),
-    //ENUM_AUTO(InputMotions, TAP_ATTACK)
+    
+    ENUM_AUTO(InputMotions, TAP_ANY_EXCEPT_BACKWARDS),
+
+    ENUM_AUTO(InputMotions, HOLD_UP),
+    ENUM_AUTO(InputMotions, BUFFER_UP),
+    ENUM_AUTO(InputMotions, BUFFER_UP_STRICT),
+
+    ENUM_AUTO(InputMotions, HOLD_UP_FORWARD),
+    ENUM_AUTO(InputMotions, BUFFER_UP_FORWARD),
+    ENUM_AUTO(InputMotions, BUFFER_UP_FORWARD_STRICT),
+
+    ENUM_AUTO(InputMotions, BUFFER_FORWARD_STRICT),
+
+    ENUM_AUTO(InputMotions, BUFFER_DOWN_FORWARD_STRICT),
+
+    ENUM_AUTO(InputMotions, BUFFER_DOWN_STRICT)
 })
 
 class InputResolver
@@ -46,14 +60,23 @@ public:
     
     bool isInputActive(INPUT_BUTTON button_) const;
 
+    const InputQueue &getHistory() const noexcept;
+
 private:
     bool checkHoldHorDir(ORIENTATION orientation_, unsigned int extendBuffer_) const;
     bool checkNoHorDir(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-    bool checkHoldUp(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-    bool checkHoldUpForward(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-    bool checkBufferUp(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-    bool checkBufferUpForward(ORIENTATION orientation_, unsigned int extendBuffer_) const;
     bool checkBufferedHoldHorDir(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+
+    bool checkTapExceptBackwards(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+
+    bool checkHoldUp(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkBufferUp(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkBufferUpStrict(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+
+    bool checkHoldUpForward(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkBufferUpForward(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkBufferUpForwardStrict(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    
     //bool checkHoldHorDirBuffered(ORIENTATION orientation_, unsigned int extendBuffer_) const;
     //bool checkHoldDown(ORIENTATION orientation_, unsigned int extendBuffer_) const;
     //bool checkTapUp(ORIENTATION orientation_, unsigned int extendBuffer_) const;

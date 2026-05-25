@@ -116,6 +116,18 @@ struct StateProperties
         public:
             void operator()(const ViewT&) const;
         };
+
+
+        class Realign
+        {
+        public:
+            Realign(TimelineProperty<bool> &&shouldRealign_);
+
+            void operator()(const ViewT &view_) const;
+        
+        private:
+            TimelineProperty<bool> m_shouldRealign;
+        };
     };
 
 
@@ -234,6 +246,12 @@ struct StateProperties
 
         private:
             bool m_demandWall;
+        };
+
+        class LeaveWallPrejump
+        {
+        public:
+            void operator()(const ViewT&, const SM::TransitionData<StateIDT> &transition_) const;
         };
     };
 };

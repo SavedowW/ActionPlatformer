@@ -1,4 +1,5 @@
 #pragma once
+#include "Core/GameData.h"
 #include "Core/CoreComponents.h"
 #include "Core/InputResolver.h"
 #include "Core/InputState.h"
@@ -159,6 +160,27 @@ void StateProperties<StateIDT, ViewT>::Update::TestFallthrough::operator()(const
         view_.template get<ComponentObstacleFallthrough>().setIgnoringObstacles();
 }
 
+
+template<typename StateIDT, typename ViewT>
+StateProperties<StateIDT, ViewT>::Update::Realign::Realign(TimelineProperty<bool> &&shouldRealign_) :
+    m_shouldRealign{std::move(shouldRealign_)}
+{}
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Update::Realign::operator()(const ViewT &view_) const
+{
+    if (m_shouldRealign[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()])
+    {
+        const auto rawOffset = view_.template get<ComponentPhysical>().peekRawOffset();
+
+        if (rawOffset.x >= 0.001f)
+            view_.template get<ComponentTransform>().m_orientation = ORIENTATION::RIGHT;
+        else if (rawOffset.x <= -0.001f)
+            view_.template get<ComponentTransform>().m_orientation = ORIENTATION::LEFT;
+    }
+}
+
+
 template<typename StateIDT, typename ViewT>
 StateProperties<StateIDT, ViewT>::Pipe::Notify::Notify(const char *action_) :
     m_action(action_)
@@ -299,3 +321,63 @@ void StateProperties<StateIDT, ViewT>::Pipe::SetDemandWall::operator()(const Vie
 {
     view_.template get<WorldPosition>().wall.demand = m_demandWall;
 }
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Pipe::LeaveWallPrejump::operator()(const ViewT &view_, const SM::TransitionData<StateIDT>&) const
+{
+    const auto &inputs = view_.template get<InputResolver>().getHistory();
+    const auto &transform = view_.template get<ComponentTransform>();
+    auto &physical = view_.template get<ComponentPhysical>();
+
+    const int orient = (transform.m_orientation == ORIENTATION::RIGHT ? 1 : -1);
+    Vector2<float> targetSpeed = {orient * 0.7f, 0.1f};;
+    bool fall = true;
+
+    const size_t lookAt = std::min(inputs.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength * 2));
+    for (size_t i = 0; i <= lookAt; ++i)
+    {
+        const auto &in = inputs[i];
+
+        if (in.m_dir == Vector2{0, -1})
+        {
+            targetSpeed = {orient * 0.7f, -5.0f};
+            fall = false;
+            break;
+        }
+
+        if (in.m_dir == Vector2{orient, -1})
+        {
+            targetSpeed = {orient * 1.5f, -4.5f};
+            fall = false;
+            break;
+        }
+
+        if (in.m_dir == Vector2{orient, 0})
+        {
+            targetSpeed = {orient * 3.0f, -2.2f};
+            fall = false;
+            break;
+        }
+
+        if (in.m_dir == Vector2{orient, 1})
+        {
+            targetSpeed = {orient * 3.5f, 0.0f};
+            fall = false;
+            break;
+        }
+
+        if (in.m_dir == Vector2{orient, 1})
+        {
+            break;
+        }
+    }
+
+    if (fall)
+    {
+        physical.m_velocity += targetSpeed;
+        physical.m_inertia = {0.0f, 0.0f};
+    }
+    else
+        physical.m_velocity += targetSpeed;
+}
+

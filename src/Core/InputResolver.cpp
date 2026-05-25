@@ -7,11 +7,17 @@ InputResolver::InputResolver() :
     m_inputComparators {
         {InputMotions::HOLD_HORDIR, &InputResolver::checkHoldHorDir},
         {InputMotions::CHECK_NO_HORDIR, &InputResolver::checkNoHorDir},
-        {InputMotions::HOLD_UP, &InputResolver::checkHoldUp},
-        {InputMotions::HOLD_UP_FORWARD, &InputResolver::checkHoldUpForward},
-        {InputMotions::BUFFER_UP, &InputResolver::checkBufferUp},
-        {InputMotions::BUFFER_UP_FORWARD, &InputResolver::checkBufferUpForward},
         {InputMotions::HOLD_HORDIR_BUFFERED, &InputResolver::checkBufferedHoldHorDir},
+
+        {InputMotions::TAP_ANY_EXCEPT_BACKWARDS, &InputResolver::checkTapExceptBackwards},
+
+        {InputMotions::HOLD_UP, &InputResolver::checkHoldUp},
+        {InputMotions::BUFFER_UP, &InputResolver::checkBufferUp},
+        {InputMotions::BUFFER_UP_STRICT, &InputResolver::checkBufferUpStrict},
+
+        {InputMotions::HOLD_UP_FORWARD, &InputResolver::checkHoldUpForward},
+        {InputMotions::BUFFER_UP_FORWARD, &InputResolver::checkBufferUpForward},
+        {InputMotions::BUFFER_UP_FORWARD_STRICT, &InputResolver::checkBufferUpForwardStrict},
         //{InputMotions::HOLD_DOWN, &InputResolver::checkHoldDown},
         //{InputMotions::TAP_UP, &InputResolver::checkTapUp},
         //{InputMotions::TAP_DOWN, &InputResolver::checkTapDown},
@@ -84,6 +90,22 @@ bool InputResolver::checkBufferUp(ORIENTATION, const unsigned int extendBuffer_)
     return false;
 }
 
+bool InputResolver::checkBufferUpStrict(ORIENTATION, const unsigned int extendBuffer_) const
+{
+    if (m_inputQueue.getFilled() == 0)
+        return false;
+
+    const size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
+    for (size_t i = 0; i <= lookAt; ++i)
+    {
+        const auto &in = m_inputQueue[i];
+        if (in.m_inputs.at(INPUT_BUTTON::UP) == INPUT_BUTTON_STATE::PRESSED && in.m_dir == Vector2{0, -1})
+            return true;
+    }
+
+    return false;
+}
+
 bool InputResolver::checkBufferUpForward(const ORIENTATION orientation_, const unsigned int extendBuffer_) const
 {
     if (m_inputQueue.getFilled() == 0)
@@ -97,7 +119,34 @@ bool InputResolver::checkBufferUpForward(const ORIENTATION orientation_, const u
     {
         const auto &in = m_inputQueue[i];
         if (in.m_inputs.at(INPUT_BUTTON::UP) == INPUT_BUTTON_STATE::PRESSED && in.m_dir.y < 0 &&
-            in.m_inputs.at(expectedButton) == INPUT_BUTTON_STATE::PRESSED && in.m_dir.x == expectedDir)
+            in.m_inputs.at(expectedButton) == INPUT_BUTTON_STATE::HOLD && in.m_dir.x == expectedDir)
+            return true;
+    }
+
+    return false;
+}
+
+bool InputResolver::checkBufferUpForwardStrict(const ORIENTATION orientation_, const unsigned int extendBuffer_) const
+{
+    if (m_inputQueue.getFilled() == 0)
+        return false;
+
+    const auto expectedButton = (orientation_ == ORIENTATION::RIGHT ? INPUT_BUTTON::RIGHT : INPUT_BUTTON::LEFT);
+    const auto expectedDir = (orientation_ == ORIENTATION::RIGHT ? 1 : -1);
+
+    bool foundUp = false;
+    bool foundForward = false;
+    bool foundDirection = false;
+
+    const size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
+    for (size_t i = 0; i <= lookAt; ++i)
+    {
+        const auto &in = m_inputQueue[i];
+        foundUp = foundUp || in.m_inputs.at(INPUT_BUTTON::UP) == INPUT_BUTTON_STATE::PRESSED;
+        foundForward = foundForward || in.m_inputs.at(expectedButton) == INPUT_BUTTON_STATE::PRESSED;
+        foundDirection = foundDirection || (in.m_dir == Vector2{expectedDir, -1});
+
+        if ((foundUp || foundForward) && foundDirection)
             return true;
     }
 
@@ -122,81 +171,26 @@ bool InputResolver::checkBufferedHoldHorDir(const ORIENTATION orientation_, cons
     return false;
 }
 
-
-/*
-bool InputResolver::checkHoldDown(ORIENTATION, unsigned int) const
+bool InputResolver::checkTapExceptBackwards(const ORIENTATION orientation_, const unsigned int extendBuffer_) const
 {
     if (m_inputQueue.getFilled() == 0)
         return false;
 
-    return m_inputQueue[0].m_dir.y > 0;
-}
-
-bool InputResolver::checkTapUp(ORIENTATION, unsigned int extendBuffer_) const
-{
-    if (m_inputQueue.getFilled() == 0)
-        return false;
-
-    size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
-    for (size_t i = 0; i <= lookAt; ++i)
-    {
-        const auto &in = m_inputQueue[i];
-        if (in.m_dir.y == -1 && in.m_inputs.at(INPUT_BUTTON::UP) == INPUT_BUTTON_STATE::PRESSED)
-            return true;
-    }
-
-    return false;
-}
-
-bool InputResolver::checkTapDown(ORIENTATION, unsigned int extendBuffer_) const
-{
-    if (m_inputQueue.getFilled() == 0)
-        return false;
-
-    size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
-    for (size_t i = 0; i <= lookAt; ++i)
-    {
-        const auto &in = m_inputQueue[i];
-        if (in.m_dir.y == 1 && in.m_inputs.at(INPUT_BUTTON::DOWN) == INPUT_BUTTON_STATE::PRESSED)
-            return true;
-    }
-
-    return false;
-}
-
-bool InputResolver::checkStrictTapUpHorDir(ORIENTATION orientation_, unsigned int extendBuffer_) const
-{
-    if (m_inputQueue.getFilled() == 0)
-        return false;
-
+    const auto expectedButton = (orientation_ == ORIENTATION::RIGHT ? INPUT_BUTTON::RIGHT : INPUT_BUTTON::LEFT);
     const int expected = (orientation_ == ORIENTATION::RIGHT ? 1 : -1);
 
-    size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
+    const size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
     for (size_t i = 0; i <= lookAt; ++i)
     {
         const auto &in = m_inputQueue[i];
-        if (in.m_dir == Vector2{expected, -1} && in.m_inputs.at(INPUT_BUTTON::UP) == INPUT_BUTTON_STATE::PRESSED)
+        if (in.m_inputs.at(expectedButton) == INPUT_BUTTON_STATE::PRESSED && in.m_dir.x == expected ||
+            in.m_inputs.at(INPUT_BUTTON::UP) == INPUT_BUTTON_STATE::PRESSED && in.m_dir.y < 0 ||
+            in.m_inputs.at(INPUT_BUTTON::DOWN) == INPUT_BUTTON_STATE::PRESSED && in.m_dir.y > 0)
             return true;
     }
 
     return false;
 }
-
-bool InputResolver::checkTapAttack(ORIENTATION, unsigned int extendBuffer_) const
-{
-    if (m_inputQueue.getFilled() == 0)
-        return false;
-
-    size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
-    for (size_t i = 0; i <= lookAt; ++i)
-    {
-        const auto &in = m_inputQueue[i];
-        if (in.m_inputs.at(INPUT_BUTTON::ATTACK) == INPUT_BUTTON_STATE::PRESSED)
-            return true;
-    }
-
-    return false;
-}*/
 
 
 Vector2<int> InputResolver::getCurrentInputDir() const
@@ -218,4 +212,9 @@ bool InputResolver::isInputActive(const INPUT_BUTTON button_) const
         return false;
 
     return m_inputQueue[0].isInputActive(button_);
+}
+
+const InputQueue &InputResolver::getHistory() const noexcept
+{
+    return m_inputQueue;
 }
