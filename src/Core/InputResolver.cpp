@@ -179,13 +179,21 @@ bool InputResolver::checkTapExceptBackwards(const ORIENTATION orientation_, cons
     const auto expectedButton = (orientation_ == ORIENTATION::RIGHT ? INPUT_BUTTON::RIGHT : INPUT_BUTTON::LEFT);
     const int expected = (orientation_ == ORIENTATION::RIGHT ? 1 : -1);
 
+    bool vUpDirDiscovered = false;
+    bool vDownDirDiscovered = false;
+    bool horDirDiscovered = false;
+
     const size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
     for (size_t i = 0; i <= lookAt; ++i)
     {
         const auto &in = m_inputQueue[i];
-        if (in.m_inputs.at(expectedButton) == INPUT_BUTTON_STATE::PRESSED && in.m_dir.x == expected ||
-            in.m_inputs.at(INPUT_BUTTON::UP) == INPUT_BUTTON_STATE::PRESSED && in.m_dir.y < 0 ||
-            in.m_inputs.at(INPUT_BUTTON::DOWN) == INPUT_BUTTON_STATE::PRESSED && in.m_dir.y > 0)
+        vUpDirDiscovered = vUpDirDiscovered || in.m_dir.y < 0;
+        vDownDirDiscovered = vDownDirDiscovered || in.m_dir.y > 0;
+        horDirDiscovered = horDirDiscovered || in.m_dir.x == expected;
+
+        if (in.m_inputs.at(expectedButton) == INPUT_BUTTON_STATE::PRESSED && horDirDiscovered ||
+            in.m_inputs.at(INPUT_BUTTON::UP) == INPUT_BUTTON_STATE::PRESSED && vUpDirDiscovered ||
+            in.m_inputs.at(INPUT_BUTTON::DOWN) == INPUT_BUTTON_STATE::PRESSED && vDownDirDiscovered)
             return true;
     }
 
