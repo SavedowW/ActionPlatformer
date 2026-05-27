@@ -1,4 +1,5 @@
 #include "AnimationManager.h"
+#include "Logger.hpp"
 #include "TimelineProperty.hpp"
 #include "Renderer.h"
 #include "JsonUtils.hpp"
@@ -42,16 +43,14 @@ AnimationManager::AnimationManager()
     Filesystem::ensureDirectoryRelative("Resources/Animations");
     const std::filesystem::path basePath(Filesystem::getRootDirectory() + "Resources/Animations/");
 
-    std::cout << "=== LISTING FOUND ANIMATIONS ===" << std::endl;
     for (const auto &entry : std::filesystem::recursive_directory_iterator(basePath))
     {
         const std::filesystem::path &dirpath = entry.path();
-        auto parentPath = dirpath.parent_path();
-        auto fn = entry.path().filename().replace_extension();
+        const auto parentPath = dirpath.parent_path();
+        const auto fn = entry.path().filename().replace_extension();
         if (entry.is_regular_file() && dirpath.extension() == ".json" && parentPath.filename() == fn)
         {
-            auto path = Filesystem::getRelativePath(basePath, parentPath);
-            std::cout << path << std::endl;
+            const auto path = Filesystem::getRelativePath(basePath, parentPath);
 
             ContainedAnimationData cad;
             cad.m_path = dirpath;
@@ -60,7 +59,12 @@ AnimationManager::AnimationManager()
             m_ids[path] = m_textureArrs.size() - 1;
         }
     }
-    std::cout << "=== LISTING ENDS HERE ==="  << std::endl;
+    LOG_INFO("Found animations ({}):{}", m_ids.size(), [&]() -> std::string {
+        std::string res;
+        for (const auto &el : m_ids)
+            utils::addToSeparatedList('"' + el.first + '"', res);
+        return res;
+    }());
 
     //Load preloading textures
     //preload("Particles/Block");

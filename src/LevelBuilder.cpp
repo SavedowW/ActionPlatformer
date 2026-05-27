@@ -8,6 +8,7 @@
 #include "Core/CoreComponents.h"
 #include "Core/CameraFocusArea.h"
 #include "Core/FilesystemUtils.h"
+#include "Core/Logger.hpp"
 #include <algorithm>
 #include <fstream>
 #include <limits>
@@ -59,16 +60,13 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, NavGraph &graph_, Co
 
     std::ifstream mapjson(fullpath);
     if (!mapjson.is_open())
-    {
-        std::cout << "Failed to open map description at \"" << fullpath << "\"\n";
-        return;
-    }
+        throw std::runtime_error(std::format("Failed to open map description at \"{}\"", fullpath));
 
     nlohmann::json mapdata = nlohmann::json::parse(mapjson);
 
     // Preparing layer queue
     std::vector<LayerDescr> layers;
-    for (const auto &layer : mapdata["layers"])
+    for (const auto &layer : mapdata.at("layers"))
     {
         layers.emplace_back(layer);
     }
@@ -78,15 +76,13 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, NavGraph &graph_, Co
     });
 
     // Parsing tilesets
-    for (const auto &jsonTileset : mapdata["tilesets"])
+    for (const auto &jsonTileset : mapdata.at("tilesets"))
     {
-        std::filesystem::path jsonpath(static_cast<std::string>(jsonTileset["source"]));
-        if (jsonpath.filename().string().substr(0, 4) == "util")
-        {
-            loadUtilTileset(std::filesystem::path(fullpath).parent_path() / jsonpath, jsonTileset["firstgid"]);
-        }
+        std::filesystem::path jsonpath(static_cast<std::string>(jsonTileset.at("source")));
+        if (jsonpath.filename().string().starts_with("util"))
+            loadUtilTileset(std::filesystem::path(fullpath).parent_path() / jsonpath, jsonTileset.at("firstgid"));
         else
-            loadTileset(std::filesystem::path(fullpath).parent_path() / jsonpath, jsonTileset["firstgid"]);
+            loadTileset(std::filesystem::path(fullpath).parent_path() / jsonpath, jsonTileset.at("firstgid"));
     }
 
     m_colliderIds.clear();
@@ -96,31 +92,34 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, NavGraph &graph_, Co
     for (const auto &layer : layers)
     {
         m_autoLayer--;
+
+        const std::string name = layer.m_layer->at("name");
+        const std::string type = layer.m_layer->at("type");
         
-        std::cout << "Loading " << (*layer.m_layer)["name"] << " of type " << (*layer.m_layer)["type"] << std::endl;
-        if ((*layer.m_layer)["type"] == "tilelayer")
+        LOG_TRACE("Loading {} of type {}", name, type);
+        if (type == "tilelayer")
         {
             loadTileLayer(*layer.m_layer);
         }
-        else if ((*layer.m_layer)["type"] == "objectgroup")
+        else if (type == "objectgroup")
         {
-            if ((*layer.m_layer)["name"] == "Meta")
+            if (name == "Meta")
             {
                 loadMetaLayer(*layer.m_layer);
             }
-            else if ((*layer.m_layer)["name"] == "Collision")
+            else if (name == "Collision")
             {
                 loadCollisionLayer(*layer.m_layer, rtCollection_);
             }
-            else if ((*layer.m_layer)["name"] == "Navigation")
+            else if (name == "Navigation")
             {
                 loadNavigationLayer(*layer.m_layer, graph_);
             }
-            else if ((*layer.m_layer)["name"] == "Focus areas")
+            else if (name == "Focus areas")
             {
                 loadFocusLayer(*layer.m_layer);
             }
-            else if ((*layer.m_layer)["name"] == "ColliderRouting")
+            else if (name == "ColliderRouting")
             {
                 loadColliderRoutingLayer(*layer.m_layer, rtCollection_);
             }
@@ -132,10 +131,10 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, NavGraph &graph_, Co
     }
 }
 
-entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obstacleId_, ColliderPointRouting &route_)
+entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obstacleId_, const ColliderPointRouting &route_)
 {
-    auto newid = m_reg.create();
-    auto &tr = m_reg.emplace<ComponentTransform>(newid, worldCld_.topLeft(), ORIENTATION::RIGHT);
+    const auto newid = m_reg.create();
+    const auto &tr = m_reg.emplace<ComponentTransform>(newid, worldCld_.topLeft(), ORIENTATION::RIGHT);
     m_reg.emplace<ComponentStaticCollider>(newid, ComponentStaticCollider(tr.m_pos, worldCld_.movedBy(-worldCld_.topLeft()), obstacleId_));
 
     m_reg.emplace<MoveCollider2Points>(newid, route_.m_origin.m_pos - worldCld_.topLeft());
@@ -148,8 +147,8 @@ entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obsta
 
 entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obstacleId_)
 {
-    auto newid = m_reg.create();
-    auto &tr = m_reg.emplace<ComponentTransform>(newid, worldCld_.topLeft(), ORIENTATION::RIGHT);
+    const auto newid = m_reg.create();
+    const auto &tr = m_reg.emplace<ComponentTransform>(newid, worldCld_.topLeft(), ORIENTATION::RIGHT);
     m_reg.emplace<ComponentStaticCollider>(newid, ComponentStaticCollider(tr.m_pos, worldCld_.movedBy(-worldCld_.topLeft()), obstacleId_));
     
     return newid;
@@ -173,7 +172,7 @@ Traverse::TraitT LevelBuilder::lineToTraverse(const std::string &line_)
         else if (s == "D")
             requireFallthrough = true;
         else
-            std::cout << "Warning: unknown trait identifier \"" << s << "\" at \"" << line_ << "\"" << std::endl;
+            LOG_WARNING("Warning: unknown trait identifier \"{}\" at \"{}\"", s, line_);
     }
 
     auto sig = Traverse::makeSignature(requireFallthrough);
@@ -185,18 +184,18 @@ Traverse::TraitT LevelBuilder::lineToTraverse(const std::string &line_)
 
 void LevelBuilder::loadTileset(const std::filesystem::path &jsonLoc_, uint32_t firstgid_)
 {
-    std::cout << "Loading normal tileset from \"" << jsonLoc_ << "\", first gid: " << firstgid_ << std::endl;
+    LOG_INFO("Loading normal tileset from \"{}\", first gid: {}", jsonLoc_.string(), firstgid_);
 
     std::ifstream tilesetjson(jsonLoc_);
     if (!tilesetjson.is_open())
     {
-        std::cout << "Failed to open tileset description at \"" << jsonLoc_ << "\"\n";
+        LOG_ERROR("Failed to open tileset description at \"{}\"", jsonLoc_.string());
         return;
     }
 
     nlohmann::json tilesetdata = nlohmann::json::parse(tilesetjson);
 
-    std::filesystem::path imagePath(static_cast<std::string>(tilesetdata["image"]));
+    std::filesystem::path imagePath(tilesetdata.at("image"));
     if (imagePath.is_relative())
     {
         imagePath = jsonLoc_.parent_path() / imagePath;
@@ -204,7 +203,6 @@ void LevelBuilder::loadTileset(const std::filesystem::path &jsonLoc_, uint32_t f
 
     imagePath = std::filesystem::weakly_canonical(imagePath);
     imagePath = std::filesystem::relative(imagePath, Filesystem::getRootDirectory() + "Resources/");
-    std::cout << imagePath.string() << std::endl;
 
     auto type = imagePath.begin()->string();
 
@@ -230,50 +228,46 @@ void LevelBuilder::loadTileset(const std::filesystem::path &jsonLoc_, uint32_t f
         m_tilebase.addTileset(internalPath, firstgid_);
     }
     else if (type == "Animations")
-    {
         throw std::logic_error("Animated tilesets are not implemented yet");
-    }
     else
-    {
         throw std::runtime_error("Tileset image is in neither animations nor sprites directory");
-    }
 }
 
 void LevelBuilder::loadUtilTileset(const std::filesystem::path &jsonLoc_, uint32_t firstgid_)
 {
-    std::cout << "Loading utility tileset from \"" << jsonLoc_ << "\", first gid: " << firstgid_ << std::endl;
+    LOG_INFO("Loading utility tileset from \"{}\", first gid: {}", jsonLoc_.string(), firstgid_);
 
     std::ifstream tilesetjson(jsonLoc_);
     if (!tilesetjson.is_open())
     {
-        std::cout << "Failed to open utility tileset description at \"" << jsonLoc_ << "\"\n";
+        LOG_ERROR("Failed to open utility tileset description at \"{}\"", jsonLoc_.string());
         return;
     }
 
     nlohmann::json tilesetdata = nlohmann::json::parse(tilesetjson);
 
-    for (const auto &tile : tilesetdata["tiles"])
-    {
-        m_utilTilesetFactories[firstgid_ + tile["id"].get<uint32_t>()] = m_factories[tile["type"]];
-    }
+    for (const auto &tile : tilesetdata.at("tiles"))
+        m_utilTilesetFactories.emplace(firstgid_ + tile.at("id").get<uint32_t>(), m_factories.at(tile.at("type")));
 }
 
 void LevelBuilder::loadTileLayer(const nlohmann::json &json_)
 {
     auto depth = m_autoLayer;
 
-    Vector2<int> pos;
-    pos.y = utils::tryClaim(json_, "offsety", 0);
-    pos.x = utils::tryClaim(json_, "offsetx", 0);
+    const Vector2<int> pos {
+        utils::tryClaim(json_, "offsetx", 0),
+        utils::tryClaim(json_, "offsety", 0)
+    };
 
-    Vector2<int> size;
-    size.y = json_["height"];
-    size.x = json_["width"];
+    const Vector2<int> size {
+        utils::tryClaim(json_, "width", 0),
+        utils::tryClaim(json_, "height", 0)
+    };
 
-    Vector2<float> parallaxFactor;
-
-    parallaxFactor.x = utils::tryClaim(json_, "parallaxx", 1.0f);
-    parallaxFactor.y = utils::tryClaim(json_, "parallaxy", 1.0f);
+    const Vector2<float> parallaxFactor {
+        utils::tryClaim(json_, "parallaxx", 1.0f),
+        utils::tryClaim(json_, "parallaxy", 1.0f)
+    };
 
     entt::entity entity = entt::null;
     bool existingEntity = false;
@@ -282,13 +276,22 @@ void LevelBuilder::loadTileLayer(const nlohmann::json &json_)
     {
         for (const auto &prop : json_["properties"])
         {
-            if (prop["name"] == "collider")
+            const std::string name = prop.at("name");
+            if (name == "collider")
             {
-                entity = m_colliderIds.at(static_cast<int>(prop["value"]));
-                existingEntity = true;
+                const auto found = m_colliderIds.find(prop.at("value"));
+                if (found != m_colliderIds.end())
+                {
+                    entity = found->second;
+                    existingEntity = true;
+                }
+                else
+                    LOG_ERROR("Failed to find collider {} tied to the tile layer {}", prop.at("value").get<uint32_t>(), json_.at("id").get<int>());
             }
-            else if (prop["name"] == "layer")
-                depth = static_cast<int>(prop["value"]);
+            else if (name == "layer")
+                depth = prop.at("value");
+            else
+                LOG_ERROR("Unexpected property \"{}\"", name);
         }
     }
 
@@ -307,16 +310,17 @@ void LevelBuilder::loadTileLayer(const nlohmann::json &json_)
     m_reg.emplace<RenderLayer>(entity, depth, utils::tryClaim(json_, "visible", true));
 
     int tileLinearPos = 0;
-    for (const uint32_t tile : json_["data"])
+    for (const uint32_t tile : json_.at("data"))
     {
         if (tile)
         {
-            uint32_t gid = tile;
-            Vector2<int> tilePos;
-            tilePos.x = tileLinearPos % size.x;
-            tilePos.y = tileLinearPos / size.x;
+            const uint32_t gid = tile;
+            const Vector2<int> tilePos {
+                tileLinearPos % size.x,
+                tileLinearPos / size.x
+            };
 
-            tilelayer.m_tiles[tilePos.y][tilePos.x] = m_tilebase.getTile(gid);
+            tilelayer.m_tiles.at(tilePos.y).at(tilePos.x) = m_tilebase.getTile(gid);
         }
 
         tileLinearPos++;
@@ -325,31 +329,33 @@ void LevelBuilder::loadTileLayer(const nlohmann::json &json_)
 
 void LevelBuilder::loadMetaLayer(const nlohmann::json &json_)
 {
-    for (const auto &obj : json_["objects"])
+    for (const auto &obj : json_.at("objects"))
     {
-        if (obj["type"] == "SpawnPoint")
+        const std::string type = obj.at("type");
+        if (obj.at("type") == "SpawnPoint")
         {
             auto metaEntity = m_reg.create();
-            m_reg.emplace<ComponentSpawnLocation>(metaEntity, Vector2{
-                static_cast<int>(obj["x"]),\
-                static_cast<int>(obj["y"])
+            m_reg.emplace<ComponentSpawnLocation>(metaEntity, Vector2<int>{
+                obj.at("x"),
+                obj.at("y")
             });
         }
+            LOG_ERROR("Unexpected type at a meta layer \"{}\"", type);
     }
 }
 
-void LevelBuilder::loadCollisionLayer(const nlohmann::json &json_, ColliderRoutesCollection &rtCollection_)
+void LevelBuilder::loadCollisionLayer(const nlohmann::json &json_, const ColliderRoutesCollection &rtCollection_)
 {
-    for (const auto &cld : json_["objects"])
+    for (const auto &cld : json_.at("objects"))
     {
-        int objectId = static_cast<int>(cld["id"]);
+        const int objectId = cld.at("id");
         SlopeCollider scld;
         int obstacleId = 0;
-        ColliderPointRouting *route = nullptr;
+        auto route = rtCollection_.end();
 
-        Vector2<int> tl{
-                static_cast<int>(cld["x"]),
-                static_cast<int>(cld["y"])
+        const Vector2<int> tl{
+                cld.at("x"),
+                cld.at("y")
             };
 
         if (cld.contains("polygon"))
@@ -362,12 +368,9 @@ void LevelBuilder::loadCollisionLayer(const nlohmann::json &json_, ColliderRoute
 
             int maxy = std::numeric_limits<int>::min();
 
-            for (const auto &vertex : cld["polygon"])
+            for (const auto &vertex : cld.at("polygon"))
             {
-                Vector2<int> vvx = tl + Vector2{
-                    static_cast<int>(vertex["x"]),
-                    static_cast<int>(vertex["y"])
-                };
+                const Vector2<int> vvx = tl.add<int>(vertex.at("x"), vertex.at("y"));
 
                 minx = std::min(minx, vvx.x);
                 maxx = std::max(maxx, vvx.x);
@@ -387,8 +390,8 @@ void LevelBuilder::loadCollisionLayer(const nlohmann::json &json_, ColliderRoute
         else
         {
             Vector2<int> size{
-                static_cast<int>(cld["width"]),
-                static_cast<int>(cld["height"])
+                static_cast<int>(cld.at("width")),
+                static_cast<int>(cld.at("height"))
             };
 
             scld.set(tl, tl.add(size.x - 1, 0), tl.y + size.y - 1);
@@ -398,14 +401,18 @@ void LevelBuilder::loadCollisionLayer(const nlohmann::json &json_, ColliderRoute
         {
             for (const auto &prop : cld["properties"])
             {
-                if (prop["name"] == "ObstacleGroup")
-                    obstacleId = static_cast<int>(prop["value"]);
-                else if (prop["name"] == "RoutingStart")
-                    route = &rtCollection_.m_routes[static_cast<int>(prop["value"])];
+                const std::string name = prop.at("name");
+
+                if (name == "ObstacleGroup")
+                    obstacleId = prop.at("value");
+                else if (name == "RoutingStart")
+                    route = rtCollection_.find(prop.at("value"));
+                else
+                    LOG_ERROR("Unexpected property \"{}\"", name);
             }
         }
 
-        m_colliderIds[objectId] = (route ? addCollider(scld, obstacleId, *route) : addCollider(scld, obstacleId));
+        m_colliderIds[objectId] = (route != rtCollection_.end() ? addCollider(scld, obstacleId, route->second) : addCollider(scld, obstacleId));
     }
 }
 
@@ -414,81 +421,85 @@ void LevelBuilder::loadNavigationLayer(const nlohmann::json &json_, NavGraph &gr
     std::map<int, NodeID> nodes;
     std::map<std::pair<int, int>, std::pair<Traverse::TraitT, Traverse::TraitT>> connections;
 
-    for (const auto &point : json_["objects"])
+    for (const auto &point : json_.at("objects"))
     {
-        Vector2<float> pos {
-                    static_cast<float>(point["x"]),
-                    static_cast<float>(point["y"])
+        const Vector2<float> pos {
+                    static_cast<float>(point.at("x")),
+                    static_cast<float>(point.at("y"))
                 };
 
-        nodes[static_cast<int>(point["id"])] = graph_.makeNode(pos);
+        nodes[point.at("id")] = graph_.makeNode(pos);
     }
 
-    for (const auto &point : json_["objects"])
+    for (const auto &point : json_.at("objects"))
     {
-        if (point.contains("properties"))
+        const int src = point.at("id");
+        for (const auto &prop : point.at("properties"))
         {
-            auto src = static_cast<int>(point["id"]);
-            for (const auto &prop : point["properties"])
+            try
             {
-                auto traits = lineToTraverse(prop["name"]);
-                auto dst = static_cast<int>(prop["value"]);
+                const auto traits = lineToTraverse(prop.at("name"));
+                const auto dst = static_cast<int>(prop.at("value"));
                 
                 if (src < dst)
-                {
                     connections[{src, dst}].first = traits;
-                }
                 else
-                {
                     connections[{dst, src}].second = traits;
-                }
-
             }
+            catch (const std::exception &ex_)
+            {
+                LOG_ERROR("Failed to establish a connection from point {}: ", src, ex_.what());
+            }
+
         }
     }
 
     for (auto &con : connections)
-    {
-        graph_.makeConnection(nodes[con.first.first], nodes[con.first.second], con.second.first, con.second.second);
-    }
+        graph_.makeConnection(nodes.at(con.first.first), nodes.at(con.first.second), con.second.first, con.second.second);
 }
 
 void LevelBuilder::loadFocusLayer(const nlohmann::json &json_)
 {
     std::map<int, Collider> triggerAreas;
-    for (const auto &area : json_["objects"])
+    for (const auto &area : json_.at("objects"))
     {
-        int id = area["id"];
-        std::string type = area["type"];
+        const int id = area.at("id");
+        const std::string type = area.at("type");
+
         if (type == "FocusTrigger")
         {
-            Vector2<int> tl{area["x"], area["y"]};
-            Vector2<int> size{area["width"], area["height"]};
+            const Vector2<int> tl{area.at("x"), area.at("y")};
+            const Vector2<int> size{area.at("width"), area.at("height")};
             triggerAreas.emplace(id, Collider(tl, size));
         }
         else if (type == "FocusBorder")
         {
-            Vector2<int> tl = {area["x"], area["y"]};
-            Vector2<int> size = {area["width"], area["height"]};
-
-            auto newfocus = m_reg.create();
-            m_reg.emplace<CameraFocusArea>(newfocus, tl, size);
-
-            if (area.contains("properties"))
+            try
             {
-                for (auto &prop : area["properties"])
+                Vector2<int> tl = {area.at("x"), area.at("y")};
+                Vector2<int> size = {area.at("width"), area.at("height")};
+
+                auto newfocus = m_reg.create();
+                m_reg.emplace<CameraFocusArea>(newfocus, tl, size);
+
+                for (const auto &prop : area.at("properties"))
                 {
-                    if (prop["name"] == "FocusTrigger" && prop["type"] == "object")
-                        m_reg.get<CameraFocusArea>(newfocus).overrideFocusArea(triggerAreas.at(prop["value"]));
+                    const std::string name = prop.at("name");
+                    const std::string type = prop.at("type");
+
+                    if (name == "FocusTrigger" && type == "object")
+                        m_reg.get<CameraFocusArea>(newfocus).overrideFocusArea(triggerAreas.at(prop.at("value")));
                     else
-                        std::cout << "Unknown property \"" << prop["name"] << "\" of type \"" << prop["type"] << "\"" << std::endl;
+                        LOG_ERROR(R"(Unexpected property "{}" of type "{}")", name, type);
                 }
+            }
+            catch (const std::exception &ex_)
+            {
+                LOG_ERROR("Error while creating FocusBorder - most likely, a connected trigger is not created yet: {}", ex_.what());
             }
         }
         else
-        {
-            std::cout << "Unknown area type at Focus areas: \"" << type << "\" (" << id << ")" << std::endl;
-        }
+            LOG_ERROR("Unexpected type \"{}\"", type);
     }
 }
 
@@ -504,40 +515,32 @@ void LevelBuilder::loadColliderRoutingLayer(const nlohmann::json &json_, Collide
 
     std::map<int, PointDescr> points;
 
-    for (const auto &obj : json_["objects"])
+    for (const auto &obj : json_.at("objects"))
     {
-        auto &newpoint = points[static_cast<int>(obj["id"])];
-        newpoint.pos.x = static_cast<int>(obj["x"]);
-        newpoint.pos.y = static_cast<int>(obj["y"]);
-
-        std::cout << "New point at " << static_cast<int>(obj["id"]) << std::endl;
-        std::cout << newpoint.pos << std::endl;
+        auto &newpoint = points[obj.at("id")];
+        newpoint.pos.x = obj.at("x");
+        newpoint.pos.y = obj.at("y");
 
         if (obj.contains("properties"))
         {
             for (const auto &prop : obj["properties"])
             {
-                if (prop["name"] == "InitialRoute")
+                const std::string name = prop.at("name");
+                if (name == "InitialRoute")
+                    newpoint.initialLink = prop.at("value");
+                else if (utils::startsWith(name, "LINK"))
+                    newpoint.links[name] = prop.at("value");
+                else if (utils::startsWith(name, "RouteRule"))
                 {
-                    std::cout << "Initial route: " << utils::wrap(prop["value"]) << std::endl;
-                    newpoint.initialLink = prop["value"];
-                }
-                else if (utils::startsWith(prop["name"], "LINK"))
-                {
-                    std::cout << "New link " << utils::wrap(prop["name"]) << " to " << prop["value"] << std::endl;
-                    newpoint.links[prop["name"]] = prop["value"];
-                }
-                else if (utils::startsWith(prop["name"], "RouteRule"))
-                {
-                    std::string ruledescr = prop["value"];
-                    std::stringstream ss(ruledescr);
+                    std::stringstream ss(prop.at("value").get<std::string>());
                     int from = 0;
                     std::string to;
                     ss >> from;
                     ss >> to;
                     newpoint.rules[from] = to;
-                    std::cout << "New rule from " << from << " to " << utils::wrap(to) << std::endl;
                 }
+                else
+                    LOG_ERROR("Unexpected property \"{}\"", name);
             }
         }
     }
@@ -547,7 +550,7 @@ void LevelBuilder::loadColliderRoutingLayer(const nlohmann::json &json_, Collide
     {
         if (!point.second.initialLink.empty())
         {
-            auto &newroute = rtCollection_.m_routes[point.first];
+            auto &newroute = rtCollection_[point.first];
             newroute.m_origin.m_id = point.first;
             newroute.m_origin.m_pos = point.second.pos;
 
@@ -559,7 +562,7 @@ void LevelBuilder::loadColliderRoutingLayer(const nlohmann::json &json_, Collide
                 newlnk.m_target.m_id = points[currentPoint].links[currentLink];
                 newlnk.m_target.m_pos = points[newlnk.m_target.m_id].pos;
 
-                auto oldPoint = currentPoint;
+                const auto oldPoint = currentPoint;
                 currentPoint = newlnk.m_target.m_id;
 
                 if (points[currentPoint].rules.contains(oldPoint))
@@ -575,20 +578,20 @@ void LevelBuilder::loadObjectsLayer(const nlohmann::json &json_)
 {
     auto depth = m_autoLayer;
 
-    if (json_.contains("properties"))
+    for (const auto &prop : json_.at("properties"))
     {
-        for (const auto &prop : json_["properties"])
-        {
-            if (prop["name"] == "layer")
-                depth = static_cast<int>(prop["value"]);
-        }
+        const std::string name = prop.at("name");
+        if (name == "layer")
+            depth = prop.at("value");
+        else
+            LOG_ERROR("Unexpected property \"{}\"", name);
     }
 
-    for (const auto &obj : json_["objects"])
+    for (const auto &obj : json_.at("objects"))
     {
-        int gid = obj["gid"];
-        Vector2<int> pos = {static_cast<int>(obj["x"]), static_cast<int>(obj["y"])};
-        bool visible = obj["visible"];
+        const uint32_t gid = obj.at("gid");
+        const Vector2<int> pos = {obj.at("x"), obj.at("y")};
+        const bool visible = obj.at("visible");
         (this->*m_utilTilesetFactories.at(gid))(pos, visible, depth);
     }
 }
@@ -596,11 +599,11 @@ void LevelBuilder::loadObjectsLayer(const nlohmann::json &json_)
 LevelBuilder::LayerDescr::LayerDescr(const nlohmann::json &layer_) :
     m_layer(&layer_)
 {
-    if (layer_["name"] == "ColliderRouting")
+    if (layer_.at("name") == "ColliderRouting")
         m_priority = 0;
-    else if (layer_["name"] == "Collision")
+    else if (layer_.at("name") == "Collision")
         m_priority = 1;
-    else if (layer_["type"] == "tilelayer")
+    else if (layer_.at("type") == "tilelayer")
         m_priority = 4;
     else
         m_priority = 3;

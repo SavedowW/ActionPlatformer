@@ -31,7 +31,7 @@ private:
         int m_priority;
     };
 
-    entt::entity addCollider(const SlopeCollider &worldCld_, int obstacleId_, ColliderPointRouting &route_);
+    entt::entity addCollider(const SlopeCollider &worldCld_, int obstacleId_, const ColliderPointRouting &route_);
     entt::entity addCollider(const SlopeCollider &worldCld_, int obstacleId_);
     static Traverse::TraitT lineToTraverse(const std::string &line_);
 
@@ -41,7 +41,7 @@ private:
     void loadTileLayer(const nlohmann::json &json_);
     void loadMetaLayer(const nlohmann::json &json_);
     void loadEnvLayer(const nlohmann::json &json_, EnvironmentSystem &env_);
-    void loadCollisionLayer(const nlohmann::json &json_, ColliderRoutesCollection &rtCollection_);
+    void loadCollisionLayer(const nlohmann::json &json_, const ColliderRoutesCollection &rtCollection_);
     void loadNavigationLayer(const nlohmann::json &json_, NavGraph &graph_);
     void loadFocusLayer(const nlohmann::json &json_);
     void loadColliderRoutingLayer(const nlohmann::json &json_, ColliderRoutesCollection &rtCollection_);
@@ -60,8 +60,8 @@ private:
 
     TilesetBase m_tilebase;
 
-    std::map<int, entt::entity> m_colliderIds;
-    std::unordered_map<int, FactoryMethod> m_utilTilesetFactories;
+    std::map<uint32_t, entt::entity> m_colliderIds;
+    std::unordered_map<uint32_t, FactoryMethod> m_utilTilesetFactories;
 
     int m_autoLayer = 0;
 };

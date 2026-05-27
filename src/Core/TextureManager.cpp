@@ -9,15 +9,13 @@ TextureManager::TextureManager()
     Filesystem::ensureDirectoryRelative("Resources/Sprites");
     const std::filesystem::path basePath(Filesystem::getRootDirectory() + "Resources/Sprites/");
 
-    std::cout << "=== LISTING FOUND TEXTURES ===\n";
     for (const auto &entry : std::filesystem::recursive_directory_iterator(basePath))
     {
         const std::filesystem::path &dirpath = entry.path();
         if (entry.is_regular_file() && dirpath.extension() == ".png")
         {
-            auto path = Filesystem::getRelativePath(basePath, dirpath);
-            auto noExtension = Filesystem::removeExtention(path);
-            std::cout << noExtension << std::endl;
+            const auto path = Filesystem::getRelativePath(basePath, dirpath);
+            const auto noExtension = Filesystem::removeExtention(path);
 
             ContainedTextureData ctd;
             ctd.m_path = dirpath.string();
@@ -26,7 +24,13 @@ TextureManager::TextureManager()
             m_ids[noExtension] = m_textures_.size() - 1;
         }
     }
-    std::cout << "=== LISTING ENDS HERE ===\n";
+
+    LOG_INFO("Found textures ({}):{}", m_ids.size(), [&]() -> std::string {
+        std::string res;
+        for (const auto &el : m_ids)
+            utils::addToSeparatedList('"' + el.first + '"', res);
+        return res;
+    }());
 }
 
 std::shared_ptr<Texture> TextureManager::getTexture(ResID id_)

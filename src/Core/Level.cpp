@@ -1,7 +1,5 @@
 #include "Level.h"
 #include "Profile.h"
-#include "GameData.h"
-#include "Logger.hpp"
 
 Level::Level(int lvlId_, FPSUtility &fpsUtility_, const Vector2<int> &size_) :
     m_size{size_},
@@ -34,8 +32,6 @@ LevelResult Level::proceed()
     Timer fullFrameTime;
     auto &profiler = Profiler::instance();
 
-    uint64_t frame = 0;
-
     fullFrameTime.begin();
     while (m_state == STATE::RUNNING)
     {
@@ -46,8 +42,6 @@ LevelResult Level::proceed()
 
         if (iterateCon)
         {
-            //LOG_TRACE("Level frame {}", frame++);
-
             update();
             m_allowIter = false;
         }

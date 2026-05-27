@@ -27,6 +27,7 @@ namespace utils
             if (src_.contains(field_))
                 return src_[field_];
         }
+        // NOLINTNEXTLINE(bugprone-empty-catch)
         catch(const std::exception &)
         {
             // Property is invalid
@@ -52,6 +53,7 @@ namespace utils
             if (current->contains("x") && current->contains("y"))
                 return Vector2<T>{(*current)["x"], (*current)["y"]};
         }
+        // NOLINTNEXTLINE(bugprone-empty-catch)
         catch(std::exception &ex_)
         {
             // Property is invalid
@@ -74,7 +76,7 @@ namespace utils
     bool importMapEnsureUnique(nlohmann::json &out_, std::map<KeyT, ValueT> &map_, bool hadDuplicated_)
     {
         std::set<ValueT> values;
-        for (auto &el : out_.items())
+        for (const auto &el : out_.items())
         {
             auto key = deserialize<KeyT>(el.key());
             auto value = deserialize<ValueT>(el.value());
@@ -84,8 +86,8 @@ namespace utils
                 hadDuplicated_ = true;
                 continue;
             }
-            else
-                values.insert(value);
+
+            values.insert(value);
 
             map_[key] = value;
         }

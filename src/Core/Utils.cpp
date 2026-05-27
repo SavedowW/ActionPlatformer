@@ -28,6 +28,13 @@ namespace utils
         return res;
     }
 
+    void addToSeparatedList(const std::string &object_, std::string &list_, const char *separator_)
+    {
+        if (!list_.empty())
+            list_ += separator_;
+        list_ += object_;
+    }
+
     std::string padToRight(const size_t &len_, const std::string &line_)
     {
         if (line_.size() >= len_)

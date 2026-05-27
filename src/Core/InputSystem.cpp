@@ -2,6 +2,7 @@
 #include "Application.h"
 #include "JsonUtils.hpp"
 #include "FilesystemUtils.h"
+#include "Logger.hpp"  // IWYU pragma: keep
 #include <iostream>
 #include <filesystem>
 #include <fstream>
@@ -15,13 +16,13 @@ InputSystem::InputSystem() :
 {
     if (!std::filesystem::exists(m_configPath))
     {
-        std::cout << m_configPath << " was not found, initializing inputs config" << std::endl;
+        LOG_INFO("{} was not found, initializing inputs config", m_configPath);
         setupDefaultMapping();
         exportMappingAs(m_configPath);
     }
     else
     {
-        std::cout << "Loading config from " << m_configPath << std::endl;
+        LOG_INFO("Loading config from {}", m_configPath);
         importMappingEnsureUnique(m_configPath);
     }
 
@@ -59,11 +60,11 @@ void InputSystem::handleInput()
 
         case (SDL_EVENT_GAMEPAD_ADDED):
             m_controllers[e.cdevice.which].m_controller = SDL_OpenGamepad(e.cdevice.which);
-            std::cout << "Discovered new controller at " << e.cdevice.which << ": " << SDL_GetGamepadName(m_controllers[e.cdevice.which].m_controller) << std::endl;
+            LOG_INFO("Discovered new controller at {}: {}", e.cdevice.which, SDL_GetGamepadName(m_controllers[e.cdevice.which].m_controller));
         break;
 
         case (SDL_EVENT_GAMEPAD_REMOVED):
-            std::cout << "Removing controller at " << e.cdevice.which << std::endl;
+            LOG_INFO("Removing controller at {}", e.cdevice.which);
             SDL_CloseGamepad(m_controllers[e.cdevice.which].m_controller);
             m_controllers.erase(e.cdevice.which);
         break;
@@ -88,9 +89,7 @@ void InputSystem::handleInput()
 
         case (SDL_EVENT_GAMEPAD_AXIS_MOTION):
         {
-            auto resolvedValue = e.gaxis.value;
-            if (abs(resolvedValue) < m_stickDeadzone)
-                resolvedValue = 0;
+            const Sint16 resolvedValue = abs(e.gaxis.value) > m_stickDeadzone ? e.gaxis.value : 0;
 
             auto lastValueRes = m_lastAxisValue.find(e.gaxis.axis);
             if (lastValueRes != m_lastAxisValue.end())
@@ -101,15 +100,15 @@ void InputSystem::handleInput()
                 lastValueRes->second = resolvedValue;
             }
 
-            float posValue, negValue;
+            float posValue = 0, negValue = 0;
             if (resolvedValue >= 0)
             {
-                posValue = resolvedValue / 32767.0f;
+                posValue = static_cast<float>(resolvedValue) / 32767.0f;
                 negValue = 0;
             }
             else
             {
-                negValue = resolvedValue / -32768.0f;
+                negValue = static_cast<float>(resolvedValue) / -32768.0f;
                 posValue = 0;
             }
 
@@ -177,7 +176,7 @@ void InputSystem::unsubscribe(HUD_EVENTS ev_, Subscriber sub_)
 
 void InputSystem::initiateControllers()
 {
-    std::cout << "Discovering controllers..." << std::endl;
+    LOG_TRACE("Discovering controllers...");
 
     int gamepadCount = 0;
     SDL_JoystickID *pads = SDL_GetJoysticks(&gamepadCount);
@@ -187,10 +186,11 @@ void InputSystem::initiateControllers()
         {
             auto &ctrl = m_controllers[i];
             ctrl.m_controller = SDL_OpenGamepad(pads[i]);
-            std::cout << "Found supported controller at " << i << ": " << SDL_GetGamepadName(ctrl.m_controller) << std::endl;
+            LOG_INFO("Found supported controller at {}: {}", i, SDL_GetGamepadName(ctrl.m_controller));
         }
         else
         {
+            LOG_INFO("Found unknown joystick at {}", i);
             std::cout << "Found unknown joystick at " << i << std::endl;
         }
     }

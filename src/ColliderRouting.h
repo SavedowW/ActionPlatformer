@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/Vector2.hpp"
+#include <unordered_map>
 #include <vector>
 
 struct RoutingPoint
@@ -25,11 +26,10 @@ struct ColliderPointRouting
     size_t m_dbgIter = 0;
 };
 
-struct ColliderRoutesCollection
-{
-    // Shouldn't change size once level is built
-    std::map<int, ColliderPointRouting> m_routes;
-};
+
+// Shouldn't change size once level is built
+using ColliderRoutesCollection = std::unordered_map<int, ColliderPointRouting>;
+
 
 struct ColliderRoutingIterator
 {

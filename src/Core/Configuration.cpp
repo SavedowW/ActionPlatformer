@@ -1,4 +1,5 @@
 #include "Configuration.h"
+#include "Logger.hpp"
 #include "FilesystemUtils.h"
 #include "GameData.h"
 #include <fstream>
@@ -45,7 +46,7 @@ Configuration<READ_ONLY>::Configuration(const std::string &configName_) : Config
         try
         {
             m_data = nlohmann::json::parse(injson);
-            std::cout << "Successfully loaded \"" << m_path << "\"" << std::endl;
+            LOG_TRACE("Successfully loaded \"{}\"", m_path);
         }
         catch (std::exception &ex_)
         {
@@ -53,11 +54,11 @@ Configuration<READ_ONLY>::Configuration(const std::string &configName_) : Config
 
             if constexpr (READ_ONLY)
             {
-                std::cout << "Failed to parse \"" << m_path << "\": \"" << ex_.what() << "\", most likely it's broken, leaving it this way" << std::endl;
+                LOG_ERROR("Failed to parse \"{}\": \"{}\", most likely it's broken, leaving it this way", m_path, ex_.what());
             }
             else
             {
-                std::cout << "Failed to parse \"" << m_path << "\": \"" << ex_.what() << "\", most likely it's broken. Turning it empty." << std::endl;
+                LOG_ERROR("Failed to parse \"{}\": \"{}\", most likely it's broken, turning it empty.", m_path, ex_.what());
                 std::ofstream of(m_path);
                 of << "{}\n";
             }
@@ -67,11 +68,11 @@ Configuration<READ_ONLY>::Configuration(const std::string &configName_) : Config
     {
         if constexpr (READ_ONLY)
         {
-            std::cout << "No config at \"" << m_path << "\", leaving it this way" << std::endl;
+            LOG_INFO("No config at \"{}\", leaving it this way", m_path);
         }
         else
         {
-            std::cout << "Creating config at \"" << m_path << "\"" << std::endl;
+            LOG_INFO("Creating config at \"{}\"", m_path);
             std::ofstream of(m_path);
             of << "{}\n";
         }

@@ -1,7 +1,6 @@
 #include "RenderSystem.h"
 #include "Core/CoreComponents.h"
 #include "EnvComponents.h"
-#include "Core/Profile.h"
 #include "Core/GameData.h"
 #include "Core/Configuration.h"
 #include "Core/Application.h"
@@ -63,11 +62,11 @@ void RenderSystem::draw() const
 
     const auto renderable = m_reg.view<RenderLayer, ComponentTransform>();
 
-    for (auto [idx, renlayer, trans] : renderable.each())
+    for (const auto &[idx, renlayer, trans] : renderable.each())
         if (renlayer.isVisible())
             handleDepthInstance(idx, trans);
 
-    for (auto [idx, trans, hren] : viewHealthOwners.each())
+    for (const auto &[idx, trans, hren] : viewHealthOwners.each())
         drawHealth(trans, hren);
 
     if (conf.m_debug.m_drawColliders)
@@ -77,7 +76,7 @@ void RenderSystem::draw() const
         const auto viewBtlAct = m_reg.view<ComponentTransform, BattleActor>();
         const auto viewGrassTop = m_reg.view<ComponentTransform, GrassTopComp>();
 
-        for (auto [idx, scld] : viewColliders.each())
+        for (const auto &[idx, scld] : viewColliders.each())
         {
             if (scld.m_obstacleId)
                 drawObstacle(scld);
@@ -85,16 +84,16 @@ void RenderSystem::draw() const
                 drawCollider(scld);
         }
         
-        for (auto [idx, trans, phys] : viewPhysical.each())
+        for (const auto &[idx, trans, phys] : viewPhysical.each())
             drawCollider(trans, phys);
 
-        for (auto [idx, trans, btl] : viewBtlAct.each())
+        for (const auto &[idx, trans, btl] : viewBtlAct.each())
             drawBattleActorColliders(trans, btl);
 
-        for (auto [idx, trans, grass] : viewGrassTop.each())
+        for (const auto &[idx, trans, grass] : viewGrassTop.each())
         {
-            auto pbl = grass.colliderLeft + trans.m_pos;
-            auto pbr = grass.colliderRight + trans.m_pos;
+            const auto pbl = GrassTopComp::colliderLeft + trans.m_pos;
+            const auto pbr = GrassTopComp::colliderRight + trans.m_pos;
             m_renderer.drawCollider(pbl, {238, 195, 154, 50}, m_camera);
             m_renderer.drawCollider(pbr, {238, 195, 154, 50}, m_camera);
         }
@@ -102,19 +101,19 @@ void RenderSystem::draw() const
 
     if (conf.m_debug.m_drawFocusAreas)
     {
-        for (auto [idx, area] : viewFocuses.each())
+        for (const auto& [idx, area] : viewFocuses.each())
             drawFocusArea(area);
     }
 
     if (conf.m_debug.m_drawTransforms)
     {
-        for (auto [idx, trans] : viewTransforms.each())
+        for (const auto &[idx, trans] : viewTransforms.each())
             drawTransform(trans);
     }
 
     if (conf.m_debug.m_drawColliderRoutes)
     {
-        for (const auto &el : m_routesCollection.m_routes)
+        for (const auto &el : m_routesCollection)
             drawColliderRoute(el.second);
     }
 }
@@ -267,12 +266,12 @@ void RenderSystem::drawCollider(const ComponentTransform &trans_, const Componen
     auto pb = phys_.m_pushbox + trans_.m_pos;
     m_renderer.drawCollider(pb, gamedata::characters::pushboxColor, m_camera);
 
-    auto edgex = (trans_.m_orientation == ORIENTATION::RIGHT ? pb.getRightEdge() : 
-                    (trans_.m_orientation == ORIENTATION::LEFT ? pb.getLeftEdge() : pb.m_topLeft.x + pb.m_size.x / 2));
+    auto edgex = (trans_.m_orientation == ORIENTATION::RIGHT ? pb.getRightEdge() + 1 : 
+                    (trans_.m_orientation == ORIENTATION::LEFT ? pb.getLeftEdge() + 1 : pb.m_topLeft.x + pb.m_size.x / 2));
 
-    Vector2 TR{edgex, pb.getTopEdge()};
-    Vector2 BR{edgex, pb.getBottomEdge()};
-    //m_renderer.drawLine(TR, BR, {0, 255, 0, 100}, m_camera);
+    Vector2 TR{edgex, pb.getTopEdge() + 6};
+    Vector2 BR{edgex, pb.getBottomEdge() + 1};
+    m_renderer.drawLine(TR, BR, {0, 255, 0, 100}, m_camera);
 }
 
 void RenderSystem::drawCollider(const ComponentStaticCollider &cld_) const
@@ -369,7 +368,7 @@ void RenderSystem::receiveEvents(GAMEPLAY_EVENTS event_, const float scale_)
     {
         case GAMEPLAY_EVENTS::REN_DBG_1:
             if (scale_ > 0)
-                for (auto &el : m_routesCollection.m_routes)
+                for (auto &el : m_routesCollection)
                     el.second.m_dbgIter = (el.second.m_dbgIter + 1 > el.second.m_links.size() ? 0 : el.second.m_dbgIter + 1);
             break;
 

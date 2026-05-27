@@ -274,7 +274,7 @@ namespace utils
 
 
     std::vector<std::string> tokenize(const std::string &src_, char splitter_);
-
+    void addToSeparatedList(const std::string &object_, std::string &list_, const char *separator_ = ", ");
     std::string padToRight(const size_t &len_, const std::string &line_);
 }
 
