@@ -29,8 +29,8 @@ entt::entity EnemySystem::makeEnemy()
 
     auto &phys = m_reg.emplace<ComponentPhysical>(enemyId);
     m_reg.emplace<ComponentResetStatic<ComponentPhysical>>(enemyId);
-    phys.m_pushbox = Collider(Vector2{-15, -30}, Vector2{30, 30});
-    phys.m_gravity = {0.0f, 0.2f};
+    phys.pushbox = Collider(Vector2{-15, -30}, Vector2{30, 30});
+    phys.gravity = {0.0f, 0.2f};
 
     m_reg.emplace<WorldPosition>(enemyId);
     m_reg.emplace<BattleActor>(enemyId, BattleTeams::ENEMIES);

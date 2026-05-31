@@ -71,11 +71,11 @@ class ComponentResetStatic<ComponentPhysical>
 public:
     static void resetComponent(const entt::entity&, ComponentPhysical &phys_)
     {
-        phys_.m_velocity = {0.0f, 0.0f};
-        phys_.m_inertia = {0.0f, 0.0f};
-        phys_.m_extraoffset = {0.0f, 0.0f};
-        phys_.m_velocityLeftover = {0.0f, 0.0f};
-        phys_.m_hitstopLeft = 0;
+        phys_.velocity = {0.0f, 0.0f};
+        phys_.inertia = {0.0f, 0.0f};
+        phys_.extraoffset = {0.0f, 0.0f};
+        phys_.velocityLeftover = {0.0f, 0.0f};
+        phys_.hitstopLeft = 0;
     }
 };
 

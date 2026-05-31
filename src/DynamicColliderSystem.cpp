@@ -55,7 +55,7 @@ bool DynamicColliderSystem::isOverlappingWithDynamic(const SlopeCollider &cld_)
     const auto dynamics = m_reg.view<ComponentTransform, ComponentPhysical>();
     for (const auto [idx, trans, phys] : dynamics.each())
     {
-        auto pb = phys.m_pushbox + trans.m_pos;
+        auto pb = phys.pushbox + trans.m_pos;
         int dump = 0;
         auto res = cld_.checkOverlap(pb, dump);
         if ((res & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
@@ -70,7 +70,7 @@ bool DynamicColliderSystem::isObstacleOverlappingWithDynamic(const SlopeCollider
     const auto dynamics = m_reg.view<ComponentTransform, ComponentPhysical>();
     for (const auto [idx, trans, phys] : dynamics.each())
     {
-        auto pb = phys.m_pushbox + trans.m_pos;
+        auto pb = phys.pushbox + trans.m_pos;
         int dump = 0;
         auto res = cld_.checkOverlap(pb, dump);
         if ((res & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
@@ -138,7 +138,7 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
         }
 
         const Vector2<int> oldpos = trans.m_pos;
-        auto pb = phys.m_pushbox + trans.m_pos;
+        auto pb = phys.pushbox + trans.m_pos;
         auto oldTop = pb.getTopEdge();
         auto oldRightEdge = pb.getRightEdge();
         auto oldLeftEdge = pb.getLeftEdge();
@@ -172,8 +172,8 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                     //std::cout << "Teleporting entity on top while moving platform up" << std::endl;
                     // Teleport on top
                     trans.m_pos.y = newHighest - 1;
-                    pb = phys.m_pushbox + trans.m_pos;
-                    phys.m_onMovingPlatform = true;
+                    pb = phys.pushbox + trans.m_pos;
+                    phys.onMovingPlatform = true;
                 }
             }
             // If moving down
@@ -191,8 +191,8 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                     //std::cout << "Teleporting entity on top while moving platform down" << std::endl;
                     // Teleport on top
                     trans.m_pos.y = newHighest - 1;
-                    pb = phys.m_pushbox + trans.m_pos;
-                    phys.m_onMovingPlatform = true;
+                    pb = phys.pushbox + trans.m_pos;
+                    phys.onMovingPlatform = true;
                 }
 
                 // If was below and now overlaps
@@ -207,7 +207,7 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                     //std::cout << "Teleporting entity to bottom while moving platform down" << std::endl;
                     // Teleport to bottom
                     trans.m_pos.y = newcld.bottomY() + pb.m_size.y;
-                    pb = phys.m_pushbox + trans.m_pos;
+                    pb = phys.pushbox + trans.m_pos;
                 }
             }
 
@@ -220,7 +220,7 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                     trans.m_orientation == ORIENTATION::RIGHT && oldLeftEdge - 1 == scld_.m_resolved.rightX()
                         && pb.m_topLeft.y + pb.m_size.y / 2 >= scld_.m_resolved.rightY() && pb.m_topLeft.y + pb.m_size.y / 2 <= scld_.m_resolved.bottomY())
                 {
-                    phys.m_extraoffset.y = (abs(phys.m_extraoffset.y) > abs(offset.y) ? phys.m_extraoffset.y : offset.y);
+                    phys.extraoffset.y = (abs(phys.extraoffset.y) > abs(offset.y) ? phys.extraoffset.y : offset.y);
                 }
             }
         }
@@ -249,7 +249,7 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                     //std::cout << "Teleporting to right " << rand() << std::endl;
                     // Teleport to right edge
                     trans.m_pos.x = rightest + pb.m_size.x / 2;
-                    pb = phys.m_pushbox + trans.m_pos;
+                    pb = phys.pushbox + trans.m_pos;
                     teleported = true;
                 }
 
@@ -257,7 +257,7 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                 if (attachedLeft)
                 {
                     //std::cout << "Attached, pushing in the movement direction" << std::endl;
-                    phys.m_extraoffset.x = (abs(phys.m_extraoffset.x) > abs(offset.x) ? phys.m_extraoffset.x : offset.x);
+                    phys.extraoffset.x = (abs(phys.extraoffset.x) > abs(offset.x) ? phys.extraoffset.x : offset.x);
                     teleported = true;
                 }
             }
@@ -279,7 +279,7 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                     //std::cout << "Teleporting to left\n";
                     // Teleport to right edge
                     trans.m_pos.x = leftest - pb.m_size.x / 2 - 1;
-                    pb = phys.m_pushbox + trans.m_pos;
+                    pb = phys.pushbox + trans.m_pos;
                     teleported = true;
                 }
 
@@ -287,7 +287,7 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                 if (attachedRight)
                 {
                     //std::cout << "Attached, pushing in the movement direction" << std::endl;
-                    phys.m_extraoffset.x = (abs(phys.m_extraoffset.x) > abs(offset.x) ? phys.m_extraoffset.x : offset.x);
+                    phys.extraoffset.x = (abs(phys.extraoffset.x) > abs(offset.x) ? phys.extraoffset.x : offset.x);
                     teleported = true;
                 }
             }
@@ -301,14 +301,14 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
 
                 //std::cout << "Standing on top, pushing in the movement direction" << std::endl;
 
-                phys.m_extraoffset.x = (abs(phys.m_extraoffset.x) > abs(offset.x) ? phys.m_extraoffset.x : offset.x);
-                phys.m_onMovingPlatform = true;
+                phys.extraoffset.x = (abs(phys.extraoffset.x) > abs(offset.x) ? phys.extraoffset.x : offset.x);
+                phys.onMovingPlatform = true;
             }
         }
 
-        phys.m_enforcedOffset = (trans.m_pos - oldpos) + phys.m_extraoffset;
-        phys.m_pushedOffset = (trans.m_pos - oldpos).mulComponents(1, 10);
-        //std::cout << phys.m_extraoffset << std::endl;
+        phys.enforcedOffset = (trans.m_pos - oldpos) + phys.extraoffset;
+        phys.pushedOffset = (trans.m_pos - oldpos).mulComponents(1, 10);
+        //std::cout << phys.extraoffset << std::endl;
     }
 
     scld_.m_resolved = newcld;

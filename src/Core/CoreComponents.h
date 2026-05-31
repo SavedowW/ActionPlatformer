@@ -15,24 +15,10 @@
 struct ComponentTransform
 {
     ComponentTransform() = default;
-
     ComponentTransform(const Vector2<int> &pos_, ORIENTATION orient_);
-
-    ComponentTransform (const ComponentTransform &rhs_) = delete;
-    ComponentTransform (ComponentTransform &&rhs_) = default;
-    ComponentTransform &operator=(const ComponentTransform &rhs_) = delete;
-    ComponentTransform &operator=(ComponentTransform &&rhs_) = default;
     
     Vector2<int> m_pos;
     ORIENTATION m_orientation = ORIENTATION::RIGHT;
-};
-
-struct ComponentParticlePrimitive
-{
-    SDL_FlipMode m_flip = SDL_FLIP_NONE;
-    FrameTimer<false> m_lifetime;
-    float angle = 0.0f;
-    entt::entity m_tieTransform = entt::null;
 };
 
 struct ComponentSpawnLocation
@@ -40,66 +26,42 @@ struct ComponentSpawnLocation
     Vector2<int> location;
 };
 
-struct ComponentParticlePhysics
-{
-    Vector2<float> m_velocity;
-    Vector2<float> m_inertia;
-    Vector2<float> m_drag; 
-    Vector2<float> m_gravity;
-    Vector2<float> m_inertiaMultiplier;
-
-    void applyDrag();
-    Vector2<int> claimOffset();
-    Vector2<int> peekOffset() const;
-    Vector2<float> peekRawOffset() const;
-
-private:
-    Vector2<float> m_velocityLeftover;
-};
-
 struct ComponentPhysical
 {
-    ComponentPhysical() = default;
-
-    ComponentPhysical (const ComponentPhysical &rhs_) = delete;
-    ComponentPhysical (ComponentPhysical &&rhs_) = default;
-    ComponentPhysical &operator=(const ComponentPhysical &rhs_) = delete;
-    ComponentPhysical &operator=(ComponentPhysical &&rhs_) = default;
-
-    Vector2<float> m_velocity;
-    Vector2<float> m_inertia;
-    Vector2<float> m_extraoffset;
-    Vector2<float> m_drag; 
-    Vector2<float> m_gravity;
-    Vector2<float> m_inertiaMultiplier = {1.0f, 1.0f};
-    Collider m_pushbox;
-    bool m_onMovingPlatform = false;
-    unsigned int m_magnetLimit = 0;
-    uint32_t m_hitstopLeft = 0;
+    Vector2<float> velocity;
+    Vector2<float> inertia;
+    Vector2<float> extraoffset;
+    Vector2<float> drag; 
+    Vector2<float> gravity;
+    Vector2<float> inertiaMultiplier = {1.0f, 1.0f};
+    Collider pushbox;
+    bool onMovingPlatform = false;
+    unsigned int magnetLimit = 0;
+    uint32_t hitstopLeft = 0;
 
     // TODO: find a way to do it without hurting parallelization
     //const Vector2<float> *m_mulInsidePushbox = nullptr;
 
     // Used to identify offset applied before collision resolution
-    Vector2<int> m_calculatedOffset;
+    Vector2<int> calculatedOffset;
 
     // Used to calculate camera offset
-    Vector2<int> m_appliedOffset;
+    Vector2<int> appliedOffset;
 
     // Offset enforced by dynamic colliders, used for things like inertia
-    Vector2<int> m_enforcedOffset;
+    Vector2<int> enforcedOffset;
     
     // Offset enforced by dynamic colliders that is already applied to the character (getting pushed by platforms, etc)
-    Vector2<int> m_pushedOffset;
+    Vector2<int> pushedOffset;
     
-    Vector2<float> m_stateLeaveVelocityMultiplier;
+    Vector2<float> stateLeaveVelocityMultiplier;
     
     void convertToInertia(bool convertVelocity_, bool includeEnforced_);
     Vector2<int> claimOffset();
     Vector2<int> peekOffset() const;
     Vector2<float> peekRawOffset() const;
 
-    Vector2<float> m_velocityLeftover;
+    Vector2<float> velocityLeftover;
 };
 
 struct WorldPosition
@@ -289,6 +251,31 @@ struct TilemapLayer
     std::vector<std::vector<Tile>> m_tiles;
     Vector2<float> m_parallaxFactor;
     Vector2<int> m_posOffset;
+};
+
+struct ComponentParticlePrimitive
+{
+    SDL_FlipMode m_flip = SDL_FLIP_NONE;
+    FrameTimer<false> m_lifetime;
+    float angle = 0.0f;
+    entt::entity m_tieTransform = entt::null;
+};
+
+struct ComponentParticlePhysics
+{
+    Vector2<float> velocity;
+    Vector2<float> inertia;
+    Vector2<float> drag; 
+    Vector2<float> gravity;
+    Vector2<float> inertiaMultiplier;
+
+    void applyDrag();
+    Vector2<int> claimOffset();
+    Vector2<int> peekOffset() const;
+    Vector2<float> peekRawOffset() const;
+
+private:
+    Vector2<float> m_velocityLeftover;
 };
 
 Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_);

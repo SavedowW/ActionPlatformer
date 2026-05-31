@@ -93,9 +93,9 @@ void HudSystem::drawPlayerDebug(entt::entity playerId_) const
     ImmediateScreenLog<TextAligners::AlignerRight> playerLog{Fonts::DBG_UI, 32, {resolution.x - 1, 1}};
 
     playerLog.dumpLine(std::format("Player pos: {}", ptransform.m_pos));
-    playerLog.dumpLine(std::format("Player vel: {}", pphysical.m_velocity));
-    playerLog.dumpLine(std::format("Player inr: {}", pphysical.m_inertia));
-    playerLog.dumpLine(std::format("Gravity: {}", pphysical.m_gravity));
+    playerLog.dumpLine(std::format("Player vel: {}", pphysical.velocity));
+    playerLog.dumpLine(std::format("Player inr: {}", pphysical.inertia));
+    playerLog.dumpLine(std::format("Gravity: {}", pphysical.gravity));
     playerLog.dumpLine(std::format("Player action: {}:{}", serialize(psm.stateId()), psm.framesInState()));
     playerLog.dumpLine(std::format("Ignored obstacles: {}", ignoredObstacles));
     playerLog.dumpLine(std::format("On slope: {}", worldPos.ground.onSlopeWithAngle));
@@ -138,7 +138,7 @@ void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPh
 {
     const auto txt1 = std::string("SM name used to be here, TODO"); //sm_.getName();
     const auto txt2 = std::string("AI SM name used to be here, TODO");
-    const auto worldOrigin = trans_.m_pos + phys_.m_pushbox.m_topLeft + Vector2{phys_.m_pushbox.m_size.x, 0};
+    const auto worldOrigin = trans_.m_pos + phys_.pushbox.m_topLeft + Vector2{phys_.pushbox.m_size.x, 0};
 
     const Vector2<int> camSize = m_cam.getSize();
     const Vector2<int> camTL = m_cam.getTopLeft();

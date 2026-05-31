@@ -101,10 +101,10 @@ void BattleSystem::applyHit(ActorDescr attacker_, ActorDescr victim_, const Hitb
         auto *vicAtk = m_reg.try_get<ComponentPhysical>(victim_.m_id);
 
         if (physAtk)
-            physAtk->m_hitstopLeft = hit_.m_hitData.m_hitstop;
+            physAtk->hitstopLeft = hit_.m_hitData.m_hitstop;
 
         if (vicAtk)
-            vicAtk->m_hitstopLeft = hit_.m_hitData.m_hitstop;
+            vicAtk->hitstopLeft = hit_.m_hitData.m_hitstop;
     }
 
     if (hit_.m_hitData.m_victimFlash)

@@ -468,8 +468,8 @@ void PlayerSystem::createPlayer()
     m_animManager.preload("Char1/particles/air_attack_trace");
 
 
-    phys.m_pushbox = {.m_topLeft=Vector2{-7.0f, -32.0f}, .m_size=Vector2{14.0f, 32.0f}};
-    phys.m_gravity = {0.0f, 0.0f};
+    phys.pushbox = {.m_topLeft=Vector2{-7.0f, -32.0f}, .m_size=Vector2{14.0f, 32.0f}};
+    phys.gravity = {0.0f, 0.0f};
 
 
     m_statemachine.init(m_reg, m_playerId);

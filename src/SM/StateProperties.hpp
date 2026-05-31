@@ -25,7 +25,7 @@ void StateProperties<StateIDT, ViewT>::Update::UpdateGravity::operator()(const V
 {
     auto &physical = view_.template get<ComponentPhysical>();
     const SM::StatePossessor<StateIDT> &owner = view_.template cget<SM::StatePossessor<StateIDT>>();
-    physical.m_gravity = m_gravity[owner.framesInState()];
+    physical.gravity = m_gravity[owner.framesInState()];
 }
 
 
@@ -38,7 +38,7 @@ template<typename StateIDT, typename ViewT>
 void StateProperties<StateIDT, ViewT>::Update::MultiplyVelocity::operator()(const ViewT &view_) const
 {
     auto &physical = view_.template get<ComponentPhysical>();
-    physical.m_velocity = physical.m_velocity.mulComponents(m_multiplier[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()]);
+    physical.velocity = physical.velocity.mulComponents(m_multiplier[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()]);
 }
 
 template<typename StateIDT, typename ViewT>
@@ -52,7 +52,7 @@ void StateProperties<StateIDT, ViewT>::Update::AddOrientedVelocity::operator()(c
     auto velocityChange = m_velocity[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()];
     if (view_.template get<ComponentTransform>().m_orientation == ORIENTATION::LEFT)
         velocityChange.x *= -1;
-    view_.template get<ComponentPhysical>().m_velocity += velocityChange;
+    view_.template get<ComponentPhysical>().velocity += velocityChange;
 }
 
 template<typename StateIDT, typename ViewT>
@@ -64,7 +64,7 @@ template<typename StateIDT, typename ViewT>
 void StateProperties<StateIDT, ViewT>::Update::AddAbsoluteVelocity::operator()(const ViewT &view_) const
 {
     auto &physical = view_.template get<ComponentPhysical>();
-    physical.m_velocity += m_velocity[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()];
+    physical.velocity += m_velocity[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()];
 }
 
 template<typename StateIDT, typename ViewT>
@@ -76,7 +76,7 @@ template<typename StateIDT, typename ViewT>
 void StateProperties<StateIDT, ViewT>::Update::MultiplyInertia::operator()(const ViewT &view_) const
 {
     auto &physical = view_.template get<ComponentPhysical>();
-    physical.m_inertia = physical.m_inertia.mulComponents(m_multiplier[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()]);
+    physical.inertia = physical.inertia.mulComponents(m_multiplier[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()]);
 }
 
 
@@ -90,10 +90,10 @@ void StateProperties<StateIDT, ViewT>::Update::HorizontalVelocityLimit::operator
 {
     auto &physical = view_.template get<ComponentPhysical>();
     const auto &currentLimit = m_limits[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()];
-    if (physical.m_velocity.x < currentLimit.first)
-        physical.m_velocity.x = currentLimit.first;
-    else if (physical.m_velocity.x > currentLimit.second)
-        physical.m_velocity.x = currentLimit.second;
+    if (physical.velocity.x < currentLimit.first)
+        physical.velocity.x = currentLimit.first;
+    else if (physical.velocity.x > currentLimit.second)
+        physical.velocity.x = currentLimit.second;
 }
 
 template<typename StateIDT, typename ViewT>
@@ -122,10 +122,10 @@ void StateProperties<StateIDT, ViewT>::Update::HorizontalInertiaLimit::operator(
 {
     auto &physical = view_.template get<ComponentPhysical>();
     const auto &currentLimit = m_limits[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()];
-    if (physical.m_inertia.x < currentLimit.first)
-        physical.m_inertia.x = currentLimit.first;
-    else if (physical.m_inertia.x > currentLimit.second)
-        physical.m_inertia.x = currentLimit.second;
+    if (physical.inertia.x < currentLimit.first)
+        physical.inertia.x = currentLimit.first;
+    else if (physical.inertia.x > currentLimit.second)
+        physical.inertia.x = currentLimit.second;
 }
 
 template<typename StateIDT, typename ViewT>
@@ -133,18 +133,18 @@ void StateProperties<StateIDT, ViewT>::Update::AirDrift::operator()(const ViewT 
 {
     auto &physical = view_.template get<ComponentPhysical>();
     auto &inputs = view_.template get<InputResolver>();
-    if (physical.m_velocity.x < 2.5f
+    if (physical.velocity.x < 2.5f
             && inputs.checkInput(InputMotions::HOLD_HORDIR, ORIENTATION::RIGHT, 0))
-        physical.m_velocity.x += 0.15f;
+        physical.velocity.x += 0.15f;
 
-    if (physical.m_velocity.x > -2.5f
+    if (physical.velocity.x > -2.5f
             && inputs.checkInput(InputMotions::HOLD_HORDIR, ORIENTATION::LEFT, 0))
-        physical.m_velocity.x -= 0.15f;
+        physical.velocity.x -= 0.15f;
 
-    if (physical.m_velocity.y < 0
+    if (physical.velocity.y < 0
             && view_.template cget<SM::StatePossessor<StateIDT>>().framesInState() < 10
             && inputs.checkInput(InputMotions::HOLD_UP, ORIENTATION::UNSPECIFIED, 0))
-        physical.m_velocity.y -= 0.4f;
+        physical.velocity.y -= 0.4f;
 }
 
 
@@ -159,7 +159,7 @@ void StateProperties<StateIDT, ViewT>::Update::SetDrag::operator()(const ViewT &
 {
     auto &physical = view_.template get<ComponentPhysical>();
     const auto &current = m_drag[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()];
-    physical.m_drag = current;
+    physical.drag = current;
 }
 
 
@@ -191,7 +191,7 @@ StateProperties<StateIDT, ViewT>::Update::MagnetLimit::MagnetLimit(TimelinePrope
 template<typename StateIDT, typename ViewT>
 void StateProperties<StateIDT, ViewT>::Update::MagnetLimit::operator()(const ViewT &view_) const
 {
-    view_.template get<ComponentPhysical>().m_magnetLimit = m_magnetLimit[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()];
+    view_.template get<ComponentPhysical>().magnetLimit = m_magnetLimit[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()];
 }
 
 
@@ -234,7 +234,7 @@ StateProperties<StateIDT, ViewT>::Pipe::SetGravity::SetGravity(const Vector2<flo
 template<typename StateIDT, typename ViewT>
 void StateProperties<StateIDT, ViewT>::Pipe::SetGravity::operator()(const ViewT &view_, const SM::TransitionData<StateIDT>&) const
 {
-    view_.template get<ComponentPhysical>().m_gravity = m_gravity;
+    view_.template get<ComponentPhysical>().gravity = m_gravity;
 }
 
 template<typename StateIDT, typename ViewT>
@@ -267,7 +267,7 @@ template<typename StateIDT, typename ViewT>
 void StateProperties<StateIDT, ViewT>::Pipe::MultiplyVelocity::operator()(const ViewT &view_, const SM::TransitionData<StateIDT>&) const
 {
     auto &physical = view_.template get<ComponentPhysical>();
-    physical.m_velocity = physical.m_velocity.mulComponents(m_multiplier);
+    physical.velocity = physical.velocity.mulComponents(m_multiplier);
 }
 
 template<typename StateIDT, typename ViewT>
@@ -280,11 +280,11 @@ void StateProperties<StateIDT, ViewT>::Pipe::AddOrientedVelocity::operator()(con
 {
     auto &physical = view_.template get<ComponentPhysical>();
     auto &transform = view_.template get<ComponentTransform>();
-    physical.m_velocity.y += m_velocity.y;
+    physical.velocity.y += m_velocity.y;
     if (transform.m_orientation == ORIENTATION::RIGHT)
-        physical.m_velocity.x += m_velocity.x;
+        physical.velocity.x += m_velocity.x;
     else
-        physical.m_velocity.x -= m_velocity.x;
+        physical.velocity.x -= m_velocity.x;
 }
 
 
@@ -296,7 +296,7 @@ StateProperties<StateIDT, ViewT>::Pipe::SetDrag::SetDrag(const Vector2<float> &d
 template<typename StateIDT, typename ViewT>
 void StateProperties<StateIDT, ViewT>::Pipe::SetDrag::operator()(const ViewT &view_, const SM::TransitionData<StateIDT>&) const
 {
-    view_.template get<ComponentPhysical>().m_drag = m_drag;
+    view_.template get<ComponentPhysical>().drag = m_drag;
 }
 
 
@@ -321,7 +321,7 @@ StateProperties<StateIDT, ViewT>::Pipe::SetInertiaApplicationMultiplier::SetIner
 template<typename StateIDT, typename ViewT>
 void StateProperties<StateIDT, ViewT>::Pipe::SetInertiaApplicationMultiplier::operator()(const ViewT &view_, const SM::TransitionData<StateIDT>&) const
 {
-    view_.template get<ComponentPhysical>().m_inertiaMultiplier = m_mul;
+    view_.template get<ComponentPhysical>().inertiaMultiplier = m_mul;
 }
 
 
@@ -333,7 +333,7 @@ StateProperties<StateIDT, ViewT>::Pipe::SetMagnetLimit::SetMagnetLimit(unsigned 
 template<typename StateIDT, typename ViewT>
 void StateProperties<StateIDT, ViewT>::Pipe::SetMagnetLimit::operator()(const ViewT &view_, const SM::TransitionData<StateIDT>&) const
 {
-    view_.template get<ComponentPhysical>().m_magnetLimit = m_magnetLimit;
+    view_.template get<ComponentPhysical>().magnetLimit = m_magnetLimit;
 }
 
 
@@ -349,13 +349,13 @@ void StateProperties<StateIDT, ViewT>::Pipe::HaltSideDownwardMomentum::operator(
 {
     auto &physical = view_.template get<ComponentPhysical>();
 
-    if (physical.m_inertia.y > 0)
-        physical.m_inertia.y = 0;
-    if (physical.m_velocity.y > 0)
-        physical.m_velocity.y = 0;
+    if (physical.inertia.y > 0)
+        physical.inertia.y = 0;
+    if (physical.velocity.y > 0)
+        physical.velocity.y = 0;
 
-    physical.m_velocity.x = 0;
-    physical.m_inertia.x = 0;
+    physical.velocity.x = 0;
+    physical.inertia.x = 0;
 }
 
 template<typename StateIDT, typename ViewT>
@@ -421,11 +421,11 @@ void StateProperties<StateIDT, ViewT>::Pipe::LeaveWallPrejump::operator()(const 
 
     if (fall)
     {
-        physical.m_velocity += targetSpeed;
-        physical.m_inertia = {0.0f, 0.0f};
+        physical.velocity += targetSpeed;
+        physical.inertia = {0.0f, 0.0f};
     }
     else
-        physical.m_velocity += targetSpeed;
+        physical.velocity += targetSpeed;
 }
 
 template<typename StateIDT, typename ViewT>

@@ -23,9 +23,9 @@ void CameraSystem::update()
     Vector2<int> target;
     const auto &[trans, phys, dtar, worldPos] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget, WorldPosition>(playerId);
 
-    if (phys.m_appliedOffset.x != 0)
+    if (phys.appliedOffset.x != 0)
     {
-        const auto targetoffset = utils::signof(phys.m_appliedOffset.x) * std::min(abs(phys.m_appliedOffset.x * 30), 100);
+        const auto targetoffset = utils::signof(phys.appliedOffset.x) * std::min(abs(phys.appliedOffset.x * 30), 100);
         const auto delta = (targetoffset - dtar.currentOffset.x) * dtar.lookaheadSpeedSensitivity.x;
         int realOffset = 0;
         if (abs(delta) <= 1.0f)
@@ -45,14 +45,14 @@ void CameraSystem::update()
         }
     }
 
-    if (phys.m_appliedOffset.y != 0)
+    if (phys.appliedOffset.y != 0)
     {
-        float vprio = (worldPos.ground.onSlopeWithAngle == 0.0f && !phys.m_onMovingPlatform ? 0.0f : 1.5f);
-        if (phys.m_appliedOffset.y >= 5.0f)
+        float vprio = (worldPos.ground.onSlopeWithAngle == 0.0f && !phys.onMovingPlatform ? 0.0f : 1.5f);
+        if (phys.appliedOffset.y >= 5.0f)
             vprio = 3.0f;
         else if (worldPos.ground.onSlopeWithAngle != 0.0f)
             vprio = 1.5f;
-        auto targetoffset = utils::signof(phys.m_appliedOffset.y) * std::min(abs(phys.m_appliedOffset.y * vprio * 20.0f), 40.0f);
+        auto targetoffset = utils::signof(phys.appliedOffset.y) * std::min(abs(phys.appliedOffset.y * vprio * 20.0f), 40.0f);
         auto delta = (targetoffset - dtar.currentOffset.y) * dtar.lookaheadSpeedSensitivity.y;
         int realOffset = 0;
         if (abs(delta) <= 1.0f)
@@ -81,7 +81,7 @@ void CameraSystem::update()
     target = Vector2<int>{trans.m_pos} + BODY_OFFSET + Vector2<int>{dtar.currentOffset};
     //std::cout << "dtar.currentOffset: " << dtar.currentOffset << std::endl;
 
-    if (updateFocus(phys.m_pushbox + trans.m_pos))
+    if (updateFocus(phys.pushbox + trans.m_pos))
     {
         auto &area = m_reg.get<CameraFocusArea>(*m_currentFocusArea);
         m_cam.smoothMoveAxisTowards(area.getCameraTargetPosition(target), {1.0f, 1.0f}, {0.0f, 0.0f}, {10.0f, 10.0f});
