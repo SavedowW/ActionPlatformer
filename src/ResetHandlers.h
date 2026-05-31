@@ -85,7 +85,7 @@ class ComponentResetStatic<ComponentDynamicCameraTarget>
 public:
     static void resetComponent(const entt::entity&, ComponentDynamicCameraTarget &camtar_)
     {
-        camtar_.m_offset = {0, 0};
+        camtar_.currentOffset = {0, 0};
     }
 };
 

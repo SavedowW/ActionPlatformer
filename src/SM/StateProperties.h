@@ -26,6 +26,17 @@ struct StateProperties
         };
 
 
+        class MultiplyVelocity
+        {
+        public:
+            MultiplyVelocity(TimelineProperty<Vector2<float>> &&multiplier_);
+
+            void operator()(const ViewT &view_) const;
+        
+        private:
+            TimelineProperty<Vector2<float>> m_multiplier;
+        };
+
         class AddOrientedVelocity
         {
         public:
@@ -111,10 +122,34 @@ struct StateProperties
             TimelineProperty<Vector2<float>> m_drag;
         };
 
+
+        class LookaheadSpeedSensitivity
+        {
+        public:
+            LookaheadSpeedSensitivity(TimelineProperty<Vector2<float>> &&sensitivity_);
+
+            void operator()(const ViewT &view_) const;
+        
+        private:
+            TimelineProperty<Vector2<float>> m_sensitivity;
+        };
+
+
         class TestFallthrough
         {
         public:
             void operator()(const ViewT&) const;
+        };
+
+        class MagnetLimit
+        {
+        public:
+            MagnetLimit(TimelineProperty<unsigned int> &&magnetLimit_);
+
+            void operator()(const ViewT &view_) const;
+        
+        private:
+            TimelineProperty<unsigned int> m_magnetLimit;
         };
 
 
@@ -169,6 +204,18 @@ struct StateProperties
             void operator()(const ViewT &view_, const SM::TransitionData<StateIDT> &transition_) const;
         };
 
+
+        class MultiplyVelocity
+        {
+        public:
+            MultiplyVelocity(const Vector2<float> &multiplier_);
+
+            void operator()(const ViewT&, const SM::TransitionData<StateIDT> &transition_) const;
+        
+        private:
+            const Vector2<float> m_multiplier;
+        };
+
         class AddOrientedVelocity
         {
         public:
@@ -179,6 +226,7 @@ struct StateProperties
         private:
             const Vector2<float> m_velocity;
         };
+
 
         class SetDrag
         {
@@ -252,6 +300,17 @@ struct StateProperties
         {
         public:
             void operator()(const ViewT&, const SM::TransitionData<StateIDT> &transition_) const;
+        };
+
+        class SetLookaheadSpeedSensitivity
+        {
+        public:
+            constexpr SetLookaheadSpeedSensitivity(const Vector2<float> &sensitivity_);
+
+            void operator()(const ViewT&, const SM::TransitionData<StateIDT> &transition_) const;
+        
+        private:
+            const Vector2<float> m_sensitivity;
         };
     };
 };

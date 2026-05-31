@@ -8,9 +8,12 @@
 #include "Color.hpp"
 #include "Framebuffer.h"
 #include <SDL3/SDL.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp> // is needed?
 
+/**
+ *  TODO:
+ *   - avoid constant state switching
+ *   - exclude SDL types from interface
+ */
 class Renderer
 {
 public:
@@ -44,7 +47,6 @@ public:
     void drawCollider(const SlopeCollider &cld_, const Color &fillCol_, const Camera &cam_);
     void drawCollider(const Collider &cld_, const Color &fillCol_, const Color &borderCol_, const Camera &cam_);
 
-    // TODO: templated integral param, to hpp
     void renderTextureOutlined(unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_);
     void renderTextureOutlined(unsigned int tex_, const Vector2<int> &pos_, const Vector2<int> &size_, SDL_FlipMode flip_, const Camera &cam_);
 

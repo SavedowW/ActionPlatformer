@@ -218,15 +218,8 @@ struct ComponentAnimationRenderable
 
 struct ComponentDynamicCameraTarget
 {
-    ComponentDynamicCameraTarget() = default;
-
-    ComponentDynamicCameraTarget (const ComponentDynamicCameraTarget &rhs_) = delete;
-    ComponentDynamicCameraTarget (ComponentDynamicCameraTarget &&rhs_) = default;
-    ComponentDynamicCameraTarget &operator=(const ComponentDynamicCameraTarget &rhs_) = delete;
-    ComponentDynamicCameraTarget &operator=(ComponentDynamicCameraTarget &&rhs_) = default;
-
-    Vector2<int> m_offset;
-    Vector2<float> m_lookaheadSpeedSensitivity = {1.0f, 1.0f};
+    Vector2<int> currentOffset;
+    Vector2<float> lookaheadSpeedSensitivity = {1.0f, 1.0f};
 };
 
 struct Navigatable

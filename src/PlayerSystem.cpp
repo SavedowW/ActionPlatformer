@@ -12,7 +12,60 @@ PlayerSystem::PlayerSystem(entt::registry &reg_) :
     /*
         TODO: particles, hurtboxes, hitboxes
     */
+    m_statemachine.addState(
+        PlayerMake::state(
+            PlayerState::ATTACK_1,
 
+            SM::CallBatch( // TODO: hitboxes, hurtboxes
+                PlayerStateProperties::Update::MagnetLimit{TimelineProperty<unsigned int>( 
+                    {
+                        {0, 10},
+                        {10, 4},
+                    })},
+                PlayerStateProperties::Update::SetDrag{TimelineProperty<Vector2<float>>( 
+                    {
+                        {0, {0.05f, 0.05f}},
+                        {8, {0.3f, 0.3f}},
+                    })},
+                PlayerStateProperties::Update::LookaheadSpeedSensitivity{TimelineProperty<Vector2<float>>( 
+                    {
+                        {0, {0.f, 1.f}},
+                        {8, {1.f, 1.f}},
+                    })},
+                PlayerStateProperties::Update::MultiplyVelocity{TimelineProperty<Vector2<float>>( 
+                    {
+                        {0, {1.0f, 1.0f}},
+                        {5, {0.5f, 0.0f}}
+                    })},
+                PlayerStateProperties::Update::AddOrientedVelocity{TimelineProperty<Vector2<float>>( 
+                    {
+                        {0, {0.f, 0.f}},
+                        {2, {2.f, 0.f}},
+                        {5, {0.f, 0.f}}
+                    })}
+            ),
+
+            PlayerMake::SequentialConditions{}
+                .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
+                .addCondition(std::make_unique<PlayerStateTransitions::OnTimer>(PlayerState::IDLE, 30))
+                .done(),
+
+            PlayerMake::RulePipe{}
+                .setPipe(PlayerState::FLOAT, PlayerStateProperties::Pipe::MultiplyVelocity{{0.2f, 1.f}})
+                .done(),
+
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(PlayerStateProperties::Pipe::Realign{},
+                                PlayerStateProperties::Pipe::SetInertiaApplicationMultiplier{{0.0f, 0.0f}},
+                                PlayerStateProperties::Pipe::SetLookaheadSpeedSensitivity{{0.0f, 1.0f}},
+                                PlayerStateProperties::Pipe::SetGravity{{0.0f, 0.0f}},
+                                PlayerStateProperties::Pipe::SetDrag{{0.05f, 0.05f}},
+                                PlayerStateProperties::Pipe::SetMagnetLimit{10},
+                                PlayerStateProperties::Pipe::SetAnimation{m_animManager.getAnimID("Char1/attack1")},
+                                PlayerStateProperties::Pipe::ConvertToInertia{true, false})
+                .done()
+    ));
+    
     m_statemachine.addState(
         PlayerMake::state(
             PlayerState::WALL_CLING_PREJUMP,
@@ -96,6 +149,7 @@ PlayerSystem::PlayerSystem(entt::registry &reg_) :
             ),
 
             PlayerMake::SequentialConditions{}
+                .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
                 .addCondition(std::make_unique<PlayerStateTransitions::OnTimer>(PlayerState::FLOAT, 2))
                 .done(),
 
@@ -132,6 +186,7 @@ PlayerSystem::PlayerSystem(entt::registry &reg_) :
             ),
 
             PlayerMake::SequentialConditions{}
+                .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
                 .addCondition(std::make_unique<PlayerStateTransitions::OnTimer>(PlayerState::FLOAT, 2))
                 .done(),
 
@@ -159,6 +214,7 @@ PlayerSystem::PlayerSystem(entt::registry &reg_) :
 
             PlayerMake::SequentialConditions{}
                 .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
+                .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::ATTACK_1, InputMotions::BUFFERED_ORIENTED_ATTACK, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP_FORWARD, InputMotions::BUFFER_UP_FORWARD, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP, InputMotions::BUFFER_UP, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PRERUN, InputMotions::HOLD_HORDIR, OrientationOptions::OPPOSITE))
@@ -194,6 +250,7 @@ PlayerSystem::PlayerSystem(entt::registry &reg_) :
 
             PlayerMake::SequentialConditions{}
                 .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
+                .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::ATTACK_1, InputMotions::BUFFERED_ORIENTED_ATTACK, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP_FORWARD, InputMotions::BUFFER_UP_FORWARD, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP, InputMotions::BUFFER_UP, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PRERUN, InputMotions::HOLD_HORDIR, OrientationOptions::OPPOSITE))
@@ -230,6 +287,7 @@ PlayerSystem::PlayerSystem(entt::registry &reg_) :
 
             PlayerMake::SequentialConditions{}
                 .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
+                .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::ATTACK_1, InputMotions::BUFFERED_ORIENTED_ATTACK, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP_FORWARD, InputMotions::BUFFER_UP_FORWARD, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP, InputMotions::BUFFER_UP, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PRERUN, InputMotions::HOLD_HORDIR, OrientationOptions::OPPOSITE))
@@ -266,6 +324,7 @@ PlayerSystem::PlayerSystem(entt::registry &reg_) :
 
             PlayerMake::SequentialConditions{}
                 .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
+                .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::ATTACK_1, InputMotions::BUFFERED_ORIENTED_ATTACK, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP_FORWARD, InputMotions::BUFFER_UP_FORWARD, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP, InputMotions::BUFFER_UP, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PRERUN, InputMotions::HOLD_HORDIR, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
@@ -294,6 +353,7 @@ PlayerSystem::PlayerSystem(entt::registry &reg_) :
 
             PlayerMake::SequentialConditions{}
                 .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
+                .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::ATTACK_1, InputMotions::BUFFERED_ORIENTED_ATTACK, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP_FORWARD, InputMotions::BUFFER_UP_FORWARD, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PREJUMP, InputMotions::BUFFER_UP, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::PRERUN, InputMotions::HOLD_HORDIR, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))

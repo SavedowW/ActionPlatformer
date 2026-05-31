@@ -18,11 +18,8 @@ InputResolver::InputResolver() :
         {InputMotions::HOLD_UP_FORWARD, &InputResolver::checkHoldUpForward},
         {InputMotions::BUFFER_UP_FORWARD, &InputResolver::checkBufferUpForward},
         {InputMotions::BUFFER_UP_FORWARD_STRICT, &InputResolver::checkBufferUpForwardStrict},
-        //{InputMotions::HOLD_DOWN, &InputResolver::checkHoldDown},
-        //{InputMotions::TAP_UP, &InputResolver::checkTapUp},
-        //{InputMotions::TAP_DOWN, &InputResolver::checkTapDown},
-        //{InputMotions::TAP_UP_HORDIR, &InputResolver::checkStrictTapUpHorDir},
-        //{InputMotions::TAP_ATTACK, &InputResolver::checkTapAttack}
+
+        {InputMotions::BUFFERED_ORIENTED_ATTACK, &InputResolver::checkBufferedOrientedAttack},
     }
 {}
 
@@ -147,6 +144,24 @@ bool InputResolver::checkBufferUpForwardStrict(const ORIENTATION orientation_, c
         foundDirection = foundDirection || (in.m_dir == Vector2{expectedDir, -1});
 
         if ((foundUp || foundForward) && foundDirection)
+            return true;
+    }
+
+    return false;
+}
+
+bool InputResolver::checkBufferedOrientedAttack(ORIENTATION orientation_, const unsigned int extendBuffer_) const
+{
+    if (m_inputQueue.getFilled() == 0)
+        return false;
+
+    const auto expectedDir = (orientation_ == ORIENTATION::RIGHT ? 1 : -1);
+
+    const size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
+    for (size_t i = 0; i <= lookAt; ++i)
+    {
+        const auto &in = m_inputQueue[i];
+        if (in.m_inputs.at(INPUT_BUTTON::ATTACK) == INPUT_BUTTON_STATE::PRESSED && (in.m_dir.x == expectedDir || in.m_dir.x == 0))
             return true;
     }
 

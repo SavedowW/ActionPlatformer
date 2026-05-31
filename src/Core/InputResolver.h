@@ -22,7 +22,9 @@ enum class InputMotions : uint8_t
 
     BUFFER_DOWN_FORWARD_STRICT,
 
-    BUFFER_DOWN_STRICT
+    BUFFER_DOWN_STRICT,
+
+    BUFFERED_ORIENTED_ATTACK
 };
 
 SERIALIZE_ENUM(InputMotions, {
@@ -44,7 +46,9 @@ SERIALIZE_ENUM(InputMotions, {
 
     ENUM_AUTO(InputMotions, BUFFER_DOWN_FORWARD_STRICT),
 
-    ENUM_AUTO(InputMotions, BUFFER_DOWN_STRICT)
+    ENUM_AUTO(InputMotions, BUFFER_DOWN_STRICT),
+
+    ENUM_AUTO(InputMotions, BUFFERED_ORIENTED_ATTACK)
 })
 
 class InputResolver
@@ -76,13 +80,8 @@ private:
     bool checkHoldUpForward(ORIENTATION orientation_, unsigned int extendBuffer_) const;
     bool checkBufferUpForward(ORIENTATION orientation_, unsigned int extendBuffer_) const;
     bool checkBufferUpForwardStrict(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-    
-    //bool checkHoldHorDirBuffered(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-    //bool checkHoldDown(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-    //bool checkTapUp(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-    //bool checkTapDown(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-    //bool checkStrictTapUpHorDir(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-    //bool checkTapAttack(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+
+    bool checkBufferedOrientedAttack(ORIENTATION orientation_, unsigned int extendBuffer_) const;
 
     using InputCheck = bool (InputResolver::*)(ORIENTATION, unsigned int) const;
 

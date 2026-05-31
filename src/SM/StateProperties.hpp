@@ -30,6 +30,18 @@ void StateProperties<StateIDT, ViewT>::Update::UpdateGravity::operator()(const V
 
 
 template<typename StateIDT, typename ViewT>
+StateProperties<StateIDT, ViewT>::Update::MultiplyVelocity::MultiplyVelocity(TimelineProperty<Vector2<float>> &&multiplier_) :
+    m_multiplier{std::move(multiplier_)}
+{}
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Update::MultiplyVelocity::operator()(const ViewT &view_) const
+{
+    auto &physical = view_.template get<ComponentPhysical>();
+    physical.m_velocity = physical.m_velocity.mulComponents(m_multiplier[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()]);
+}
+
+template<typename StateIDT, typename ViewT>
 StateProperties<StateIDT, ViewT>::Update::AddOrientedVelocity::AddOrientedVelocity(TimelineProperty<Vector2<float>> &&velocity_) :
     m_velocity{std::move(velocity_)}
 {}
@@ -37,12 +49,10 @@ StateProperties<StateIDT, ViewT>::Update::AddOrientedVelocity::AddOrientedVeloci
 template<typename StateIDT, typename ViewT>
 void StateProperties<StateIDT, ViewT>::Update::AddOrientedVelocity::operator()(const ViewT &view_) const
 {
-    auto &physical = view_.template get<ComponentPhysical>();
-    auto &transform = view_.template get<ComponentTransform>();
     auto velocityChange = m_velocity[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()];
-    if (transform.m_orientation == ORIENTATION::LEFT)
+    if (view_.template get<ComponentTransform>().m_orientation == ORIENTATION::LEFT)
         velocityChange.x *= -1;
-    physical.m_velocity += velocityChange;
+    view_.template get<ComponentPhysical>().m_velocity += velocityChange;
 }
 
 template<typename StateIDT, typename ViewT>
@@ -154,10 +164,34 @@ void StateProperties<StateIDT, ViewT>::Update::SetDrag::operator()(const ViewT &
 
 
 template<typename StateIDT, typename ViewT>
+StateProperties<StateIDT, ViewT>::Update::LookaheadSpeedSensitivity::LookaheadSpeedSensitivity(TimelineProperty<Vector2<float>> &&sensitivity_) :
+    m_sensitivity{std::move(sensitivity_)}
+{}
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Update::LookaheadSpeedSensitivity::operator()(const ViewT &view_) const
+{
+    view_.template get<ComponentDynamicCameraTarget>().lookaheadSpeedSensitivity = m_sensitivity[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()];
+}
+
+
+template<typename StateIDT, typename ViewT>
 void StateProperties<StateIDT, ViewT>::Update::TestFallthrough::operator()(const ViewT &view_) const
 {
     if (view_.template get<InputResolver>().isInputActive(INPUT_BUTTON::DOWN))
         view_.template get<ComponentObstacleFallthrough>().setIgnoringObstacles();
+}
+
+
+template<typename StateIDT, typename ViewT>
+StateProperties<StateIDT, ViewT>::Update::MagnetLimit::MagnetLimit(TimelineProperty<unsigned int> &&magnetLimit_) :
+    m_magnetLimit{std::move(magnetLimit_)}
+{}
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Update::MagnetLimit::operator()(const ViewT &view_) const
+{
+    view_.template get<ComponentPhysical>().m_magnetLimit = m_magnetLimit[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()];
 }
 
 
@@ -221,6 +255,19 @@ void StateProperties<StateIDT, ViewT>::Pipe::Realign::operator()(const ViewT &vi
 {
     auto &transform = view_.template get<ComponentTransform>();
     transform.m_orientation = transition_.intoOrientation;
+}
+
+
+template<typename StateIDT, typename ViewT>
+StateProperties<StateIDT, ViewT>::Pipe::MultiplyVelocity::MultiplyVelocity(const Vector2<float> &multiplier_) :
+    m_multiplier{multiplier_}
+{}
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Pipe::MultiplyVelocity::operator()(const ViewT &view_, const SM::TransitionData<StateIDT>&) const
+{
+    auto &physical = view_.template get<ComponentPhysical>();
+    physical.m_velocity = physical.m_velocity.mulComponents(m_multiplier);
 }
 
 template<typename StateIDT, typename ViewT>
@@ -379,5 +426,16 @@ void StateProperties<StateIDT, ViewT>::Pipe::LeaveWallPrejump::operator()(const 
     }
     else
         physical.m_velocity += targetSpeed;
+}
+
+template<typename StateIDT, typename ViewT>
+constexpr StateProperties<StateIDT, ViewT>::Pipe::SetLookaheadSpeedSensitivity::SetLookaheadSpeedSensitivity(const Vector2<float> &sensitivity_) :
+    m_sensitivity{sensitivity_}
+{}
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Pipe::SetLookaheadSpeedSensitivity::operator()(const ViewT &view_, const SM::TransitionData<StateIDT>&) const
+{
+    view_.template get<ComponentDynamicCameraTarget>().lookaheadSpeedSensitivity = m_sensitivity;
 }
 

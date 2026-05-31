@@ -25,18 +25,15 @@ void CameraSystem::update()
 
     if (phys.m_appliedOffset.x != 0)
     {
-        auto targetoffset = utils::signof(phys.m_appliedOffset.x) * std::min(abs(phys.m_appliedOffset.x * 30), 100);
-        auto delta = (targetoffset - dtar.m_offset.x) * dtar.m_lookaheadSpeedSensitivity.x;
+        const auto targetoffset = utils::signof(phys.m_appliedOffset.x) * std::min(abs(phys.m_appliedOffset.x * 30), 100);
+        const auto delta = (targetoffset - dtar.currentOffset.x) * dtar.lookaheadSpeedSensitivity.x;
         int realOffset = 0;
         if (abs(delta) <= 1.0f)
-        {
             realOffset = static_cast<int>(delta);
-        }
         else
-        {
             realOffset = static_cast<int>(utils::signof(delta) * pow(abs(delta), 2.0f) / 400.0f);
-        }
-        dtar.m_offset.x += realOffset;
+        
+        dtar.currentOffset.x += realOffset;
 
         m_hResetDelay.begin(H_DELAY);
     }
@@ -44,7 +41,7 @@ void CameraSystem::update()
     {
         if (m_hResetDelay.update())
         {
-            dtar.m_offset.x -= utils::signof(dtar.m_offset.x) * utils::clamp(H_RESET_OFFSET, 0, abs(dtar.m_offset.x));
+            dtar.currentOffset.x -= utils::signof(dtar.currentOffset.x) * utils::clamp(H_RESET_OFFSET, 0, abs(dtar.currentOffset.x));
         }
     }
 
@@ -56,7 +53,7 @@ void CameraSystem::update()
         else if (worldPos.ground.onSlopeWithAngle != 0.0f)
             vprio = 1.5f;
         auto targetoffset = utils::signof(phys.m_appliedOffset.y) * std::min(abs(phys.m_appliedOffset.y * vprio * 20.0f), 40.0f);
-        auto delta = (targetoffset - dtar.m_offset.y) * dtar.m_lookaheadSpeedSensitivity.y;
+        auto delta = (targetoffset - dtar.currentOffset.y) * dtar.lookaheadSpeedSensitivity.y;
         int realOffset = 0;
         if (abs(delta) <= 1.0f)
         {
@@ -66,7 +63,7 @@ void CameraSystem::update()
         {
             realOffset = static_cast<int>(utils::signof(delta) * pow(abs(delta), 2.0f) / 400.0f);
         }
-        dtar.m_offset.y += realOffset;
+        dtar.currentOffset.y += realOffset;
 
         m_vResetDelay.begin(V_DELAY);
     }
@@ -74,15 +71,15 @@ void CameraSystem::update()
     {
         if (m_vResetDelay.update())
         {
-            dtar.m_offset.y -= utils::signof(dtar.m_offset.y) * utils::clamp(V_RESET_OFFSET, 0, abs(dtar.m_offset.y));
+            dtar.currentOffset.y -= utils::signof(dtar.currentOffset.y) * utils::clamp(V_RESET_OFFSET, 0, abs(dtar.currentOffset.y));
         }
     }
 
     if (worldPos.ground.onSlopeWithAngle == 0.0f)
-        dtar.m_offset.y = utils::signof(dtar.m_offset.y) * utils::clamp(abs(dtar.m_offset.y), 0, 20);
+        dtar.currentOffset.y = utils::signof(dtar.currentOffset.y) * utils::clamp(abs(dtar.currentOffset.y), 0, 20);
 
-    target = Vector2<int>{trans.m_pos} + BODY_OFFSET + Vector2<int>{dtar.m_offset};
-    //std::cout << "dtar.m_offset: " << dtar.m_offset << std::endl;
+    target = Vector2<int>{trans.m_pos} + BODY_OFFSET + Vector2<int>{dtar.currentOffset};
+    //std::cout << "dtar.currentOffset: " << dtar.currentOffset << std::endl;
 
     if (updateFocus(phys.m_pushbox + trans.m_pos))
     {
@@ -137,8 +134,8 @@ void CameraSystem::debugDraw(Renderer &ren_, const Camera &cam_) const
     if (ConfigurationManager::instance().m_debug.m_drawCameraOffset && playerId != entt::null)
     {
         auto [trans, phys, dtar] = m_reg.get<ComponentTransform, ComponentPhysical, ComponentDynamicCameraTarget>(playerId);
-        ren_.drawLine(trans.m_pos, trans.m_pos + dtar.m_offset, {188, 74, 155, 255}, cam_);
-        ren_.drawLine(trans.m_pos + dtar.m_offset, trans.m_pos + dtar.m_offset + BODY_OFFSET, {188, 74, 155, 255}, cam_);
+        ren_.drawLine(trans.m_pos, trans.m_pos + dtar.currentOffset, {188, 74, 155, 255}, cam_);
+        ren_.drawLine(trans.m_pos + dtar.currentOffset, trans.m_pos + dtar.currentOffset + BODY_OFFSET, {188, 74, 155, 255}, cam_);
     }
 }
 
