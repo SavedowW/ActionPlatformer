@@ -17,6 +17,13 @@ public:
     template<typename T>
     const T &cget() const noexcept;
 
+    entt::entity entity() const noexcept;
+
 private:
     const std::tuple<entt::entity, ComponentsT&...> &m_components;
+};
+
+template<typename T>
+concept IsComponentsView = requires {
+    []<typename... Args>(ComponentsView<Args...>){}(std::declval<T>());
 };

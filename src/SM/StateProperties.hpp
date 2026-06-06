@@ -5,6 +5,7 @@
 #include "Core/InputState.h"
 #include "Core/Vector2.hpp"
 #include "StateMachine.hpp"
+#include "ParticleSystem.hpp"
 #include "StateProperties.h"
 
 template<typename StateIDT, typename ViewT>
@@ -196,6 +197,27 @@ void StateProperties<StateIDT, ViewT>::Update::MagnetLimit::operator()(const Vie
 
 
 template<typename StateIDT, typename ViewT>
+StateProperties<StateIDT, ViewT>::Update::EmitParticles::EmitParticles(ParticleSystem &parSys_, std::map<uint32_t, ParticleEmissionRuleset> &&emission_) :
+    m_parSys{parSys_},
+    m_emission{std::move(emission_)}
+{}
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Update::EmitParticles::operator()(const ViewT &view_) const
+{
+    const auto frame = view_.template cget<SM::StatePossessor<StateIDT>>().framesInState();
+    auto found = m_emission.find(frame);
+    if (found == m_emission.end())
+        return;
+
+    const auto pid = m_parSys.makeParticle(found->second.recipe, view_);
+
+    if (found->second.mustDestroyOnStateChange)
+        view_.template get<ComponentChildParticles>().destroyOnStateChange.emplace_back(pid);
+}
+
+
+template<typename StateIDT, typename ViewT>
 StateProperties<StateIDT, ViewT>::Update::Realign::Realign(TimelineProperty<bool> &&shouldRealign_) :
     m_shouldRealign{std::move(shouldRealign_)}
 {}
@@ -380,7 +402,7 @@ void StateProperties<StateIDT, ViewT>::Pipe::LeaveWallPrejump::operator()(const 
     Vector2<float> targetSpeed = {orient * 0.7f, 0.1f};;
     bool fall = true;
 
-    const size_t lookAt = std::min(inputs.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength * 2));
+    const size_t lookAt = std::min(inputs.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength) * 2);
     for (size_t i = 0; i <= lookAt; ++i)
     {
         const auto &in = inputs[i];
@@ -439,3 +461,22 @@ void StateProperties<StateIDT, ViewT>::Pipe::SetLookaheadSpeedSensitivity::opera
     view_.template get<ComponentDynamicCameraTarget>().lookaheadSpeedSensitivity = m_sensitivity;
 }
 
+
+template<typename StateIDT, typename ViewT>
+StateProperties<StateIDT, ViewT>::Pipe::DestroyParticlesOnLeave::DestroyParticlesOnLeave(entt::registry &reg_) :
+    m_reg{reg_}
+{}
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Pipe::DestroyParticlesOnLeave::operator()(const ViewT &view_, const SM::TransitionData<StateIDT>&) const
+{
+    auto &particles = view_.template get<ComponentChildParticles>().destroyOnStateChange;
+    
+    for (const auto &el : particles)
+    {
+        if (m_reg.valid(el))
+            m_reg.destroy(el);
+    }
+
+    particles.clear();
+}

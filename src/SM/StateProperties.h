@@ -1,7 +1,9 @@
 #pragma once
 #include "Core/Vector2.hpp"
 #include "Core/TimelineProperty.hpp"
+#include "ParticleSystem.h"
 #include "StateMachine.h"
+#include "entt/entity/fwd.hpp"
 
 template<typename StateIDT, typename ViewT>
 struct StateProperties
@@ -150,6 +152,19 @@ struct StateProperties
         
         private:
             TimelineProperty<unsigned int> m_magnetLimit;
+        };
+
+
+        class EmitParticles
+        {
+        public:
+            EmitParticles(ParticleSystem &parSys_, std::map<uint32_t, ParticleEmissionRuleset> &&emission_);
+
+            void operator()(const ViewT &view_) const;
+
+        private:
+            ParticleSystem &m_parSys;
+            std::map<uint32_t, ParticleEmissionRuleset> m_emission;
         };
 
 
@@ -311,6 +326,18 @@ struct StateProperties
         
         private:
             const Vector2<float> m_sensitivity;
+        };
+
+
+        class DestroyParticlesOnLeave
+        {
+        public:
+            DestroyParticlesOnLeave(entt::registry &reg_);
+
+            void operator()(const ViewT&, const SM::TransitionData<StateIDT> &transition_) const;
+        
+        private:
+            entt::registry &m_reg;
         };
     };
 };

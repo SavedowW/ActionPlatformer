@@ -88,11 +88,6 @@ struct ComponentStaticCollider
     ComponentStaticCollider() = default;
     ComponentStaticCollider(const Vector2<float> &pos_, const SlopeCollider &collider_, int obstacleId_);
 
-    ComponentStaticCollider (const ComponentStaticCollider &rhs_) = delete;
-    ComponentStaticCollider (ComponentStaticCollider &&rhs_) = default;
-    ComponentStaticCollider &operator=(const ComponentStaticCollider &rhs_) = delete;
-    ComponentStaticCollider &operator=(ComponentStaticCollider &&rhs_) = default;
-
     int m_obstacleId = 0;
 
     // TODO: to separate component
@@ -149,8 +144,8 @@ class FlashDelayedLinear : public Flash
 {
 public:
     FlashDelayedLinear(uint32_t delayDuration, uint32_t fadeDuration_, uint32_t firstFrame_ = 0);
-    virtual uint8_t getFlashAlpha() const override;
-    virtual std::unique_ptr<Flash> clone() const override;
+    uint8_t getFlashAlpha() const override;
+    std::unique_ptr<Flash> clone() const override;
 
 private:
     uint32_t m_delayDuration;
@@ -217,7 +212,7 @@ struct RenderLayer
     RenderLayer(int depth_, bool visible_ = true) noexcept;
     RenderLayer(const RenderLayer&) noexcept;
     RenderLayer(RenderLayer&&) noexcept;
-    RenderLayer &operator=(const RenderLayer&) = delete;
+    RenderLayer &operator=(const RenderLayer&) noexcept;
     RenderLayer &operator=(RenderLayer&&) noexcept;
     ~RenderLayer();
 
@@ -255,27 +250,14 @@ struct TilemapLayer
 
 struct ComponentParticlePrimitive
 {
-    SDL_FlipMode m_flip = SDL_FLIP_NONE;
-    FrameTimer<false> m_lifetime;
+    FrameTimer<false> lifetime;
     float angle = 0.0f;
-    entt::entity m_tieTransform = entt::null;
+    entt::entity tieTransform = entt::null;
 };
 
-struct ComponentParticlePhysics
+struct ComponentChildParticles
 {
-    Vector2<float> velocity;
-    Vector2<float> inertia;
-    Vector2<float> drag; 
-    Vector2<float> gravity;
-    Vector2<float> inertiaMultiplier;
-
-    void applyDrag();
-    Vector2<int> claimOffset();
-    Vector2<int> peekOffset() const;
-    Vector2<float> peekRawOffset() const;
-
-private:
-    Vector2<float> m_velocityLeftover;
+    std::vector<entt::entity> destroyOnStateChange;
 };
 
 Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_);

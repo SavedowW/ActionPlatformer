@@ -56,7 +56,6 @@ public:
 
 private:
     static void proceedEntity(const CollidersView &clds_, ComponentTransform &trans_, ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, WorldPosition &worldPos_);
-    static void proceedEntity(ComponentTransform &trans_, ComponentParticlePhysics &phys_);
     
     entt::registry &m_reg;
     const Vector2<int> m_levelSize;

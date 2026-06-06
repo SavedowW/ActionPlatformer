@@ -376,7 +376,6 @@ void PhysicsSystem::updatePhysics()
     PROFILE_FUNCTION;
 
     auto viewPhys = m_reg.view<ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, WorldPosition>();
-    auto viewPhysSimplified = m_reg.view<ComponentTransform, ComponentParticlePhysics>();
     const auto viewscld = m_reg.view<ComponentStaticCollider>();
 
     for (auto [idx, trans, phys, obsfall, ev] : viewPhys.each())
@@ -386,9 +385,6 @@ void PhysicsSystem::updatePhysics()
 
         proceedEntity(viewscld, trans, phys, obsfall, ev);
     }
-
-    for (auto [idx, trans, phys] : viewPhysSimplified.each())
-        proceedEntity(trans, phys);
 
     /* TODO: notably faster in release build, but harder to debug even with seq, might add debug flags to enable parallel execution
     auto iteratable = viewPhys.each();
@@ -456,16 +452,4 @@ void PhysicsSystem::proceedEntity(const CollidersView &clds_, ComponentTransform
     phys_.appliedOffset = trans_.m_pos - oldPos + phys_.pushedOffset;
     phys_.extraoffset = {0.0f, 0.0f};
     phys_.pushedOffset = {0, 0};
-}
-
-void PhysicsSystem::proceedEntity(ComponentTransform &trans_, ComponentParticlePhysics &phys_)
-{
-    // Common stuff
-    phys_.velocity += phys_.gravity;
-
-    phys_.applyDrag();
-
-    // Prepare vars for collision detection
-    const auto offset = phys_.claimOffset();
-    trans_.m_pos += offset;
 }

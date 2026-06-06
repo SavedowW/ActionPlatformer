@@ -1,60 +1,40 @@
 #pragma once
 #include "Core/AnimationManager.h"
 #include "Core/Vector2.hpp"
+#include "Core/ECS/ComponentsView.h"
 #include <entt/entt.hpp>
 #include <SDL3/SDL.h>
 
 enum class TiePosRule : uint8_t
 {
-    TIE_TO_WALL,
-    TIE_TO_GROUND,
-    TIE_TO_SOURCE,
+    TIE_TO_EMITTER,
     NONE
 };
 
-enum class TieLifetimeRule : uint8_t
+class ParticleRecipe
 {
-    DESTROY_ON_STATE_LEAVE,
-    NONE
-};
+public:
+    ParticleRecipe(ResID anim_, uint32_t lifetime_, int layer_);
+    ParticleRecipe &setOffset(const Vector2<int> &offset_) noexcept;
+    ParticleRecipe &tiePos(TiePosRule rule_) noexcept;
 
-struct ParticleTemplate
-{
-    ParticleTemplate(int count_, const Vector2<float> &offset_, ResID anim_, uint32_t lifetime_, int layer_);
-
-    ParticleTemplate &setTiePosRules(TiePosRule tiePosRule_);
-    ParticleTemplate &setTieLifetimeRules(TieLifetimeRule tieRule_);
-    ParticleTemplate &setNotDependOnGroundAngle();
-
-    ParticleTemplate(const ParticleTemplate &rhs_) = default;
-    ParticleTemplate(ParticleTemplate &&rhs_) = default;
-    ParticleTemplate& operator=(const ParticleTemplate &rhs_) = default;
-    ParticleTemplate& operator=(ParticleTemplate &&rhs_) = default;
-
-    int count = 0;
-    Vector2<float> offset;
+private:
+    Vector2<int> offset;
     ResID anim;
     uint32_t lifetime = 0;
     int layer;
-    TiePosRule m_tiePosRule = TiePosRule::NONE;
-    TieLifetimeRule m_tieLifetimeRule = TieLifetimeRule::NONE;
-    bool m_dependOnGroundAngle = true;
+    TiePosRule tiePosRule = TiePosRule::NONE;
+
+    friend class ParticleSystem;
 };
 
-struct ParticleRecipe
+struct ParticleEmissionRuleset
 {
-    ParticleRecipe(const ParticleTemplate &template_);
+    ParticleEmissionRuleset(const ParticleRecipe &recipe_);
+    ParticleEmissionRuleset &destroyOnStateChange() noexcept;
 
-    int count = 0;
-    Vector2<float> pos;
-    ResID anim;
-    SDL_FlipMode flip = SDL_FLIP_NONE;
-    uint32_t lifetime;
-    float angle = 0;
-    int layer;
-    entt::entity m_tiePosTo = entt::null;
-
-    const ParticleTemplate &m_baseTemplate;
+    ParticleRecipe recipe;
+    bool mustDestroyOnStateChange = false;
 };
 
 class ParticleSystem
@@ -62,7 +42,8 @@ class ParticleSystem
 public:
     ParticleSystem(entt::registry &reg_);
 
-    void makeParticle(const ParticleRecipe &particle_, std::vector<entt::entity> *placeId_ = nullptr);
+    template<IsComponentsView ViewT>
+    entt::entity makeParticle(const ParticleRecipe &particle_, const ViewT &view_);
 
     void update();
 

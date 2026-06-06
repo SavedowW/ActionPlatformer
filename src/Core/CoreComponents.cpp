@@ -96,38 +96,6 @@ bool SwitchCollider::updateTimer()
     return m_isEnabled;
 }
 
-void ComponentParticlePhysics::applyDrag()
-{
-    if (inertia.x != 0)
-    {
-        auto absInertia = abs(inertia.x);
-        auto inertiaSign = utils::signof(inertia.x / abs(inertia.x));
-        absInertia = std::max(absInertia - drag.x, 0.0f);
-        inertia.x = inertiaSign * absInertia;
-    }
-
-    if (inertia.y != 0)
-    {
-        auto absInertia = abs(inertia.y);
-        auto inertiaSign = utils::signof(inertia.y / abs(inertia.y));
-        absInertia = std::max(absInertia - drag.y, 0.0f);
-        inertia.y = inertiaSign * absInertia;
-    }
-}
-
-Vector2<int> ComponentParticlePhysics::claimOffset()
-{
-    auto offset = velocity + inertia.mulComponents(inertiaMultiplier);
-    Vector2<int> iOffset = offset;
-    m_velocityLeftover = offset - iOffset;
-    return iOffset;
-}
-
-Vector2<float> ComponentParticlePhysics::peekRawOffset() const
-{
-    return velocity + inertia.mulComponents(inertiaMultiplier);
-}
-
 Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_)
 {
     if (trans_.m_orientation == ORIENTATION::LEFT)
@@ -198,10 +166,20 @@ RenderLayer::RenderLayer(RenderLayer &&rhs_) noexcept :
     m_dirtyOrder = true;
 }
 
+RenderLayer &RenderLayer::operator=(const RenderLayer &rhs_) noexcept
+{
+    m_depth = rhs_.m_depth;
+    m_visible = rhs_.m_visible;
+    m_dirtyOrder = true;
+
+    return *this;
+}
+
 RenderLayer &RenderLayer::operator=(RenderLayer &&rhs_) noexcept
 {
     m_depth = rhs_.m_depth;
     m_visible = rhs_.m_visible;
+    m_dirtyOrder = true;
 
     return *this;
 }
@@ -232,7 +210,6 @@ T_NAME_AUTO(ComponentTransform);
 T_NAME_AUTO(const ComponentTransform);
 T_NAME_AUTO(ComponentParticlePrimitive);
 T_NAME_AUTO(ComponentSpawnLocation);
-T_NAME_AUTO(ComponentParticlePhysics);
 T_NAME_AUTO(ComponentPhysical);
 T_NAME_AUTO(const ComponentPhysical);
 T_NAME_AUTO(WorldPosition);

@@ -1,9 +1,11 @@
 #include "RenderSystem.h"
 #include "Core/CoreComponents.h"
+#include "Core/Vector2.hpp"
 #include "EnvComponents.h"
 #include "Core/GameData.h"
 #include "Core/Configuration.h"
 #include "Core/Application.h"
+#include "SDL3/SDL_surface.h"
 
 RenderSystem::RenderSystem(entt::registry &reg_, Camera &camera_, ColliderRoutesCollection &rtCol_) :
     m_reg(reg_),
@@ -165,23 +167,31 @@ void RenderSystem::drawParticle(const ComponentTransform &trans_, const Componen
     {
         auto texSize = ren_.m_currentAnimation->getSize();
         auto animorigin = ren_.m_currentAnimation->getOrigin();
-        auto texPos = trans_.m_pos + Vector2{1, 1};
-        if (partcl_.m_tieTransform != entt::null)
-            texPos += m_reg.get<ComponentTransform>(partcl_.m_tieTransform).m_pos;
+        auto texPos = trans_.m_pos;
+        if (partcl_.tieTransform != entt::null)
+        {
+            const auto &tiedTrans = m_reg.get<ComponentTransform>(partcl_.tieTransform);
+            if (tiedTrans.m_orientation == ORIENTATION::LEFT)
+                texPos = tiedTrans.m_pos.add(-texPos.x, texPos.y);
+            else
+                texPos = tiedTrans.m_pos.add(texPos.x, texPos.y);
+        }
 
-        if (partcl_.m_flip & SDL_FLIP_HORIZONTAL)
-            texPos.x -= (texSize.x - animorigin.x);
+        SDL_FlipMode flip = SDL_FLIP_NONE;
+
+        if (trans_.m_orientation == ORIENTATION::LEFT)
+        {
+            texPos.x -= (texSize.x - animorigin.x) - 2;
+            flip = SDL_FLIP_HORIZONTAL;
+        }
         else
             texPos.x -= animorigin.x;
-        
-        if (partcl_.m_flip & SDL_FLIP_VERTICAL)
-            texPos.y -= (texSize.y - animorigin.y);
-        else
-            texPos.y -= animorigin.y;
+
+        texPos.y -= animorigin.y;
 
         auto spr = ren_.m_currentAnimation->getSprite();
 
-        m_renderer.renderTexture(spr, texPos, texSize, partcl_.m_flip, partcl_.angle, animorigin, m_camera);
+        m_renderer.renderTexture(spr, texPos, texSize, flip, partcl_.angle, animorigin, m_camera);
 
         if (ConfigurationManager::instance().m_debug.m_drawDebugTextures)
         {

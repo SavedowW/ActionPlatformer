@@ -5,7 +5,8 @@ template<bool RESULT_IF_INACTIVE = false>
 class FrameTimer
 {
 public:
-	FrameTimer(uint32_t framesToWait_ = 0) noexcept;
+	FrameTimer() noexcept = default;
+	FrameTimer(uint32_t framesToWait_) noexcept;
 	void begin(uint32_t framesToWait_) noexcept;
 	void beginAt(uint32_t framesToWait_, float progress_) noexcept;
 	void setCurrentFrame(uint32_t frame_) noexcept;
@@ -18,6 +19,6 @@ public:
 	void finish() noexcept;
 
 private:
-	uint32_t m_framesToWait;
-    uint32_t m_currentFrame;
+	uint32_t m_framesToWait = 0;
+    uint32_t m_currentFrame = 0;
 };

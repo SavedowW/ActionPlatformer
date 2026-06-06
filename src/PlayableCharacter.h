@@ -40,7 +40,7 @@ SERIALIZE_ENUM(PlayerState, {
     ENUM_AUTO(PlayerState, ATTACK_1),
 })
 
-using PlayerView = ComponentsView<ComponentName, SM::StatePossessor<PlayerState>, ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, WorldPosition, ComponentAnimationRenderable, InputResolver, ComponentDynamicCameraTarget>;
+using PlayerView = ComponentsView<ComponentName, SM::StatePossessor<PlayerState>, ComponentTransform, ComponentPhysical, ComponentObstacleFallthrough, WorldPosition, ComponentAnimationRenderable, InputResolver, ComponentDynamicCameraTarget, ComponentChildParticles>;
 using PlayerMake = SM::Make<PlayerState, PlayerView>;
 using PlayerStateProperties = StateProperties<PlayerState, PlayerView>;
 using PlayerStateTransitions = TransitionChecks<PlayerState, PlayerView>;

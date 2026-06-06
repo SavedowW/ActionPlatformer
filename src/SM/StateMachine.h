@@ -3,7 +3,7 @@
 #include "Core/Vector2.hpp"
 #include "Core/NavGraph.h"
 #include "entt/entity/fwd.hpp"
-#include <string>
+#include "Core/ECS/ComponentsView.h"
 #include <memory>
 #include <unordered_map>
 
@@ -57,7 +57,7 @@ namespace SM
         uint32_t m_framesInState = 0;
     };
 
-    template<typename StateIDT, typename ViewT>
+    template<typename StateIDT, IsComponentsView ViewT>
     class GenericState
     {
     public:
@@ -81,7 +81,7 @@ namespace SM
     /**
      *  A new shiny flexible state machine
      */
-    template<typename StateIDT, typename ViewT>
+    template<typename StateIDT, IsComponentsView ViewT>
     class StateMachine
     {
     public:

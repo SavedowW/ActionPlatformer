@@ -1,12 +1,14 @@
 #include "PlayerSystem.h"
 #include "Hit.h"
+#include "ParticleSystem.h"
 #include "SM/Builder.hpp"  // IWYU pragma: keep
 #include "SM/StateProperties.hpp"  // IWYU pragma: keep
 #include "ResetHandlers.h"
 #include "Core/Application.h"
 
-PlayerSystem::PlayerSystem(entt::registry &reg_) :
+PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_) :
     m_reg(reg_),
+    m_parSys{parSys_},
     m_animManager(Application::instance().m_animationManager)
 {
     /*
@@ -17,6 +19,17 @@ PlayerSystem::PlayerSystem(entt::registry &reg_) :
             PlayerState::ATTACK_1,
 
             SM::CallBatch( // TODO: hitboxes, hurtboxes
+                PlayerStateProperties::Update::EmitParticles{m_parSys, 
+                    {
+                        {
+                            4, ParticleEmissionRuleset{
+                                ParticleRecipe{m_animManager.getAnimID("Char1/particles/attack1_trace"), 10, 3}
+                                    .setOffset({0, 4})
+                                    .tiePos(TiePosRule::TIE_TO_EMITTER)
+                            }.destroyOnStateChange()
+                        }
+                    }
+                },
                 PlayerStateProperties::Update::MagnetLimit{TimelineProperty<unsigned int>( 
                     {
                         {0, 10},
@@ -51,7 +64,8 @@ PlayerSystem::PlayerSystem(entt::registry &reg_) :
                 .done(),
 
             PlayerMake::RulePipe{}
-                .setPipe(PlayerState::FLOAT, PlayerStateProperties::Pipe::MultiplyVelocity{{0.2f, 1.f}})
+                .setDefaultPipe(PlayerStateProperties::Pipe::MultiplyVelocity{{0.2f, 1.f}},
+                                PlayerStateProperties::Pipe::DestroyParticlesOnLeave{m_reg})
                 .done(),
 
             PlayerMake::RulePipe{}
@@ -411,6 +425,8 @@ void PlayerSystem::createPlayer()
 
     auto &trans = m_reg.emplace<ComponentTransform>(m_playerId);
     m_reg.emplace<ComponentReset<ComponentTransform>>(m_playerId, trans.m_pos, trans.m_orientation);
+    
+    m_reg.emplace<ComponentChildParticles>(m_playerId);
 
     auto &phys = m_reg.emplace<ComponentPhysical>(m_playerId);
     m_reg.emplace<ComponentResetStatic<ComponentPhysical>>(m_playerId);

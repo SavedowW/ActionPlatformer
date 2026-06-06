@@ -26,32 +26,32 @@ namespace SM
         m_framesInState = 0;
     }
 
-    template<typename StateIDT, typename ViewT>
+    template<typename StateIDT, IsComponentsView ViewT>
     GenericState<StateIDT, ViewT>::GenericState(const StateIDT &id_) noexcept :
         m_id{id_}
     {}
 
-    template<typename StateIDT, typename ViewT>
+    template<typename StateIDT, IsComponentsView ViewT>
     void GenericState<StateIDT, ViewT>::update(const ViewT &view_) const
     {
         updateImpl(view_);
         view_.template get<StatePossessor<StateIDT>>().addFrameInState();
     }
 
-    template<typename StateIDT, typename ViewT>
+    template<typename StateIDT, IsComponentsView ViewT>
     void GenericState<StateIDT, ViewT>::handleTransitionFrom(const ViewT &view_, const TransitionData<StateIDT>& transition_) const
     {
         handleTransitionFromImpl(view_, transition_);
     }
 
-    template<typename StateIDT, typename ViewT>
+    template<typename StateIDT, IsComponentsView ViewT>
     void GenericState<StateIDT, ViewT>::handleTransitionInto(const ViewT &view_, const TransitionData<StateIDT>& transition_) const
     {
         handleTransitionIntoImpl(view_, transition_);
         view_.template get<StatePossessor<StateIDT>>().setState(m_id);
     }
 
-    template<typename StateIDT, typename ViewT>
+    template<typename StateIDT, IsComponentsView ViewT>
     void StateMachine<StateIDT, ViewT>::addState(std::unique_ptr<GenericState<StateIDT, ViewT>> &&newState_)
     {
         if (!newState_)
@@ -63,7 +63,7 @@ namespace SM
         m_states[newState_->id()] = std::move(newState_);
     }
 
-    template<typename StateIDT, typename ViewT>
+    template<typename StateIDT, IsComponentsView ViewT>
     void StateMachine<StateIDT, ViewT>::init(entt::registry &reg_, entt::entity idx_)
     {
         const auto &possessor = reg_.get<StatePossessor<StateIDT>>(idx_);
@@ -75,7 +75,7 @@ namespace SM
         state.handleTransitionInto(view, TransitionData{possessor.stateId(), possessor.stateId(), transform.m_orientation});
     }
 
-    template<typename StateIDT, typename ViewT>
+    template<typename StateIDT, IsComponentsView ViewT>
     void StateMachine<StateIDT, ViewT>::update(entt::registry &reg_) const
     {
         auto view = ViewT::makeView(reg_);

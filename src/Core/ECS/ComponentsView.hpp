@@ -31,3 +31,9 @@ const T &ComponentsView<ComponentsT...>::cget() const noexcept
 {
     return std::get<T&>(m_components);
 }
+
+template<typename... ComponentsT>
+entt::entity ComponentsView<ComponentsT...>::entity() const noexcept
+{
+    return std::get<entt::entity>(m_components);
+}
