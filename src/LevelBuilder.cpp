@@ -578,6 +578,8 @@ void LevelBuilder::loadObjectsLayer(const nlohmann::json &json_)
 {
     auto depth = m_autoLayer;
 
+    bool layerVisible = json_.at("visible");
+
     for (const auto &prop : json_.at("properties"))
     {
         const std::string name = prop.at("name");
@@ -592,7 +594,7 @@ void LevelBuilder::loadObjectsLayer(const nlohmann::json &json_)
         const uint32_t gid = obj.at("gid");
         const Vector2<int> pos = {obj.at("x"), obj.at("y")};
         const bool visible = obj.at("visible");
-        (this->*m_utilTilesetFactories.at(gid))(pos, visible, depth);
+        (this->*m_utilTilesetFactories.at(gid))(pos, visible && layerVisible, depth);
     }
 }
 

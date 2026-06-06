@@ -5,7 +5,7 @@
 
 struct RoutingPoint
 {
-    Vector2<float> m_pos;
+    Vector2<int> m_pos;
     int m_id;
 };
 

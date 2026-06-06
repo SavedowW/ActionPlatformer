@@ -1,6 +1,5 @@
 #include "DynamicColliderSystem.h"
 #include "Core/CoreComponents.h"
-#include "Core/Profile.h"
 
 DynamicColliderSystem::DynamicColliderSystem(entt::registry &reg_) :
     m_reg(reg_)
@@ -45,7 +44,18 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentTransform &trans_, Co
 
     twop_.m_timer.update();
 
-    const Vector2<float> newtl = twop_.m_point2 + (twop_.m_point1 - twop_.m_point2) * twop_.m_timer.getProgressNormalized();
+    const Vector2<int> delta = (twop_.m_point1 - twop_.m_point2).abs() * twop_.m_timer.getProgressNormalized();
+
+    Vector2<int> newtl = twop_.m_point2;
+    if (twop_.m_point1.x >= twop_.m_point2.x)
+        newtl.x += delta.x;
+    else
+        newtl.x -= delta.x;
+
+    if (twop_.m_point1.y >= twop_.m_point2.y)
+        newtl.y += delta.y;
+    else
+        newtl.y -= delta.y;
 
     moveColliderAt(trans_, scld_, newtl);
 }
