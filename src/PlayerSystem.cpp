@@ -24,7 +24,6 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_) :
                         {
                             4, ParticleEmissionRuleset{
                                 ParticleRecipe{m_animManager.getAnimID("Char1/particles/attack1_trace"), 10, 3}
-                                    .setOffset({0, 4})
                                     .tiePos(TiePosRule::TIE_TO_EMITTER)
                             }.destroyOnStateChange()
                         }

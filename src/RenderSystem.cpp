@@ -5,7 +5,7 @@
 #include "Core/GameData.h"
 #include "Core/Configuration.h"
 #include "Core/Application.h"
-#include "SDL3/SDL_surface.h"
+#include "Core/Logger.hpp"
 
 RenderSystem::RenderSystem(entt::registry &reg_, Camera &camera_, ColliderRoutesCollection &rtCol_) :
     m_reg(reg_),
@@ -165,8 +165,8 @@ void RenderSystem::drawParticle(const ComponentTransform &trans_, const Componen
 {
     if (ren_.m_currentAnimation != nullptr)
     {
-        auto texSize = ren_.m_currentAnimation->getSize();
-        auto animorigin = ren_.m_currentAnimation->getOrigin();
+        const auto texSize = ren_.m_currentAnimation->getSize();
+        const auto animorigin = ren_.m_currentAnimation->getOrigin();
         auto texPos = trans_.m_pos;
         if (partcl_.tieTransform != entt::null)
         {
@@ -189,7 +189,7 @@ void RenderSystem::drawParticle(const ComponentTransform &trans_, const Componen
 
         texPos.y -= animorigin.y;
 
-        auto spr = ren_.m_currentAnimation->getSprite();
+        const auto spr = ren_.m_currentAnimation->getSprite();
 
         m_renderer.renderTexture(spr, texPos, texSize, flip, partcl_.angle, animorigin, m_camera);
 

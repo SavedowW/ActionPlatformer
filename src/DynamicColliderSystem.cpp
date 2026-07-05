@@ -87,8 +87,8 @@ bool DynamicColliderSystem::isObstacleOverlappingWithDynamic(const SlopeCollider
         {
             if (!m_reg.all_of<ComponentObstacleFallthrough>(idx))
                 return true;
-            else
-                m_reg.get<ComponentObstacleFallthrough>(idx).setIgnoreObstacle(obstacleId_);
+
+            m_reg.get<ComponentObstacleFallthrough>(idx).setIgnoreObstacle(obstacleId_);
         }
     }
 
