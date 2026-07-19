@@ -9,7 +9,7 @@
 
 BattleLevel::BattleLevel(int lvlId_, FPSUtility &fpsUtility_, const Vector2<int>& size_) :
     Level(lvlId_, fpsUtility_, size_),
-    m_camera({0.0f, 0.0f}, gamedata::global::maxCameraSize, m_size),
+    m_camera({0, 0}, gamedata::global::maxCameraSize, m_size),
     m_playerSystem(m_registry, m_partsys),
     m_rendersys(m_registry, m_camera, m_cldRoutesCollection),
     m_inputsys(m_registry),
@@ -43,7 +43,7 @@ void BattleLevel::enter()
     m_playerSystem.createPlayer();
 
     m_camera.setScale(1.0f);
-    m_camera.setPos({320.0f, 383.0f});
+    m_camera.setPos({320, 383});
 }
 
 void BattleLevel::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)

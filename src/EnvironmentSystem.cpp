@@ -18,10 +18,11 @@ void EnvironmentSystem::update()
         {
             for (const auto &[idx2, trans2, phys2] : physicals.each())
             {
+                const auto avgAppliedOffset = phys2.appliedOffset.avg();
                 Collider grassPb;
-                if (phys2.appliedOffset.x > 0)
+                if (avgAppliedOffset.x > 0)
                     grassPb = GrassTopComp::colliderRight + trans.m_pos;
-                else if (phys2.appliedOffset.x <= -0)
+                else if (avgAppliedOffset.x <= -0)
                     grassPb = GrassTopComp::colliderLeft + trans.m_pos;
                 else
                     continue;
@@ -29,7 +30,7 @@ void EnvironmentSystem::update()
                 auto pb = phys2.pushbox + trans2.m_pos;
                 auto res = pb.checkOverlap(grassPb);
                 if ((res & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
-                    grass.touchedPlayer(phys2.appliedOffset, {&m_reg, idx});
+                    grass.touchedPlayer(avgAppliedOffset, {.reg=&m_reg, .idx=idx});
             }
         }
     }

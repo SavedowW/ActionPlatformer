@@ -1,5 +1,6 @@
 #pragma once
 #include "Tileset.h"
+#include "SlidingWindow.h"
 #include "Vector2.hpp"
 #include "FrameTimer.h"
 #include "Collider.h"
@@ -46,7 +47,7 @@ struct ComponentPhysical
     Vector2<int> calculatedOffset;
 
     // Used to calculate camera offset
-    Vector2<int> appliedOffset;
+    SlidingWindow<Vector2<int>, 10> appliedOffset;
 
     // Offset enforced by dynamic colliders, used for things like inertia
     Vector2<int> enforcedOffset;

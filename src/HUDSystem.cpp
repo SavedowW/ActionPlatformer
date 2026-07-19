@@ -1,4 +1,5 @@
 #include "HUDSystem.h"
+#include "Core/SlidingWindow.hpp"
 #include "Core/TextManager.hpp"
 #include "Core/Utils.hpp"
 #include "PlayableCharacter.h"

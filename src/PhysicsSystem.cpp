@@ -449,7 +449,7 @@ void PhysicsSystem::proceedEntity(const CollidersView &clds_, ComponentTransform
     handler.magnet();
     handler.discoverPosition();
 
-    phys_.appliedOffset = trans_.m_pos - oldPos + phys_.pushedOffset;
+    phys_.appliedOffset.push(trans_.m_pos - oldPos + phys_.pushedOffset);
     phys_.extraoffset = {0.0f, 0.0f};
     phys_.pushedOffset = {0, 0};
 }

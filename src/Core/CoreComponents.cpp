@@ -1,4 +1,5 @@
 #include "CoreComponents.h"
+#include "SlidingWindow.h"
 #include "StaticMapping.hpp"
 
 ComponentTransform::ComponentTransform(const Vector2<int> &pos_, ORIENTATION orient_) :

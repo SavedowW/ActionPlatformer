@@ -203,7 +203,7 @@ void RenderSystem::drawParticle(const ComponentTransform &trans_, const Componen
 
 void RenderSystem::drawTilemapLayer(const ComponentTransform &trans_, const TilemapLayer &tilemap_) const
 {
-    Vector2<int> camTL = Vector2<int>(m_camera.getPos().mulComponents(tilemap_.m_parallaxFactor)) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
+    const Vector2<int> camTL = Vector2<int>(m_camera.getPos().mulComponents(tilemap_.m_parallaxFactor)) - Vector2<int>(gamedata::global::maxCameraSize) / 2;
 
     Vector2<int> dstPos;
     dstPos.x = trans_.m_pos.x + tilemap_.m_posOffset.x - camTL.x;
