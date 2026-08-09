@@ -1,6 +1,7 @@
 #pragma once
 #include "CompoundState.h"
 #include "StateMachine.hpp"
+#include "Core/Logger.hpp"
 #include <memory>
 
 template<typename... Args>

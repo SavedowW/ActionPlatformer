@@ -1,10 +1,13 @@
 #include "Core/Logger.hpp" // IWYU pragma: keep
-#include "tests/NewStateMachine.hpp"  // IWYU pragma: keep
 #include "BattleLevel.h"
 #include "Core/Application.hpp"
 #include "Core/FilesystemUtils.h"
 
 //#define EXPERIMENTS
+
+#ifdef EXPERIMENTS
+#include "tests/NewStateMachine.hpp"  // IWYU pragma: keep
+#endif
 
 int main(int, char**)
 {
