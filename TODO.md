@@ -8,6 +8,8 @@
         - Needs 1.8
     3. [ ] Restore state particle
         - Needs 1.5
+    4. [ ] Add a proper way to prevent attacks from going through enemies due to movement
+    5. [ ] Add a screen shake effect on state update / entry (hard landing recovery, attack chain)
 2. [ ] Add collider traits to allow / disallow clinging
 3. [ ] Add obstacle traits to enable wall-only behavior
 4. [ ] Refactor platform movement logic

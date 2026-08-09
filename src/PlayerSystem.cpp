@@ -1,6 +1,7 @@
 #include "PlayerSystem.h"
 #include "Hit.h"
 #include "ParticleSystem.h"
+#include "PlayableCharacter.h"
 #include "SM/Builder.hpp"  // IWYU pragma: keep
 #include "SM/StateProperties.hpp"  // IWYU pragma: keep
 #include "ResetHandlers.h"
@@ -16,9 +17,79 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_) :
     */
     m_statemachine.addState(
         PlayerMake::state(
+            PlayerState::ATTACK_1_CHAIN,
+
+            SM::CallBatch(
+                PlayerStateProperties::Update::EmitParticles{m_parSys, 
+                    {
+                        {
+                            11, ParticleEmissionRuleset{
+                                ParticleRecipe{m_animManager.getAnimID("Char1/particles/attack1_chain_trace"), 10, 3}
+                                    .tiePos(TiePosRule::TIE_TO_EMITTER)
+                            }.destroyOnStateChange()
+                        }
+                    }
+                },
+                PlayerStateProperties::Update::LookaheadSpeedSensitivity{TimelineProperty<Vector2<float>>( 
+                    {
+                        {0, {0.f, 0.f}},
+                        {15, {1.f, 1.f}},
+                        {40, {0.f, 0.f}},
+                        {45, {1.f, 1.f}},
+                    })},
+                PlayerStateProperties::Update::MagnetLimit{TimelineProperty<unsigned int>( 
+                    {
+                        {0, 16},
+                        {15, 4},
+                    })},
+                PlayerStateProperties::Update::MultiplyVelocity{TimelineProperty<Vector2<float>>( 
+                    {
+                        {0, {1.f, 1.f}},
+                        {12, {.1f, 1.f}},
+                        {30, {1.f, 1.f}},
+                        {44, {0.f, 1.f}}
+                    })},
+                PlayerStateProperties::Update::AddOrientedVelocity{TimelineProperty<Vector2<float>>( 
+                    {
+                        {0, {0.f, 0.f}},
+                        {9, {5.f, 0.f}},
+                        {12, {0.f, 0.f}},
+                        {40, {-1.5f, 0.f}},
+                        {41, {0.f, 0.f}},
+                    })},
+                PlayerStateProperties::Update::SetDrag{TimelineProperty<Vector2<float>>( 
+                    {
+                        {0, {.05f, .05f}},
+                        {8, {.3f, .3f}},
+                    })}
+            ),
+
+            PlayerMake::SequentialConditions{}
+                .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
+                .addCondition(std::make_unique<PlayerStateTransitions::OnTimer>(PlayerState::IDLE, 46))
+                .done(),
+
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(PlayerStateProperties::Pipe::MultiplyVelocity{{0.2f, 1.f}})
+                .done(),
+
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(PlayerStateProperties::Pipe::Realign{},
+                                PlayerStateProperties::Pipe::SetAnimation{m_animManager.getAnimID("Char1/attack1_chain")},
+                                PlayerStateProperties::Pipe::SetLookaheadSpeedSensitivity{{0.f, 0.f}},
+                                PlayerStateProperties::Pipe::SetGravity{{0.f, 0.f}},
+                                PlayerStateProperties::Pipe::ConvertToInertia{true, false},
+                                PlayerStateProperties::Pipe::SetMagnetLimit{16},
+                                PlayerStateProperties::Pipe::SetDrag{{0.05f, 0.05f}})
+                                
+                .done()
+    ));
+
+    m_statemachine.addState(
+        PlayerMake::state(
             PlayerState::ATTACK_1,
 
-            SM::CallBatch( // TODO: hitboxes, hurtboxes
+            SM::CallBatch(
                 PlayerStateProperties::Update::EmitParticles{m_parSys, 
                     {
                         {
@@ -58,6 +129,9 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_) :
             ),
 
             PlayerMake::SequentialConditions{}
+                .addCondition(PlayerStateTransitions::sinceFrame(16, PlayerStateTransitions::InputTest{PlayerState::ATTACK_1_CHAIN, InputMotions::BUFFERED_ORIENTED_ATTACK, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT}))
+                .addCondition(PlayerStateTransitions::sinceFrame(25, PlayerStateTransitions::InputTest{PlayerState::PREJUMP, InputMotions::BUFFER_UP, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT}))
+                .addCondition(PlayerStateTransitions::sinceFrame(25, PlayerStateTransitions::InputTest{PlayerState::PRERUN, InputMotions::HOLD_HORDIR, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT}))
                 .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
                 .addCondition(std::make_unique<PlayerStateTransitions::OnTimer>(PlayerState::IDLE, 30))
                 .done(),
@@ -290,7 +364,7 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_) :
             PlayerState::PRERUN,
 
             SM::CallBatch(
-                PlayerStateProperties::Update::AddOrientedVelocity{TimelineProperty<Vector2<float>>( 
+                PlayerStateProperties::Update::AddOrientedVelocity{TimelineProperty<Vector2<float>>(
                     {
                         {0, {0.0f, 0.0f}},
                         {1, {0.3f, 0.0f}},
