@@ -4,6 +4,7 @@
 #include "ParticleSystem.h"
 #include "StateMachine.h"
 #include "entt/entity/fwd.hpp"
+#include <unordered_map>
 
 template<typename StateIDT, typename ViewT>
 struct StateProperties
@@ -177,6 +178,25 @@ struct StateProperties
         
         private:
             TimelineProperty<bool> m_shouldRealign;
+        };
+
+        class CamShake
+        {
+        public:
+            struct ShakeRecipe
+            {
+                uint16_t xAmp;
+                uint16_t yAmp;
+                uint32_t period;
+            };
+
+            CamShake(Camera &cam_, std::unordered_map<uint32_t, ShakeRecipe> &&shakes_);
+
+            void operator()(const ViewT &view_) const;
+        
+        private:
+            Camera &m_cam;
+            const std::unordered_map<uint32_t, ShakeRecipe> m_shakes;
         };
     };
 

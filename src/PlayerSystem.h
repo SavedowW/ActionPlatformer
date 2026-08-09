@@ -7,7 +7,7 @@
 class PlayerSystem
 {
 public:
-    PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_);
+    PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera &cam_);
 
     void createPlayer();
     void update();
@@ -18,6 +18,7 @@ private:
     entt::entity m_playerId = entt::null;
     entt::registry &m_reg;
     ParticleSystem &m_parSys;
+    Camera &m_cam;
     
     AnimationManager &m_animManager;
     SM::StateMachine<PlayerState, PlayerView> m_statemachine;

@@ -7,9 +7,10 @@
 #include "ResetHandlers.h"
 #include "Core/Application.h"
 
-PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_) :
+PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera &cam_) :
     m_reg(reg_),
     m_parSys{parSys_},
+    m_cam{cam_},
     m_animManager(Application::instance().m_animationManager)
 {
     /*
@@ -61,7 +62,10 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_) :
                     {
                         {0, {.05f, .05f}},
                         {8, {.3f, .3f}},
-                    })}
+                    })},
+                PlayerStateProperties::Update::CamShake{m_cam, {
+                    {11, {.xAmp=15, .yAmp=15, .period=14}}
+                }}
             ),
 
             PlayerMake::SequentialConditions{}

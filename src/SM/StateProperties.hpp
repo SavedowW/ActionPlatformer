@@ -238,6 +238,21 @@ void StateProperties<StateIDT, ViewT>::Update::Realign::operator()(const ViewT &
 
 
 template<typename StateIDT, typename ViewT>
+StateProperties<StateIDT, ViewT>::Update::CamShake::CamShake(Camera &cam_, std::unordered_map<uint32_t, ShakeRecipe> &&shakes_) :
+    m_cam{cam_},
+    m_shakes{std::move(shakes_)}
+{}
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Update::CamShake::operator()(const ViewT &view_) const
+{
+    const auto found = m_shakes.find(view_.template cget<SM::StatePossessor<StateIDT>>().framesInState());
+    if (found != m_shakes.end())
+        m_cam.startShake(found->second.xAmp, found->second.yAmp, found->second.period);
+}
+
+
+template<typename StateIDT, typename ViewT>
 StateProperties<StateIDT, ViewT>::Pipe::Notify::Notify(const char *action_) :
     m_action(action_)
 {}

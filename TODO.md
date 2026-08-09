@@ -4,12 +4,16 @@
 
 1. [ ] Restore all remaining states
     1. [ ] Restore states in basic form
-    2. [ ] Restore attack properties
+    2. [ ] Restore attack hitboxes
         - Needs 1.8
-    3. [ ] Restore state particle
+    3. [ ] Restore hurtboxes
+        - Needs 1.8
+    4. [ ] Restore state particle
         - Needs 1.5
-    4. [ ] Add a proper way to prevent attacks from going through enemies due to movement
-    5. [ ] Add a screen shake effect on state update / entry (hard landing recovery, attack chain)
+    5. [ ] Add a proper way to prevent attacks from going through enemies due to movement
+    6. [ ] Add a screen shake effect
+        1. [ ] On state entry (for hard landing recovery)
+        2. [x] On state update (for attack chain)
 2. [ ] Add collider traits to allow / disallow clinging
 3. [ ] Add obstacle traits to enable wall-only behavior
 4. [ ] Refactor platform movement logic
@@ -20,6 +24,7 @@
 6. [ ] Finish AI system
 7. [ ] Restore enemy system
 8. [ ] Restore attack system
+9. [ ] Move timeline property iteration and caching logic into the iterator
 
 
 ### 2. Maybe later
