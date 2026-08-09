@@ -100,7 +100,7 @@ void ll::load()
 def handle_json(jsonPath_, lang_):
     print("Handling json at \"" + jsonPath_ + "\" for " + lang_)
     global keys
-    with open(jsonPath_) as f:
+    with open(jsonPath_, "r", encoding="utf-8") as f:
         data = json.load(f)
         for key in data.keys():
             if key in keys:
