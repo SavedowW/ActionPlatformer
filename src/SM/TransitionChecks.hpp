@@ -75,7 +75,6 @@ auto TransitionChecks<StateIDT, ViewT>::sinceFrame(uint32_t sinceFrame_, T &&con
 }
 
 
-
 template<typename StateIDT, typename ViewT>
 TransitionChecks<StateIDT, ViewT>::OnGrounded::OnGrounded(const StateIDT &state_, bool isGrounded_) :
     Base::AbstractStateCondition(state_),
@@ -92,6 +91,27 @@ ORIENTATION TransitionChecks<StateIDT, ViewT>::OnGrounded::operator()(const View
 
     return ORIENTATION::UNSPECIFIED;
 }
+
+
+template<typename StateIDT, typename ViewT>
+TransitionChecks<StateIDT, ViewT>::OnGroundedBySpeed::OnGroundedBySpeed(const StateIDT &state_, bool isGrounded_, float minVerSpeed_) :
+    Base::AbstractStateCondition(state_),
+    m_isGrounded{isGrounded_},
+    m_minVerSpeed{minVerSpeed_}
+{}
+
+template<typename StateIDT, typename ViewT>
+ORIENTATION TransitionChecks<StateIDT, ViewT>::OnGroundedBySpeed::operator()(const ViewT &view_)
+{
+    const auto &worldpos = view_.template cget<WorldPosition>();
+    const auto &physical = view_.template cget<ComponentPhysical>();
+
+    if ((worldpos.ground.onGround != entt::null) == m_isGrounded && physical.calculatedOffset.y >= m_minVerSpeed)
+        return view_.template cget<ComponentTransform>().m_orientation;
+
+    return ORIENTATION::UNSPECIFIED;
+}
+
 
 template<typename StateIDT, typename ViewT>
 TransitionChecks<StateIDT, ViewT>::OnTimer::OnTimer(const StateIDT &state_, uint32_t framesLimit_) :

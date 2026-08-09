@@ -11,8 +11,8 @@
     4. [ ] Restore state particle
         - Needs 1.5
     5. [ ] Add a proper way to prevent attacks from going through enemies due to movement
-    6. [ ] Add a screen shake effect
-        1. [ ] On state entry (for hard landing recovery)
+    6. [x] Add a screen shake effect
+        1. [x] On state entry (for hard landing recovery)
         2. [x] On state update (for attack chain)
 2. [ ] Add collider traits to allow / disallow clinging
 3. [ ] Add obstacle traits to enable wall-only behavior
@@ -25,6 +25,7 @@
 7. [ ] Restore enemy system
 8. [ ] Restore attack system
 9. [ ] Move timeline property iteration and caching logic into the iterator
+10. [ ] Fix bug when the neutral jump after chain attack faces the opposite direction
 
 
 ### 2. Maybe later

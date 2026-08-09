@@ -84,6 +84,19 @@ struct TransitionChecks
         const bool m_isGrounded;
     };
 
+    // Only true if really is grounded AND speed is equal or greater to the condition
+    class OnGroundedBySpeed : public Base::AbstractStateCondition
+    {
+    public:
+        OnGroundedBySpeed(const StateIDT &state_, bool isGrounded_, float minVerSpeed_);
+
+        ORIENTATION operator()(const ViewT &view_) override;
+
+    private:
+        const bool m_isGrounded;
+        const float m_minVerSpeed;
+    };
+
     class OnTimer : public Base::AbstractStateCondition
     {
     public:

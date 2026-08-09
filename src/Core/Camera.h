@@ -2,6 +2,13 @@
 #include "Vector2.hpp"
 #include "FrameTimer.h"
 
+struct CameraShakeRecipe
+{
+    uint16_t xAmp;
+    uint16_t yAmp;
+    uint32_t period;
+};
+
 class Camera
 {
 public:
@@ -22,7 +29,8 @@ public:
     void smoothScaleTowards(float tarScale_, float pow_ = 0.5f, float divider_ = 50.0f) noexcept;
 
     void update() noexcept;
-    void startShake(int xAmp, int yAmp, uint32_t period) noexcept;
+    void startShake(uint16_t xAmp_, uint16_t yAmp_, uint32_t period_) noexcept;
+    void startShake(const CameraShakeRecipe &shake_) noexcept;
 
 private:
     Vector2<int> m_pos;
@@ -31,8 +39,8 @@ private:
     float m_scale = 1.0f;
 
     FrameTimer<false> m_shakeTimer;
-    int m_xShakeAmp = 0;
-    int m_yShakeAmp = 0;
+    uint16_t m_xShakeAmp = 0;
+    uint16_t m_yShakeAmp = 0;
     Vector2<int> m_thisFrameAmp;
 
     void normalizePosition();

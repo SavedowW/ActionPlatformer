@@ -238,7 +238,7 @@ void StateProperties<StateIDT, ViewT>::Update::Realign::operator()(const ViewT &
 
 
 template<typename StateIDT, typename ViewT>
-StateProperties<StateIDT, ViewT>::Update::CamShake::CamShake(Camera &cam_, std::unordered_map<uint32_t, ShakeRecipe> &&shakes_) :
+StateProperties<StateIDT, ViewT>::Update::CamShake::CamShake(Camera &cam_, std::unordered_map<uint32_t, CameraShakeRecipe> &&shakes_) :
     m_cam{cam_},
     m_shakes{std::move(shakes_)}
 {}
@@ -474,6 +474,19 @@ template<typename StateIDT, typename ViewT>
 void StateProperties<StateIDT, ViewT>::Pipe::SetLookaheadSpeedSensitivity::operator()(const ViewT &view_, const SM::TransitionData<StateIDT>&) const
 {
     view_.template get<ComponentDynamicCameraTarget>().lookaheadSpeedSensitivity = m_sensitivity;
+}
+
+
+template<typename StateIDT, typename ViewT>
+constexpr StateProperties<StateIDT, ViewT>::Pipe::CamShake::CamShake(Camera &cam_, const CameraShakeRecipe &shake_) :
+    m_cam{cam_},
+    m_shake{shake_}
+{}
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Pipe::CamShake::operator()(const ViewT&, const SM::TransitionData<StateIDT>&) const
+{
+    m_cam.startShake(m_shake);
 }
 
 

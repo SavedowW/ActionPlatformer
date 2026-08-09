@@ -152,9 +152,14 @@ void Camera::update() noexcept
     }
 }
 
-void Camera::startShake(int xAmp, int yAmp, uint32_t period) noexcept
+void Camera::startShake(uint16_t xAmp, uint16_t yAmp, uint32_t period) noexcept
 {
     m_xShakeAmp = xAmp;
     m_yShakeAmp = yAmp;
     m_shakeTimer.begin(period);
+}
+
+void Camera::startShake(const CameraShakeRecipe &shake_) noexcept
+{
+    startShake(shake_.xAmp, shake_.yAmp, shake_.period);
 }

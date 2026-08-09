@@ -10,6 +10,7 @@
 enum class PlayerState : SM::StateID {
     FLOAT,
     LANDING_RECOVERY,
+    HARD_LANDING_RECOVERY,
     IDLE,
     PRERUN,
     RUN,
@@ -21,13 +22,13 @@ enum class PlayerState : SM::StateID {
     ATTACK_1,
     ATTACK_1_CHAIN,
     /*
-    HARD_LANDING_RECOVERY,
     AIR_ATTACK*/
 };
 
 SERIALIZE_ENUM(PlayerState, {
     ENUM_AUTO(PlayerState, FLOAT),
     ENUM_AUTO(PlayerState, LANDING_RECOVERY),
+    ENUM_AUTO(PlayerState, HARD_LANDING_RECOVERY),
     ENUM_AUTO(PlayerState, IDLE),
     ENUM_AUTO(PlayerState, PRERUN),
     ENUM_AUTO(PlayerState, RUN),

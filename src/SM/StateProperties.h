@@ -183,20 +183,13 @@ struct StateProperties
         class CamShake
         {
         public:
-            struct ShakeRecipe
-            {
-                uint16_t xAmp;
-                uint16_t yAmp;
-                uint32_t period;
-            };
-
-            CamShake(Camera &cam_, std::unordered_map<uint32_t, ShakeRecipe> &&shakes_);
+            CamShake(Camera &cam_, std::unordered_map<uint32_t, CameraShakeRecipe> &&shakes_);
 
             void operator()(const ViewT &view_) const;
         
         private:
             Camera &m_cam;
-            const std::unordered_map<uint32_t, ShakeRecipe> m_shakes;
+            const std::unordered_map<uint32_t, CameraShakeRecipe> m_shakes;
         };
     };
 
@@ -346,6 +339,18 @@ struct StateProperties
         
         private:
             const Vector2<float> m_sensitivity;
+        };
+
+        class CamShake
+        {
+        public:
+            constexpr CamShake(Camera &cam_, const CameraShakeRecipe &shake_);
+
+            void operator()(const ViewT&, const SM::TransitionData<StateIDT>&) const;
+        
+        private:
+            Camera &m_cam;
+            const CameraShakeRecipe m_shake;
         };
 
 

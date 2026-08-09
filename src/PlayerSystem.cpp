@@ -133,7 +133,9 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera
             ),
 
             PlayerMake::SequentialConditions{}
+                // TODO: increase buffer window
                 .addCondition(PlayerStateTransitions::sinceFrame(16, PlayerStateTransitions::InputTest{PlayerState::ATTACK_1_CHAIN, InputMotions::BUFFERED_ORIENTED_ATTACK, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT}))
+                .addCondition(PlayerStateTransitions::sinceFrame(25, PlayerStateTransitions::InputTest{PlayerState::PREJUMP_FORWARD, InputMotions::BUFFER_UP_FORWARD, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT}))
                 .addCondition(PlayerStateTransitions::sinceFrame(25, PlayerStateTransitions::InputTest{PlayerState::PREJUMP, InputMotions::BUFFER_UP, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT}))
                 .addCondition(PlayerStateTransitions::sinceFrame(25, PlayerStateTransitions::InputTest{PlayerState::PRERUN, InputMotions::HOLD_HORDIR, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT}))
                 .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
@@ -467,6 +469,32 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera
 
     m_statemachine.addState(
         PlayerMake::state(
+            PlayerState::HARD_LANDING_RECOVERY,
+
+            SM::CallBatch(),
+
+            PlayerMake::SequentialConditions{}
+                .addCondition(std::make_unique<PlayerStateTransitions::OnGrounded>(PlayerState::FLOAT, false))
+                .addCondition(std::make_unique<PlayerStateTransitions::OnTimer>(PlayerState::IDLE, 14))
+                .done(),
+
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(PlayerStateProperties::Pipe::SetMagnetLimit{0})
+                .done(),
+
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(PlayerStateProperties::Pipe::CamShake{m_cam, {.xAmp=0, .yAmp=20, .period=10}},
+                                PlayerStateProperties::Pipe::SetDrag{{1.0f, 0.0f}},
+                                PlayerStateProperties::Pipe::TestFallthrough{},
+                                PlayerStateProperties::Pipe::SetMagnetLimit{4},
+                                PlayerStateProperties::Pipe::SetGravity{{0.0f, 0.0f}},
+                                PlayerStateProperties::Pipe::SetAnimation{m_animManager.getAnimID("Char1/landing_recovery")},
+                                PlayerStateProperties::Pipe::ConvertToInertia{true, false})
+                .done()
+    ));
+
+    m_statemachine.addState(
+        PlayerMake::state(
             PlayerState::FLOAT,
 
             SM::CallBatch(PlayerStateProperties::Update::TestFallthrough{},
@@ -474,6 +502,7 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera
                 PlayerStateProperties::Update::Realign{TimelineProperty{true}}),
 
             PlayerMake::SequentialConditions{}
+                .addCondition(PlayerStateTransitions::sinceFrame(1, PlayerStateTransitions::OnGroundedBySpeed{PlayerState::HARD_LANDING_RECOVERY, true, 20.f}))
                 .addCondition(PlayerStateTransitions::sinceFrame(1, PlayerStateTransitions::OnGrounded{PlayerState::LANDING_RECOVERY}))
                 .addCondition(PlayerStateTransitions::sinceFrame(5, PlayerStateTransitions::WallClingEnterTest{PlayerState::WALL_CLING}))
                 .done(),

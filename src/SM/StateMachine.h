@@ -79,7 +79,7 @@ namespace SM
     };
 
     /**
-     *  A new shiny flexible state machine
+     *  A new shiny flexible state machine. Completely immutable, stored as a single instance in the respective system
      */
     template<typename StateIDT, IsComponentsView ViewT>
     class StateMachine
