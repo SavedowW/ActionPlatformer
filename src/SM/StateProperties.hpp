@@ -238,14 +238,26 @@ void StateProperties<StateIDT, ViewT>::Update::Realign::operator()(const ViewT &
 
 
 template<typename StateIDT, typename ViewT>
-StateProperties<StateIDT, ViewT>::Update::CamShake::CamShake(Camera &cam_, std::unordered_map<uint32_t, CameraShakeRecipe> &&shakes_) :
+StateProperties<StateIDT, ViewT>::Update::CamShake::CamShake(Camera &cam_, std::unordered_map<uint32_t, CameraShakeRecipe> &&shakes_, GroundedCheck groundedCheck_) :
     m_cam{cam_},
-    m_shakes{std::move(shakes_)}
+    m_shakes{std::move(shakes_)},
+    m_groundedCheck{groundedCheck_}
 {}
 
 template<typename StateIDT, typename ViewT>
 void StateProperties<StateIDT, ViewT>::Update::CamShake::operator()(const ViewT &view_) const
 {
+    if (m_groundedCheck == GroundedCheck::ONLY_GROUNDED)
+    {
+        if (view_.template cget<WorldPosition>().ground.onGround == entt::null)
+            return;
+    }
+    else if (m_groundedCheck == GroundedCheck::ONLY_NOT_GROUNDED)
+    {
+        if (view_.template cget<WorldPosition>().ground.onGround != entt::null)
+            return;
+    }
+
     const auto found = m_shakes.find(view_.template cget<SM::StatePossessor<StateIDT>>().framesInState());
     if (found != m_shakes.end())
         m_cam.startShake(found->second.xAmp, found->second.yAmp, found->second.period);

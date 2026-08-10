@@ -130,10 +130,11 @@ ORIENTATION TransitionChecks<StateIDT, ViewT>::OnTimer::operator()(const ViewT &
 
 
 template<typename StateIDT, typename ViewT>
-TransitionChecks<StateIDT, ViewT>::InputTest::InputTest(const StateIDT &state_, InputMotions input_, Flag<OrientationOptions> options_) :
+TransitionChecks<StateIDT, ViewT>::InputTest::InputTest(const StateIDT &state_, InputMotions input_, Flag<OrientationOptions> options_, uint32_t bufferExtention_) :
     Base::AbstractStateCondition(state_),
     m_input{input_},
-    m_orientations(options_)
+    m_orientations{options_},
+    m_bufferExtention{bufferExtention_}
 {}
 
 template<typename StateIDT, typename ViewT>
@@ -146,13 +147,13 @@ ORIENTATION TransitionChecks<StateIDT, ViewT>::InputTest::operator()(const ViewT
     {
         if ((m_orientations & OrientationOptions::RIGHT) == OrientationOptions::RIGHT || (m_orientations & OrientationOptions::SAME) == OrientationOptions::SAME)
         {
-            if (inputs.checkInput(m_input, ORIENTATION::RIGHT, 0))
+            if (inputs.checkInput(m_input, ORIENTATION::RIGHT, m_bufferExtention))
                 return ORIENTATION::RIGHT;
         }
 
         if ((m_orientations & OrientationOptions::LEFT) == OrientationOptions::LEFT || (m_orientations & OrientationOptions::OPPOSITE) == OrientationOptions::OPPOSITE)
         {
-            if (inputs.checkInput(m_input, ORIENTATION::LEFT, 0))
+            if (inputs.checkInput(m_input, ORIENTATION::LEFT, m_bufferExtention))
                 return ORIENTATION::LEFT;
         }
     }
@@ -160,13 +161,13 @@ ORIENTATION TransitionChecks<StateIDT, ViewT>::InputTest::operator()(const ViewT
     {
         if ((m_orientations & OrientationOptions::LEFT) == OrientationOptions::LEFT || (m_orientations & OrientationOptions::SAME) == OrientationOptions::SAME)
         {
-            if (inputs.checkInput(m_input, ORIENTATION::LEFT, 0))
+            if (inputs.checkInput(m_input, ORIENTATION::LEFT, m_bufferExtention))
                 return ORIENTATION::LEFT;
         }
 
         if ((m_orientations & OrientationOptions::RIGHT) == OrientationOptions::RIGHT || (m_orientations & OrientationOptions::OPPOSITE) == OrientationOptions::OPPOSITE)
         {
-            if (inputs.checkInput(m_input, ORIENTATION::RIGHT, 0))
+            if (inputs.checkInput(m_input, ORIENTATION::RIGHT, m_bufferExtention))
                 return ORIENTATION::RIGHT;
         }
     }

@@ -111,13 +111,14 @@ struct TransitionChecks
     class InputTest : public Base::AbstractStateCondition
     {
     public:
-        InputTest(const StateIDT &state_, InputMotions input_, Flag<OrientationOptions> options_);
+        InputTest(const StateIDT &state_, InputMotions input_, Flag<OrientationOptions> options_, uint32_t bufferExtention_ = 0);
 
         ORIENTATION operator()(const ViewT &view_) override;
 
     private:
         const InputMotions m_input;
         const Flag<OrientationOptions> m_orientations;
+        const uint32_t m_bufferExtention;
     };
 
 

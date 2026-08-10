@@ -50,7 +50,7 @@ Checks: >
   #    to ensure correct lifetime and makes relationship clearer
 
   -readability-math-missing-parentheses,
-  # 
+  #
 
   -readability-named-parameter,
   #
@@ -60,6 +60,9 @@ Checks: >
 
   -readability-isolate-declaration,
   # Taste
+
+  -readability-function-cognitive-complexity,
+  #
 
   -logical-op-parentheses
   # Taste

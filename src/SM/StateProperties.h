@@ -6,6 +6,13 @@
 #include "entt/entity/fwd.hpp"
 #include <unordered_map>
 
+enum class GroundedCheck : uint8_t
+{
+    IGNORE,
+    ONLY_GROUNDED,
+    ONLY_NOT_GROUNDED
+};
+
 template<typename StateIDT, typename ViewT>
 struct StateProperties
 {
@@ -183,13 +190,14 @@ struct StateProperties
         class CamShake
         {
         public:
-            CamShake(Camera &cam_, std::unordered_map<uint32_t, CameraShakeRecipe> &&shakes_);
+            CamShake(Camera &cam_, std::unordered_map<uint32_t, CameraShakeRecipe> &&shakes_, GroundedCheck groundedCheck_);
 
             void operator()(const ViewT &view_) const;
         
         private:
             Camera &m_cam;
             const std::unordered_map<uint32_t, CameraShakeRecipe> m_shakes;
+            GroundedCheck m_groundedCheck;
         };
     };
 

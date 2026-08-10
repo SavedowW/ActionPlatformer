@@ -65,7 +65,7 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera
                     })},
                 PlayerStateProperties::Update::CamShake{m_cam, {
                     {11, {.xAmp=15, .yAmp=15, .period=14}}
-                }}
+                }, GroundedCheck::ONLY_GROUNDED}
             ),
 
             PlayerMake::SequentialConditions{}
@@ -74,7 +74,8 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera
                 .done(),
 
             PlayerMake::RulePipe{}
-                .setDefaultPipe(PlayerStateProperties::Pipe::MultiplyVelocity{{0.2f, 1.f}})
+                .setDefaultPipe(PlayerStateProperties::Pipe::MultiplyVelocity{{0.2f, 1.f}},
+                                PlayerStateProperties::Pipe::DestroyParticlesOnLeave{m_reg})
                 .done(),
 
             PlayerMake::RulePipe{}
@@ -133,8 +134,7 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera
             ),
 
             PlayerMake::SequentialConditions{}
-                // TODO: increase buffer window
-                .addCondition(PlayerStateTransitions::sinceFrame(16, PlayerStateTransitions::InputTest{PlayerState::ATTACK_1_CHAIN, InputMotions::BUFFERED_ORIENTED_ATTACK, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT}))
+                .addCondition(PlayerStateTransitions::sinceFrame(16, PlayerStateTransitions::InputTest{PlayerState::ATTACK_1_CHAIN, InputMotions::BUFFERED_ORIENTED_ATTACK, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT, 10}))
                 .addCondition(PlayerStateTransitions::sinceFrame(25, PlayerStateTransitions::InputTest{PlayerState::PREJUMP_FORWARD, InputMotions::BUFFER_UP_FORWARD, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT}))
                 .addCondition(PlayerStateTransitions::sinceFrame(25, PlayerStateTransitions::InputTest{PlayerState::PREJUMP, InputMotions::BUFFER_UP, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT}))
                 .addCondition(PlayerStateTransitions::sinceFrame(25, PlayerStateTransitions::InputTest{PlayerState::PRERUN, InputMotions::HOLD_HORDIR, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT}))
