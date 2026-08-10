@@ -25,7 +25,7 @@
 7. [ ] Restore enemy system
 8. [ ] Restore attack system
 9. [ ] Move timeline property iteration and caching logic into the iterator
-10. [ ] Fix bug when the neutral jump after chain attack faces the opposite direction
+10. [x] Fix bug when the neutral jump after chain attack faces the opposite direction
 
 
 ### 2. Maybe later

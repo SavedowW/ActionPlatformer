@@ -189,12 +189,12 @@ ORIENTATION TransitionChecks<StateIDT, ViewT>::WallClingEnterTest::operator()(co
 
     const auto offset = physical.peekOffset();
 
-    if (offset.x >= 0 && 
+    if (offset.x >= 0 &&
         inputs.checkInput(InputMotions::HOLD_HORDIR_BUFFERED, ORIENTATION::RIGHT, 0) &&
         worldPos.wall.rightWall != entt::null)
         return ORIENTATION::LEFT;
     
-    if (offset.x <= 0 && 
+    if (offset.x <= 0 &&
         inputs.checkInput(InputMotions::HOLD_HORDIR_BUFFERED, ORIENTATION::LEFT, 0) &&
         worldPos.wall.leftWall != entt::null)
         return ORIENTATION::RIGHT;

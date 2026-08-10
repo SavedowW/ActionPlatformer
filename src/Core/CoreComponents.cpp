@@ -39,7 +39,7 @@ Vector2<int> ComponentPhysical::peekOffset() const
 
 Vector2<float> ComponentPhysical::peekRawOffset() const
 {
-    return velocity + inertia.mulComponents(inertiaMultiplier) + extraoffset + velocityLeftover;
+    return velocity + inertia.mulComponents(inertiaMultiplier) + extraoffset;
 }
 
 

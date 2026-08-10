@@ -58,8 +58,11 @@ struct ComponentPhysical
     Vector2<float> stateLeaveVelocityMultiplier;
     
     void convertToInertia(bool convertVelocity_, bool includeEnforced_);
+
     Vector2<int> claimOffset();
     Vector2<int> peekOffset() const;
+
+    // Ignoring stored velocity
     Vector2<float> peekRawOffset() const;
 
     Vector2<float> velocityLeftover;
