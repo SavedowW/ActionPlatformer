@@ -3,7 +3,7 @@
 ### 1. Mandatory
 
 1. [ ] Restore all remaining states
-    1. [ ] Restore states in basic form
+    1. [x] Restore states in basic form
     2. [ ] Restore attack hitboxes
         - Needs 1.8
     3. [ ] Restore hurtboxes

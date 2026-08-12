@@ -338,15 +338,21 @@ struct StateProperties
             void operator()(const ViewT&, const SM::TransitionData<StateIDT> &transition_) const;
         };
 
+        /*
+         *  Affects components, might need an out-pipe counterpart
+         */
         class SetLookaheadSpeedSensitivity
         {
         public:
             constexpr SetLookaheadSpeedSensitivity(const Vector2<float> &sensitivity_);
 
+            // Default is {1.f, 1.f}
+            constexpr SetLookaheadSpeedSensitivity() = default;
+
             void operator()(const ViewT&, const SM::TransitionData<StateIDT> &transition_) const;
         
         private:
-            const Vector2<float> m_sensitivity;
+            const Vector2<float> m_sensitivity{1.f, 1.f};
         };
 
         class CamShake

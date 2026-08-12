@@ -75,7 +75,8 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera
 
             PlayerMake::RulePipe{}
                 .setDefaultPipe(PlayerStateProperties::Pipe::MultiplyVelocity{{0.2f, 1.f}},
-                                PlayerStateProperties::Pipe::DestroyParticlesOnLeave{m_reg})
+                                PlayerStateProperties::Pipe::DestroyParticlesOnLeave{m_reg},
+                                PlayerStateProperties::Pipe::SetLookaheadSpeedSensitivity{})
                 .done(),
 
             PlayerMake::RulePipe{}
@@ -87,6 +88,47 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera
                                 PlayerStateProperties::Pipe::SetMagnetLimit{16},
                                 PlayerStateProperties::Pipe::SetDrag{{0.05f, 0.05f}})
                                 
+                .done()
+    ));
+
+    m_statemachine.addState(
+        PlayerMake::state(
+            PlayerState::AIR_ATTACK,
+
+            SM::CallBatch(
+                PlayerStateProperties::Update::EmitParticles{m_parSys, 
+                    {
+                        {
+                            7, ParticleEmissionRuleset{
+                                ParticleRecipe{m_animManager.getAnimID("Char1/particles/air_attack_trace"), 14, 3}
+                                    .tiePos(TiePosRule::TIE_TO_EMITTER)
+                            }.destroyOnStateChange()
+                        }
+                    }
+                },
+                PlayerStateProperties::Update::AirDrift{}
+            ),
+
+            PlayerMake::SequentialConditions{}
+                .addCondition(PlayerStateTransitions::sinceFrame(26, PlayerStateTransitions::OnGrounded{PlayerState::LANDING_RECOVERY}))
+                .addCondition(PlayerStateTransitions::sinceFrame(1, PlayerStateTransitions::OnGrounded{PlayerState::HARD_LANDING_RECOVERY}))
+                .addCondition(PlayerStateTransitions::sinceFrame(26, PlayerStateTransitions::WallClingEnterTest{PlayerState::WALL_CLING}))
+                .addCondition(std::make_unique<PlayerStateTransitions::OnTimer>(PlayerState::FLOAT, 35))
+                .done(),
+
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(PlayerStateProperties::Pipe::SetDemandWall{false},
+                                PlayerStateProperties::Pipe::DestroyParticlesOnLeave{m_reg})
+                .done(),
+
+            PlayerMake::RulePipe{}
+                .setDefaultPipe(PlayerStateProperties::Pipe::Realign{},
+                                PlayerStateProperties::Pipe::SetDrag{{0.f, 0.f}},
+                                PlayerStateProperties::Pipe::SetGravity{{0.0f, 0.5f}},
+                                PlayerStateProperties::Pipe::SetDemandWall{true},
+                                PlayerStateProperties::Pipe::ConvertToInertia{false, true},
+                                PlayerStateProperties::Pipe::SetMagnetLimit{0},
+                                PlayerStateProperties::Pipe::SetAnimation{m_animManager.getAnimID("Char1/air_attack")})
                 .done()
     ));
 
@@ -144,7 +186,9 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera
 
             PlayerMake::RulePipe{}
                 .setDefaultPipe(PlayerStateProperties::Pipe::MultiplyVelocity{{0.2f, 1.f}},
-                                PlayerStateProperties::Pipe::DestroyParticlesOnLeave{m_reg})
+                                PlayerStateProperties::Pipe::DestroyParticlesOnLeave{m_reg},
+                                PlayerStateProperties::Pipe::SetInertiaApplicationMultiplier{{1.f, 1.f}},
+                                PlayerStateProperties::Pipe::SetLookaheadSpeedSensitivity{})
                 .done(),
 
             PlayerMake::RulePipe{}
@@ -504,6 +548,7 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera
             PlayerMake::SequentialConditions{}
                 .addCondition(PlayerStateTransitions::sinceFrame(1, PlayerStateTransitions::OnGroundedBySpeed{PlayerState::HARD_LANDING_RECOVERY, true, 20.f}))
                 .addCondition(PlayerStateTransitions::sinceFrame(1, PlayerStateTransitions::OnGrounded{PlayerState::LANDING_RECOVERY}))
+                .addCondition(std::make_unique<PlayerStateTransitions::InputTest>(PlayerState::AIR_ATTACK, InputMotions::BUFFERED_ORIENTED_ATTACK, Flag(OrientationOptions::LEFT) | OrientationOptions::RIGHT))
                 .addCondition(PlayerStateTransitions::sinceFrame(5, PlayerStateTransitions::WallClingEnterTest{PlayerState::WALL_CLING}))
                 .done(),
 
