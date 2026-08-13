@@ -1,5 +1,5 @@
 #pragma once
-#include "World.h"
+#include "EntityAnywhere.h"
 #include "Core/Collider.h"
 
 struct GrassTopComp
@@ -16,7 +16,7 @@ public:
     static ResID m_flickLeftAnimId;
     static ResID m_flickRightAnimId;
 
-    enum class State
+    enum class State : uint8_t
     {
         IDLE,
         FLICK_LEFT,

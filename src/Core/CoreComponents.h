@@ -16,10 +16,10 @@
 struct ComponentTransform
 {
     ComponentTransform() = default;
-    ComponentTransform(const Vector2<int> &pos_, ORIENTATION orient_);
+    ComponentTransform(const Vector2<int> &pos_, Orientation orient_);
     
     Vector2<int> m_pos;
-    ORIENTATION m_orientation = ORIENTATION::RIGHT;
+    Orientation m_orientation = Orientation::RIGHT;
 };
 
 struct ComponentSpawnLocation

@@ -51,7 +51,7 @@ template<typename StateIDT, typename ViewT>
 void StateProperties<StateIDT, ViewT>::Update::AddOrientedVelocity::operator()(const ViewT &view_) const
 {
     auto velocityChange = m_velocity[view_.template cget<SM::StatePossessor<StateIDT>>().framesInState()];
-    if (view_.template get<ComponentTransform>().m_orientation == ORIENTATION::LEFT)
+    if (view_.template get<ComponentTransform>().m_orientation == Orientation::LEFT)
         velocityChange.x *= -1;
     view_.template get<ComponentPhysical>().velocity += velocityChange;
 }
@@ -132,19 +132,20 @@ void StateProperties<StateIDT, ViewT>::Update::HorizontalInertiaLimit::operator(
 template<typename StateIDT, typename ViewT>
 void StateProperties<StateIDT, ViewT>::Update::AirDrift::operator()(const ViewT &view_) const
 {
+    auto &trans = view_.template get<ComponentTransform>();
     auto &physical = view_.template get<ComponentPhysical>();
     auto &inputs = view_.template get<InputResolver>();
     if (physical.velocity.x < 2.5f
-            && inputs.checkInput(InputMotions::HOLD_HORDIR, ORIENTATION::RIGHT, 0))
+            && inputs.checkInput(InputMotions::HOLD_HORDIR, Orientation::RIGHT, 0))
         physical.velocity.x += 0.15f;
 
     if (physical.velocity.x > -2.5f
-            && inputs.checkInput(InputMotions::HOLD_HORDIR, ORIENTATION::LEFT, 0))
+            && inputs.checkInput(InputMotions::HOLD_HORDIR, Orientation::LEFT, 0))
         physical.velocity.x -= 0.15f;
 
     if (physical.velocity.y < 0
             && view_.template cget<SM::StatePossessor<StateIDT>>().framesInState() < 10
-            && inputs.checkInput(InputMotions::HOLD_UP, ORIENTATION::UNSPECIFIED, 0))
+            && inputs.checkInput(InputMotions::HOLD_UP, trans.m_orientation, 0))
         physical.velocity.y -= 0.4f;
 }
 
@@ -230,9 +231,9 @@ void StateProperties<StateIDT, ViewT>::Update::Realign::operator()(const ViewT &
         const auto rawOffset = view_.template get<ComponentPhysical>().peekRawOffset();
 
         if (rawOffset.x >= 0.001f)
-            view_.template get<ComponentTransform>().m_orientation = ORIENTATION::RIGHT;
+            view_.template get<ComponentTransform>().m_orientation = Orientation::RIGHT;
         else if (rawOffset.x <= -0.001f)
-            view_.template get<ComponentTransform>().m_orientation = ORIENTATION::LEFT;
+            view_.template get<ComponentTransform>().m_orientation = Orientation::LEFT;
     }
 }
 
@@ -330,7 +331,7 @@ void StateProperties<StateIDT, ViewT>::Pipe::AddOrientedVelocity::operator()(con
     auto &physical = view_.template get<ComponentPhysical>();
     auto &transform = view_.template get<ComponentTransform>();
     physical.velocity.y += m_velocity.y;
-    if (transform.m_orientation == ORIENTATION::RIGHT)
+    if (transform.m_orientation == Orientation::RIGHT)
         physical.velocity.x += m_velocity.x;
     else
         physical.velocity.x -= m_velocity.x;
@@ -425,7 +426,7 @@ void StateProperties<StateIDT, ViewT>::Pipe::LeaveWallPrejump::operator()(const 
     const auto &transform = view_.template get<ComponentTransform>();
     auto &physical = view_.template get<ComponentPhysical>();
 
-    const int orient = (transform.m_orientation == ORIENTATION::RIGHT ? 1 : -1);
+    const int orient = (transform.m_orientation == Orientation::RIGHT ? 1 : -1);
     Vector2<float> targetSpeed = {orient * 0.7f, 0.1f};;
     bool fall = true;
 

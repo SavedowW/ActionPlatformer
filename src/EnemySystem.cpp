@@ -1,12 +1,10 @@
 #include "EnemySystem.h"
 #include "Hit.h"
-#include "World.h"
 #include "Core/Application.h"
 #include "Core/CoreComponents.h"
 #include "SM/StateMachine.hpp"
 #include "Enemy1.h"
 #include "Core/NavGraph.h"
-#include "ResetHandlers.h"
 #include "Core/Behavior.hpp"
 
 EnemySystem::EnemySystem(entt::registry &reg_, NavSystem &navsys_, Camera &cam_, ParticleSystem &partsys_, const PlayerSystem &playerSystem_) :
@@ -24,11 +22,9 @@ entt::entity EnemySystem::makeEnemy()
     auto enemyId = m_reg.create();
     m_reg.emplace<HUDPoint>(enemyId, HUDPosRule::REL_TRANSFORM, Vector2{0, -16}, 16);
 
-    const auto &trans = m_reg.emplace<ComponentTransform>(enemyId, Vector2{780, 470}, ORIENTATION::RIGHT);
-    m_reg.emplace<ComponentReset<ComponentTransform>>(enemyId, trans.m_pos, trans.m_orientation);
+    const auto &trans = m_reg.emplace<ComponentTransform>(enemyId, Vector2{780, 470}, Orientation::RIGHT);
 
     auto &phys = m_reg.emplace<ComponentPhysical>(enemyId);
-    m_reg.emplace<ComponentResetStatic<ComponentPhysical>>(enemyId);
     phys.pushbox = Collider(Vector2{-15, -30}, Vector2{30, 30});
     phys.gravity = {0.0f, 0.2f};
 
@@ -41,7 +37,6 @@ entt::entity EnemySystem::makeEnemy()
     nav.m_nodeTransitionRange = 15.0f; // Different transitions ranges for different traverse types?
     nav.m_checkIfGrounded = true;
 
-    m_reg.emplace<World>(enemyId, m_reg, m_cam, m_partsys, m_navsys);
     m_reg.emplace<ComponentObstacleFallthrough>(enemyId);
 
 
@@ -55,7 +50,6 @@ entt::entity EnemySystem::makeEnemy()
     m_reg.emplace<HealthRendererCommonWRT>(enemyId, 3, Vector2{0.0f, -28.0f}); // TODO: reset
 
     auto &animrnd = m_reg.emplace<ComponentAnimationRenderable>(enemyId);
-    m_reg.emplace<ComponentResetStatic<ComponentAnimationRenderable>>(enemyId);
     animrnd.m_drawOutline = true;
     m_reg.emplace<RenderLayer>(enemyId, 6);
 

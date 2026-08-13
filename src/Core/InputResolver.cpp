@@ -29,27 +29,27 @@ void InputResolver::addFrame(const InputState &currentInput_)
 }
 
 
-bool InputResolver::checkHoldHorDir(const ORIENTATION orientation_, unsigned int) const
+bool InputResolver::checkHoldHorDir(const Orientation orientation_, unsigned int) const
 {
     if (m_inputQueue.getFilled() == 0)
         return false;
 
-    const int expected = (orientation_ == ORIENTATION::RIGHT ? 1 : -1);
+    const int expected = (orientation_ == Orientation::RIGHT ? 1 : -1);
 
     return m_inputQueue[0].m_dir.x == expected;
 }
 
-bool InputResolver::checkNoHorDir(const ORIENTATION orientation_, unsigned int) const
+bool InputResolver::checkNoHorDir(const Orientation orientation_, unsigned int) const
 {
     if (m_inputQueue.getFilled() == 0)
         return false;
 
-    const int expected = (orientation_ == ORIENTATION::RIGHT ? 1 : -1);
+    const int expected = (orientation_ == Orientation::RIGHT ? 1 : -1);
 
     return m_inputQueue[0].m_dir.x != expected;
 }
 
-bool InputResolver::checkHoldUp(ORIENTATION, unsigned int) const
+bool InputResolver::checkHoldUp(Orientation, unsigned int) const
 {
     if (m_inputQueue.getFilled() == 0)
         return false;
@@ -57,7 +57,7 @@ bool InputResolver::checkHoldUp(ORIENTATION, unsigned int) const
     return m_inputQueue[0].m_dir.y < 0;
 }
 
-bool InputResolver::checkHoldUpForward(const ORIENTATION orientation_, unsigned int) const
+bool InputResolver::checkHoldUpForward(const Orientation orientation_, unsigned int) const
 {
     if (m_inputQueue.getFilled() == 0)
         return false;
@@ -65,13 +65,13 @@ bool InputResolver::checkHoldUpForward(const ORIENTATION orientation_, unsigned 
     if (m_inputQueue[0].m_dir.y >= 0)
         return false;
 
-    if (orientation_ == ORIENTATION::RIGHT)
+    if (orientation_ == Orientation::RIGHT)
         return m_inputQueue[0].m_dir.x > 0;
 
     return m_inputQueue[0].m_dir.x < 0;
 }
 
-bool InputResolver::checkBufferUp(ORIENTATION, const unsigned int extendBuffer_) const
+bool InputResolver::checkBufferUp(Orientation, const unsigned int extendBuffer_) const
 {
     if (m_inputQueue.getFilled() == 0)
         return false;
@@ -87,7 +87,7 @@ bool InputResolver::checkBufferUp(ORIENTATION, const unsigned int extendBuffer_)
     return false;
 }
 
-bool InputResolver::checkBufferUpStrict(ORIENTATION, const unsigned int extendBuffer_) const
+bool InputResolver::checkBufferUpStrict(Orientation, const unsigned int extendBuffer_) const
 {
     if (m_inputQueue.getFilled() == 0)
         return false;
@@ -103,13 +103,13 @@ bool InputResolver::checkBufferUpStrict(ORIENTATION, const unsigned int extendBu
     return false;
 }
 
-bool InputResolver::checkBufferUpForward(const ORIENTATION orientation_, const unsigned int extendBuffer_) const
+bool InputResolver::checkBufferUpForward(const Orientation orientation_, const unsigned int extendBuffer_) const
 {
     if (m_inputQueue.getFilled() == 0)
         return false;
 
-    const auto expectedButton = (orientation_ == ORIENTATION::RIGHT ? INPUT_BUTTON::RIGHT : INPUT_BUTTON::LEFT);
-    const auto expectedDir = (orientation_ == ORIENTATION::RIGHT ? 1 : -1);
+    const auto expectedButton = (orientation_ == Orientation::RIGHT ? INPUT_BUTTON::RIGHT : INPUT_BUTTON::LEFT);
+    const auto expectedDir = (orientation_ == Orientation::RIGHT ? 1 : -1);
 
     const size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
     for (size_t i = 0; i <= lookAt; ++i)
@@ -123,13 +123,13 @@ bool InputResolver::checkBufferUpForward(const ORIENTATION orientation_, const u
     return false;
 }
 
-bool InputResolver::checkBufferUpForwardStrict(const ORIENTATION orientation_, const unsigned int extendBuffer_) const
+bool InputResolver::checkBufferUpForwardStrict(const Orientation orientation_, const unsigned int extendBuffer_) const
 {
     if (m_inputQueue.getFilled() == 0)
         return false;
 
-    const auto expectedButton = (orientation_ == ORIENTATION::RIGHT ? INPUT_BUTTON::RIGHT : INPUT_BUTTON::LEFT);
-    const auto expectedDir = (orientation_ == ORIENTATION::RIGHT ? 1 : -1);
+    const auto expectedButton = (orientation_ == Orientation::RIGHT ? INPUT_BUTTON::RIGHT : INPUT_BUTTON::LEFT);
+    const auto expectedDir = (orientation_ == Orientation::RIGHT ? 1 : -1);
 
     bool foundUp = false;
     bool foundForward = false;
@@ -150,12 +150,12 @@ bool InputResolver::checkBufferUpForwardStrict(const ORIENTATION orientation_, c
     return false;
 }
 
-bool InputResolver::checkBufferedOrientedAttack(ORIENTATION orientation_, const unsigned int extendBuffer_) const
+bool InputResolver::checkBufferedOrientedAttack(Orientation orientation_, const unsigned int extendBuffer_) const
 {
     if (m_inputQueue.getFilled() == 0)
         return false;
 
-    const auto expectedDir = (orientation_ == ORIENTATION::RIGHT ? 1 : -1);
+    const auto expectedDir = (orientation_ == Orientation::RIGHT ? 1 : -1);
 
     const size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
     for (size_t i = 0; i <= lookAt; ++i)
@@ -168,12 +168,12 @@ bool InputResolver::checkBufferedOrientedAttack(ORIENTATION orientation_, const 
     return false;
 }
 
-bool InputResolver::checkBufferedHoldHorDir(const ORIENTATION orientation_, const unsigned int extendBuffer_) const
+bool InputResolver::checkBufferedHoldHorDir(const Orientation orientation_, const unsigned int extendBuffer_) const
 {
     if (m_inputQueue.getFilled() == 0)
         return false;
 
-    const int expected = (orientation_ == ORIENTATION::RIGHT ? 1 : -1);
+    const int expected = (orientation_ == Orientation::RIGHT ? 1 : -1);
 
     const size_t lookAt = std::min(m_inputQueue.getFilled() - 1, static_cast<size_t>(gamedata::global::inputBufferLength + extendBuffer_));
     for (size_t i = 0; i <= lookAt; ++i)
@@ -186,13 +186,13 @@ bool InputResolver::checkBufferedHoldHorDir(const ORIENTATION orientation_, cons
     return false;
 }
 
-bool InputResolver::checkTapExceptBackwards(const ORIENTATION orientation_, const unsigned int extendBuffer_) const
+bool InputResolver::checkTapExceptBackwards(const Orientation orientation_, const unsigned int extendBuffer_) const
 {
     if (m_inputQueue.getFilled() == 0)
         return false;
 
-    const auto expectedButton = (orientation_ == ORIENTATION::RIGHT ? INPUT_BUTTON::RIGHT : INPUT_BUTTON::LEFT);
-    const int expected = (orientation_ == ORIENTATION::RIGHT ? 1 : -1);
+    const auto expectedButton = (orientation_ == Orientation::RIGHT ? INPUT_BUTTON::RIGHT : INPUT_BUTTON::LEFT);
+    const int expected = (orientation_ == Orientation::RIGHT ? 1 : -1);
 
     bool vUpDirDiscovered = false;
     bool vDownDirDiscovered = false;
@@ -224,7 +224,7 @@ Vector2<int> InputResolver::getCurrentInputDir() const
     return {0, 0};
 }
 
-bool InputResolver::checkInput(InputMotions motion_, ORIENTATION orientation_, unsigned int extendBuffer_) const
+bool InputResolver::checkInput(InputMotions motion_, Orientation orientation_, unsigned int extendBuffer_) const
 {
     return (this->*m_inputComparators.at(motion_))(orientation_, extendBuffer_);
 }

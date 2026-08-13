@@ -1,7 +1,7 @@
 #pragma once
 #include "Core/CoreComponents.h"
 #include "Core/InputResolver.h"
-#include "Core/StateCommon.h"
+#include "Core/Flag.h"
 #include "StateMachine.h"
 #include <vector>
 
@@ -30,7 +30,7 @@ struct TransitionChecks
             virtual ~AbstractCondition() = default;
 
             virtual operator StateIDT() const = 0;
-            virtual ORIENTATION operator()(const ViewT &view_) = 0;
+            virtual Flag<Orientation> operator()(const ViewT &view_) = 0;
         };
 
         class Sequential
@@ -62,7 +62,7 @@ struct TransitionChecks
             SinceFrameImpl(uint32_t sinceFrame_, T &&condition_);
             operator StateIDT() const override;
 
-            ORIENTATION operator()(const ViewT &view_) override;
+            Flag<Orientation> operator()(const ViewT &view_) override;
 
         private:
             const uint32_t m_sinceFrame;
@@ -78,7 +78,7 @@ struct TransitionChecks
     public:
         OnGrounded(const StateIDT &state_, bool isGrounded_ = true);
 
-        ORIENTATION operator()(const ViewT &view_) override;
+        Flag<Orientation> operator()(const ViewT &view_) override;
 
     private:
         const bool m_isGrounded;
@@ -90,7 +90,7 @@ struct TransitionChecks
     public:
         OnGroundedBySpeed(const StateIDT &state_, bool isGrounded_, float minVerSpeed_);
 
-        ORIENTATION operator()(const ViewT &view_) override;
+        Flag<Orientation> operator()(const ViewT &view_) override;
 
     private:
         const bool m_isGrounded;
@@ -102,7 +102,7 @@ struct TransitionChecks
     public:
         OnTimer(const StateIDT &state_, uint32_t framesLimit_);
 
-        ORIENTATION operator()(const ViewT &view_) override;
+        Flag<Orientation> operator()(const ViewT &view_) override;
 
     private:
         const uint32_t m_framesLimit;
@@ -113,7 +113,7 @@ struct TransitionChecks
     public:
         InputTest(const StateIDT &state_, InputMotions input_, Flag<OrientationOptions> options_, uint32_t bufferExtention_ = 0);
 
-        ORIENTATION operator()(const ViewT &view_) override;
+        Flag<Orientation> operator()(const ViewT &view_) override;
 
     private:
         const InputMotions m_input;
@@ -127,7 +127,7 @@ struct TransitionChecks
     public:
         WallClingEnterTest(const StateIDT &state_);
 
-        ORIENTATION operator()(const ViewT &view_) override;
+        Flag<Orientation> operator()(const ViewT &view_) override;
     };
 
     class WallClingLeaveTest : public Base::AbstractStateCondition
@@ -135,6 +135,6 @@ struct TransitionChecks
     public:
         WallClingLeaveTest(const StateIDT &state_);
 
-        ORIENTATION operator()(const ViewT &view_) override;
+        Flag<Orientation> operator()(const ViewT &view_) override;
     };
 };

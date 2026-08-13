@@ -1,36 +1,35 @@
 #pragma once
 #include "Utils.hpp"
+#include "Flag.h"
 #include "StaticMapping.hpp"
 #include <cmath>
 #include <iostream>
 #include <sstream>
 #include <cassert>
 
-enum class ORIENTATION : int8_t
+enum class Orientation : int8_t
 {
-    RIGHT = 1,
-    LEFT = -1,
-    UNSPECIFIED = 0
+    RIGHT = 0b01,
+    LEFT = 0b10,
 };
 
-SERIALIZE_ENUM(ORIENTATION, {
-    ENUM_AUTO(ORIENTATION, RIGHT),
-    ENUM_AUTO(ORIENTATION, LEFT),
-    ENUM_AUTO(ORIENTATION, UNSPECIFIED)
-})
-
-template<Numeric T>
-constexpr ORIENTATION ValueToOrientation(const T &rhs_) noexcept
+template<> struct std::formatter<Flag<Orientation>> : std::formatter<std::string_view> 
 {
-    return static_cast<ORIENTATION>((rhs_ > 0) - (rhs_ < 0));
-}
+    auto format(const Flag<Orientation> &orient_, format_context &ctx_) const
+    {
+        std::string res;
+        if (orient_ == Orientation::LEFT)
+            res = "LEFT";
+        else if (orient_ == Orientation::RIGHT)
+            res = "RIGHT";
+        else if (orient_ == 0)
+            res = "UNSPECIFIED";
+        else
+            res = "Orientation(" + std::to_string(static_cast<int>(orient_)) + ")";
 
-template<Numeric T>
-constexpr int ValueToOrientationInt(const T &rhs_) noexcept
-{
-    return static_cast<int>((rhs_ > 0) - (rhs_ < 0));
-}
-
+        return formatter<std::string_view>::format(res, ctx_);
+    }
+};
 
 template <Numeric T>
 struct Vector2
@@ -48,8 +47,8 @@ struct Vector2
     {
     }
 
-    constexpr Vector2(ORIENTATION orient_) noexcept :
-        x(static_cast<T>(orient_)),
+    constexpr Vector2(Orientation orient_) noexcept :
+        x(orient_ == Orientation::RIGHT ? 1 : -1),
         y(0)
     {}
 
@@ -66,23 +65,6 @@ struct Vector2
     constexpr bool operator==(const Vector2<TR> &rhs) const noexcept
     {
         return (x == rhs.x && y == rhs.y);
-    }
-
-    [[nodiscard]]
-    constexpr bool operator==(const ORIENTATION &rhs_) const noexcept
-    {
-        return (x == static_cast<T>(rhs_));
-    }
-
-    constexpr operator ORIENTATION() const noexcept
-    {
-        return static_cast<ORIENTATION>(x);
-    }
-
-    [[nodiscard]]
-    constexpr ORIENTATION getOrientation() const noexcept
-    {
-        return static_cast<ORIENTATION>(ValueToOrientation(x));
     }
 
     template<Numeric TR>
@@ -268,7 +250,7 @@ std::ostream& operator<< (std::ostream& out, const Vector2<T>& vec)
 template <Numeric T> 
 struct std::formatter<Vector2<T>> : std::formatter<std::string_view> 
 {
-    auto format(const Vector2<T> &vec_, format_context &ctx_) const 
+    auto format(const Vector2<T> &vec_, format_context &ctx_) const
     {
         return formatter<std::string_view>::format(
             std::format("{{{}, {}}}", vec_.x, vec_.y), 

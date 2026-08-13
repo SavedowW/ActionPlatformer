@@ -129,7 +129,7 @@ void RenderSystem::drawInstance(const ComponentTransform &trans_, const Componen
         auto texPos = trans_.m_pos + Vector2{1, 1};
         texPos.y -= animorigin.y;
         SDL_FlipMode flip = SDL_FLIP_NONE;
-        if (trans_.m_orientation == ORIENTATION::LEFT)
+        if (trans_.m_orientation == Orientation::LEFT)
         {
             flip = SDL_FLIP_HORIZONTAL;
             texPos.x -= (texSize.x - animorigin.x);
@@ -171,7 +171,7 @@ void RenderSystem::drawParticle(const ComponentTransform &trans_, const Componen
         if (partcl_.tieTransform != entt::null)
         {
             const auto &tiedTrans = m_reg.get<ComponentTransform>(partcl_.tieTransform);
-            if (tiedTrans.m_orientation == ORIENTATION::LEFT)
+            if (tiedTrans.m_orientation == Orientation::LEFT)
                 texPos = tiedTrans.m_pos.add(-texPos.x, texPos.y);
             else
                 texPos = tiedTrans.m_pos.add(texPos.x, texPos.y);
@@ -179,7 +179,7 @@ void RenderSystem::drawParticle(const ComponentTransform &trans_, const Componen
 
         SDL_FlipMode flip = SDL_FLIP_NONE;
 
-        if (trans_.m_orientation == ORIENTATION::LEFT)
+        if (trans_.m_orientation == Orientation::LEFT)
         {
             texPos.x -= (texSize.x - animorigin.x) - 2;
             flip = SDL_FLIP_HORIZONTAL;
@@ -276,8 +276,8 @@ void RenderSystem::drawCollider(const ComponentTransform &trans_, const Componen
     auto pb = phys_.pushbox + trans_.m_pos;
     m_renderer.drawCollider(pb, gamedata::characters::pushboxColor, m_camera);
 
-    auto edgex = (trans_.m_orientation == ORIENTATION::RIGHT ? pb.getRightEdge() + 1 : 
-                    (trans_.m_orientation == ORIENTATION::LEFT ? pb.getLeftEdge() + 1 : pb.m_topLeft.x + pb.m_size.x / 2));
+    auto edgex = (trans_.m_orientation == Orientation::RIGHT ? pb.getRightEdge() + 1 : 
+                    (trans_.m_orientation == Orientation::LEFT ? pb.getLeftEdge() + 1 : pb.m_topLeft.x + pb.m_size.x / 2));
 
     Vector2 TR{edgex, pb.getTopEdge() + 6};
     Vector2 BR{edgex, pb.getBottomEdge() + 1};

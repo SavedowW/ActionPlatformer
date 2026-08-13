@@ -1,6 +1,5 @@
 #include "BattleLevel.h"
 #include "SM/StateMachine.hpp"
-#include "ResetHandlers.h"
 #include "Core/GameData.h"
 #include "Core/Application.h"
 #include "Core/InputResolver.h"
@@ -29,7 +28,6 @@ BattleLevel::BattleLevel(int lvlId_, FPSUtility &fpsUtility_, const Vector2<int>
     //m_envSystem.makeGrassTop(Vector2{230, 351});
         
     subscribe(GAMEPLAY_EVENTS::FN4);
-    subscribe(GAMEPLAY_EVENTS::RESET_DBG);
 
 //for (int i = 0; i < 1000; ++i)
     //m_enemyId = m_enemysys.makeEnemy();
@@ -66,13 +64,6 @@ void BattleLevel::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
                 m_chatBoxSys.addSequence(std::move(seq2));
                 #endif
             }
-            else
-                Level::receiveEvents(event, scale_);
-        break;
-
-        case GAMEPLAY_EVENTS::RESET_DBG:
-            if (scale_ > 0)
-                handleReset();
             else
                 Level::receiveEvents(event, scale_);
         break;
@@ -149,48 +140,4 @@ void BattleLevel::draw() const
     m_hudsys.draw();
 
     renderer.updateScreen(m_camera);
-}
-
-template <typename... Components>
-inline void BattleLevel::handleResetStaticHandler()
-{
-    auto view = m_registry.view<Components..., ComponentResetStatic<Components...>>();
-
-    view.each(&ComponentResetStatic<Components...>::resetComponent);
-}
-
-template <typename Component>
-inline void BattleLevel::handleResetHandler()
-{
-    auto view = m_registry.view<Component, ComponentReset<Component>>();
-
-    for (auto [idx, comp, handler] : view.each())
-    {
-        handler.resetComponent(idx, comp);
-    }
-}
-
-/* template <> TODO:
-inline void BattleLevel::handleResetHandler<StateMachine>()
-{
-    auto view = m_registry.view<StateMachine, ComponentReset<StateMachine>>();
-
-    for (auto [idx, comp, handler] : view.each())
-    {
-        handler.resetComponent({.reg=&m_registry, .idx=idx}, comp);
-    }
-}*/
-
-void BattleLevel::handleReset()
-{
-    std::cout << "Running reset" << std::endl;
-    
-    handleResetStaticHandler<MoveCollider2Points>();
-    handleResetStaticHandler<ColliderRoutingIterator>();
-    handleResetStaticHandler<ComponentPhysical>();
-    handleResetStaticHandler<ComponentDynamicCameraTarget>();
-    handleResetStaticHandler<ComponentAnimationRenderable>();
-
-    handleResetHandler<ComponentTransform>();
-    // handleResetHandler<StateMachine>(); TODO:
 }

@@ -2,7 +2,7 @@
 #include "SlidingWindow.h"
 #include "StaticMapping.hpp"
 
-ComponentTransform::ComponentTransform(const Vector2<int> &pos_, ORIENTATION orient_) :
+ComponentTransform::ComponentTransform(const Vector2<int> &pos_, Orientation orient_) :
     m_pos{pos_}, 
     m_orientation{orient_}
 {
@@ -82,7 +82,7 @@ ComponentStaticCollider::ComponentStaticCollider(const Vector2<float> &pos_, con
 
 Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_)
 {
-    if (trans_.m_orientation == ORIENTATION::LEFT)
+    if (trans_.m_orientation == Orientation::LEFT)
         return Collider{.m_topLeft={trans_.m_pos.x - col_.m_topLeft.x - col_.m_size.x + 1, trans_.m_pos.y + col_.m_topLeft.y + 1}, .m_size=col_.m_size};
 
     return Collider{.m_topLeft=trans_.m_pos + col_.m_topLeft + Vector2{1, 1}, .m_size=col_.m_size};

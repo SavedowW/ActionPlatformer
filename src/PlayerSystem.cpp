@@ -4,7 +4,6 @@
 #include "PlayableCharacter.h"
 #include "SM/Builder.hpp"  // IWYU pragma: keep
 #include "SM/StateProperties.hpp"  // IWYU pragma: keep
-#include "ResetHandlers.h"
 #include "Core/Application.h"
 
 PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera &cam_) :
@@ -575,27 +574,21 @@ void PlayerSystem::createPlayer()
     m_reg.emplace<ComponentName>(m_playerId, "Player");
 
     auto &trans = m_reg.emplace<ComponentTransform>(m_playerId);
-    m_reg.emplace<ComponentReset<ComponentTransform>>(m_playerId, trans.m_pos, trans.m_orientation);
     
     m_reg.emplace<ComponentChildParticles>(m_playerId);
 
     auto &phys = m_reg.emplace<ComponentPhysical>(m_playerId);
-    m_reg.emplace<ComponentResetStatic<ComponentPhysical>>(m_playerId);
 
     m_reg.emplace<ComponentObstacleFallthrough>(m_playerId);
     
     auto &animrnd = m_reg.emplace<ComponentAnimationRenderable>(m_playerId);
-    m_reg.emplace<ComponentResetStatic<ComponentAnimationRenderable>>(m_playerId);
 
     m_reg.emplace<RenderLayer>(m_playerId, 6);
     m_reg.emplace<InputResolver>(m_playerId);
 
     m_reg.emplace<ComponentDynamicCameraTarget>(m_playerId);
-    m_reg.emplace<ComponentResetStatic<ComponentDynamicCameraTarget>>(m_playerId);
 
     m_reg.emplace<SM::StatePossessor<PlayerState>>(m_playerId, PlayerState::FLOAT);
-    // m_reg.emplace<StateMachine>(m_playerId); TODO:
-    // m_reg.emplace<ComponentReset<StateMachine>>(m_playerId);
 
     m_reg.emplace<WorldPosition>(m_playerId);
     m_reg.emplace<BattleActor>(m_playerId, BattleTeams::PLAYER);

@@ -1,5 +1,5 @@
 #pragma once
-#include "StateCommon.h"
+#include "Flag.h"
 #include "Vector2.hpp"
 
 enum class OverlapResult : uint8_t

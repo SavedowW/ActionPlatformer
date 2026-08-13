@@ -1,5 +1,4 @@
 #pragma once
-#include "World.h"
 #include "ColliderRouting.h"
 #include "Core/CoreComponents.h"
 #include <entt/entt.hpp>
@@ -11,7 +10,6 @@ struct DynamicColliderSystem
     void updateMovingColliders();
 
     void proceedMovingCollider(ComponentTransform &trans_, ComponentStaticCollider &scld_, MoveCollider2Points &twop_);
-
     
     bool isOverlappingWithDynamic(const SlopeCollider &cld_);
     bool isObstacleOverlappingWithDynamic(const SlopeCollider &cld_, int obstacleId_);

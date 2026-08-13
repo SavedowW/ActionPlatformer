@@ -25,9 +25,9 @@ namespace SM
         StateIDT intoState;
 
         // UNSPECIFIED if there is no transition
-        ORIENTATION intoOrientation;
+        Flag<Orientation> intoOrientation;
 
-        TransitionData(StateIDT fromState_, StateIDT intoState_, ORIENTATION intoOrientation_) noexcept;
+        TransitionData(StateIDT fromState_, StateIDT intoState_, Flag<Orientation> intoOrientation_) noexcept;
         TransitionData(const TransitionData&) noexcept = default;
         TransitionData(TransitionData&&) noexcept = default;
         TransitionData &operator=(const TransitionData&) noexcept = default;

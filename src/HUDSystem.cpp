@@ -29,7 +29,9 @@ HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vecto
 
 void HudSystem::draw() const
 {
+#if 0
     const auto npcs = m_reg.view<ComponentTransform, ComponentPhysical/*, StateMachine*/, ComponentAI>();
+#endif
 
     drawCommonDebug();
 
@@ -39,10 +41,12 @@ void HudSystem::draw() const
 
     if (ConfigurationManager::instance().m_debug.m_drawNpcDebug)
     {
+#if 0
         for (const auto [idx, trans, phys/*, sm*/, ai] : npcs.each())
         {
             drawNPCDebug(trans, phys/*, sm*/, ai);
         }
+#endif
     }
 }
 
@@ -135,7 +139,7 @@ void HudSystem::drawPlayerDebug(entt::entity playerId_) const
     }
 }
 
-void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_, /*const StateMachine &sm_, */const ComponentAI &) const
+void HudSystem::drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_) const
 {
     const auto txt1 = std::string("SM name used to be here, TODO"); //sm_.getName();
     const auto txt2 = std::string("AI SM name used to be here, TODO");

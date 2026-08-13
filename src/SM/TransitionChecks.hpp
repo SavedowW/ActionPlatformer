@@ -12,14 +12,14 @@ SM::TransitionData<StateIDT> TransitionChecks<StateIDT, ViewT>::Base::Sequential
     for (const auto &con : m_conditions)
     {
         const auto res = (*con)(view_);
-        if (res != ORIENTATION::UNSPECIFIED)
+        if (res != 0)
         {
             const auto state = StateIDT(*con);
             return SM::TransitionData<StateIDT>{state, state, res};
         }
     }
 
-    return SM::TransitionData<StateIDT>{static_cast<StateIDT>(0), static_cast<StateIDT>(0), ORIENTATION::UNSPECIFIED};
+    return SM::TransitionData<StateIDT>{static_cast<StateIDT>(0), static_cast<StateIDT>(0), 0};
 }
 
 template<typename StateIDT, typename ViewT>
@@ -58,13 +58,13 @@ TransitionChecks<StateIDT, ViewT>::Base::SinceFrameImpl<T>::operator StateIDT() 
 
 template<typename StateIDT, typename ViewT>
 template<typename T>
-ORIENTATION TransitionChecks<StateIDT, ViewT>::Base::SinceFrameImpl<T>::operator()(const ViewT &view_)
+Flag<Orientation> TransitionChecks<StateIDT, ViewT>::Base::SinceFrameImpl<T>::operator()(const ViewT &view_)
 {
     const auto &stateDescr = view_.template cget<SM::StatePossessor<StateIDT>>();
     if (stateDescr.framesInState() >= m_sinceFrame)
         return m_condition(view_);
 
-    return ORIENTATION::UNSPECIFIED;
+    return 0;
 }
 
 template<typename StateIDT, typename ViewT>
@@ -82,14 +82,14 @@ TransitionChecks<StateIDT, ViewT>::OnGrounded::OnGrounded(const StateIDT &state_
 {}
 
 template<typename StateIDT, typename ViewT>
-ORIENTATION TransitionChecks<StateIDT, ViewT>::OnGrounded::operator()(const ViewT &view_)
+Flag<Orientation> TransitionChecks<StateIDT, ViewT>::OnGrounded::operator()(const ViewT &view_)
 {
     const auto &worldpos = view_.template cget<WorldPosition>();
 
     if ((worldpos.ground.onGround != entt::null) == m_isGrounded)
         return view_.template cget<ComponentTransform>().m_orientation;
 
-    return ORIENTATION::UNSPECIFIED;
+    return 0;
 }
 
 
@@ -101,7 +101,7 @@ TransitionChecks<StateIDT, ViewT>::OnGroundedBySpeed::OnGroundedBySpeed(const St
 {}
 
 template<typename StateIDT, typename ViewT>
-ORIENTATION TransitionChecks<StateIDT, ViewT>::OnGroundedBySpeed::operator()(const ViewT &view_)
+Flag<Orientation> TransitionChecks<StateIDT, ViewT>::OnGroundedBySpeed::operator()(const ViewT &view_)
 {
     const auto &worldpos = view_.template cget<WorldPosition>();
     const auto &physical = view_.template cget<ComponentPhysical>();
@@ -109,7 +109,7 @@ ORIENTATION TransitionChecks<StateIDT, ViewT>::OnGroundedBySpeed::operator()(con
     if ((worldpos.ground.onGround != entt::null) == m_isGrounded && physical.calculatedOffset.y >= m_minVerSpeed)
         return view_.template cget<ComponentTransform>().m_orientation;
 
-    return ORIENTATION::UNSPECIFIED;
+    return 0;
 }
 
 
@@ -120,12 +120,12 @@ TransitionChecks<StateIDT, ViewT>::OnTimer::OnTimer(const StateIDT &state_, uint
 {}
 
 template<typename StateIDT, typename ViewT>
-ORIENTATION TransitionChecks<StateIDT, ViewT>::OnTimer::operator()(const ViewT &view_)
+Flag<Orientation> TransitionChecks<StateIDT, ViewT>::OnTimer::operator()(const ViewT &view_)
 {
     if (view_.template cget<SM::StatePossessor<StateIDT>>().framesInState() >= m_framesLimit)
         return view_.template cget<ComponentTransform>().m_orientation;
 
-    return ORIENTATION::UNSPECIFIED;
+    return 0;
 }
 
 
@@ -138,41 +138,41 @@ TransitionChecks<StateIDT, ViewT>::InputTest::InputTest(const StateIDT &state_, 
 {}
 
 template<typename StateIDT, typename ViewT>
-ORIENTATION TransitionChecks<StateIDT, ViewT>::InputTest::operator()(const ViewT &view_)
+Flag<Orientation> TransitionChecks<StateIDT, ViewT>::InputTest::operator()(const ViewT &view_)
 {
     const auto &transform = view_.template cget<ComponentTransform>();
     const auto &inputs = view_.template cget<InputResolver>();
 
-    if (transform.m_orientation == ORIENTATION::RIGHT)
+    if (transform.m_orientation == Orientation::RIGHT)
     {
         if ((m_orientations & OrientationOptions::RIGHT) == OrientationOptions::RIGHT || (m_orientations & OrientationOptions::SAME) == OrientationOptions::SAME)
         {
-            if (inputs.checkInput(m_input, ORIENTATION::RIGHT, m_bufferExtention))
-                return ORIENTATION::RIGHT;
+            if (inputs.checkInput(m_input, Orientation::RIGHT, m_bufferExtention))
+                return Orientation::RIGHT;
         }
 
         if ((m_orientations & OrientationOptions::LEFT) == OrientationOptions::LEFT || (m_orientations & OrientationOptions::OPPOSITE) == OrientationOptions::OPPOSITE)
         {
-            if (inputs.checkInput(m_input, ORIENTATION::LEFT, m_bufferExtention))
-                return ORIENTATION::LEFT;
+            if (inputs.checkInput(m_input, Orientation::LEFT, m_bufferExtention))
+                return Orientation::LEFT;
         }
     }
     else
     {
         if ((m_orientations & OrientationOptions::LEFT) == OrientationOptions::LEFT || (m_orientations & OrientationOptions::SAME) == OrientationOptions::SAME)
         {
-            if (inputs.checkInput(m_input, ORIENTATION::LEFT, m_bufferExtention))
-                return ORIENTATION::LEFT;
+            if (inputs.checkInput(m_input, Orientation::LEFT, m_bufferExtention))
+                return Orientation::LEFT;
         }
 
         if ((m_orientations & OrientationOptions::RIGHT) == OrientationOptions::RIGHT || (m_orientations & OrientationOptions::OPPOSITE) == OrientationOptions::OPPOSITE)
         {
-            if (inputs.checkInput(m_input, ORIENTATION::RIGHT, m_bufferExtention))
-                return ORIENTATION::RIGHT;
+            if (inputs.checkInput(m_input, Orientation::RIGHT, m_bufferExtention))
+                return Orientation::RIGHT;
         }
     }
 
-    return ORIENTATION::UNSPECIFIED;
+    return 0;
 }
 
 template<typename StateIDT, typename ViewT>
@@ -181,7 +181,7 @@ TransitionChecks<StateIDT, ViewT>::WallClingEnterTest::WallClingEnterTest(const 
 {}
 
 template<typename StateIDT, typename ViewT>
-ORIENTATION TransitionChecks<StateIDT, ViewT>::WallClingEnterTest::operator()(const ViewT &view_)
+Flag<Orientation> TransitionChecks<StateIDT, ViewT>::WallClingEnterTest::operator()(const ViewT &view_)
 {
     const auto &physical = view_.template cget<ComponentPhysical>();
     const auto &inputs = view_.template cget<InputResolver>();
@@ -190,16 +190,16 @@ ORIENTATION TransitionChecks<StateIDT, ViewT>::WallClingEnterTest::operator()(co
     const auto offset = physical.peekOffset();
 
     if (offset.x >= 0 &&
-        inputs.checkInput(InputMotions::HOLD_HORDIR_BUFFERED, ORIENTATION::RIGHT, 0) &&
+        inputs.checkInput(InputMotions::HOLD_HORDIR_BUFFERED, Orientation::RIGHT, 0) &&
         worldPos.wall.rightWall != entt::null)
-        return ORIENTATION::LEFT;
+        return Orientation::LEFT;
     
     if (offset.x <= 0 &&
-        inputs.checkInput(InputMotions::HOLD_HORDIR_BUFFERED, ORIENTATION::LEFT, 0) &&
+        inputs.checkInput(InputMotions::HOLD_HORDIR_BUFFERED, Orientation::LEFT, 0) &&
         worldPos.wall.leftWall != entt::null)
-        return ORIENTATION::RIGHT;
+        return Orientation::RIGHT;
 
-    return ORIENTATION::UNSPECIFIED;
+    return 0;
 }
 
 
@@ -209,16 +209,16 @@ TransitionChecks<StateIDT, ViewT>::WallClingLeaveTest::WallClingLeaveTest(const 
 {}
 
 template<typename StateIDT, typename ViewT>
-ORIENTATION TransitionChecks<StateIDT, ViewT>::WallClingLeaveTest::operator()(const ViewT &view_)
+Flag<Orientation> TransitionChecks<StateIDT, ViewT>::WallClingLeaveTest::operator()(const ViewT &view_)
 {
     const auto &transform = view_.template cget<ComponentTransform>();
     const auto &worldPos = view_.template cget<WorldPosition>();
 
-    if (transform.m_orientation == ORIENTATION::LEFT && worldPos.wall.rightWall == entt::null)
-        return ORIENTATION::LEFT;
+    if (transform.m_orientation == Orientation::LEFT && worldPos.wall.rightWall == entt::null)
+        return Orientation::LEFT;
 
-    if (transform.m_orientation == ORIENTATION::RIGHT && worldPos.wall.leftWall == entt::null)
-        return ORIENTATION::RIGHT;
+    if (transform.m_orientation == Orientation::RIGHT && worldPos.wall.leftWall == entt::null)
+        return Orientation::RIGHT;
 
-    return ORIENTATION::UNSPECIFIED;
+    return 0;
 }

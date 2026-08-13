@@ -60,30 +60,30 @@ public:
 
     Vector2<int> getCurrentInputDir() const;
 
-    bool checkInput(InputMotions motion_, ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkInput(InputMotions motion_, Orientation orientation_, unsigned int extendBuffer_) const;
     
     bool isInputActive(INPUT_BUTTON button_) const;
 
     const InputQueue &getHistory() const noexcept;
 
 private:
-    bool checkHoldHorDir(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-    bool checkNoHorDir(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-    bool checkBufferedHoldHorDir(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkHoldHorDir(Orientation orientation_, unsigned int extendBuffer_) const;
+    bool checkNoHorDir(Orientation orientation_, unsigned int extendBuffer_) const;
+    bool checkBufferedHoldHorDir(Orientation orientation_, unsigned int extendBuffer_) const;
 
-    bool checkTapExceptBackwards(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkTapExceptBackwards(Orientation orientation_, unsigned int extendBuffer_) const;
 
-    bool checkHoldUp(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-    bool checkBufferUp(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-    bool checkBufferUpStrict(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkHoldUp(Orientation orientation_, unsigned int extendBuffer_) const;
+    bool checkBufferUp(Orientation orientation_, unsigned int extendBuffer_) const;
+    bool checkBufferUpStrict(Orientation orientation_, unsigned int extendBuffer_) const;
 
-    bool checkHoldUpForward(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-    bool checkBufferUpForward(ORIENTATION orientation_, unsigned int extendBuffer_) const;
-    bool checkBufferUpForwardStrict(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkHoldUpForward(Orientation orientation_, unsigned int extendBuffer_) const;
+    bool checkBufferUpForward(Orientation orientation_, unsigned int extendBuffer_) const;
+    bool checkBufferUpForwardStrict(Orientation orientation_, unsigned int extendBuffer_) const;
 
-    bool checkBufferedOrientedAttack(ORIENTATION orientation_, unsigned int extendBuffer_) const;
+    bool checkBufferedOrientedAttack(Orientation orientation_, unsigned int extendBuffer_) const;
 
-    using InputCheck = bool (InputResolver::*)(ORIENTATION, unsigned int) const;
+    using InputCheck = bool (InputResolver::*)(Orientation, unsigned int) const;
 
     InputQueue m_inputQueue;
     std::unordered_map<InputMotions, InputCheck> m_inputComparators;

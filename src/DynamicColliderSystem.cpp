@@ -139,9 +139,9 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
         int oldHighest = 0;
         int newHighest = 0;
 
-        const bool attachedLeft = (worldPos.wall.rightWall != entt::null) && trans.m_orientation == ORIENTATION::LEFT && oldRightEdge + 1 == scld_.m_resolved.leftX()
+        const bool attachedLeft = (worldPos.wall.rightWall != entt::null) && trans.m_orientation == Orientation::LEFT && oldRightEdge + 1 == scld_.m_resolved.leftX()
                         && pb.m_topLeft.y + pb.m_size.y / 2 >= scld_.m_resolved.leftY() && pb.m_topLeft.y + pb.m_size.y / 2 <= scld_.m_resolved.bottomY();
-        const bool attachedRight = (worldPos.wall.leftWall != entt::null) && trans.m_orientation == ORIENTATION::RIGHT && oldLeftEdge - 1 == scld_.m_resolved.rightX()
+        const bool attachedRight = (worldPos.wall.leftWall != entt::null) && trans.m_orientation == Orientation::RIGHT && oldLeftEdge - 1 == scld_.m_resolved.rightX()
                         && pb.m_topLeft.y + pb.m_size.y / 2 >= scld_.m_resolved.rightY() && pb.m_topLeft.y + pb.m_size.y / 2 <= scld_.m_resolved.bottomY();
         
 
@@ -209,9 +209,9 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
             if (attachedLeft || attachedRight)
             {
                 //std::cout << "Attached, pushing in the movement direction (vertical)" << std::endl;
-                if (trans.m_orientation == ORIENTATION::LEFT && oldRightEdge + 1 == scld_.m_resolved.leftX()
+                if (trans.m_orientation == Orientation::LEFT && oldRightEdge + 1 == scld_.m_resolved.leftX()
                         && pb.m_topLeft.y + pb.m_size.y / 2 >= scld_.m_resolved.leftY() && pb.m_topLeft.y + pb.m_size.y / 2 <= scld_.m_resolved.bottomY() ||
-                    trans.m_orientation == ORIENTATION::RIGHT && oldLeftEdge - 1 == scld_.m_resolved.rightX()
+                    trans.m_orientation == Orientation::RIGHT && oldLeftEdge - 1 == scld_.m_resolved.rightX()
                         && pb.m_topLeft.y + pb.m_size.y / 2 >= scld_.m_resolved.rightY() && pb.m_topLeft.y + pb.m_size.y / 2 <= scld_.m_resolved.bottomY())
                 {
                     phys.extraoffset.y = (abs(phys.extraoffset.y) > abs(offset.y) ? phys.extraoffset.y : offset.y);

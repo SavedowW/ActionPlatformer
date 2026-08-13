@@ -33,7 +33,7 @@ entt::entity ParticleSystem::makeParticle(const ParticleRecipe &particle_, const
         case TiePosRule::NONE:
         {
             auto offset = particle_.offset;
-            if (transEmitter.m_orientation == ORIENTATION::LEFT)
+            if (transEmitter.m_orientation == Orientation::LEFT)
                 offset.x *= -1;
 
             m_registry.emplace<ComponentTransform>(pid, transEmitter.m_pos + offset, transEmitter.m_orientation);

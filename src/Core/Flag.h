@@ -16,6 +16,11 @@ public:
         m_flag(flag_)
     {}
 
+    constexpr Flag(UT value_) noexcept :
+        m_flag(static_cast<T>(value_))
+    {}
+
+
     constexpr operator bool() const noexcept
     {
         return static_cast<UT>(m_flag);

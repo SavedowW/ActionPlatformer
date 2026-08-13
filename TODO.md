@@ -26,6 +26,7 @@
 8. [ ] Restore attack system
 9. [ ] Move timeline property iteration and caching logic into the iterator
 10. [x] Fix bug when the neutral jump after chain attack faces the opposite direction
+11. [x] Delete world component
 
 
 ### 2. Maybe later

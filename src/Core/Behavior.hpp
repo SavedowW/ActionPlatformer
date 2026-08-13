@@ -1,5 +1,4 @@
 #pragma once
-#include "StateCommon.h"
 #include "FrameTimer.h"
 #include "StaticMapping.hpp"
 #include <memory>

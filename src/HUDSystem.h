@@ -1,7 +1,6 @@
 #pragma once
 #include "Core/SlidingWindow.h"
 #include "Core/Texture.h"
-#include "CommonAI.h"
 #include "Core/CoreComponents.h"
 #include "Core/Camera.h"
 #include "PlayerSystem.h"
@@ -15,7 +14,7 @@ public:
     void draw() const;
     void drawCommonDebug() const;
     void drawPlayerDebug(entt::entity playerId_) const;
-    void drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_, /*const StateMachine &sm_,*/ const ComponentAI &ai_) const;
+    void drawNPCDebug(const ComponentTransform &trans_, const ComponentPhysical &phys_) const;
 
     void setPlayerId(entt::entity playerId_) noexcept;
 

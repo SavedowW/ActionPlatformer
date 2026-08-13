@@ -14,9 +14,7 @@ RenderSystem.cpp
 CameraSystem.cpp
 HUDSystem.cpp
 InputHandlingSystem.cpp
-World.cpp
 EnemySystem.cpp
-CommonAI.cpp
 AISystem.cpp
 DynamicColliderSystem.cpp
 ParticleSystem.cpp
@@ -26,7 +24,6 @@ ChatBox.cpp
 ColliderRouting.cpp
 EnvironmentSystem.cpp
 EnvComponents.cpp
-ResetHandlers.cpp
 )
 
 set(INCLUDE_DIRS

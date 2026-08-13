@@ -31,14 +31,6 @@ protected:
     void update() override;
     void draw() const override;
 
-    void handleReset();
-
-    template<typename... Components>
-    void handleResetStaticHandler();
-
-    template<typename Component>
-    void handleResetHandler();
-
     Camera m_camera;
 
     entt::registry m_registry;

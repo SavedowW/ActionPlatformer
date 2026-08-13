@@ -8,7 +8,7 @@
 namespace SM
 {
     template<typename StateIDT>
-    TransitionData<StateIDT>::TransitionData(StateIDT fromState_, StateIDT intoState_, ORIENTATION intoOrientation_) noexcept :
+    TransitionData<StateIDT>::TransitionData(StateIDT fromState_, StateIDT intoState_, Flag<Orientation> intoOrientation_) noexcept :
         fromState{fromState_},
         intoState{intoState_},
         intoOrientation{intoOrientation_}
@@ -88,7 +88,7 @@ namespace SM
             
             TransitionData transition = state->canTransition(entityView);
 
-            while (transition.intoOrientation != ORIENTATION::UNSPECIFIED)
+            while (transition.intoOrientation != 0)
             {
                 const auto &newState = *m_states.at(transition.intoState);
                 state->handleTransitionFrom(entityView, transition);

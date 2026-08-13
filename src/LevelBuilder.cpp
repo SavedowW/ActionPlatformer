@@ -1,7 +1,6 @@
 #include "LevelBuilder.h"
 #include "EnvComponents.h"
 #include "SM/StateMachine.h"
-#include "ResetHandlers.h"
 #include "Core/Application.h"
 #include "Core/JsonUtils.hpp"
 #include "Core/NavGraph.h"
@@ -20,7 +19,7 @@ void LevelBuilder::makeObject<GrassTopComp>(const Vector2<int> &pos_, bool visib
     auto &animManager = Application::instance().m_animationManager;
 
     auto objEnt = m_reg.create();
-    auto &trans = m_reg.emplace<ComponentTransform>(objEnt, pos_, ORIENTATION::RIGHT);
+    auto &trans = m_reg.emplace<ComponentTransform>(objEnt, pos_, Orientation::RIGHT);
 
     auto &animrnd = m_reg.emplace<ComponentAnimationRenderable>(objEnt);
     m_reg.emplace<RenderLayer>(objEnt, layer_, visible_);
@@ -35,8 +34,6 @@ void LevelBuilder::makeObject<GrassTopComp>(const Vector2<int> &pos_, bool visib
     animrnd.m_currentAnimation = &animrnd.m_animations.at(animManager.getAnimID("Environment/grass_single_top"));
     animrnd.m_currentAnimation->reset();
 
-    //trans.m_pos.x += (animSize.x);
-    //trans.m_pos.y -= (animSize.y);
     trans.m_pos.x += (animOrigin.x - 1);
     trans.m_pos.y -= (animSize.y + 1 - animOrigin.y);
 
@@ -134,13 +131,11 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, NavGraph &graph_, Co
 entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obstacleId_, const ColliderPointRouting &route_)
 {
     const auto newid = m_reg.create();
-    const auto &tr = m_reg.emplace<ComponentTransform>(newid, worldCld_.topLeft(), ORIENTATION::RIGHT);
+    const auto &tr = m_reg.emplace<ComponentTransform>(newid, worldCld_.topLeft(), Orientation::RIGHT);
     m_reg.emplace<ComponentStaticCollider>(newid, ComponentStaticCollider(tr.m_pos, worldCld_.movedBy(-worldCld_.topLeft()), obstacleId_));
 
     m_reg.emplace<MoveCollider2Points>(newid, route_.m_origin.m_pos - worldCld_.topLeft());
     m_reg.emplace<ColliderRoutingIterator>(newid, route_);
-    m_reg.emplace<ComponentResetStatic<MoveCollider2Points>>(newid);
-    m_reg.emplace<ComponentResetStatic<ColliderRoutingIterator>>(newid);
 
     return newid;
 }
@@ -148,7 +143,7 @@ entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obsta
 entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obstacleId_)
 {
     const auto newid = m_reg.create();
-    const auto &tr = m_reg.emplace<ComponentTransform>(newid, worldCld_.topLeft(), ORIENTATION::RIGHT);
+    const auto &tr = m_reg.emplace<ComponentTransform>(newid, worldCld_.topLeft(), Orientation::RIGHT);
     m_reg.emplace<ComponentStaticCollider>(newid, ComponentStaticCollider(tr.m_pos, worldCld_.movedBy(-worldCld_.topLeft()), obstacleId_));
     
     return newid;
@@ -300,7 +295,7 @@ void LevelBuilder::loadTileLayer(const nlohmann::json &json_)
 
     auto &tilelayer = m_reg.emplace<TilemapLayer>(entity, size, parallaxFactor);
     if (!existingEntity)
-        m_reg.emplace<ComponentTransform>(entity, pos, ORIENTATION::RIGHT);
+        m_reg.emplace<ComponentTransform>(entity, pos, Orientation::RIGHT);
     else
     {
         auto &trans = m_reg.get<ComponentTransform>(entity);

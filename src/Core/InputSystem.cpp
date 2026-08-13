@@ -233,8 +233,7 @@ void InputSystem::setupDefaultMapping()
         {SDLK_0, GAMEPLAY_EVENTS::FN3},
         {SDLK_SPACE, GAMEPLAY_EVENTS::CAM_STOP},
         {SDLK_BACKSPACE, GAMEPLAY_EVENTS::FN4},
-        {SDLK_SLASH, GAMEPLAY_EVENTS::REN_DBG_1},
-        {SDLK_R, GAMEPLAY_EVENTS::RESET_DBG}
+        {SDLK_SLASH, GAMEPLAY_EVENTS::REN_DBG_1}
     };
 
     m_gameplayBindings.m_gamepadBindings = {
@@ -248,8 +247,7 @@ void InputSystem::setupDefaultMapping()
         {SDL_GAMEPAD_BUTTON_BACK, GAMEPLAY_EVENTS::FN3},
         {SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, GAMEPLAY_EVENTS::CAM_STOP},
         {SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, GAMEPLAY_EVENTS::FN4},
-        {SDL_GAMEPAD_BUTTON_LEFT_STICK, GAMEPLAY_EVENTS::REN_DBG_1},
-        {SDL_GAMEPAD_BUTTON_NORTH, GAMEPLAY_EVENTS::RESET_DBG}
+        {SDL_GAMEPAD_BUTTON_LEFT_STICK, GAMEPLAY_EVENTS::REN_DBG_1}
     };
 
     m_gameplayBindings.m_gamepadPositiveAxisBindings = {

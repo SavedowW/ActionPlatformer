@@ -1,6 +1,4 @@
 #pragma once
-#include "CommonAI.h"
-#include "Core/Application.h"
 #include <entt/entt.hpp>
 
 struct AISystem
