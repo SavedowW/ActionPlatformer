@@ -16,19 +16,31 @@ PhysicsEntityHandler::PhysicsEntityHandler(const CollidersView &cld_, ComponentT
 {  
 }
 
+enum class AttemptType : uint8_t
+{
+    // Next attempt can be of any type, but cannot be further than loopback allows. Initial is considered BACKWARD too. Movement is halted on each non-initial BACKWARD attempt
+    BACKWARD,
+
+    // RequireMagnet is false for this specific case. Only upward and backward attempts are allowed
+    UPWARD,
+
+    // Only downward and backward attempts are allowed
+    DOWNWARD
+};
+
 struct AttemptPos
 {
-    AttemptPos(const Vector2<int> &pos_, int xLoopbackLimit_, bool requireMagnet_, bool haltMovement_) :
+    AttemptPos(const Vector2<int> &pos_, bool requireMagnet_, bool haltMovement_, AttemptType attemptType_) :
         pos{pos_},
-        xLoopbackLimit{xLoopbackLimit_},
         requireMagnet{requireMagnet_},
-        haltMovement{haltMovement_}
+        haltMovement{haltMovement_},
+        attemptType{attemptType_}
     {}
 
     const Vector2<int> pos;
-    int xLoopbackLimit;
     bool requireMagnet;
     bool haltMovement;
+    AttemptType attemptType;
 };
 
 void PhysicsEntityHandler::moveRight(const int offset_)
@@ -39,8 +51,10 @@ void PhysicsEntityHandler::moveRight(const int offset_)
 
     const auto halfWidth = m_pushbox.m_size.x / 2;
 
+    const auto xLoopbackLimit = startingPos.x + 1;
+
     std::stack<AttemptPos> attempts;
-    attempts.emplace(startingPos.add(offset_, 0), startingPos.x + 1, true, false);
+    attempts.emplace(startingPos.add(offset_, 0), true, false, AttemptType::BACKWARD);
 
     while (!attempts.empty())
     {
@@ -65,6 +79,7 @@ void PhysicsEntityHandler::moveRight(const int offset_)
             // Here and below +1 is added because slopes rely on floating point math and that work bad when getting onto the slope
             const bool upCondition = static_cast<float>(startingPos.y - topPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(topPos.x - startingPos.x);
 
+            // If we can't get on top of the obstacle, then we don't bother moving around it
             if (cld.m_obstacleId && (m_obsFallthrough.checkIgnoringObstacle(cld.m_obstacleId) || !upCondition))
                 continue;
 
@@ -72,12 +87,31 @@ void PhysicsEntityHandler::moveRight(const int offset_)
             const auto leftmost = cld.m_resolved.getMostLeftAt(newPb) - halfWidth - 1;
             const Vector2<int> bottomPos{attempt.pos.x, cld.m_resolved.bottomY() + m_pushbox.m_size.y};
             
-            if (leftmost >= attempt.xLoopbackLimit)
-                attempts.emplace(Vector2{leftmost, attempt.pos.y}, attempt.xLoopbackLimit, true, true);
-            if (static_cast<float>(bottomPos.y - startingPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(bottomPos.x - startingPos.x))
-                attempts.emplace(bottomPos, attempt.pos.x + 1, true, attempt.haltMovement);
-            if (upCondition)
-                attempts.emplace(topPos, attempt.pos.x + 1, false, attempt.haltMovement);
+            switch (attempt.attemptType)
+            {
+                case AttemptType::BACKWARD:
+                    if (leftmost >= xLoopbackLimit)
+                        attempts.emplace(Vector2{leftmost, attempt.pos.y}, true, true, AttemptType::BACKWARD);
+                    if (static_cast<float>(bottomPos.y - startingPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(bottomPos.x - startingPos.x))
+                        attempts.emplace(bottomPos, true, attempt.haltMovement, AttemptType::DOWNWARD);
+                    if (upCondition)
+                        attempts.emplace(topPos, false, attempt.haltMovement, AttemptType::UPWARD);
+                    break;
+
+                case AttemptType::UPWARD:
+                    if (leftmost >= xLoopbackLimit)
+                        attempts.emplace(Vector2{leftmost, attempt.pos.y}, true, true, AttemptType::UPWARD);
+                    if (upCondition)
+                        attempts.emplace(topPos, false, attempt.haltMovement, AttemptType::UPWARD);
+                    break;
+
+                case AttemptType::DOWNWARD:
+                    if (leftmost >= xLoopbackLimit)
+                        attempts.emplace(Vector2{leftmost, attempt.pos.y}, true, true, AttemptType::DOWNWARD);
+                    if (static_cast<float>(bottomPos.y - startingPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(bottomPos.x - startingPos.x))
+                        attempts.emplace(bottomPos, true, attempt.haltMovement, AttemptType::DOWNWARD);
+                    break;
+            }
 
             break;
         }
@@ -104,8 +138,10 @@ void PhysicsEntityHandler::moveLeft(const int offset_)
 
     const auto halfWidth = m_pushbox.m_size.x / 2;
 
+    const auto xLoopbackLimit = startingPos.x - 1;
+
     std::stack<AttemptPos> attempts;
-    attempts.emplace(startingPos.sub(offset_, 0), startingPos.x - 1, true, false);
+    attempts.emplace(startingPos.sub(offset_, 0), true, false, AttemptType::BACKWARD);
 
     while (!attempts.empty())
     {
@@ -126,8 +162,11 @@ void PhysicsEntityHandler::moveLeft(const int offset_)
                 continue;
 
             const Vector2<int> topPos{attempt.pos.x, highest - 1};
+
+            // Here and below +1 is added because slopes rely on floating point math and that work bad when getting onto the slope
             const bool upCondition = static_cast<float>(startingPos.y - topPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(startingPos.x - topPos.x);
 
+            // If we can't get on top of the obstacle, then we don't bother moving around it
             if (cld.m_obstacleId && (m_obsFallthrough.checkIgnoringObstacle(cld.m_obstacleId) || !upCondition))
                 continue;
 
@@ -135,12 +174,31 @@ void PhysicsEntityHandler::moveLeft(const int offset_)
             const auto rightmost = cld.m_resolved.getMostRightAt(newPb) + halfWidth;
             const Vector2<int> bottomPos{attempt.pos.x, cld.m_resolved.bottomY() + m_pushbox.m_size.y};
             
-            if (rightmost <= attempt.xLoopbackLimit)
-                attempts.emplace(Vector2{rightmost, attempt.pos.y}, attempt.xLoopbackLimit, true, true);
-            if (static_cast<float>(bottomPos.y - startingPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(startingPos.x - bottomPos.x))
-                attempts.emplace(bottomPos, attempt.pos.x + 1, true, attempt.haltMovement);
-            if (upCondition)
-                attempts.emplace(topPos, attempt.pos.x + 1, false, attempt.haltMovement);
+            switch (attempt.attemptType)
+            {
+                case AttemptType::BACKWARD:
+                    if (rightmost <= xLoopbackLimit)
+                        attempts.emplace(Vector2{rightmost, attempt.pos.y}, true, true, AttemptType::BACKWARD);
+                    if (static_cast<float>(bottomPos.y - startingPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(startingPos.x - bottomPos.x))
+                        attempts.emplace(bottomPos, true, attempt.haltMovement, AttemptType::DOWNWARD);
+                    if (upCondition)
+                        attempts.emplace(topPos, false, attempt.haltMovement, AttemptType::UPWARD);
+                    break;
+
+                case AttemptType::UPWARD:
+                    if (rightmost <= xLoopbackLimit)
+                        attempts.emplace(Vector2{rightmost, attempt.pos.y}, true, true, AttemptType::UPWARD);
+                    if (upCondition)
+                        attempts.emplace(topPos, false, attempt.haltMovement, AttemptType::UPWARD);
+                    break;
+
+                case AttemptType::DOWNWARD:
+                    if (rightmost <= xLoopbackLimit)
+                        attempts.emplace(Vector2{rightmost, attempt.pos.y}, true, true, AttemptType::DOWNWARD);
+                    if (static_cast<float>(bottomPos.y - startingPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(startingPos.x - bottomPos.x))
+                        attempts.emplace(bottomPos, true, attempt.haltMovement, AttemptType::DOWNWARD);
+                    break;
+            }
 
             break;
         }

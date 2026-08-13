@@ -354,9 +354,9 @@ void LevelBuilder::loadCollisionLayer(const nlohmann::json &json_, const Collide
         auto route = rtCollection_.end();
 
         const Vector2<int> tl{
-                cld.at("x"),
-                cld.at("y")
-            };
+            cld.at("x"),
+            cld.at("y")
+        };
 
         if (cld.contains("polygon"))
         {
@@ -424,9 +424,9 @@ void LevelBuilder::loadNavigationLayer(const nlohmann::json &json_, NavGraph &gr
     for (const auto &point : json_.at("objects"))
     {
         const Vector2<float> pos {
-                    static_cast<float>(point.at("x")),
-                    static_cast<float>(point.at("y"))
-                };
+            static_cast<float>(point.at("x")),
+            static_cast<float>(point.at("y"))
+        };
 
         nodes[point.at("id")] = graph_.makeNode(pos);
     }

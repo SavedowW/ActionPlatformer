@@ -41,6 +41,10 @@ private:
     void loadTileLayer(const nlohmann::json &json_);
     void loadMetaLayer(const nlohmann::json &json_);
     void loadEnvLayer(const nlohmann::json &json_, EnvironmentSystem &env_);
+
+    /*
+     *  Each collider is added as a pair ComponentStaticCollider + ComponentTransform, routing is optional
+     */
     void loadCollisionLayer(const nlohmann::json &json_, const ColliderRoutesCollection &rtCollection_);
     void loadNavigationLayer(const nlohmann::json &json_, NavGraph &graph_);
     void loadFocusLayer(const nlohmann::json &json_);
