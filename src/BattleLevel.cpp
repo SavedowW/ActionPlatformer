@@ -101,8 +101,6 @@ void BattleLevel::update()
 
     m_physsys.prepEntities();
 
-    m_colsys.updateSwitchingColliders();
-
     m_colsys.updateMovingColliders();
 
     m_partsys.update();

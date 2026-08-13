@@ -8,7 +8,6 @@ struct DynamicColliderSystem
 {
     DynamicColliderSystem(entt::registry &reg_);
 
-    void updateSwitchingColliders();
     void updateMovingColliders();
 
     void proceedMovingCollider(ComponentTransform &trans_, ComponentStaticCollider &scld_, MoveCollider2Points &twop_);

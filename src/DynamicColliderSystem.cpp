@@ -6,22 +6,6 @@ DynamicColliderSystem::DynamicColliderSystem(entt::registry &reg_) :
 {
 }
 
-void DynamicColliderSystem::updateSwitchingColliders()
-{
-    auto clds = m_reg.view<ComponentStaticCollider, SwitchCollider>();
-
-    for (auto [idx, cld, swc] : clds.each())
-    {
-        auto res = swc.updateTimer();
-        if (res != cld.m_isEnabled)
-        {
-            bool overlapping = (cld.m_obstacleId ? isObstacleOverlappingWithDynamic(cld.m_resolved, cld.m_obstacleId) : isOverlappingWithDynamic(cld.m_resolved));
-            if (!overlapping)
-                cld.m_isEnabled = res;
-        }
-    }
-}
-
 void DynamicColliderSystem::updateMovingColliders()
 {
     auto routes = m_reg.view<MoveCollider2Points, ColliderRoutingIterator>();

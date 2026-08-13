@@ -78,24 +78,7 @@ ComponentStaticCollider::ComponentStaticCollider(const Vector2<float> &pos_, con
     m_obstacleId(obstacleId_),
     m_proto(collider_),
     m_resolved(collider_.movedBy(pos_))
-{
-
-}
-
-bool SwitchCollider::updateTimer()
-{
-    if (m_timer.update())
-    {
-        if (m_isEnabled)
-            m_timer.begin(m_durationDisabled);
-        else
-            m_timer.begin(m_durationEnabled);
-
-        m_isEnabled = !m_isEnabled;
-    }
-
-    return m_isEnabled;
-}
+{}
 
 Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_)
 {
@@ -215,7 +198,6 @@ T_NAME_AUTO(ComponentPhysical);
 T_NAME_AUTO(const ComponentPhysical);
 T_NAME_AUTO(WorldPosition);
 T_NAME_AUTO(ComponentStaticCollider);
-T_NAME_AUTO(SwitchCollider);
 T_NAME_AUTO(ComponentObstacleFallthrough);
 T_NAME_AUTO(ComponentAnimationRenderable);
 T_NAME_AUTO(ComponentDynamicCameraTarget);

@@ -101,16 +101,6 @@ struct ComponentStaticCollider
     SlopeCollider m_resolved;
 };
 
-struct SwitchCollider
-{
-    uint32_t m_durationEnabled = 0;
-    uint32_t m_durationDisabled = 0;
-    FrameTimer<true> m_timer;
-    bool m_isEnabled = true;
-
-    bool updateTimer();
-};
-
 struct ComponentObstacleFallthrough
 {
     ComponentObstacleFallthrough() = default;
