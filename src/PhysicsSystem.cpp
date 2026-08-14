@@ -404,9 +404,8 @@ const SlopeCollider *PhysicsEntityHandler::getHighestVerticalMagnetCoord(int &co
 }
 
 
-PhysicsSystem::PhysicsSystem(entt::registry &reg_, Vector2<int> levelSize_) :
-    m_reg(reg_),
-    m_levelSize(levelSize_)
+PhysicsSystem::PhysicsSystem(entt::registry &reg_) :
+    m_reg(reg_)
 {
 }
 

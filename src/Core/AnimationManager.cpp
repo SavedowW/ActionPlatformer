@@ -59,15 +59,13 @@ AnimationManager::AnimationManager()
             m_ids[path] = m_textureArrs.size() - 1;
         }
     }
+    
     LOG_INFO("Found animations ({}):{}", m_ids.size(), [&]() -> std::string {
         std::string res;
         for (const auto &el : m_ids)
             utils::addToSeparatedList('"' + el.first + '"', res);
         return res;
     }());
-
-    //Load preloading textures
-    //preload("Particles/Block");
 }
 
 std::shared_ptr<TextureArr> AnimationManager::getTextureArr(ResID id_)

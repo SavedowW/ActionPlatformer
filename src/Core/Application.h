@@ -32,8 +32,8 @@ public:
     void run();
 
     template<typename T, typename... Args>
-    void makeLevel(int levelId_, Args&&... args_) 
-        requires std::constructible_from<T, int, FPSUtility&, Args...>;
+    void makeLevel(Args&&... args_) 
+        requires std::constructible_from<T, FPSUtility&, Args...>;
 
     const FPSUtility &getFPSUtility() const;
 
@@ -54,7 +54,7 @@ public:
 private:
     Application();
 
-    std::unordered_map<int, std::unique_ptr<Level>> m_levels;
-    LevelResult m_levelResult = {gamedata::levels::initialLevelId};
+    std::unordered_map<std::string, std::unique_ptr<Level>> m_levels;
+    LevelResult m_levelResult;
     FPSUtility m_fpsUtility;
 };

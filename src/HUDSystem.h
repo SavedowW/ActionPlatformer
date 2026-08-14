@@ -9,7 +9,7 @@
 struct HudSystem
 {
 public:
-    HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> &lvlSize_, const PlayerSystem &playersys_);
+    HudSystem(entt::registry &reg_, Camera &cam_, std::string levelname_, const Vector2<float> &lvlSize_, const PlayerSystem &playersys_);
 
     void draw() const;
     void drawCommonDebug() const;
@@ -27,7 +27,7 @@ private:
     const PlayerSystem &m_playersys;
 
     Camera &m_cam;
-    int m_lvlId;
+    const std::string m_levelname;
     const Vector2<float> m_lvlSize;
     mutable SlidingWindowIterative<float, 20, 5> m_avgFrames;
 

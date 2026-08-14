@@ -8,30 +8,31 @@ class Application;
 
 struct LevelResult
 {
-	int nextLvl = 0;
+	std::optional<std::string> nextLvl;
 };
 
 class Level : public InputReactor
 {
 public:
-    Level(int lvlId_, FPSUtility &fpsUtility_, const Vector2<int> &size_);
+    Level(std::string levelName_, FPSUtility &fpsUtility_, const Vector2<int> &size_);
 
     virtual void enter();
-	virtual void leave();
     LevelResult proceed();
+	virtual void leave();
 
-    void receiveEvents(GAMEPLAY_EVENTS event, const float scale_) override;
+    std::string name() const;
+
+    void receiveEvents(GAMEPLAY_EVENTS event, float scale_) override;
 
     virtual ~Level() = default;
 
 protected:
-
     virtual void update() = 0;
 	virtual void draw() const = 0;
 
-    const Vector2<int> m_size;
-    const int m_levelId;
+    const std::string m_levelName;
     FPSUtility &m_fpsUtility;
+    const Vector2<int> m_size;
 
     LevelResult m_returnVal;
     enum class STATE : uint8_t

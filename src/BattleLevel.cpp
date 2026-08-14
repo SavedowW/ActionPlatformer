@@ -1,20 +1,38 @@
 #include "BattleLevel.h"
+#include "Core/FilesystemUtils.h"
 #include "SM/StateMachine.hpp"
 #include "Core/GameData.h"
 #include "Core/Application.h"
-#include "Core/InputResolver.h"
 #include "Core/Localization/LocalizationGen.h"
 #include "Core/Profile.h"
+#include <fstream>
 
-BattleLevel::BattleLevel(int lvlId_, FPSUtility &fpsUtility_, const Vector2<int>& size_) :
-    Level(lvlId_, fpsUtility_, size_),
+Vector2<int> extractSize(std::string filename_)
+{
+    const auto fullpath = Filesystem::getRootDirectory() + filename_;
+    
+    std::ifstream mapjson(fullpath);
+    if (!mapjson.is_open())
+        throw std::runtime_error(std::format("Failed to open map description at \"{}\"", fullpath));
+
+    nlohmann::json mapdata = nlohmann::json::parse(mapjson);
+
+    return {
+        mapdata.at("width").get<int>() * mapdata.at("tilewidth").get<int>(),
+        mapdata.at("height").get<int>() * mapdata.at("tileheight").get<int>()
+    };
+}
+
+BattleLevel::BattleLevel(FPSUtility &fpsUtility_, std::string filename_) :
+    Level(std::filesystem::path(filename_).filename().replace_extension().string(), fpsUtility_, extractSize(filename_)),
+    m_fileName{std::move(filename_)},
     m_camera({0, 0}, gamedata::global::maxCameraSize, m_size),
     m_playerSystem(m_registry, m_partsys, m_camera),
     m_rendersys(m_registry, m_camera, m_cldRoutesCollection),
     m_inputsys(m_registry),
-    m_physsys(m_registry, size_),
+    m_physsys(m_registry),
     m_camsys(m_registry, m_camera, m_playerSystem),
-    m_hudsys(m_registry, m_camera, lvlId_, size_, m_playerSystem),
+    m_hudsys(m_registry, m_camera, m_levelName, m_size, m_playerSystem),
     m_enemysys(m_registry, m_navsys, m_camera, m_partsys, m_playerSystem),
     m_aisys(m_registry),
     m_navsys(m_registry, m_graph),
@@ -37,7 +55,7 @@ void BattleLevel::enter()
 {
     Level::enter();
 
-    m_lvlBuilder.buildLevel("Tilemaps/Level1.json", m_graph, m_cldRoutesCollection);
+    m_lvlBuilder.buildLevel(m_fileName, m_graph, m_cldRoutesCollection);
     m_playerSystem.createPlayer();
 
     m_camera.setScale(1.0f);

@@ -63,9 +63,9 @@ Application::Application() :
 void Application::run()
 {
     m_fpsUtility.start();
-    while (m_levelResult.nextLvl != -1)
+    while (m_levelResult.nextLvl.has_value())
     {
-        m_levels[m_levelResult.nextLvl]->enter();
-        m_levelResult = m_levels[m_levelResult.nextLvl]->proceed();
+        m_levels[*m_levelResult.nextLvl]->enter();
+        m_levelResult = m_levels[*m_levelResult.nextLvl]->proceed();
     }
 }

@@ -1,15 +1,20 @@
 #include "Application.h"
 #include <concepts>
+#include <stdexcept>
 
 template<typename T, typename... Args>
-void Application::makeLevel(int levelId_, Args&&... args_)
-    requires std::constructible_from<T, int, FPSUtility&, Args...>
+void Application::makeLevel(Args&&... args_)
+    requires std::constructible_from<T, FPSUtility&, Args...>
 {
-    if (m_levels.contains(levelId_))
-    {
-        std::cout << "Warning: a level with ID " << levelId_ << " already exists" << std::endl;
-        return;
-    }
+    auto level = std::make_unique<T>(m_fpsUtility, std::forward<Args>(args_)...);
+    const auto lvlname = level->name();
 
-    m_levels.insert({levelId_, std::make_unique<T>(levelId_, m_fpsUtility, std::forward<Args>(args_)...)});
+    const auto res = m_levels.insert({lvlname, std::move(level)});
+
+    if (!res.second)
+        throw std::runtime_error(std::format("Level \"{}\" already exists", lvlname));
+
+    if (!m_levelResult.nextLvl.has_value())
+        m_levelResult.nextLvl = lvlname;
+    
 }

@@ -1,10 +1,11 @@
 #include "Level.h"
 #include "Profile.h"
+#include <optional>
 
-Level::Level(int lvlId_, FPSUtility &fpsUtility_, const Vector2<int> &size_) :
-    m_size{size_},
-    m_levelId{lvlId_},
-    m_fpsUtility{fpsUtility_}
+Level::Level(std::string levelName_, FPSUtility &fpsUtility_, const Vector2<int> &size_) :
+    m_levelName{std::move(levelName_)},
+    m_fpsUtility{fpsUtility_},
+    m_size{size_}
 {
     subscribe(GAMEPLAY_EVENTS::QUIT);
     subscribe(GAMEPLAY_EVENTS::FN3);
@@ -18,7 +19,7 @@ Level::Level(int lvlId_, FPSUtility &fpsUtility_, const Vector2<int> &size_) :
 void Level::enter()
 {
     m_state = STATE::RUNNING;
-    m_returnVal = { -1 };
+    m_returnVal.nextLvl.reset();
     setInputEnabled();
 }
 
@@ -63,12 +64,17 @@ LevelResult Level::proceed()
     return m_returnVal;
 }
 
+std::string Level::name() const
+{
+    return m_levelName;
+}
+
 void Level::receiveEvents(GAMEPLAY_EVENTS event, const float scale_)
 {
     switch (event)
     {
         case (GAMEPLAY_EVENTS::QUIT):
-            m_returnVal = { -1 };
+            m_returnVal.nextLvl.reset();
             m_state = STATE::LEAVE;
             break;
 

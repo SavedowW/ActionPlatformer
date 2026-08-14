@@ -11,15 +11,15 @@
 #include "Core/Localization/LocalizationGen.h"
 #include "Core/Configuration.h"
 
-HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, int lvlId_, const Vector2<float> &lvlSize_, const PlayerSystem &playersys_) :
+HudSystem::HudSystem(entt::registry &reg_, Camera &cam_, std::string levelname_, const Vector2<float> &lvlSize_, const PlayerSystem &playersys_) :
     m_renderer(Application::instance().m_renderer),
     m_window{Application::instance().m_window},
     m_textManager(Application::instance().m_textManager),
-    m_reg(reg_),
+    m_reg{reg_},
     m_playersys{playersys_},
-    m_cam(cam_),
-    m_lvlId(lvlId_),
-    m_lvlSize(lvlSize_)
+    m_cam{cam_},
+    m_levelname{std::move(levelname_)},
+    m_lvlSize{lvlSize_}
 {
     auto &texman = Application::instance().m_textureManager;
 
@@ -64,7 +64,7 @@ void HudSystem::drawCommonDebug() const
 
     ImmediateScreenLog<TextAligners::AlignerLeft> commonLog{Fonts::DBG_UI, 32, {1, 1}};
 
-    commonLog.dumpLine(std::format("[{}] {}", m_lvlId, m_lvlSize));
+    commonLog.dumpLine(std::format("[\"{}\"] {}", m_levelname, m_lvlSize));
     commonLog.dumpLine(std::format("Camera pos: ", m_cam.getPos()));
     commonLog.dumpLine(std::format("Camera size: ", m_cam.getSize()));
     commonLog.dumpLine(std::format("Camera scale: ", m_cam.getScale()));

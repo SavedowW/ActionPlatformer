@@ -48,7 +48,7 @@ private:
 class PhysicsSystem
 {
 public:
-    PhysicsSystem(entt::registry &reg_, Vector2<int> levelSize_);
+    PhysicsSystem(entt::registry &reg_);
 
     void prepHitstop();
     void prepEntities();
