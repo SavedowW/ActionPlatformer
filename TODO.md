@@ -27,6 +27,7 @@
 9. [ ] Move timeline property iteration and caching logic into the iterator
 10. [x] Fix bug when the neutral jump after chain attack faces the opposite direction
 11. [x] Delete world component
+12. [ ] Fix broken focus area - camera doesnt reach it fully
 
 
 ### 2. Maybe later
