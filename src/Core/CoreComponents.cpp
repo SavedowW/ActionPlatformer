@@ -63,21 +63,41 @@ bool ComponentObstacleFallthrough::isIgnoringAllObstacles() const
     return m_isIgnoringObstacles.isActive();
 }
 
-bool ComponentObstacleFallthrough::checkIgnoringObstacle(int obstacleId_) const
+bool ComponentObstacleFallthrough::isIgnoringObstacle(entt::entity cid_) const
 {
-    return m_isIgnoringObstacles.isActive() || m_ignoredObstacles.contains(obstacleId_);
+    return m_ignoredObstacles.contains(cid_);
 }
 
-bool ComponentObstacleFallthrough::setIgnoreObstacle(int obstacleId_)
+bool ComponentObstacleFallthrough::setIgnoreObstacle(entt::entity cid_)
 {
-    m_ignoredObstacles.insert(obstacleId_);
+    m_ignoredObstacles.insert(cid_);
     return false;
 }
 
-ComponentStaticCollider::ComponentStaticCollider(const Vector2<float> &pos_, const SlopeCollider &collider_, int obstacleId_) :
-    m_obstacleId(obstacleId_),
-    m_proto(collider_),
-    m_resolved(collider_.movedBy(pos_))
+
+bool operator>(ObstacleType lhs_, ObstacleType rhs_) noexcept
+{
+    using UT = std::underlying_type_t<ObstacleType>;
+    return static_cast<UT>(lhs_) > static_cast<UT>(rhs_);
+}
+
+bool operator>=(ObstacleType lhs_, ObstacleType rhs_) noexcept
+{
+    using UT = std::underlying_type_t<ObstacleType>;
+    return static_cast<UT>(lhs_) >= static_cast<UT>(rhs_);
+}
+
+bool operator<(ObstacleType lhs_, ObstacleType rhs_) noexcept
+{
+    using UT = std::underlying_type_t<ObstacleType>;
+    return static_cast<UT>(lhs_) < static_cast<UT>(rhs_);
+}
+
+
+ComponentStaticCollider::ComponentStaticCollider(const Vector2<float> &pos_, const SlopeCollider &collider_, ObstacleType obstacleType_) :
+    obstacleType{obstacleType_},
+    m_proto{collider_},
+    m_resolved{collider_.movedBy(pos_)}
 {}
 
 Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_)

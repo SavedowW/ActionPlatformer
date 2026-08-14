@@ -13,6 +13,8 @@
 #include <memory>
 #include <utility>
 
+// These components are specific to the game and shouldnt be in the core but whatever
+
 struct ComponentTransform
 {
     ComponentTransform() = default;
@@ -87,12 +89,36 @@ struct WorldPosition
     void reset();
 };
 
+/**
+ *  All colliders that are obstacles allow clean passing through if an entity ends up inside. Some of them also cannot be interacted 
+ */
+enum class ObstacleType : uint8_t
+{
+    NONE,
+
+    // Default for all moving platforms - becomes permeable if entity somehow gets inside, but behaves as regular collider otherwise
+    MINIMAL,
+
+    // Same as MINIMAL, but walls and bottom are also completely permeable and can be fallen through
+    FLOOR
+};
+
+SERIALIZE_ENUM(ObstacleType, {
+    ENUM_AUTO(ObstacleType, NONE),
+    ENUM_AUTO(ObstacleType, MINIMAL),
+    ENUM_AUTO(ObstacleType, FLOOR)
+})
+
+bool operator>(ObstacleType lhs_, ObstacleType rhs_) noexcept;
+bool operator>=(ObstacleType lhs_, ObstacleType rhs_) noexcept;
+bool operator<(ObstacleType lhs_, ObstacleType rhs_) noexcept;
+
 struct ComponentStaticCollider
 {
     ComponentStaticCollider() = default;
-    ComponentStaticCollider(const Vector2<float> &pos_, const SlopeCollider &collider_, int obstacleId_);
+    ComponentStaticCollider(const Vector2<float> &pos_, const SlopeCollider &collider_, ObstacleType obstacleType_);
 
-    int m_obstacleId = 0;
+    ObstacleType obstacleType = ObstacleType::NONE;
 
     // TODO: to separate component
     bool m_isEnabled = true;
@@ -110,13 +136,20 @@ struct ComponentObstacleFallthrough
     ComponentObstacleFallthrough &operator=(const ComponentObstacleFallthrough &rhs_) = delete;
     ComponentObstacleFallthrough &operator=(ComponentObstacleFallthrough &&rhs_) = default;
 
+    // Down input - ignoring all
     void setIgnoringObstacles();
+
+    // Down input
     bool isIgnoringAllObstacles() const;
-    bool setIgnoreObstacle(int obstacleId_);
-    bool checkIgnoringObstacle(int obstacleId_) const;
+
+    // Is it listed
+    bool isIgnoringObstacle(entt::entity cid_) const;
+
+    // Add to the list
+    bool setIgnoreObstacle(entt::entity cid_);
 
     FrameTimer<false> m_isIgnoringObstacles;
-    std::set<int> m_ignoredObstacles;
+    std::set<entt::entity> m_ignoredObstacles;
 };
 
 class Flash

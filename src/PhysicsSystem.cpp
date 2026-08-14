@@ -2,6 +2,7 @@
 #include "Core/CoreComponents.h"
 #include "Core/Profile.h"
 #include <stack>
+#include <stdexcept>
 
 const float PhysicsEntityHandler::VerticalOffsetLimitMul = 1.3f;
 
@@ -16,32 +17,88 @@ PhysicsEntityHandler::PhysicsEntityHandler(const CollidersView &cld_, ComponentT
 {  
 }
 
-enum class AttemptType : uint8_t
+
+AttemptPos::AttemptPos(const Vector2<int> &pos_, bool requireMagnet_, bool haltMovement_, AttemptType attemptType_) :
+    pos{pos_},
+    requireMagnet{requireMagnet_},
+    haltMovement{haltMovement_},
+    attemptType{attemptType_}
+{}
+
+AttemptPos AttemptPos::addIgnoredObstacle(entt::entity cid_) const
 {
-    // Next attempt can be of any type, but cannot be further than loopback allows. Initial is considered BACKWARD too. Movement is halted on each non-initial BACKWARD attempt
-    BACKWARD,
+    AttemptPos res{*this};
+    res.m_ignored.insert(cid_);
+    return res;
+}
 
-    // RequireMagnet is false for this specific case. Only upward and backward attempts are allowed
-    UPWARD,
-
-    // Only downward and backward attempts are allowed
-    DOWNWARD
-};
-
-struct AttemptPos
+bool AttemptPos::isIgnoringObstacle(entt::entity cid_) const
 {
-    AttemptPos(const Vector2<int> &pos_, bool requireMagnet_, bool haltMovement_, AttemptType attemptType_) :
-        pos{pos_},
-        requireMagnet{requireMagnet_},
-        haltMovement{haltMovement_},
-        attemptType{attemptType_}
-    {}
+    return m_ignored.contains(cid_);
+}
 
-    const Vector2<int> pos;
-    bool requireMagnet;
-    bool haltMovement;
-    AttemptType attemptType;
-};
+const std::set<entt::entity> &AttemptPos::ignored() const noexcept
+{
+    return m_ignored;
+}
+
+AttemptPos::Key AttemptPos::key() const noexcept
+{
+    return {haltMovement, pos.x};
+}
+
+
+bool AttemptComparatorRight::operator()(const AttemptPos::Key &lhs_, const AttemptPos::Key &rhs_) const noexcept
+{
+    return !std::get<0>(lhs_) && std::get<0>(rhs_) || std::get<0>(lhs_) == std::get<0>(rhs_) && std::get<1>(lhs_) > std::get<1>(rhs_);
+}
+
+
+bool AttemptComparatorLeft::operator()(const AttemptPos::Key &lhs_, const AttemptPos::Key &rhs_) const noexcept
+{
+    return !std::get<0>(lhs_) && std::get<0>(rhs_) || std::get<0>(lhs_) == std::get<0>(rhs_) && std::get<1>(lhs_) < std::get<1>(rhs_);
+}
+
+
+template<typename Cmp>
+AttemptContainer<Cmp>::AttemptContainer() :
+    m_attempts(Cmp{})
+{}
+
+template<typename Cmp>
+void AttemptContainer<Cmp>::add(AttemptPos &&attempt_)
+{
+    m_attempts[attempt_.key()].emplace(std::move(attempt_));
+}
+
+template<typename Cmp>
+AttemptPos AttemptContainer<Cmp>::extract()
+{
+    if (m_attempts.empty())
+        throw std::logic_error("No attempts left");
+
+    auto first = m_attempts.begin();
+    auto res = first->second.top();
+    first->second.pop();
+
+    if (first->second.empty())
+        m_attempts.erase(first);
+
+    return res;
+}
+
+template<typename Cmp>
+bool AttemptContainer<Cmp>::empty() const
+{
+    return m_attempts.empty();
+}
+
+template
+struct AttemptContainer<AttemptComparatorRight>;
+
+template
+struct AttemptContainer<AttemptComparatorLeft>;
+
 
 void PhysicsEntityHandler::moveRight(const int offset_)
 {
@@ -53,13 +110,12 @@ void PhysicsEntityHandler::moveRight(const int offset_)
 
     const auto xLoopbackLimit = startingPos.x + 1;
 
-    std::stack<AttemptPos> attempts;
-    attempts.emplace(startingPos.add(offset_, 0), true, false, AttemptType::BACKWARD);
+    AttemptContainerRight attempts;
+    attempts.add({startingPos.add(offset_, 0), true, false, AttemptType::BACKWARD});
 
     while (!attempts.empty())
     {
-        const auto attempt = attempts.top();
-        attempts.pop();
+        const auto attempt = attempts.extract();
         bool valid = true;
 
         for (const auto& [idx, cld] : m_cld.each())
@@ -74,42 +130,52 @@ void PhysicsEntityHandler::moveRight(const int offset_)
             if ((overlap & OverlapResult::OVERLAP_BOTH) != OverlapResult::OVERLAP_BOTH)
                 continue;
 
-            const Vector2<int> topPos{attempt.pos.x, highest - 1};
+            // Skip ignored obstacle
+            if (cld.obstacleType > ObstacleType::NONE && (
+                m_obsFallthrough.isIgnoringObstacle(idx) ||
+                attempt.isIgnoringObstacle(idx) ||
+                cld.obstacleType >= ObstacleType::FLOOR && m_obsFallthrough.isIgnoringAllObstacles()))
+                continue;
 
+            const Vector2<int> topPos{attempt.pos.x, highest - 1};
             // Here and below +1 is added because slopes rely on floating point math and that work bad when getting onto the slope
             const bool upCondition = static_cast<float>(startingPos.y - topPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(topPos.x - startingPos.x);
-
-            // If we can't get on top of the obstacle, then we don't bother moving around it
-            if (cld.m_obstacleId && (m_obsFallthrough.checkIgnoringObstacle(cld.m_obstacleId) || !upCondition))
-                continue;
+            
+            const Vector2<int> bottomPos{attempt.pos.x, cld.m_resolved.bottomY() + m_pushbox.m_size.y};
+            const bool downCondition = static_cast<float>(bottomPos.y - startingPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(bottomPos.x - startingPos.x);
 
             valid = false;
             const auto leftmost = cld.m_resolved.getMostLeftAt(newPb) - halfWidth - 1;
-            const Vector2<int> bottomPos{attempt.pos.x, cld.m_resolved.bottomY() + m_pushbox.m_size.y};
             
             switch (attempt.attemptType)
             {
                 case AttemptType::BACKWARD:
                     if (leftmost >= xLoopbackLimit)
-                        attempts.emplace(Vector2{leftmost, attempt.pos.y}, true, true, AttemptType::BACKWARD);
-                    if (static_cast<float>(bottomPos.y - startingPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(bottomPos.x - startingPos.x))
-                        attempts.emplace(bottomPos, true, attempt.haltMovement, AttemptType::DOWNWARD);
+                        attempts.add({Vector2{leftmost, attempt.pos.y}, true, true, AttemptType::BACKWARD});
+                    if (cld.obstacleType > ObstacleType::MINIMAL)
+                        attempts.add({attempt.addIgnoredObstacle(idx)});
+                    if (downCondition)
+                        attempts.add({bottomPos, true, attempt.haltMovement, AttemptType::DOWNWARD});
                     if (upCondition)
-                        attempts.emplace(topPos, false, attempt.haltMovement, AttemptType::UPWARD);
+                        attempts.add({topPos, false, attempt.haltMovement, AttemptType::UPWARD});
                     break;
 
                 case AttemptType::UPWARD:
                     if (leftmost >= xLoopbackLimit)
-                        attempts.emplace(Vector2{leftmost, attempt.pos.y}, true, true, AttemptType::UPWARD);
+                        attempts.add({Vector2{leftmost, attempt.pos.y}, true, true, AttemptType::UPWARD});
+                    if (cld.obstacleType > ObstacleType::MINIMAL)
+                        attempts.add({attempt.addIgnoredObstacle(idx)});
                     if (upCondition)
-                        attempts.emplace(topPos, false, attempt.haltMovement, AttemptType::UPWARD);
+                        attempts.add({topPos, false, attempt.haltMovement, AttemptType::UPWARD});
                     break;
 
                 case AttemptType::DOWNWARD:
                     if (leftmost >= xLoopbackLimit)
-                        attempts.emplace(Vector2{leftmost, attempt.pos.y}, true, true, AttemptType::DOWNWARD);
-                    if (static_cast<float>(bottomPos.y - startingPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(bottomPos.x - startingPos.x))
-                        attempts.emplace(bottomPos, true, attempt.haltMovement, AttemptType::DOWNWARD);
+                        attempts.add({Vector2{leftmost, attempt.pos.y}, true, true, AttemptType::DOWNWARD});
+                    if (cld.obstacleType > ObstacleType::MINIMAL)
+                        attempts.add({attempt.addIgnoredObstacle(idx)});
+                    if (downCondition)
+                        attempts.add({bottomPos, true, attempt.haltMovement, AttemptType::DOWNWARD});
                     break;
             }
 
@@ -125,6 +191,8 @@ void PhysicsEntityHandler::moveRight(const int offset_)
                 m_phys.velocity.x = 0;
                 m_phys.inertia.x = 0;
             }
+            for (const auto &ignored : attempt.ignored())
+                m_obsFallthrough.setIgnoreObstacle(ignored);
             return;
         }
     }
@@ -140,13 +208,12 @@ void PhysicsEntityHandler::moveLeft(const int offset_)
 
     const auto xLoopbackLimit = startingPos.x - 1;
 
-    std::stack<AttemptPos> attempts;
-    attempts.emplace(startingPos.sub(offset_, 0), true, false, AttemptType::BACKWARD);
+    AttemptContainerLeft attempts;
+    attempts.add({startingPos.sub(offset_, 0), true, false, AttemptType::BACKWARD});
 
     while (!attempts.empty())
     {
-        const auto attempt = attempts.top();
-        attempts.pop();
+        const auto attempt = attempts.extract();
         bool valid = true;
 
         for (const auto& [idx, cld] : m_cld.each())
@@ -161,42 +228,52 @@ void PhysicsEntityHandler::moveLeft(const int offset_)
             if ((overlap & OverlapResult::OVERLAP_BOTH) != OverlapResult::OVERLAP_BOTH)
                 continue;
 
-            const Vector2<int> topPos{attempt.pos.x, highest - 1};
+            // Skip ignored obstacle
+            if (cld.obstacleType > ObstacleType::NONE && (
+                m_obsFallthrough.isIgnoringObstacle(idx) ||
+                attempt.isIgnoringObstacle(idx) ||
+                cld.obstacleType >= ObstacleType::FLOOR && m_obsFallthrough.isIgnoringAllObstacles()))
+                continue;
 
+            const Vector2<int> topPos{attempt.pos.x, highest - 1};
             // Here and below +1 is added because slopes rely on floating point math and that work bad when getting onto the slope
             const bool upCondition = static_cast<float>(startingPos.y - topPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(startingPos.x - topPos.x);
 
-            // If we can't get on top of the obstacle, then we don't bother moving around it
-            if (cld.m_obstacleId && (m_obsFallthrough.checkIgnoringObstacle(cld.m_obstacleId) || !upCondition))
-                continue;
-
+            const Vector2<int> bottomPos{attempt.pos.x, cld.m_resolved.bottomY() + m_pushbox.m_size.y};
+            const bool downCondition = static_cast<float>(bottomPos.y - startingPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(startingPos.x - bottomPos.x);
+        
             valid = false;
             const auto rightmost = cld.m_resolved.getMostRightAt(newPb) + halfWidth;
-            const Vector2<int> bottomPos{attempt.pos.x, cld.m_resolved.bottomY() + m_pushbox.m_size.y};
             
             switch (attempt.attemptType)
             {
                 case AttemptType::BACKWARD:
                     if (rightmost <= xLoopbackLimit)
-                        attempts.emplace(Vector2{rightmost, attempt.pos.y}, true, true, AttemptType::BACKWARD);
-                    if (static_cast<float>(bottomPos.y - startingPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(startingPos.x - bottomPos.x))
-                        attempts.emplace(bottomPos, true, attempt.haltMovement, AttemptType::DOWNWARD);
+                        attempts.add({Vector2{rightmost, attempt.pos.y}, true, true, AttemptType::BACKWARD});
+                    if (cld.obstacleType > ObstacleType::MINIMAL)
+                        attempts.add({attempt.addIgnoredObstacle(idx)});
+                    if (downCondition)
+                        attempts.add({bottomPos, true, attempt.haltMovement, AttemptType::DOWNWARD});
                     if (upCondition)
-                        attempts.emplace(topPos, false, attempt.haltMovement, AttemptType::UPWARD);
+                        attempts.add({topPos, false, attempt.haltMovement, AttemptType::UPWARD});
                     break;
 
                 case AttemptType::UPWARD:
                     if (rightmost <= xLoopbackLimit)
-                        attempts.emplace(Vector2{rightmost, attempt.pos.y}, true, true, AttemptType::UPWARD);
+                        attempts.add({Vector2{rightmost, attempt.pos.y}, true, true, AttemptType::UPWARD});
+                    if (cld.obstacleType > ObstacleType::MINIMAL)
+                        attempts.add({attempt.addIgnoredObstacle(idx)});
                     if (upCondition)
-                        attempts.emplace(topPos, false, attempt.haltMovement, AttemptType::UPWARD);
+                        attempts.add({topPos, false, attempt.haltMovement, AttemptType::UPWARD});
                     break;
 
                 case AttemptType::DOWNWARD:
                     if (rightmost <= xLoopbackLimit)
-                        attempts.emplace(Vector2{rightmost, attempt.pos.y}, true, true, AttemptType::DOWNWARD);
-                    if (static_cast<float>(bottomPos.y - startingPos.y) <= 1.0f + VerticalOffsetLimitMul * static_cast<float>(startingPos.x - bottomPos.x))
-                        attempts.emplace(bottomPos, true, attempt.haltMovement, AttemptType::DOWNWARD);
+                        attempts.add({Vector2{rightmost, attempt.pos.y}, true, true, AttemptType::DOWNWARD});
+                    if (cld.obstacleType > ObstacleType::MINIMAL)
+                        attempts.add({attempt.addIgnoredObstacle(idx)});
+                    if (downCondition)
+                        attempts.add({bottomPos, true, attempt.haltMovement, AttemptType::DOWNWARD});
                     break;
             }
 
@@ -212,6 +289,8 @@ void PhysicsEntityHandler::moveLeft(const int offset_)
                 m_phys.velocity.x = 0;
                 m_phys.inertia.x = 0;
             }
+            for (const auto &ignored : attempt.ignored())
+                m_obsFallthrough.setIgnoreObstacle(ignored);
             return;
         }
     }
@@ -242,7 +321,9 @@ void PhysicsEntityHandler::moveDown(int offset_)
             if ((overlap & OverlapResult::OVERLAP_BOTH) != OverlapResult::OVERLAP_BOTH)
                 continue;
 
-            if (cld.m_obstacleId && m_obsFallthrough.checkIgnoringObstacle(cld.m_obstacleId))
+            if (cld.obstacleType > ObstacleType::NONE && (
+                m_obsFallthrough.isIgnoringObstacle(idx) ||
+                cld.obstacleType >= ObstacleType::FLOOR && m_obsFallthrough.isIgnoringAllObstacles()))
                 continue;
 
             m_phys.velocity.y = 0;
@@ -281,7 +362,9 @@ void PhysicsEntityHandler::moveUp(int offset_)
             if ((overlap & OverlapResult::OVERLAP_BOTH) != OverlapResult::OVERLAP_BOTH)
                 continue;
 
-            if (cld.m_obstacleId)
+            if (cld.obstacleType > ObstacleType::NONE && (
+                m_obsFallthrough.isIgnoringObstacle(idx) ||
+                cld.obstacleType >= ObstacleType::FLOOR))
                 continue;
 
             positionConfirmed = false;
@@ -333,15 +416,17 @@ void PhysicsEntityHandler::discoverPosition()
 
         if ((overlap & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
         {
-            if (cld.m_obstacleId)
-                m_obsFallthrough.setIgnoreObstacle(cld.m_obstacleId);
+            if (cld.obstacleType > ObstacleType::NONE)
+                m_obsFallthrough.setIgnoreObstacle(idx);
         }
         else
         {
             if (m_worldPos.ground.demand)
             {
                 if ((overlap & OverlapResult::OVERLAP_X) == OverlapResult::OVERLAP_X
-                    && (!cld.m_obstacleId || !m_obsFallthrough.checkIgnoringObstacle(cld.m_obstacleId)))
+                    && (cld.obstacleType == ObstacleType::NONE ||
+                        !m_obsFallthrough.isIgnoringObstacle(idx) &&
+                        (cld.obstacleType < ObstacleType::FLOOR || !m_obsFallthrough.isIgnoringAllObstacles())))
                 {
                     if (highest - 1 == m_trans.m_pos.y && (m_worldPos.ground.onGround == entt::null || m_worldPos.ground.onSlopeWithAngle != 0.0f))
                     {
@@ -353,14 +438,17 @@ void PhysicsEntityHandler::discoverPosition()
 
             if (m_worldPos.wall.demand)
             {
-                const Vector2<int> rightPoint{pushbox.getRightEdge() + 1, pushbox.getTopEdge() + pushbox.m_size.y / 2};
-                const Vector2<int> leftPoint{pushbox.getLeftEdge() - 1, pushbox.getTopEdge() + pushbox.m_size.y / 2};
+                if (cld.obstacleType < ObstacleType::FLOOR)
+                {
+                    const Vector2<int> rightPoint{pushbox.getRightEdge() + 1, pushbox.getTopEdge() + pushbox.m_size.y / 2};
+                    const Vector2<int> leftPoint{pushbox.getLeftEdge() - 1, pushbox.getTopEdge() + pushbox.m_size.y / 2};
 
-                if (cld.m_resolved.leftX() == rightPoint.x && cld.m_resolved.leftY() <= rightPoint.y && cld.m_resolved.bottomY() >= rightPoint.y)
-                    m_worldPos.wall.rightWall = idx;
+                    if (cld.m_resolved.leftX() == rightPoint.x && cld.m_resolved.leftY() <= rightPoint.y && cld.m_resolved.bottomY() >= rightPoint.y)
+                        m_worldPos.wall.rightWall = idx;
 
-                if (cld.m_resolved.rightX() == leftPoint.x && cld.m_resolved.rightY() <= leftPoint.y && cld.m_resolved.bottomY() >= leftPoint.y)
-                    m_worldPos.wall.leftWall = idx;
+                    if (cld.m_resolved.rightX() == leftPoint.x && cld.m_resolved.rightY() <= leftPoint.y && cld.m_resolved.bottomY() >= leftPoint.y)
+                        m_worldPos.wall.leftWall = idx;
+                }
             }
         }
     }
@@ -384,7 +472,12 @@ const SlopeCollider *PhysicsEntityHandler::getHighestVerticalMagnetCoord(int &co
     
     for (const auto [idx, areaCld_] : m_cld.each())
     {
-        if (!areaCld_.m_isEnabled || areaCld_.m_obstacleId && m_obsFallthrough.checkIgnoringObstacle(areaCld_.m_obstacleId))
+        if (!areaCld_.m_isEnabled)
+            continue;
+
+        if (areaCld_.obstacleType > ObstacleType::NONE && (
+            m_obsFallthrough.isIgnoringObstacle(idx) ||
+            areaCld_.obstacleType >= ObstacleType::FLOOR && m_obsFallthrough.isIgnoringAllObstacles()))
             continue;
 
         int height = 0;

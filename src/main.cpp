@@ -6,7 +6,7 @@
 //#define EXPERIMENTS
 
 #ifdef EXPERIMENTS
-#include "tests/NewStateMachine.hpp"  // IWYU pragma: keep
+#include "tests/PhysicsAttempts.hpp"  // IWYU pragma: keep
 #endif
 
 int main(int, char**)
@@ -15,8 +15,7 @@ int main(int, char**)
 
     try
     {
-        //testCompExtraction();
-        testNewStateMachine();
+        testPhysicsAttempts();
     }
     catch (std::exception &ex_)
     {
@@ -44,7 +43,7 @@ int main(int, char**)
         return 1;
     }
 
-    return 0;
-
 #endif
+
+    return 0;
 }

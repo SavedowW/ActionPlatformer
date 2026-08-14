@@ -17,11 +17,11 @@ void DynamicColliderSystem::updateMovingColliders()
     auto dynamics = m_reg.view<ComponentTransform, ComponentStaticCollider, MoveCollider2Points>();
     for (auto [idx, trans, scld, mvmnt] : dynamics.each())
     {
-        proceedMovingCollider(trans, scld, mvmnt);
+        proceedMovingCollider(idx, trans, scld, mvmnt);
     }
 }
 
-void DynamicColliderSystem::proceedMovingCollider(ComponentTransform &trans_, ComponentStaticCollider &scld_, MoveCollider2Points &twop_)
+void DynamicColliderSystem::proceedMovingCollider(entt::entity cid_, ComponentTransform &trans_, ComponentStaticCollider &scld_, MoveCollider2Points &twop_)
 {
     if (twop_.m_timer.isOver())
         return;
@@ -41,7 +41,7 @@ void DynamicColliderSystem::proceedMovingCollider(ComponentTransform &trans_, Co
     else
         newtl.y -= delta.y;
 
-    moveColliderAt(trans_, scld_, newtl);
+    moveColliderAt(cid_, trans_, scld_, newtl);
 }
 
 bool DynamicColliderSystem::isOverlappingWithDynamic(const SlopeCollider &cld_)
@@ -59,7 +59,7 @@ bool DynamicColliderSystem::isOverlappingWithDynamic(const SlopeCollider &cld_)
     return false;
 }
 
-bool DynamicColliderSystem::isObstacleOverlappingWithDynamic(const SlopeCollider &cld_, int obstacleId_)
+bool DynamicColliderSystem::isObstacleOverlappingWithDynamic(entt::entity cid_, const SlopeCollider &cld_, int obstacleId_)
 {
     const auto dynamics = m_reg.view<ComponentTransform, ComponentPhysical>();
     for (const auto [idx, trans, phys] : dynamics.each())
@@ -72,7 +72,7 @@ bool DynamicColliderSystem::isObstacleOverlappingWithDynamic(const SlopeCollider
             if (!m_reg.all_of<ComponentObstacleFallthrough>(idx))
                 return true;
 
-            m_reg.get<ComponentObstacleFallthrough>(idx).setIgnoreObstacle(obstacleId_);
+            m_reg.get<ComponentObstacleFallthrough>(idx).setIgnoreObstacle(cid_);
         }
     }
 
@@ -108,7 +108,7 @@ void DynamicColliderSystem::solveRouteIter(MoveCollider2Points &m2p_, ColliderRo
 /**
  *  TODO: rework, its impossible to deal with
  */
-void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, ComponentStaticCollider &scld_, const Vector2<int> &newtl_)
+void DynamicColliderSystem::moveColliderAt(entt::entity cid_, ComponentTransform &trans_, ComponentStaticCollider &scld_, const Vector2<int> &newtl_)
 {
     const Vector2<float> offset = newtl_ - trans_.m_pos;
 
@@ -123,7 +123,7 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
     {
         ComponentObstacleFallthrough *fallthrough = nullptr;
 
-        if (scld_.m_obstacleId)
+        if (scld_.obstacleType > ObstacleType::NONE)
         {
             if (m_reg.all_of<ComponentObstacleFallthrough>(idx))
                 fallthrough = &m_reg.get<ComponentObstacleFallthrough>(idx);
@@ -176,9 +176,10 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                 // If was standing on top
                 if ((oldColres & OverlapResult::OVERLAP_X) == OverlapResult::OVERLAP_X && oldpos.y == oldHighest - 1)
                 {
-                    if (fallthrough && scld_.m_obstacleId && fallthrough->checkIgnoringObstacle(scld_.m_obstacleId))
+                    if (fallthrough && (scld_.obstacleType >= ObstacleType::FLOOR && fallthrough->isIgnoringAllObstacles() ||
+                        scld_.obstacleType >= ObstacleType::MINIMAL && fallthrough->isIgnoringObstacle(cid_)))
                     {
-                        fallthrough->setIgnoreObstacle(scld_.m_obstacleId);
+                        fallthrough->setIgnoreObstacle(cid_);
                         continue;
                     }
 
@@ -192,9 +193,9 @@ void DynamicColliderSystem::moveColliderAt(ComponentTransform &trans_, Component
                 // If was below and now overlaps
                 else if (collision && oldTop > scld_.m_resolved.bottomY())
                 {
-                    if (fallthrough && scld_.m_obstacleId)
+                    if (fallthrough && scld_.obstacleType >= ObstacleType::FLOOR)
                     {
-                        fallthrough->setIgnoreObstacle(scld_.m_obstacleId);
+                        fallthrough->setIgnoreObstacle(cid_);
                         continue;
                     }
 

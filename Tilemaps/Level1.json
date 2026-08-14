@@ -587,9 +587,9 @@
                  "opacity":1,
                  "properties":[
                         {
-                         "name":"ObstacleGroup",
-                         "type":"int",
-                         "value":1
+                         "name":"ObstacleType",
+                         "type":"string",
+                         "value":"FLOOR"
                         }],
                  "rotation":0,
                  "type":"",
@@ -790,9 +790,9 @@
                         }],
                  "properties":[
                         {
-                         "name":"ObstacleGroup",
-                         "type":"int",
-                         "value":1
+                         "name":"ObstacleType",
+                         "type":"string",
+                         "value":"FLOOR"
                         }],
                  "rotation":0,
                  "type":"",
@@ -821,9 +821,9 @@
                         }],
                  "properties":[
                         {
-                         "name":"ObstacleGroup",
-                         "type":"int",
-                         "value":2
+                         "name":"ObstacleType",
+                         "type":"string",
+                         "value":"FLOOR"
                         }],
                  "rotation":0,
                  "type":"",

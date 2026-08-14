@@ -80,7 +80,7 @@ void RenderSystem::draw() const
 
         for (const auto &[idx, scld] : viewColliders.each())
         {
-            if (scld.m_obstacleId)
+            if (scld.obstacleType > ObstacleType::NONE)
                 drawObstacle(scld);
             else
                 drawCollider(scld);

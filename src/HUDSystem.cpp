@@ -87,7 +87,7 @@ void HudSystem::drawPlayerDebug(entt::entity playerId_) const
 
     std::string ignoredObstacles;
     for (const auto &el : obsfall.m_ignoredObstacles)
-        ignoredObstacles += std::to_string(el) + " ";
+        ignoredObstacles += std::to_string(static_cast<uint32_t>(el)) + " ";
 
     //std::string cooldowns = "";
     //for (const auto &el : m_pc->m_cooldowns)

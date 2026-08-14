@@ -1,6 +1,7 @@
 #pragma once
 #include "ColliderRouting.h"
 #include "EnvironmentSystem.h"
+#include "Core/CoreComponents.h"
 #include "Core/NavGraph.h"
 #include "Core/Tileset.h"
 #include <entt/entt.hpp>
@@ -31,8 +32,8 @@ private:
         int m_priority;
     };
 
-    entt::entity addCollider(const SlopeCollider &worldCld_, int obstacleId_, const ColliderPointRouting &route_);
-    entt::entity addCollider(const SlopeCollider &worldCld_, int obstacleId_);
+    entt::entity addCollider(const SlopeCollider &worldCld_, ObstacleType obstacleType_, const ColliderPointRouting &route_);
+    entt::entity addCollider(const SlopeCollider &worldCld_, ObstacleType obstacleType_);
     static Traverse::TraitT lineToTraverse(const std::string &line_);
 
     void loadTileset(const std::filesystem::path &jsonLoc_, uint32_t firstgid_);

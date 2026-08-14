@@ -15,7 +15,7 @@
         1. [x] On state entry (for hard landing recovery)
         2. [x] On state update (for attack chain)
 2. [ ] Add collider traits to allow / disallow clinging
-3. [ ] Add obstacle traits to enable wall-only behavior
+3. [IN PROGRESS] Add obstacle traits to enable wall-only behavior
 4. [ ] Refactor platform movement logic
     1. [ ] Reuse proper object movement logic
     2. [ ] Make so that all moving platforms are clingable obstacles by default

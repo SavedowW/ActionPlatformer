@@ -92,9 +92,9 @@
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":352,
+                 "width":672,
                  "x":0,
-                 "y":272
+                 "y":160
                 }, 
                 {
                  "height":64,
@@ -106,7 +106,7 @@
                  "visible":true,
                  "width":144,
                  "x":128,
-                 "y":176
+                 "y":64
                 }, 
                 {
                  "height":64,
@@ -115,16 +115,118 @@
                  "opacity":1,
                  "properties":[
                         {
-                         "name":"ObstacleGroup",
-                         "type":"int",
-                         "value":1
+                         "name":"ObstacleType",
+                         "type":"string",
+                         "value":"FLOOR"
                         }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":144,
                  "x":128,
-                 "y":271
+                 "y":159
+                }, 
+                {
+                 "height":32,
+                 "id":6,
+                 "name":"",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"ObstacleType",
+                         "type":"string",
+                         "value":"FLOOR"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":64,
+                 "x":272,
+                 "y":64
+                }, 
+                {
+                 "height":64,
+                 "id":7,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":144,
+                 "x":336,
+                 "y":64
+                }, 
+                {
+                 "height":64,
+                 "id":8,
+                 "name":"",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"ObstacleType",
+                         "type":"string",
+                         "value":"FLOOR"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":64,
+                 "x":544,
+                 "y":64
+                }, 
+                {
+                 "height":32,
+                 "id":9,
+                 "name":"",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"ObstacleType",
+                         "type":"string",
+                         "value":"FLOOR"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":368,
+                 "y":128
+                }, 
+                {
+                 "height":16,
+                 "id":10,
+                 "name":"",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"ObstacleType",
+                         "type":"string",
+                         "value":"FLOOR"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":448,
+                 "y":136
+                }, 
+                {
+                 "height":64,
+                 "id":11,
+                 "name":"",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"ObstacleType",
+                         "type":"string",
+                         "value":"MINIMAL"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":64,
+                 "x":672,
+                 "y":64
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -147,8 +249,8 @@
                  "type":"SpawnPoint",
                  "visible":true,
                  "width":0,
-                 "x":48,
-                 "y":256
+                 "x":533,
+                 "y":144
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -157,7 +259,7 @@
          "y":0
         }],
  "nextlayerid":5,
- "nextobjectid":6,
+ "nextobjectid":12,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.2",

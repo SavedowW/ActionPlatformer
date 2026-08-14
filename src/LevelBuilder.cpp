@@ -128,11 +128,11 @@ void LevelBuilder::buildLevel(const std::string &mapDescr_, NavGraph &graph_, Co
     }
 }
 
-entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obstacleId_, const ColliderPointRouting &route_)
+entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, ObstacleType obstacleType_, const ColliderPointRouting &route_)
 {
     const auto newid = m_reg.create();
     const auto &tr = m_reg.emplace<ComponentTransform>(newid, worldCld_.topLeft(), Orientation::RIGHT);
-    m_reg.emplace<ComponentStaticCollider>(newid, ComponentStaticCollider(tr.m_pos, worldCld_.movedBy(-worldCld_.topLeft()), obstacleId_));
+    m_reg.emplace<ComponentStaticCollider>(newid, ComponentStaticCollider(tr.m_pos, worldCld_.movedBy(-worldCld_.topLeft()), obstacleType_));
 
     m_reg.emplace<MoveCollider2Points>(newid, route_.m_origin.m_pos - worldCld_.topLeft());
     m_reg.emplace<ColliderRoutingIterator>(newid, route_);
@@ -140,11 +140,11 @@ entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obsta
     return newid;
 }
 
-entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, int obstacleId_)
+entt::entity LevelBuilder::addCollider(const SlopeCollider &worldCld_, ObstacleType obstacleType_)
 {
     const auto newid = m_reg.create();
     const auto &tr = m_reg.emplace<ComponentTransform>(newid, worldCld_.topLeft(), Orientation::RIGHT);
-    m_reg.emplace<ComponentStaticCollider>(newid, ComponentStaticCollider(tr.m_pos, worldCld_.movedBy(-worldCld_.topLeft()), obstacleId_));
+    m_reg.emplace<ComponentStaticCollider>(newid, ComponentStaticCollider(tr.m_pos, worldCld_.movedBy(-worldCld_.topLeft()), obstacleType_));
     
     return newid;
 }
@@ -345,7 +345,7 @@ void LevelBuilder::loadCollisionLayer(const nlohmann::json &json_, const Collide
     {
         const int objectId = cld.at("id");
         SlopeCollider scld;
-        int obstacleId = 0;
+        ObstacleType obstacleType = ObstacleType::NONE;
         auto route = rtCollection_.end();
 
         const Vector2<int> tl{
@@ -398,8 +398,8 @@ void LevelBuilder::loadCollisionLayer(const nlohmann::json &json_, const Collide
             {
                 const std::string name = prop.at("name");
 
-                if (name == "ObstacleGroup")
-                    obstacleId = prop.at("value");
+                if (name == "ObstacleType")
+                    obstacleType = deserialize<ObstacleType>(prop.at("value"));
                 else if (name == "RoutingStart")
                     route = rtCollection_.find(prop.at("value"));
                 else
@@ -407,7 +407,7 @@ void LevelBuilder::loadCollisionLayer(const nlohmann::json &json_, const Collide
             }
         }
 
-        m_colliderIds[objectId] = (route != rtCollection_.end() ? addCollider(scld, obstacleId, route->second) : addCollider(scld, obstacleId));
+        m_colliderIds[objectId] = (route != rtCollection_.end() ? addCollider(scld, obstacleType, route->second) : addCollider(scld, obstacleType));
     }
 }
 
