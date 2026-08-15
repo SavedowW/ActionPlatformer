@@ -13,7 +13,8 @@ PhysicsEntityHandler::PhysicsEntityHandler(const CollidersView &cld_, ComponentT
     m_phys{phys_},
     m_pushbox{phys_.pushbox},
     m_obsFallthrough{obsFallthrough_},
-    m_worldPos{worldPos_}
+    m_worldPos{worldPos_},
+    m_initialPos{trans_.m_pos}
 {  
 }
 
@@ -404,6 +405,8 @@ void PhysicsEntityHandler::discoverPosition()
 
     m_obsFallthrough.m_ignoredObstacles.clear();
 
+    const auto realOffset = m_trans.m_pos - m_initialPos;
+
     const auto pushbox = m_pushbox + m_trans.m_pos;
 
     for (const auto& [idx, cld] : m_cld.each())
@@ -430,8 +433,15 @@ void PhysicsEntityHandler::discoverPosition()
                 {
                     if (highest - 1 == m_trans.m_pos.y && (m_worldPos.ground.onGround == entt::null || m_worldPos.ground.onSlopeWithAngle != 0.0f))
                     {
-                        m_worldPos.ground.onGround = idx;
-                        m_worldPos.ground.onSlopeWithAngle = cld.m_resolved.topAngleCoef();
+                        if (realOffset.y >= 0 || 
+                            realOffset.x > 0 && static_cast<float>(realOffset.y) / static_cast<float>(realOffset.x) > cld.m_resolved.topAngleCoef() ||
+                            realOffset.x < 0 && static_cast<float>(realOffset.y) / static_cast<float>(realOffset.x) < cld.m_resolved.topAngleCoef())
+                        {
+                            m_worldPos.ground.onGround = idx;
+                            m_worldPos.ground.onSlopeWithAngle = cld.m_resolved.topAngleCoef();
+                        }
+                        else
+                            LOG_WARNING("Grounded but condition is unfulfilled");
                     }
                 }
             }

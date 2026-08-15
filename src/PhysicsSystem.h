@@ -102,6 +102,7 @@ private:
     const Collider m_pushbox;
     ComponentObstacleFallthrough &m_obsFallthrough;
     WorldPosition &m_worldPos;
+    const Vector2<int> m_initialPos;
 
     bool m_requireMagnet = false;
 

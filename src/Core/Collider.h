@@ -54,5 +54,7 @@ private:
     int m_bottomHeight = 0;
     int m_lowestSlopePoint = 0;
     int m_highestSlopePoint = 0;
+
+    // Left-to-right rising slope is negative, opposite is negative, flat is 0
     float m_topAngleCoef = 0.0f;
 };

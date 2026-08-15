@@ -33,3 +33,4 @@
 ### 2. Maybe later
 
 1. [x] Fix infinite loop when moving non-obstacle collider pushes moving character into the ground (should be an impossible situation in-game due to a 1.3)
+2. [ ] Make it so that the character can only turn grounded if they weren't moving upwards or were but turned grounded by moving horizontally (instead of slope angle based condition)

@@ -32,8 +32,8 @@ int main(int, char**)
         LOG_INFO(Filesystem::getRootDirectory());
         auto &app = Application::instance();
         
-        app.makeLevel<BattleLevel>("Tilemaps/Level1.json");
         app.makeLevel<BattleLevel>("Tilemaps/LevelTest.json");
+        app.makeLevel<BattleLevel>("Tilemaps/Level1.json");
         app.run();
     }
     catch (std::exception &ex_)
