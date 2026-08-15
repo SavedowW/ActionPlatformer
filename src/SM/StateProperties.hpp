@@ -364,6 +364,19 @@ void StateProperties<StateIDT, ViewT>::Pipe::ConvertToInertia::operator()(const 
 
 
 template<typename StateIDT, typename ViewT>
+StateProperties<StateIDT, ViewT>::Pipe::MultiplyInertia::MultiplyInertia(const Vector2<float> &multiplier_) :
+    m_multiplier{multiplier_}
+{}
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Pipe::MultiplyInertia::operator()(const ViewT &view_, const SM::TransitionData<StateIDT>&) const
+{
+    auto &physical = view_.template get<ComponentPhysical>();
+    physical.inertia = physical.inertia.mulComponents(m_multiplier);
+}
+
+
+template<typename StateIDT, typename ViewT>
 StateProperties<StateIDT, ViewT>::Pipe::SetInertiaApplicationMultiplier::SetInertiaApplicationMultiplier(const Vector2<float> &mul_) :
     m_mul{mul_}
 {}

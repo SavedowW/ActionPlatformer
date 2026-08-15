@@ -262,6 +262,7 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera
                                 PlayerStateProperties::Pipe::HaltSideDownwardMomentum{},
                                 PlayerStateProperties::Pipe::SetGravity{{0.0f, 0.5f}},
                                 PlayerStateProperties::Pipe::SetDrag{{1.0f, 0.2f}},
+                                PlayerStateProperties::Pipe::MultiplyInertia{{0.0f, 0.5f}},
                                 PlayerStateProperties::Pipe::ConvertToInertia{true, false})
                 .done()
     ));
@@ -558,7 +559,8 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera
             PlayerMake::RulePipe{}
                 .setDefaultPipe(PlayerStateProperties::Pipe::TestFallthrough{},
                                 PlayerStateProperties::Pipe::SetDemandWall{true},
-                                PlayerStateProperties::Pipe::SetGravity{{0.0f, 0.5f}},
+                                PlayerStateProperties::Pipe::SetGravity{{.0f, .5f}},
+                                PlayerStateProperties::Pipe::SetDrag{{.0f, .0f}},
                                 PlayerStateProperties::Pipe::SetAnimation{m_animManager.getAnimID("Char1/float")},
                                 PlayerStateProperties::Pipe::ConvertToInertia{false, true})
                 .done()

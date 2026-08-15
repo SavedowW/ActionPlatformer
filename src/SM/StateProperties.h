@@ -287,6 +287,17 @@ struct StateProperties
             const bool m_includeEnforced;
         };
 
+        class MultiplyInertia
+        {
+        public:
+            MultiplyInertia(const Vector2<float> &multiplier_);
+
+            void operator()(const ViewT &view_, const SM::TransitionData<StateIDT>&) const;
+        
+        private:
+            Vector2<float> m_multiplier;
+        };
+
         class SetInertiaApplicationMultiplier
         {
         public:
