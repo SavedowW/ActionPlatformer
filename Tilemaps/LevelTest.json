@@ -274,7 +274,7 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":768,
+                 "x":736,
                  "y":304
                 }, 
                 {
@@ -288,6 +288,92 @@
                  "width":352,
                  "x":672,
                  "y":304
+                }, 
+                {
+                 "height":0,
+                 "id":15,
+                 "name":"",
+                 "opacity":1,
+                 "polygon":[
+                        {
+                         "x":-16,
+                         "y":-64
+                        }, 
+                        {
+                         "x":-80,
+                         "y":0
+                        }, 
+                        {
+                         "x":-16,
+                         "y":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":896,
+                 "y":304
+                }, 
+                {
+                 "height":0,
+                 "id":16,
+                 "name":"",
+                 "opacity":1,
+                 "polygon":[
+                        {
+                         "x":-16,
+                         "y":-64
+                        }, 
+                        {
+                         "x":-80,
+                         "y":0
+                        }, 
+                        {
+                         "x":-16,
+                         "y":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":1024,
+                 "y":304
+                }, 
+                {
+                 "height":16,
+                 "id":17,
+                 "name":"",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"ObstacleType",
+                         "type":"string",
+                         "value":"FLOOR"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":96,
+                 "x":800,
+                 "y":224
+                }, 
+                {
+                 "height":16,
+                 "id":18,
+                 "name":"",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"ObstacleType",
+                         "type":"string",
+                         "value":"MINIMAL"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":96,
+                 "x":928,
+                 "y":224
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -310,7 +396,7 @@
                  "type":"SpawnPoint",
                  "visible":true,
                  "width":0,
-                 "x":533,
+                 "x":64,
                  "y":144
                 }],
          "opacity":1,
@@ -320,7 +406,7 @@
          "y":0
         }],
  "nextlayerid":5,
- "nextobjectid":15,
+ "nextobjectid":19,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.2",

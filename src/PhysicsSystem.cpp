@@ -434,8 +434,8 @@ void PhysicsEntityHandler::discoverPosition()
                     if (highest - 1 == m_trans.m_pos.y && (m_worldPos.ground.onGround == entt::null || m_worldPos.ground.onSlopeWithAngle != 0.0f))
                     {
                         if (realOffset.y >= 0 || 
-                            realOffset.x > 0 && static_cast<float>(realOffset.y) / static_cast<float>(realOffset.x) > cld.m_resolved.topAngleCoef() ||
-                            realOffset.x < 0 && static_cast<float>(realOffset.y) / static_cast<float>(realOffset.x) < cld.m_resolved.topAngleCoef())
+                            realOffset.x > 0 && static_cast<float>(realOffset.y) / static_cast<float>(realOffset.x + 1) > cld.m_resolved.topAngleCoef() ||
+                            realOffset.x < 0 && static_cast<float>(realOffset.y) / static_cast<float>(realOffset.x - 1) < cld.m_resolved.topAngleCoef())
                         {
                             m_worldPos.ground.onGround = idx;
                             m_worldPos.ground.onSlopeWithAngle = cld.m_resolved.topAngleCoef();

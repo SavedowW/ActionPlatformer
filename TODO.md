@@ -15,7 +15,7 @@
         1. [x] On state entry (for hard landing recovery)
         2. [x] On state update (for attack chain)
 2. [ ] Add collider traits to allow / disallow clinging
-3. [IN PROGRESS] Add obstacle traits to enable wall-only behavior
+3. [x] Add obstacle traits to enable wall-only behavior
 4. [ ] Refactor platform movement logic
     1. [ ] Reuse proper object movement logic
     2. [ ] Make so that all moving platforms are clingable obstacles by default
@@ -34,3 +34,4 @@
 
 1. [x] Fix infinite loop when moving non-obstacle collider pushes moving character into the ground (should be an impossible situation in-game due to a 1.3)
 2. [ ] Make it so that the character can only turn grounded if they weren't moving upwards or were but turned grounded by moving horizontally (instead of slope angle based condition)
+3. [ ] Fix awkward behavior when you move up the slope until hitting collider from above and end up 1 pixel below it until releasing forward input

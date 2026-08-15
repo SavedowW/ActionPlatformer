@@ -12,6 +12,7 @@
 #include <fstream>
 #include <limits>
 #include <sstream>
+#include <stdexcept>
 
 template <>
 void LevelBuilder::makeObject<GrassTopComp>(const Vector2<int> &pos_, bool visible_, int layer_)
@@ -357,30 +358,42 @@ void LevelBuilder::loadCollisionLayer(const nlohmann::json &json_, const Collide
         {
             int minx = std::numeric_limits<int>::max();
             int maxx = std::numeric_limits<int>::min();
+            std::vector<Vector2<int>> vertices;
+            for (const auto &vertex : cld.at("polygon"))
+            {
+                const auto x = vertices.emplace_back(tl.add<int>(vertex.at("x"), vertex.at("y"))).x;
+                minx = std::min(minx, x);
+                maxx = std::max(maxx, x);
+            }
+
+            if (minx == maxx)
+                throw std::runtime_error("Collider has width of 0");
 
             int miny_at_minx = std::numeric_limits<int>::max();
             int miny_at_maxx = std::numeric_limits<int>::max();
+            int maxy_at_minx = std::numeric_limits<int>::min();
+            int maxy_at_maxx = std::numeric_limits<int>::min();
 
-            int maxy = std::numeric_limits<int>::min();
-
-            for (const auto &vertex : cld.at("polygon"))
+            for (const auto &vertex : vertices)
             {
-                const Vector2<int> vvx = tl.add<int>(vertex.at("x"), vertex.at("y"));
-
-                minx = std::min(minx, vvx.x);
-                maxx = std::max(maxx, vvx.x);
-
-                maxy = std::max(maxy, vvx.y);
-
-                if (vvx.x == minx)
-                    miny_at_minx = std::min(miny_at_minx, vvx.y);
-                else if (vvx.x == maxx)
-                    miny_at_maxx = std::min(miny_at_maxx, vvx.y);
+                if (vertex.x == minx)
+                {
+                    miny_at_minx = std::min(miny_at_minx, vertex.y);
+                    maxy_at_minx = std::max(maxy_at_minx, vertex.y);
+                }
+                else if (vertex.x == maxx)
+                {
+                    miny_at_maxx = std::min(miny_at_maxx, vertex.y);
+                    maxy_at_maxx = std::max(maxy_at_maxx, vertex.y);
+                }
                 else
-                    throw std::logic_error("Failed to read polygon vertex for collider: x coord is not min or max");
+                    throw std::runtime_error(std::format("Collider has vertex at {} which isn't min ({}) or max ({})", vertex.x, minx, maxx));
             }
 
-            scld.set({minx, miny_at_minx}, {maxx - 1, miny_at_maxx}, maxy - 1);
+            if (maxy_at_minx != maxy_at_maxx)
+                throw std::runtime_error(std::format("Collider has different maxY at minx and maxx - {} and {}", maxy_at_minx, maxy_at_maxx));
+
+            scld.set({minx, miny_at_minx}, {maxx - 1, miny_at_maxx}, maxy_at_minx - 1);
         }
         else
         {
