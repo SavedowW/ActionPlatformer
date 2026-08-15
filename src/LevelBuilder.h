@@ -1,5 +1,5 @@
 #pragma once
-#include "ColliderRouting.h"
+#include "Physics/ColliderRouting.h"
 #include "EnvironmentSystem.h"
 #include "Core/CoreComponents.h"
 #include "Core/NavGraph.h"

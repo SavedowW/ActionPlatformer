@@ -10,15 +10,11 @@ void DynamicColliderSystem::updateMovingColliders()
 {
     auto routes = m_reg.view<MoveCollider2Points, ColliderRoutingIterator>();
     for (auto [idx, m2p, routing] : routes.each())
-    {
         solveRouteIter(m2p, routing);
-    }
 
     auto dynamics = m_reg.view<ComponentTransform, ComponentStaticCollider, MoveCollider2Points>();
     for (auto [idx, trans, scld, mvmnt] : dynamics.each())
-    {
         proceedMovingCollider(idx, trans, scld, mvmnt);
-    }
 }
 
 void DynamicColliderSystem::proceedMovingCollider(entt::entity cid_, ComponentTransform &trans_, ComponentStaticCollider &scld_, MoveCollider2Points &twop_)

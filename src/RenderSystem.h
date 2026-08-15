@@ -3,7 +3,7 @@
 #include "Core/InputSystem.h"
 #include "Core/CoreComponents.h"
 #include "Core/CameraFocusArea.h"
-#include "ColliderRouting.h"
+#include "Physics/ColliderRouting.h"
 #include <entt/entt.hpp>
 
 struct RenderSystem : public InputReactor

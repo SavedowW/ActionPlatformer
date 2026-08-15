@@ -8,7 +8,6 @@ set(SRC_FILES
 main.cpp
 BattleLevel.cpp
 LevelBuilder.cpp
-PhysicsSystem.cpp
 PlayerSystem.cpp
 RenderSystem.cpp
 CameraSystem.cpp
@@ -16,14 +15,15 @@ HUDSystem.cpp
 InputHandlingSystem.cpp
 EnemySystem.cpp
 AISystem.cpp
-DynamicColliderSystem.cpp
 ParticleSystem.cpp
 Hit.cpp
 BattleSystem.cpp
 ChatBox.cpp
-ColliderRouting.cpp
 EnvironmentSystem.cpp
 EnvComponents.cpp
+Physics/DynamicColliderSystem.cpp
+Physics/ColliderRouting.cpp
+Physics/PhysicsSystem.cpp
 )
 
 set(INCLUDE_DIRS

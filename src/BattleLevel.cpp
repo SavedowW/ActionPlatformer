@@ -39,7 +39,7 @@ BattleLevel::BattleLevel(FPSUtility &fpsUtility_, std::string filename_) :
     m_colsys(m_registry),
     m_partsys(m_registry),
     m_battlesys(m_registry, m_camera),
-    m_chatBoxSys(m_registry, m_camera, m_inputsys),
+    m_chatBoxSys(m_registry, m_camera),
     m_envSystem(m_registry),
     m_lvlBuilder(m_registry)
 {

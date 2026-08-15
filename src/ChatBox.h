@@ -210,7 +210,7 @@ private:
 class ChatboxSystem : public InputReactor
 {
 public:
-    ChatboxSystem(entt::registry &reg_, Camera &camera_, InputHandlingSystem &inputSystem_);
+    ChatboxSystem(entt::registry &reg_, Camera &camera_);
     
     void addSequence(ChatMessageSequence &&seq_);
     void update();
@@ -221,7 +221,6 @@ private:
     entt::registry &m_reg;
     Camera &m_camera;
     Renderer &m_renderer;
-    InputHandlingSystem &m_inputSystem;
     std::vector<ChatMessageSequence> m_sequences;
 
     std::shared_ptr<Texture> m_chatboxEdge;

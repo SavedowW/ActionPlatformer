@@ -28,6 +28,9 @@
 10. [x] Fix bug when the neutral jump after chain attack faces the opposite direction
 11. [x] Delete world component
 12. [ ] Fix broken focus area - camera doesnt reach it fully
+13. [ ] Rework environment system to use an actual state machine
+14. [ ] Remove `EntityAnywhere`
+    - Needs 1.13
 
 
 ### 2. Maybe later

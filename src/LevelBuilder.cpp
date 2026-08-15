@@ -414,7 +414,11 @@ void LevelBuilder::loadCollisionLayer(const nlohmann::json &json_, const Collide
                 if (name == "ObstacleType")
                     obstacleType = deserialize<ObstacleType>(prop.at("value"));
                 else if (name == "RoutingStart")
+                {
                     route = rtCollection_.find(prop.at("value"));
+                    if (obstacleType == ObstacleType::NONE)
+                        obstacleType = ObstacleType::MINIMAL;
+                }
                 else
                     LOG_ERROR("Unexpected property \"{}\"", name);
             }

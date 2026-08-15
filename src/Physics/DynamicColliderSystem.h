@@ -8,14 +8,14 @@ struct DynamicColliderSystem
     DynamicColliderSystem(entt::registry &reg_);
 
     void updateMovingColliders();
+    
+private:
+    void solveRouteIter(MoveCollider2Points &m2p_, ColliderRoutingIterator &iter_);
 
     void proceedMovingCollider(entt::entity cid_, ComponentTransform &trans_, ComponentStaticCollider &scld_, MoveCollider2Points &twop_);
     
     bool isOverlappingWithDynamic(const SlopeCollider &cld_);
     bool isObstacleOverlappingWithDynamic(entt::entity cid_, const SlopeCollider &cld_, int obstacleId_);
-    
-private:
-    void solveRouteIter(MoveCollider2Points &m2p_, ColliderRoutingIterator &iter_);
 
     /**
      *  cid_ - collider ID

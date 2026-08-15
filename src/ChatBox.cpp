@@ -578,11 +578,10 @@ void SequenceRenderer::drawMessageImpl(const ChatMessage &msg_) const
 }
 
 
-ChatboxSystem::ChatboxSystem(entt::registry &reg_, Camera &camera_, InputHandlingSystem &inputSystem_) :
+ChatboxSystem::ChatboxSystem(entt::registry &reg_, Camera &camera_) :
     m_reg(reg_),
     m_camera(camera_),
-    m_renderer(Application::instance().m_renderer),
-    m_inputSystem(inputSystem_)
+    m_renderer(Application::instance().m_renderer)
 {
     subscribe(HUD_EVENTS::PROCEED);
     setInputEnabled();
