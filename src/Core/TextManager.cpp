@@ -2,7 +2,6 @@
 #include "TextManager.h"
 #include "FilesystemUtils.h"
 #include "Logger.hpp"  // IWYU pragma: keep
-#include "SDLWrappers.h"
 
 namespace fonts
 {

@@ -1,7 +1,6 @@
 #include "PhysicsSystem.h"
 #include "Core/CoreComponents.h"
 #include "Core/Profile.h"
-#include <stack>
 #include <stdexcept>
 
 const float PhysicsEntityHandler::VerticalOffsetLimitMul = 1.3f;

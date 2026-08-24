@@ -3,9 +3,9 @@
 #include "utf8.h"
 #include "Renderer.h"
 #include "Vector2.hpp"
-#include <SDL3_ttf/SDL_ttf.h>
 #include <vector>
 #include <array>
+#include <memory>
 
 namespace fonts
 {

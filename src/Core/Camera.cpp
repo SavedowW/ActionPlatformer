@@ -99,7 +99,7 @@ void Camera::smoothScaleTowards(const float tarScale_, float pow_, float divider
         sign = -1; 
     delta = abs(delta);
 
-    const float offsetLen = sign * std::min(
+    const float offsetLen = sign * std::min<float>(
         pow(delta, pow_) / divider_,
         delta
     );

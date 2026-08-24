@@ -1,7 +1,6 @@
 #include "PlayerSystem.h"
 #include "Hit.h"
 #include "ParticleSystem.h"
-#include "PlayableCharacter.h"
 #include "SM/Builder.hpp"  // IWYU pragma: keep
 #include "SM/StateProperties.hpp"  // IWYU pragma: keep
 #include "Core/Application.h"

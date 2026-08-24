@@ -1,6 +1,7 @@
 #pragma once
 #include "Core/CoreComponents.h"
 #include <entt/entt.hpp>
+#include <stack>
 
 using CollidersView = decltype(entt::registry{}.view<ComponentStaticCollider>());
 
