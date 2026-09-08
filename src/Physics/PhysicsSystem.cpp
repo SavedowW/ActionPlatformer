@@ -566,16 +566,16 @@ void PhysicsSystem::proceedEntity(const CollidersView &clds_, ComponentTransform
 
     if (phys_.inertia.x != 0)
     {
-        auto absInertia = abs(phys_.inertia.x);
-        const auto m_inertiaSign = utils::signof(phys_.inertia.x / abs(phys_.inertia.x));
+        auto absInertia = std::abs(phys_.inertia.x);
+        const auto m_inertiaSign = utils::signof(phys_.inertia.x / std::abs(phys_.inertia.x));
         absInertia = std::max(absInertia - phys_.drag.x, 0.0f);
         phys_.inertia.x = m_inertiaSign * absInertia;
     }
 
     if (phys_.inertia.y != 0)
     {
-        auto absInertia = abs(phys_.inertia.y);
-        const auto m_inertiaSign = utils::signof(phys_.inertia.y / abs(phys_.inertia.y));
+        auto absInertia = std::abs(phys_.inertia.y);
+        const auto m_inertiaSign = utils::signof(phys_.inertia.y / std::abs(phys_.inertia.y));
         absInertia = std::max(absInertia - phys_.drag.y, 0.0f);
         phys_.inertia.y = m_inertiaSign * absInertia;
     }

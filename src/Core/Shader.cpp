@@ -1,4 +1,5 @@
 #include "Shader.hpp"
+#include "Logger.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>

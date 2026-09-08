@@ -14,16 +14,6 @@ SDLCore::SDLCore()
     if (!SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMEPAD))
         throw std::runtime_error(std::string("SDL initialization error: ") + SDL_GetError());
 
-    if (!SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 4 ))
-        throw std::runtime_error(std::string("Error setting SDL_GL_CONTEXT_MAJOR_VERSION: ") + SDL_GetError());
-
-    if (!SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 3 ))
-        throw std::runtime_error(std::string("Error setting SDL_GL_CONTEXT_MAJOR_VERSION: ") + SDL_GetError());
-
-    if (!SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE ))
-        throw std::runtime_error(std::string("Error setting SDL_GL_CONTEXT_PROFILE_MASK: ") + SDL_GetError());
-
-
     if (!TTF_Init())
         throw std::runtime_error(std::string("TTF initialization error: ") + SDL_GetError());
 

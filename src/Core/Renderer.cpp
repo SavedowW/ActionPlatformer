@@ -9,9 +9,17 @@
 #include <array>
 
 Renderer::Renderer(const Window &window_) :
-    m_window(window_),
-    m_context(SDL_GL_CreateContext( window_.getWindow() )) // SDL_GL_DestroyContext()
+    m_window(window_)
 {
+    // NOTE: strict limitation due to the `glCopyImageSubData` usage
+    if (!SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 4 ))
+        throw std::runtime_error(std::string("Error setting SDL_GL_CONTEXT_MAJOR_VERSION: ") + SDL_GetError());
+    if (!SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 3 ))
+        throw std::runtime_error(std::string("Error setting SDL_GL_CONTEXT_MAJOR_VERSION: ") + SDL_GetError());
+    if (!SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE ))
+        throw std::runtime_error(std::string("Error setting SDL_GL_CONTEXT_PROFILE_MASK: ") + SDL_GetError());
+
+    m_context = SDL_GL_CreateContext( window_.getWindow() ); // SDL_GL_DestroyContext()
     if (!m_context)
         throw std::runtime_error(std::format("Failed to initialize context: {}", SDL_GetError()));
 
@@ -22,14 +30,14 @@ Renderer::Renderer(const Window &window_) :
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Shaders
-    m_rectShader.load(Filesystem::getRootDirectory() + "/src/core/Shader/Rect.vert", Filesystem::getRootDirectory() + "/src/core/Shader/Rect.frag");
-    m_screenShader.load(Filesystem::getRootDirectory() + "/src/core/Shader/Screen.vert", Filesystem::getRootDirectory() + "/src/core/Shader/Screen.frag");
-    m_spriteShader.load(Filesystem::getRootDirectory() + "/src/core/Shader/Sprite.vert", Filesystem::getRootDirectory() + "/src/core/Shader/Sprite.frag");
-    m_spriteShaderFlash.load(Filesystem::getRootDirectory() + "/src/core/Shader/Sprite.vert", Filesystem::getRootDirectory() + "/src/core/Shader/SpriteFlash.frag");
-    m_spriteShaderRotate.load(Filesystem::getRootDirectory() + "/src/core/Shader/SpriteRotate.vert", Filesystem::getRootDirectory() + "/src/core/Shader/Sprite.frag");
-    m_spriteOutlinedShader.load(Filesystem::getRootDirectory() + "/src/core/Shader/Sprite.vert", Filesystem::getRootDirectory() + "/src/core/Shader/SpriteOutlined.frag");
-    m_tileShader.load(Filesystem::getRootDirectory() + "/src/core/Shader/Tilemap.vert", Filesystem::getRootDirectory() + "/src/core/Shader/Sprite.frag");
-    m_circleShader.load(Filesystem::getRootDirectory() + "/src/core/Shader/Rect.vert", Filesystem::getRootDirectory() + "/src/core/Shader/Circle.frag");
+    m_rectShader.load(Filesystem::getRootDirectory() + "src/Core/Shader/Rect.vert", Filesystem::getRootDirectory() + "src/Core/Shader/Rect.frag");
+    m_screenShader.load(Filesystem::getRootDirectory() + "src/Core/Shader/Screen.vert", Filesystem::getRootDirectory() + "src/Core/Shader/Screen.frag");
+    m_spriteShader.load(Filesystem::getRootDirectory() + "src/Core/Shader/Sprite.vert", Filesystem::getRootDirectory() + "src/Core/Shader/Sprite.frag");
+    m_spriteShaderFlash.load(Filesystem::getRootDirectory() + "src/Core/Shader/Sprite.vert", Filesystem::getRootDirectory() + "src/Core/Shader/SpriteFlash.frag");
+    m_spriteShaderRotate.load(Filesystem::getRootDirectory() + "src/Core/Shader/SpriteRotate.vert", Filesystem::getRootDirectory() + "src/Core/Shader/Sprite.frag");
+    m_spriteOutlinedShader.load(Filesystem::getRootDirectory() + "src/Core/Shader/Sprite.vert", Filesystem::getRootDirectory() + "src/Core/Shader/SpriteOutlined.frag");
+    m_tileShader.load(Filesystem::getRootDirectory() + "src/Core/Shader/Tilemap.vert", Filesystem::getRootDirectory() + "src/Core/Shader/Sprite.frag");
+    m_circleShader.load(Filesystem::getRootDirectory() + "src/Core/Shader/Rect.vert", Filesystem::getRootDirectory() + "src/Core/Shader/Circle.frag");
 
     unsigned int rectVBO = 0;
     std::array<uint32_t, 6> rectVertices { // TL, TR, BR, BL

@@ -1,6 +1,6 @@
 #pragma once
 #include "Timer.h"
-#include "Logger.h" // IWYU pragma: keep
+#include "Logger.hpp" // IWYU pragma: keep
 #include <vector>
 
 //#define DUMP_PROFILE_CONSOLE

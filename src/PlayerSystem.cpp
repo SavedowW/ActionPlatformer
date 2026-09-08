@@ -572,7 +572,6 @@ void PlayerSystem::createPlayer()
         m_reg.destroy(m_playerId);
 
     m_playerId = m_reg.create();
-    m_reg.emplace<ComponentName>(m_playerId, "Player");
 
     auto &trans = m_reg.emplace<ComponentTransform>(m_playerId);
     

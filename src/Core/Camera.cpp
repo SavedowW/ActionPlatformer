@@ -63,22 +63,22 @@ void Camera::smoothMoveAxisTowards(const Vector2<int> &pos_, const Vector2<float
 {
     const auto realTar = getCamPositionInBoundaries(pos_);
     Vector2<float> deltaVec = (realTar - m_pos).mulComponents(deltaMul_);
-    if (abs(deltaVec.x) < mindir_.x)
+    if (std::abs(deltaVec.x) < mindir_.x)
         deltaVec.x = 0.f;
-    if (abs(deltaVec.y) < mindir_.y)
+    if (std::abs(deltaVec.y) < mindir_.y)
         deltaVec.y = 0.f;
 
     if (deltaVec.x == 0 && deltaVec.y == 0)
         return;
 
     const Vector2 realAbsOffset{
-        abs(deltaVec.x) / dividers_.x, 
-        abs(deltaVec.y) / dividers_.y
+        std::abs(deltaVec.x) / dividers_.x, 
+        std::abs(deltaVec.y) / dividers_.y
     };
 
     const Vector2<float> offset{
-        utils::signof(deltaVec.x) * utils::clampMaxPriority<float>(realAbsOffset.x, 0.25f, abs(deltaVec.x)),
-        utils::signof(deltaVec.y) * utils::clampMaxPriority<float>(realAbsOffset.y, 0.25f, abs(deltaVec.y))
+        utils::signof(deltaVec.x) * utils::clampMaxPriority<float>(realAbsOffset.x, 0.25f, std::abs(deltaVec.x)),
+        utils::signof(deltaVec.y) * utils::clampMaxPriority<float>(realAbsOffset.y, 0.25f, std::abs(deltaVec.y))
     };
 
     setPos(m_pos + offset);
@@ -97,7 +97,7 @@ void Camera::smoothScaleTowards(const float tarScale_, float pow_, float divider
     float sign = 1;
     if (delta < 0)
         sign = -1; 
-    delta = abs(delta);
+    delta = std::abs(delta);
 
     const float offsetLen = sign * std::min<float>(
         pow(delta, pow_) / divider_,

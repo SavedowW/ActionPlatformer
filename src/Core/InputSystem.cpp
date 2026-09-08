@@ -89,7 +89,7 @@ void InputSystem::handleInput()
 
         case (SDL_EVENT_GAMEPAD_AXIS_MOTION):
         {
-            const Sint16 resolvedValue = abs(e.gaxis.value) > m_stickDeadzone ? e.gaxis.value : 0;
+            const Sint16 resolvedValue = std::abs(e.gaxis.value) > m_stickDeadzone ? e.gaxis.value : 0;
 
             auto lastValueRes = m_lastAxisValue.find(e.gaxis.axis);
             if (lastValueRes != m_lastAxisValue.end())

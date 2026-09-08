@@ -306,7 +306,7 @@ namespace utils
             return p2.length();
 
         Vector2<float> normal = Vector2{dir1.y, -dir1.x}.normalised();
-        return abs(normal.dot(p1));
+        return std::abs(normal.dot(p1));
     }
 }
 

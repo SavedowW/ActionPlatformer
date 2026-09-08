@@ -1,5 +1,4 @@
 #pragma once
-#include "Core/Logger.h"
 #include "SM/Builder.h"
 #include "SM/StateProperties.h"
 #include "SM/TransitionChecks.h"
@@ -41,7 +40,7 @@ SERIALIZE_ENUM(PlayerState, {
     ENUM_AUTO(PlayerState, AIR_ATTACK)
 })
 
-using PlayerView = ComponentsView<ComponentName, SM::StatePossessor<PlayerState>, ComponentTransform, ComponentPhysical,
+using PlayerView = ComponentsView<SM::StatePossessor<PlayerState>, ComponentTransform, ComponentPhysical,
     ComponentObstacleFallthrough, WorldPosition, ComponentAnimationRenderable, InputResolver, ComponentDynamicCameraTarget,
     ComponentChildParticles>;
 using PlayerMake = SM::Make<PlayerState, PlayerView>;
