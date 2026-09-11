@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
 
 void dumpErrors()
 {
@@ -69,9 +70,32 @@ void Shader::load(const std::string &vSourcePath_, const std::string &fSourcePat
     std::string vCode;
     std::string fCode;
 
-    loadFile(vSourcePath_, vCode);
-    loadFile(fSourcePath_, fCode);
-    compile(vCode.c_str(), fCode.c_str());
+    try
+    {
+        loadFile(vSourcePath_, vCode);
+    }
+    catch (const std::exception &ex_)
+    {
+        throw std::runtime_error("Error while loading vert shader `" + vSourcePath_ + "`: " + ex_.what());
+    }
+
+    try
+    {
+        loadFile(fSourcePath_, fCode);
+    }
+    catch (const std::exception &ex_)
+    {
+        throw std::runtime_error("Error while loading frag shader `" + fSourcePath_ + "`: " + ex_.what());
+    }
+
+    try
+    {
+        compile(vCode.c_str(), fCode.c_str());
+    }
+    catch (const std::exception &ex_)
+    {
+        throw std::runtime_error("Error while compiling shaders `" + vSourcePath_ + "` + `" + fSourcePath_ + "`: " + ex_.what());
+    }
 }
 
 void Shader::use()
@@ -81,7 +105,7 @@ void Shader::use()
 
 void Shader::compile(const char *vertexSource_, const char *fragmentSource_)
 {
-    unsigned int sVertex, sFragment;
+    unsigned int sVertex = 0, sFragment = 0;
 
     // vertex Shader
     sVertex = glCreateShader(GL_VERTEX_SHADER);
@@ -140,7 +164,7 @@ void Shader::validateShader(unsigned int object_)
     {
         std::string infoLog(1024, '\0');
         glGetShaderInfoLog(object_, 1024, nullptr, infoLog.data());
-        throw std::runtime_error(std::string("Failed to compile shader:\n") + infoLog);
+        throw std::runtime_error("Failed to compile shader: " + infoLog);
     }
 }
 
@@ -152,7 +176,7 @@ void Shader::validateProgram() const
     {
         std::string infoLog(1024, '\0');
         glGetProgramInfoLog(m_id, 1024, nullptr, infoLog.data());
-        throw std::runtime_error("Failed to compile shader program:\n" + infoLog);
+        throw std::runtime_error("Failed to compile shader program: " + infoLog);
     }
 }
 

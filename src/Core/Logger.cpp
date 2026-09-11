@@ -1,10 +1,9 @@
 #include "Logger.hpp"
 #include <ctime>
 
-
 namespace utils
 {
-    std::string utils::prettifyFunction(const std::string &functionName_)
+    std::string prettifyFunction(const std::string &functionName_)
     {
         auto i = functionName_.size() - 1;
         while (functionName_[i--] != ')');
@@ -27,10 +26,10 @@ namespace utils
             newname = newname.substr(pos + 7, newname.size() - pos - 7);
         }
 
-        return utils::cutBoundingSpaces(newname);
+        return cutBoundingSpaces(newname);
     }
 
-    std::string utils::cutBoundingSpaces(const std::string &functionName_)
+    std::string cutBoundingSpaces(const std::string &functionName_)
     {
         auto dst = functionName_;
 

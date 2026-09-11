@@ -39,7 +39,7 @@ public:
     void setInteger(const char *name_, int value_);
     
 private:
-    void compile(const char *vertexSourcePath_, const char *fragmentSourcePath_);
+    void compile(const char *vertexSource_, const char *fragmentSource_);
 
     static void validateShader(unsigned int object_); 
     void validateProgram() const;

@@ -2,6 +2,7 @@
 #include "FilesystemUtils.h"
 #include "Localization/LocalizationGen.h"
 #include "SDL3/SDL_error.h"
+#include "Logger.hpp"
 
 Application &Application::instance()
 {
@@ -11,14 +12,27 @@ Application &Application::instance()
 
 SDLCore::SDLCore()
 {
-    if (!SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMEPAD))
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD))
         throw std::runtime_error(std::string("SDL initialization error: ") + SDL_GetError());
 
     if (!TTF_Init())
         throw std::runtime_error(std::string("TTF initialization error: ") + SDL_GetError());
 
-    if (!MIX_Init())
-        throw std::runtime_error(std::string("MIX initialization error: ") + SDL_GetError());
+    if (SDL_Init(SDL_INIT_AUDIO))
+    {
+        if (!MIX_Init())
+        {
+            LOG_INFO("Audio system was enabled successfully!");
+        }
+        else
+        {
+            LOG_ERROR("MIX initialization error: {}", SDL_GetError());
+        }
+    }
+    else
+    {
+        LOG_ERROR("SDL_INIT_AUDIO initialization error: {}", SDL_GetError());
+    }
 
     Filesystem::ensureDirectoryRelative("Resources");
     Filesystem::ensureDirectoryRelative("Resources/Fonts");
@@ -32,7 +46,7 @@ SDLCore::~SDLCore()
     MIX_Quit();
     TTF_Quit();
     SDL_Quit();
-    std::cout << "Application shut down successfully" << std::endl;
+    LOG_INFO("Application shut down successfully");
 }
 
 const FPSUtility &Application::getFPSUtility() const
