@@ -100,7 +100,12 @@ template
 struct AttemptContainer<AttemptComparatorLeft>;
 
 
-void PhysicsEntityHandler::moveRight(const int offset_)
+const ComponentPhysical &PhysicsEntityHandler::physics() const noexcept
+{
+    return m_phys;
+}
+
+void PhysicsEntityHandler::moveRight(const int offset_, bool force_)
 {
     assert(offset_ > 0);
 
@@ -134,7 +139,7 @@ void PhysicsEntityHandler::moveRight(const int offset_)
             if (cld.obstacleType > ObstacleType::NONE && (
                 m_obsFallthrough.isIgnoringObstacle(idx) ||
                 attempt.isIgnoringObstacle(idx) ||
-                cld.obstacleType >= ObstacleType::FLOOR && m_obsFallthrough.isIgnoringAllObstacles()))
+                cld.obstacleType >= ObstacleType::FLOOR && m_obsFallthrough.isIgnoringAllObstacles()) || force_)
                 continue;
 
             const Vector2<int> topPos{attempt.pos.x, highest - 1};
@@ -198,7 +203,7 @@ void PhysicsEntityHandler::moveRight(const int offset_)
     }
 }
 
-void PhysicsEntityHandler::moveLeft(const int offset_)
+void PhysicsEntityHandler::moveLeft(const int offset_, bool force_)
 {
     assert(offset_ > 0);
 
@@ -232,7 +237,7 @@ void PhysicsEntityHandler::moveLeft(const int offset_)
             if (cld.obstacleType > ObstacleType::NONE && (
                 m_obsFallthrough.isIgnoringObstacle(idx) ||
                 attempt.isIgnoringObstacle(idx) ||
-                cld.obstacleType >= ObstacleType::FLOOR && m_obsFallthrough.isIgnoringAllObstacles()))
+                cld.obstacleType >= ObstacleType::FLOOR && m_obsFallthrough.isIgnoringAllObstacles()) || force_)
                 continue;
 
             const Vector2<int> topPos{attempt.pos.x, highest - 1};
@@ -296,7 +301,7 @@ void PhysicsEntityHandler::moveLeft(const int offset_)
     }
 }
 
-void PhysicsEntityHandler::moveDown(int offset_)
+void PhysicsEntityHandler::moveDown(int offset_, bool force_)
 {
     assert(offset_ > 0);
 
@@ -323,7 +328,7 @@ void PhysicsEntityHandler::moveDown(int offset_)
 
             if (cld.obstacleType > ObstacleType::NONE && (
                 m_obsFallthrough.isIgnoringObstacle(idx) ||
-                cld.obstacleType >= ObstacleType::FLOOR && m_obsFallthrough.isIgnoringAllObstacles()))
+                cld.obstacleType >= ObstacleType::FLOOR && m_obsFallthrough.isIgnoringAllObstacles()) || force_)
                 continue;
 
             m_phys.velocity.y = 0;
@@ -398,7 +403,7 @@ void PhysicsEntityHandler::magnet()
     }
 }
 
-void PhysicsEntityHandler::discoverPosition()
+void PhysicsEntityHandler::discoverPosition(bool affectVelocity_)
 {
     m_worldPos.reset();
 
@@ -462,7 +467,7 @@ void PhysicsEntityHandler::discoverPosition()
         }
     }
 
-    if (m_worldPos.ground.onGround != entt::null)
+    if (m_worldPos.ground.onGround != entt::null && affectVelocity_)
     {
         m_phys.velocity.y = 0;
         m_phys.inertia.y = 0;
@@ -527,6 +532,7 @@ void PhysicsSystem::prepEntities()
     for (const auto &[idx, phys] : viewPhys.each())
     {
         phys.onMovingPlatform = false;
+        phys.pendingEnforcedOffset = {0, 0};
     }
 }
 
@@ -589,26 +595,25 @@ void PhysicsSystem::proceedEntity(const CollidersView &clds_, ComponentTransform
     {
         // Moving to the right
         if (offset.x > 0)
-            handler.moveRight(offset.x);
+            handler.moveRight(offset.x, false);
         // Moving to the left
         else if (offset.x < 0)
-            handler.moveLeft(-offset.x);
+            handler.moveLeft(-offset.x, false);
     }
 
     // Y axis movement handling
     {
         // Falling
         if (offset.y > 0)
-            handler.moveDown(offset.y);
+            handler.moveDown(offset.y, false);
         // Rising
         else if (offset.y < 0)
             handler.moveUp(-offset.y);
     }
 
     handler.magnet();
-    handler.discoverPosition();
+    handler.discoverPosition(true);
 
-    phys_.appliedOffset.push(trans_.m_pos - oldPos + phys_.pushedOffset);
-    phys_.extraoffset = {0.0f, 0.0f};
-    phys_.pushedOffset = {0, 0};
+    phys_.enforcedOffset.push(phys_.pendingEnforcedOffset);
+    phys_.appliedOffset.push(trans_.m_pos - oldPos + phys_.enforcedOffset.avg());
 }

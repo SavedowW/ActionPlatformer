@@ -33,12 +33,11 @@ struct ComponentPhysical
 {
     Vector2<float> velocity;
     Vector2<float> inertia;
-    Vector2<float> extraoffset;
     Vector2<float> drag; 
     Vector2<float> gravity;
     Vector2<float> inertiaMultiplier = {1.0f, 1.0f};
     Collider pushbox;
-    bool onMovingPlatform = false;
+    bool onMovingPlatform = false; // TODO
     unsigned int magnetLimit = 0;
     uint32_t hitstopLeft = 0;
 
@@ -48,14 +47,12 @@ struct ComponentPhysical
     // Used to identify offset applied before collision resolution
     Vector2<int> calculatedOffset;
 
+    // Offset enforced by dynamic colliders, used for inertia and appliedOffset calculation
+    Vector2<int> pendingEnforcedOffset;
+    SlidingWindow<Vector2<float>, 10> enforcedOffset;
+
     // Used to calculate camera offset
     SlidingWindow<Vector2<int>, 10> appliedOffset;
-
-    // Offset enforced by dynamic colliders, used for things like inertia
-    Vector2<int> enforcedOffset;
-    
-    // Offset enforced by dynamic colliders that is already applied to the character (getting pushed by platforms, etc)
-    Vector2<int> pushedOffset;
     
     Vector2<float> stateLeaveVelocityMultiplier;
     
@@ -274,10 +271,10 @@ private:
 struct MoveCollider2Points
 {
     MoveCollider2Points(const Vector2<int> &offset_);
-    Vector2<int> m_point1;
-    Vector2<int> m_point2;
-    const Vector2<int> m_offset;
-    FrameTimer<false> m_timer;
+    Vector2<int> point1;
+    Vector2<int> point2;
+    const Vector2<int> offset;
+    FrameTimer<false> timer;
 };
 
 struct TilemapLayer

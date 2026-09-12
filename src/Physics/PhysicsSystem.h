@@ -73,25 +73,19 @@ class PhysicsEntityHandler
 public:
     PhysicsEntityHandler(const CollidersView &cld_, ComponentTransform &trans_, 
         ComponentPhysical &phys_, ComponentObstacleFallthrough &obsFallthrough_, WorldPosition &worldPos_);
+    PhysicsEntityHandler(const PhysicsEntityHandler&) = default;
+    PhysicsEntityHandler(PhysicsEntityHandler&&) = default;
 
-    void moveRight(int offset_);
-    void moveLeft(int offset_);
-    void moveDown(int offset_);
+    const ComponentPhysical &physics() const noexcept;
+
+    void moveRight(int offset_, bool force_);
+    void moveLeft(int offset_, bool force_);
+    void moveDown(int offset_, bool force_);
     void moveUp(int offset_);
     
     void magnet();
 
-    /**
-     *  Update:
-     *   PhysicalEvents
-     *    (currently none)
-     *   ComponentPhysical:
-     *    onSlopeWithAngle
-     *    onGround
-     *   ComponentObstacleFallthrough:
-     *    ignoredObstacles
-     */
-    void discoverPosition();
+    void discoverPosition(bool affectVelocity_);
     
 private:
     const SlopeCollider *getHighestVerticalMagnetCoord(int &coord_);
@@ -117,6 +111,8 @@ public:
 
     void prepHitstop();
     void prepEntities();
+
+    // Currently influence from dynamic colliders is not considered, so if the character gets pushed by collider by X1 pixels and has offset of X2, he will move by X1 + X2, not max(X1, X2)
     void updatePhysics();
 
 private:

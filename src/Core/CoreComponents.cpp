@@ -16,16 +16,16 @@ void ComponentPhysical::convertToInertia(bool convertVelocity_, bool includeEnfo
         velocity = {0.0f, 0.0f};
     }
     
-    if (includeEnforced_ || !onMovingPlatform)
+    if (includeEnforced_)
     {
         //std::cout << "Adding enforced velocity: " << enforcedOffset << std::endl;
-        inertia += enforcedOffset;
+        inertia += enforcedOffset.avg();
     }
 }
 
 Vector2<int> ComponentPhysical::claimOffset()
 {
-    auto offset = velocity + inertia.mulComponents(inertiaMultiplier) + extraoffset + velocityLeftover;
+    auto offset = velocity + inertia.mulComponents(inertiaMultiplier) + velocityLeftover;
     Vector2<int> iOffset = offset;
     velocityLeftover = offset - iOffset;
     //std::cout << "{" << offset << "} - {" << iOffset << "} = " << velocityLeftover << std::endl;
@@ -34,12 +34,12 @@ Vector2<int> ComponentPhysical::claimOffset()
 
 Vector2<int> ComponentPhysical::peekOffset() const
 {
-    return velocity + inertia.mulComponents(inertiaMultiplier) + extraoffset + velocityLeftover;
+    return velocity + inertia.mulComponents(inertiaMultiplier) + velocityLeftover;
 }
 
 Vector2<float> ComponentPhysical::peekRawOffset() const
 {
-    return velocity + inertia.mulComponents(inertiaMultiplier) + extraoffset;
+    return velocity + inertia.mulComponents(inertiaMultiplier);
 }
 
 
@@ -206,7 +206,7 @@ RenderLayer::~RenderLayer()
 bool RenderLayer::m_dirtyOrder = false;
 
 MoveCollider2Points::MoveCollider2Points(const Vector2<int> &offset_) :
-    m_offset(offset_)
+    offset(offset_)
 {
 }
 
