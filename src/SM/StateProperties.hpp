@@ -7,6 +7,7 @@
 #include "StateMachine.hpp"
 #include "ParticleSystem.hpp"
 #include "StateProperties.h"
+#include "Core/Logger.hpp"
 
 template<typename StateIDT, typename ViewT>
 void StateProperties<StateIDT, ViewT>::Update::Notify::operator()(const ViewT &view_) const
@@ -533,4 +534,20 @@ void StateProperties<StateIDT, ViewT>::Pipe::DestroyParticlesOnLeave::operator()
     }
 
     particles.clear();
+}
+
+template<typename StateIDT, typename ViewT>
+constexpr StateProperties<StateIDT, ViewT>::Pipe::SetClingFlag::SetClingFlag(bool isSetting_) :
+    _isSetting{isSetting_}
+{}
+
+template<typename StateIDT, typename ViewT>
+void StateProperties<StateIDT, ViewT>::Pipe::SetClingFlag::operator()(const ViewT &view_, const SM::TransitionData<StateIDT> &transition_) const
+{
+    if (_isSetting)
+        view_.template get<WorldPosition>().wall.clingState = (transition_.intoOrientation == Orientation::LEFT ? ClingState::RIGHT : ClingState::LEFT);
+    else
+        view_.template get<WorldPosition>().wall.clingState = ClingState::NONE;
+
+    LOG_TRACE("Clinging to well to the {}", serialize(view_.template get<WorldPosition>().wall.clingState));
 }

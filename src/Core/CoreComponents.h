@@ -70,6 +70,20 @@ struct ComponentPhysical
     Vector2<float> velocityLeftover;
 };
 
+
+enum class ClingState : uint8_t
+{
+    LEFT,
+    RIGHT,
+    NONE
+};
+
+SERIALIZE_ENUM(ClingState, {
+    ENUM_AUTO(ClingState, LEFT),
+    ENUM_AUTO(ClingState, RIGHT),
+    ENUM_AUTO(ClingState, NONE)
+})
+
 struct WorldPosition
 {
     struct Ground
@@ -84,6 +98,10 @@ struct WorldPosition
         bool demand = true;
         entt::entity leftWall = entt::null;
         entt::entity rightWall = entt::null;
+
+        // From which side do you have wall
+        ClingState clingState = ClingState::NONE;
+
     } wall;
 
     void reset();

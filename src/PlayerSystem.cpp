@@ -215,13 +215,14 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera
             
             PlayerMake::RulePipe{}
                 .setDefaultPipe(PlayerStateProperties::Pipe::SetDemandWall{false},
+                                PlayerStateProperties::Pipe::SetClingFlag{false},
                                 PlayerStateProperties::Pipe::SetInertiaApplicationMultiplier{{1.0f, 1.0f}},
                                 PlayerStateProperties::Pipe::LeaveWallPrejump{})
                 .done(),
             
+            // Since we enter only from the wall cling, no need to set wall check demand or cling flag
             PlayerMake::RulePipe{}
-                .setDefaultPipe(PlayerStateProperties::Pipe::SetDemandWall{true},
-                                PlayerStateProperties::Pipe::SetInertiaApplicationMultiplier{{0.0f, 0.0f}},
+                .setDefaultPipe(PlayerStateProperties::Pipe::SetInertiaApplicationMultiplier{{0.0f, 0.0f}},
                                 PlayerStateProperties::Pipe::SetAnimation{m_animManager.getAnimID("Char1/wall_prejump")},
                                 PlayerStateProperties::Pipe::HaltSideDownwardMomentum{},
                                 PlayerStateProperties::Pipe::SetGravity{{0.0f, 0.02f}},
@@ -251,7 +252,9 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera
                 .done(),
             
             PlayerMake::RulePipe{}
-                .setDefaultPipe(PlayerStateProperties::Pipe::SetDemandWall{false})
+                .setDefaultPipe(PlayerStateProperties::Pipe::SetDemandWall{false},
+                                PlayerStateProperties::Pipe::SetClingFlag{false})
+                .setPipe(PlayerState::WALL_CLING_PREJUMP)
                 .done(),
             
             PlayerMake::RulePipe{}
@@ -262,7 +265,8 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera
                                 PlayerStateProperties::Pipe::SetGravity{{0.0f, 0.5f}},
                                 PlayerStateProperties::Pipe::SetDrag{{1.0f, 0.2f}},
                                 PlayerStateProperties::Pipe::MultiplyInertia{{0.0f, 0.5f}},
-                                PlayerStateProperties::Pipe::ConvertToInertia{true, false})
+                                PlayerStateProperties::Pipe::ConvertToInertia{true, false},
+                                PlayerStateProperties::Pipe::SetClingFlag{true})
                 .done()
     ));
 

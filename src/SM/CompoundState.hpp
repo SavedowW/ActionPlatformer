@@ -70,13 +70,13 @@ namespace SM
     template<typename StateIDT, typename ViewT, typename UpdaterT, typename TransCheckT, typename HandlerFromT, typename HandlerIntoT>
     void CompoundState<StateIDT, ViewT, UpdaterT, TransCheckT, HandlerFromT, HandlerIntoT>::handleTransitionFromImpl(const ViewT &view_, const TransitionData<StateIDT>& transition_) const
     {
-        return m_transitionFromHandler(view_, transition_);
+        return m_transitionFromHandler(view_, transition_, false);
     }
 
     template<typename StateIDT, typename ViewT, typename UpdaterT, typename TransCheckT, typename HandlerFromT, typename HandlerIntoT>
     void CompoundState<StateIDT, ViewT, UpdaterT, TransCheckT, HandlerFromT, HandlerIntoT>::handleTransitionIntoImpl(const ViewT &view_, const TransitionData<StateIDT>& transition_) const
     {
-        return m_transitionIntoHandler(view_, transition_);
+        return m_transitionIntoHandler(view_, transition_, true);
     }
     
 
@@ -95,9 +95,9 @@ namespace SM
     }
 
     template<typename StateIDT, typename ViewT>
-    void RulePipesContainer<StateIDT, ViewT>::operator()(const ViewT &view_, const TransitionData<StateIDT> &transition_) const
+    void RulePipesContainer<StateIDT, ViewT>::operator()(const ViewT &view_, const TransitionData<StateIDT> &transition_, bool useOriginalState_) const
     {
-        auto found = m_pipes.find(transition_.fromState);
+        auto found = m_pipes.find(useOriginalState_ ? transition_.fromState : transition_.intoState);
         if (found != m_pipes.end())
             (*found->second)(view_, transition_);
         else if (m_defaultPipe)

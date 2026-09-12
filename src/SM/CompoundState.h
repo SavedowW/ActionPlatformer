@@ -69,7 +69,7 @@ namespace SM
         RulePipesContainer &setPipe(const StateIDT &id_, std::unique_ptr<AbstractCallable<const ViewT&, const TransitionData<StateIDT>&>> &&pipe_);
         RulePipesContainer &setDefaultPipe(std::unique_ptr<AbstractCallable<const ViewT&, const TransitionData<StateIDT>&>> &&pipe_);
 
-        void operator()(const ViewT&, const TransitionData<StateIDT>&) const;
+        void operator()(const ViewT&, const TransitionData<StateIDT>&, bool useOriginalState_) const;
     
     private:
         std::unordered_map<StateIDT, std::unique_ptr<AbstractCallable<const ViewT&, const TransitionData<StateIDT>&>>> m_pipes;

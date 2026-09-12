@@ -24,7 +24,7 @@ namespace SM
         StateIDT fromState;
         StateIDT intoState;
 
-        // UNSPECIFIED if there is no transition
+        // 0 if there is no transition
         Flag<Orientation> intoOrientation;
 
         TransitionData(StateIDT fromState_, StateIDT intoState_, Flag<Orientation> intoOrientation_) noexcept;

@@ -389,5 +389,17 @@ struct StateProperties
         private:
             entt::registry &m_reg;
         };
+
+        // Sets according to the current alignment
+        class SetClingFlag
+        {
+        public:
+            constexpr SetClingFlag(bool isSetting_);
+
+            void operator()(const ViewT &view_, const SM::TransitionData<StateIDT> &transition_) const;
+        
+        private:
+            const bool _isSetting;
+        };
     };
 };
