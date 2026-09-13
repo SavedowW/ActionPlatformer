@@ -105,7 +105,7 @@ const ComponentPhysical &PhysicsEntityHandler::physics() const noexcept
     return m_phys;
 }
 
-void PhysicsEntityHandler::moveRight(const int offset_, bool force_)
+void PhysicsEntityHandler::moveRight(const int offset_, bool force_, entt::entity pulledBy_)
 {
     assert(offset_ > 0);
 
@@ -125,7 +125,7 @@ void PhysicsEntityHandler::moveRight(const int offset_, bool force_)
 
         for (const auto& [idx, cld] : m_cld.each())
         {
-            if (!cld.m_isEnabled)
+            if (!cld.m_isEnabled || idx == pulledBy_)
                 continue;
 
             const auto newPb = m_pushbox + attempt.pos;
@@ -137,9 +137,9 @@ void PhysicsEntityHandler::moveRight(const int offset_, bool force_)
 
             // Skip ignored obstacle
             if (cld.obstacleType > ObstacleType::NONE && (
-                m_obsFallthrough.isIgnoringObstacle(idx) ||
+                force_ || m_obsFallthrough.isIgnoringObstacle(idx) ||
                 attempt.isIgnoringObstacle(idx) ||
-                cld.obstacleType >= ObstacleType::FLOOR && m_obsFallthrough.isIgnoringAllObstacles()) || force_)
+                cld.obstacleType >= ObstacleType::FLOOR && m_obsFallthrough.isIgnoringAllObstacles()))
                 continue;
 
             const Vector2<int> topPos{attempt.pos.x, highest - 1};
@@ -203,7 +203,7 @@ void PhysicsEntityHandler::moveRight(const int offset_, bool force_)
     }
 }
 
-void PhysicsEntityHandler::moveLeft(const int offset_, bool force_)
+void PhysicsEntityHandler::moveLeft(const int offset_, bool force_, entt::entity pulledBy_)
 {
     assert(offset_ > 0);
 
@@ -223,7 +223,7 @@ void PhysicsEntityHandler::moveLeft(const int offset_, bool force_)
 
         for (const auto& [idx, cld] : m_cld.each())
         {
-            if (!cld.m_isEnabled)
+            if (!cld.m_isEnabled || idx == pulledBy_)
                 continue;
 
             const auto newPb = m_pushbox + attempt.pos;
@@ -235,9 +235,9 @@ void PhysicsEntityHandler::moveLeft(const int offset_, bool force_)
 
             // Skip ignored obstacle
             if (cld.obstacleType > ObstacleType::NONE && (
-                m_obsFallthrough.isIgnoringObstacle(idx) ||
+                force_ || m_obsFallthrough.isIgnoringObstacle(idx) ||
                 attempt.isIgnoringObstacle(idx) ||
-                cld.obstacleType >= ObstacleType::FLOOR && m_obsFallthrough.isIgnoringAllObstacles()) || force_)
+                cld.obstacleType >= ObstacleType::FLOOR && m_obsFallthrough.isIgnoringAllObstacles()))
                 continue;
 
             const Vector2<int> topPos{attempt.pos.x, highest - 1};
@@ -301,7 +301,7 @@ void PhysicsEntityHandler::moveLeft(const int offset_, bool force_)
     }
 }
 
-void PhysicsEntityHandler::moveDown(int offset_, bool force_)
+void PhysicsEntityHandler::moveDown(int offset_, bool force_, entt::entity pulledBy_)
 {
     assert(offset_ > 0);
 
@@ -316,7 +316,7 @@ void PhysicsEntityHandler::moveDown(int offset_, bool force_)
         
         for (const auto& [idx, cld] : m_cld.each())
         {
-            if (!cld.m_isEnabled)
+            if (!cld.m_isEnabled || idx == pulledBy_)
                 continue;
 
             const auto newPb = m_pushbox + newPos;
@@ -327,8 +327,8 @@ void PhysicsEntityHandler::moveDown(int offset_, bool force_)
                 continue;
 
             if (cld.obstacleType > ObstacleType::NONE && (
-                m_obsFallthrough.isIgnoringObstacle(idx) ||
-                cld.obstacleType >= ObstacleType::FLOOR && m_obsFallthrough.isIgnoringAllObstacles()) || force_)
+                force_ || m_obsFallthrough.isIgnoringObstacle(idx) ||
+                cld.obstacleType >= ObstacleType::FLOOR && m_obsFallthrough.isIgnoringAllObstacles()))
                 continue;
 
             m_phys.velocity.y = 0;
@@ -343,7 +343,7 @@ void PhysicsEntityHandler::moveDown(int offset_, bool force_)
     m_trans.m_pos = newPos;
 }
 
-void PhysicsEntityHandler::moveUp(int offset_)
+void PhysicsEntityHandler::moveUp(int offset_, bool force_)
 {
     assert(offset_ > 0);
 
@@ -368,7 +368,7 @@ void PhysicsEntityHandler::moveUp(int offset_)
                 continue;
 
             if (cld.obstacleType > ObstacleType::NONE && (
-                m_obsFallthrough.isIgnoringObstacle(idx) ||
+                force_ || m_obsFallthrough.isIgnoringObstacle(idx) ||
                 cld.obstacleType >= ObstacleType::FLOOR))
                 continue;
 
@@ -437,6 +437,7 @@ void PhysicsEntityHandler::discoverPosition(bool affectVelocity_)
                 {
                     if (highest - 1 == m_trans.m_pos.y && (m_worldPos.ground.onGround == entt::null || m_worldPos.ground.onSlopeWithAngle != 0.0f))
                     {
+                        // TODO: confirm this condition in interactions with moving colliders
                         if (realOffset.y >= 0 || 
                             realOffset.x > 0 && static_cast<float>(realOffset.y) / static_cast<float>(realOffset.x + 1) > cld.m_resolved.topAngleCoef() ||
                             realOffset.x < 0 && static_cast<float>(realOffset.y) / static_cast<float>(realOffset.x - 1) < cld.m_resolved.topAngleCoef())
@@ -444,8 +445,6 @@ void PhysicsEntityHandler::discoverPosition(bool affectVelocity_)
                             m_worldPos.ground.onGround = idx;
                             m_worldPos.ground.onSlopeWithAngle = cld.m_resolved.topAngleCoef();
                         }
-                        else
-                            LOG_WARNING("Grounded but condition is unfulfilled");
                     }
                 }
             }
@@ -608,7 +607,7 @@ void PhysicsSystem::proceedEntity(const CollidersView &clds_, ComponentTransform
             handler.moveDown(offset.y, false);
         // Rising
         else if (offset.y < 0)
-            handler.moveUp(-offset.y);
+            handler.moveUp(-offset.y, false);
     }
 
     handler.magnet();

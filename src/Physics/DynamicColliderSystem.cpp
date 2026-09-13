@@ -45,13 +45,15 @@ void DynamicCollidersHandler::Handle()
 void DynamicCollidersHandler::moveColliderAt(entt::entity cid_, ComponentTransform &trans_, ComponentStaticCollider &scld_, const Vector2<int> &newtl_)
 {
     const Vector2<int> offset = newtl_ - trans_.m_pos;
+    if (offset == Vector2{0, 0})
+        return;
 
     const auto horizontallyMoved = scld_.m_resolved.movedBy({offset.x, 0});
     const auto fullyMoved = scld_.m_resolved.movedBy(offset);
 
     for (const auto &[idx, trans, phys, worldPos, fallthrough] : m_dynamicsView.each())
     {
-        if (fallthrough.isIgnoringObstacle(idx) || fallthrough.isIgnoringAllObstacles() && scld_.obstacleType > ObstacleType::MINIMAL)
+        if (fallthrough.isIgnoringObstacle(cid_) || fallthrough.isIgnoringAllObstacles() && scld_.obstacleType > ObstacleType::MINIMAL)
             continue;
 
         const auto originalPos = trans.m_pos;
@@ -74,7 +76,7 @@ void DynamicCollidersHandler::moveColliderAt(entt::entity cid_, ComponentTransfo
                     highest - 1 == trans.m_pos.y && (worldPos.ground.onGround != entt::null))  // if used to stand on top:
                 {
                     // Soft move alongside it
-                    getDynamicHandler(idx, trans, phys, fallthrough, worldPos).moveRight(offset.x, false);
+                    getDynamicHandler(idx, trans, phys, fallthrough, worldPos).moveRight(offset.x, false, cid_);
                     newPb = phys.pushbox + trans.m_pos;
                 }
                 else if ((horizontallyMoved.checkOverlap(newPb, highest) & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH) // Else if overlaps with X moved collider:
@@ -96,7 +98,7 @@ void DynamicCollidersHandler::moveColliderAt(entt::entity cid_, ComponentTransfo
                     highest - 1 == trans.m_pos.y && (worldPos.ground.onGround != entt::null))  // if used to stand on top:
                 {
                     // Soft move alongside it
-                    getDynamicHandler(idx, trans, phys, fallthrough, worldPos).moveLeft(-offset.x, false);
+                    getDynamicHandler(idx, trans, phys, fallthrough, worldPos).moveLeft(-offset.x, false, cid_);
                     newPb = phys.pushbox + trans.m_pos;
                 }
                 else if ((horizontallyMoved.checkOverlap(newPb) & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH) // Else if overlaps with X moved collider:
@@ -108,10 +110,26 @@ void DynamicCollidersHandler::moveColliderAt(entt::entity cid_, ComponentTransfo
             }
         }
 
-        // TODO: consider clinging and standing on top of the collider
         if (offset.y > 0 && scld_.obstacleType >= ObstacleType::MINIMAL) // Downward
         {
-            if ((fullyMoved.checkOverlap(newPb) & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
+            const Vector2<int> rightPoint{newPb.getRightEdge() + 1, newPb.getTopEdge() + newPb.m_size.y / 2};
+            const Vector2<int> leftPoint{newPb.getLeftEdge() - 1, newPb.getTopEdge() + newPb.m_size.y / 2};
+
+            if (worldPos.wall.clingState == ClingState::RIGHT &&
+                horizontallyMoved.leftX() == rightPoint.x && 
+                horizontallyMoved.leftY() <= rightPoint.y && 
+                horizontallyMoved.bottomY() >= rightPoint.y || // If clinging to the left wall at initial position:
+                worldPos.wall.clingState == ClingState::LEFT &&
+                horizontallyMoved.rightX() == leftPoint.x &&
+                horizontallyMoved.rightY() <= leftPoint.y &&
+                horizontallyMoved.bottomY() >= leftPoint.y || // If clinging to the right wall at initial position:
+                (initialOverlap & OverlapResult::OVERLAP_X) == OverlapResult::OVERLAP_X &&
+                highest - 1 == trans.m_pos.y && (worldPos.ground.onGround != entt::null))
+            {
+                getDynamicHandler(idx, trans, phys, fallthrough, worldPos).moveDown(offset.y, false, cid_);
+                newPb = phys.pushbox + trans.m_pos;
+            }
+            else if ((fullyMoved.checkOverlap(newPb) & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH) // Is overlapping after the vertical movement
             {
                 getDynamicHandler(idx, trans, phys, fallthrough, worldPos).moveDown(fullyMoved.bottomY() + 1 - newPb.getTopEdge(), true);
                 newPb = phys.pushbox + trans.m_pos;
@@ -119,10 +137,25 @@ void DynamicCollidersHandler::moveColliderAt(entt::entity cid_, ComponentTransfo
         }
         else if (offset.y < 0) // Upward
         {
+            const Vector2<int> rightPoint{newPb.getRightEdge() + 1, newPb.getTopEdge() + newPb.m_size.y / 2};
+            const Vector2<int> leftPoint{newPb.getLeftEdge() - 1, newPb.getTopEdge() + newPb.m_size.y / 2};
+
             int upHighest = 0;
-            if ((fullyMoved.checkOverlap(newPb, upHighest) & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH)
+            if (worldPos.wall.clingState == ClingState::RIGHT &&
+                horizontallyMoved.leftX() == rightPoint.x && 
+                horizontallyMoved.leftY() <= rightPoint.y && 
+                horizontallyMoved.bottomY() >= rightPoint.y || // If clinging to the left wall at initial position:
+                worldPos.wall.clingState == ClingState::LEFT &&
+                horizontallyMoved.rightX() == leftPoint.x &&
+                horizontallyMoved.rightY() <= leftPoint.y &&
+                horizontallyMoved.bottomY() >= leftPoint.y) // If clinging to the right wall at initial position:
             {
-                getDynamicHandler(idx, trans, phys, fallthrough, worldPos).moveUp(newPb.getBottomEdge() + 1 - upHighest);
+                getDynamicHandler(idx, trans, phys, fallthrough, worldPos).moveUp(newPb.getBottomEdge() + 1 - upHighest, false);
+                newPb = phys.pushbox + trans.m_pos;
+            }
+            else if ((fullyMoved.checkOverlap(newPb, upHighest) & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH) // Is overlapping after the vertical movement
+            {
+                getDynamicHandler(idx, trans, phys, fallthrough, worldPos).moveUp(newPb.getBottomEdge() + 1 - upHighest, true);
                 newPb = phys.pushbox + trans.m_pos;
             }
         }

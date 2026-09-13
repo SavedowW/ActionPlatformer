@@ -78,10 +78,10 @@ public:
 
     const ComponentPhysical &physics() const noexcept;
 
-    void moveRight(int offset_, bool force_);
-    void moveLeft(int offset_, bool force_);
-    void moveDown(int offset_, bool force_);
-    void moveUp(int offset_);
+    void moveRight(int offset_, bool force_, entt::entity pulledBy_ = entt::null);
+    void moveLeft(int offset_, bool force_, entt::entity pulledBy_ = entt::null);
+    void moveDown(int offset_, bool force_, entt::entity pulledBy_ = entt::null);
+    void moveUp(int offset_, bool force_);
     
     void magnet();
 
