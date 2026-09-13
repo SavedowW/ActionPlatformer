@@ -150,7 +150,7 @@ void DynamicCollidersHandler::moveColliderAt(entt::entity cid_, ComponentTransfo
                 horizontallyMoved.rightY() <= leftPoint.y &&
                 horizontallyMoved.bottomY() >= leftPoint.y) // If clinging to the right wall at initial position:
             {
-                getDynamicHandler(idx, trans, phys, fallthrough, worldPos).moveUp(newPb.getBottomEdge() + 1 - upHighest, false);
+                getDynamicHandler(idx, trans, phys, fallthrough, worldPos).moveUp(-offset.y, false);
                 newPb = phys.pushbox + trans.m_pos;
             }
             else if ((fullyMoved.checkOverlap(newPb, upHighest) & OverlapResult::OVERLAP_BOTH) == OverlapResult::OVERLAP_BOTH) // Is overlapping after the vertical movement
