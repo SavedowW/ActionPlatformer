@@ -16,9 +16,9 @@
         2. [x] On state update (for attack chain)
 2. [ ] Add collider traits to allow / disallow clinging
 3. [x] Add obstacle traits to enable wall-only behavior
-4. [ ] Refactor platform movement logic
-    1. [ ] Reuse proper object movement logic
-    2. [ ] Make so that all moving platforms are clingable obstacles by default
+4. [x] Refactor platform movement logic
+    1. [x] Reuse proper object movement logic
+    2. [x] Make so that all moving platforms are clingable obstacles by default
         - Needs 1.3
 5. [ ] Restore the particle platform attachment
 6. [ ] Finish AI system
@@ -31,6 +31,7 @@
 13. [ ] Rework environment system to use an actual state machine
 14. [ ] Remove `EntityAnywhere`
     - Needs 1.13
+15. [ ] Add platform movement speed control
 
 
 ### 2. Maybe later
