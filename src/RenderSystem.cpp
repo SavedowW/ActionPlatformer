@@ -6,6 +6,7 @@
 #include "Core/Configuration.h"
 #include "Core/Application.h"
 #include "Core/Logger.hpp"
+#include "SDL3/SDL_surface.h"
 
 RenderSystem::RenderSystem(entt::registry &reg_, Camera &camera_, ColliderRoutesCollection &rtCol_) :
     m_reg(reg_),
@@ -190,6 +191,9 @@ void RenderSystem::drawParticle(const ComponentTransform &trans_, const Componen
         texPos.y -= animorigin.y;
 
         const auto spr = ren_.m_currentAnimation->getSprite();
+
+        if ((partcl_.flip & ParticleFlip::VERTICAL) == ParticleFlip::VERTICAL)
+            flip = static_cast<SDL_FlipMode>(static_cast<int>(flip) | static_cast<int>(SDL_FLIP_VERTICAL));
 
         m_renderer.renderTexture(spr, texPos, texSize, flip, partcl_.angle, animorigin, m_camera);
 

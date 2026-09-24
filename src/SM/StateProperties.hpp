@@ -433,6 +433,13 @@ void StateProperties<StateIDT, ViewT>::Pipe::SetDemandWall::operator()(const Vie
     view_.template get<WorldPosition>().wall.demand = m_demandWall;
 }
 
+
+template<typename StateIDT, typename ViewT>
+StateProperties<StateIDT, ViewT>::Pipe::LeaveWallPrejump::LeaveWallPrejump(ParticleSystem &parSys_, const ParticleRecipe &emission_) :
+    m_parSys{parSys_},
+    m_emission{emission_}
+{}
+
 template<typename StateIDT, typename ViewT>
 void StateProperties<StateIDT, ViewT>::Pipe::LeaveWallPrejump::operator()(const ViewT &view_, const SM::TransitionData<StateIDT>&) const
 {
@@ -453,6 +460,7 @@ void StateProperties<StateIDT, ViewT>::Pipe::LeaveWallPrejump::operator()(const 
         {
             targetSpeed = {orient * 0.7f, -5.0f};
             fall = false;
+            m_parSys.makeParticle(m_emission, view_);
             break;
         }
 
@@ -460,6 +468,7 @@ void StateProperties<StateIDT, ViewT>::Pipe::LeaveWallPrejump::operator()(const 
         {
             targetSpeed = {orient * 1.5f, -4.5f};
             fall = false;
+            m_parSys.makeParticle(m_emission, view_);
             break;
         }
 
@@ -467,6 +476,7 @@ void StateProperties<StateIDT, ViewT>::Pipe::LeaveWallPrejump::operator()(const 
         {
             targetSpeed = {orient * 3.0f, -2.2f};
             fall = false;
+            m_parSys.makeParticle(m_emission, view_);
             break;
         }
 
@@ -474,11 +484,13 @@ void StateProperties<StateIDT, ViewT>::Pipe::LeaveWallPrejump::operator()(const 
         {
             targetSpeed = {orient * 3.5f, 0.0f};
             fall = false;
+            m_parSys.makeParticle(ParticleRecipe{m_emission}.setFlip(ParticleFlip::VERTICAL), view_);
             break;
         }
 
-        if (in.m_dir == Vector2{orient, 1})
+        if (in.m_dir == Vector2{0, 1})
         {
+            m_parSys.makeParticle(ParticleRecipe{m_emission}.setFlip(ParticleFlip::VERTICAL), view_);
             break;
         }
     }

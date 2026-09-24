@@ -217,7 +217,10 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera
                 .setDefaultPipe(PlayerStateProperties::Pipe::SetDemandWall{false},
                                 PlayerStateProperties::Pipe::SetClingFlag{false},
                                 PlayerStateProperties::Pipe::SetInertiaApplicationMultiplier{{1.0f, 1.0f}},
-                                PlayerStateProperties::Pipe::LeaveWallPrejump{})
+                                PlayerStateProperties::Pipe::LeaveWallPrejump{m_parSys, 
+                                    ParticleRecipe{m_animManager.getAnimID("Char1/particles/particle_wall_jump"), 21, 7}
+                                    .tiePos(TiePosRule::TIE_TO_WALL)
+                                })
                 .done(),
             
             // Since we enter only from the wall cling, no need to set wall check demand or cling flag
@@ -322,7 +325,17 @@ PlayerSystem::PlayerSystem(entt::registry &reg_, ParticleSystem &parSys_, Camera
                     {
                         {0, {1.0f, 1.0f}},
                         {1, {0.75f, 1.0f}},
-                    })}
+                    })},
+                PlayerStateProperties::Update::EmitParticles{m_parSys, 
+                    {
+                        {
+                            1, ParticleEmissionRuleset{
+                                ParticleRecipe{m_animManager.getAnimID("Char1/particles/particle_jump"), 22, 7}
+                                    .tiePos(TiePosRule::TIE_TO_GROUND)
+                            }
+                        }
+                    }
+                }
             ),
 
             PlayerMake::SequentialConditions{}

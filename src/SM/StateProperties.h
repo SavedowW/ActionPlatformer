@@ -346,7 +346,13 @@ struct StateProperties
         class LeaveWallPrejump
         {
         public:
+            LeaveWallPrejump(ParticleSystem &parSys_, const ParticleRecipe &emission_);
+
             void operator()(const ViewT&, const SM::TransitionData<StateIDT> &transition_) const;
+
+        private:
+            ParticleSystem &m_parSys;
+            const ParticleRecipe m_emission;
         };
 
         /*

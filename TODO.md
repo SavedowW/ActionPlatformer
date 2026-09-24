@@ -32,6 +32,7 @@
 14. [ ] Remove `EntityAnywhere`
     - Needs 1.13
 15. [ ] Add platform movement speed control
+16. [ ] Eliminate manual ComponentAnimationRenderable filling
 
 
 ### 2. Maybe later

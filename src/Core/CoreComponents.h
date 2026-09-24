@@ -290,10 +290,18 @@ struct TilemapLayer
     Vector2<int> m_posOffset;
 };
 
+
+enum class ParticleFlip : uint8_t
+{
+    NONE = 0,
+    VERTICAL = 1
+};
+
 struct ComponentParticlePrimitive
 {
     FrameTimer<false> lifetime;
     float angle = 0.0f;
+    Flag<ParticleFlip> flip = ParticleFlip::NONE;
     entt::entity tieTransform = entt::null;
 };
 
@@ -301,6 +309,7 @@ struct ComponentChildParticles
 {
     std::vector<entt::entity> destroyOnStateChange;
 };
+
 
 Collider getColliderAt(const Collider &col_, const ComponentTransform &trans_);
 bool checkCurrentHitstop(entt::registry &reg_, const entt::entity &idx_);
